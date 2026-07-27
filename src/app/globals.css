@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Brand palette (approved by client) */
+  --color-ink-950: #090909;
+  --color-ink-900: #171412;
+  --color-ink-800: #232323;
+  --color-canvas: #f7f4ee;
+  --color-canvas-dim: #efeade;
+  --color-white: #ffffff;
+  --color-gold: #ffb000;
+  --color-orange: #ff6a00;
+  --color-crimson: #d41414;
+  --color-graphite: #232323;
+  --color-muted: #666666;
+  --color-sand: #e9e4dc;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-marquee: marquee 42s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  body {
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  ::selection {
+    background: var(--color-orange);
+    color: var(--color-ink-950);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-orange);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background-image: linear-gradient(115deg, #ffb000 0%, #ff6a00 48%, #d41414 100%);
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-maple-gradient {
+    background-image: linear-gradient(115deg, #ffb000 0%, #ff6a00 48%, #d41414 100%);
+  }
+
+  .maple-glow {
+    box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.25), 0 18px 60px -20px rgba(255, 106, 0, 0.55);
+  }
+
+  /* Unifies placeholder photography under one brand-consistent tone so
+     stock imagery doesn't introduce clashing hues against the locked
+     ink / canvas / maple palette. Swap out once real photography lands. */
+  .img-brand {
+    filter: grayscale(0.88) sepia(0.15) saturate(1.6) contrast(1.08) brightness(0.94);
+  }
 }

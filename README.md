@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Maple Imprint — Website Rebuild
 
-## Getting Started
+A premium, from-scratch redesign of [mapleimprint.ca](https://mapleimprint.ca), an Ottawa
+custom-printing business. Built with Next.js, TypeScript, Tailwind CSS v4 and Framer Motion.
 
-First, run the development server:
+See [`PROJECT_NOTES.md`](./PROJECT_NOTES.md) for what's real, what's placeholder, the
+accessibility/contrast decisions made, and what's needed before this can launch.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` — start the development server
+- `npm run build` — production build
+- `npm run start` — run the production build
+- `npm run lint` — ESLint
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework:** Next.js 16 (App Router, Server Components)
+- **Styling:** Tailwind CSS v4, design tokens in `src/app/globals.css`
+- **Motion:** Framer Motion, respecting `prefers-reduced-motion`
+- **Icons:** Phosphor Icons
+- **Fonts:** Bricolage Grotesque (display) + Manrope (body), via `next/font`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  app/                  Routes (App Router)
+  components/
+    ui/                 Shared primitives (Button, Section, Field, Accordion, Reveal…)
+    layout/             Header, Footer
+    home/               Homepage sections
+    contact/            Quote wizard + contact form
+    policy/             Policy page shell
+  lib/                  Static content: categories, solutions, FAQ, print methods
+scripts/                Dev-only tooling (logo processing, OG image generation) — not shipped
+brand-assets/source/    Original client-provided logo rasters, kept for provenance
+```
 
-## Deploy on Vercel
+## Brand
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Served logos live in `public/logo/` (`logo-lockup.png`, `logo-leaf.png`, and generated
+  favicon sizes). These are cleaned, transparent PNGs derived from the client-provided rasters
+  in `brand-assets/source/`, via `scripts/make-transparent-logo.js` and
+  `scripts/process-logo-variants.js`.
+- Color tokens, the signature maple gradient, and motion rules live in
+  `src/app/globals.css` under `@theme`.
