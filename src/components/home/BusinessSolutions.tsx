@@ -18,11 +18,11 @@ export function BusinessSolutions() {
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <Reveal className="relative order-2 aspect-[4/3] overflow-hidden rounded-[28px] lg:order-1">
             <Image
-              src="https://picsum.photos/seed/mi-business-team/1200/900"
-              alt="Staff wearing matching branded workwear"
+              src="/images/solutions/business-solutions.jpg"
+              alt="Maple Imprint branded apparel, drinkware and print materials laid out in the shop"
               fill
               sizes="(min-width: 1024px) 45vw, 100vw"
-              className="img-brand object-cover"
+              className="object-cover"
             />
           </Reveal>
 

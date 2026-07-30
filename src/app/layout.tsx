@@ -4,6 +4,7 @@ import "./globals.css";
 import { SITE_URL } from "@/lib/constants";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 const display = Bricolage_Grotesque({
   variable: "--font-display",
@@ -99,7 +100,7 @@ export default function RootLayout({
         </a>
         <Header />
         <main id="main-content" className="flex-1">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
       </body>

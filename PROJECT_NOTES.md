@@ -92,6 +92,23 @@ Placeholder, clearly scoped as such:
   matching the brief's example data, not verified real business details.
 - `/account` is a sign-in gate (visibly disabled) rather than a working auth system.
 
+## 4a. Header behavior and page transitions
+
+- The header nav shows a "Home" tab only when off the homepage, and hides the "Start Designing"
+  CTA while already on `/products*` (it links there, so it's redundant on that section). Both
+  animate in/out (`src/components/layout/Header.tsx`) using `AnimatePresence mode="popLayout"`
+  plus `layout` on the nav `<li>`s, so siblings smoothly reflow instead of snapping.
+- Site-wide page transitions (`src/components/layout/PageTransition.tsx`, wrapped around
+  `{children}` in `layout.tsx`) use a **manual crossfade**, not `template.tsx` + `AnimatePresence`
+  keyed by pathname. That more "standard" approach was tried first and confirmed, via
+  instrumented testing, to not animate at all on client-side navigation in this Next.js version
+  (the route swap happens outside a lifecycle AnimatePresence can intercept for exit animations).
+  The working approach keeps a local `displayed` snapshot in state and only swaps it to the new
+  `children` after playing an exit animation itself, so it doesn't depend on Next's router
+  internals. Verified with real screenshots mid-transition (style/opacity polling via
+  `getComputedStyle` is unreliable for this — it doesn't reflect the true animated value; a
+  screenshot does).
+
 ## 5. Accessibility notes worth keeping
 
 - Contrast audit: Maple Orange (`#FF6A00`) measures ~2.9:1 against white/canvas — it fails

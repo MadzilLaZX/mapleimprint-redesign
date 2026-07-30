@@ -37,10 +37,26 @@ export function Header() {
 
         <nav aria-label="Primary" className="hidden lg:block">
           <ul className="flex items-center gap-5 text-sm font-medium text-white/80">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {pathname !== "/" && (
+                <motion.li
+                  key="home"
+                  layout
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Link href="/" className="whitespace-nowrap transition-colors hover:text-white">
+                    Home
+                  </Link>
+                </motion.li>
+              )}
+            </AnimatePresence>
             {NAV_LINKS.map((link) => {
               const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
-                <li key={link.href}>
+                <motion.li key={link.href} layout transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
                   <Link
                     href={link.href}
                     className={cn(
@@ -50,7 +66,7 @@ export function Header() {
                   >
                     {link.label}
                   </Link>
-                </li>
+                </motion.li>
               );
             })}
           </ul>
@@ -71,9 +87,21 @@ export function Header() {
           >
             <ShoppingBag className="size-5" />
           </Link>
-          <Button href={PRIMARY_CTA.href} variant="primary" tone="dark" className="text-sm">
-            {PRIMARY_CTA.label}
-          </Button>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!pathname.startsWith("/products") && (
+              <motion.div
+                key="start-designing"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Button href={PRIMARY_CTA.href} variant="primary" tone="dark" className="text-sm">
+                  {PRIMARY_CTA.label}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <button
@@ -97,6 +125,15 @@ export function Header() {
             className="overflow-hidden border-t border-white/10 bg-ink-950 lg:hidden"
           >
             <Container className="flex flex-col gap-1 py-6">
+              {pathname !== "/" && (
+                <Link
+                  href="/"
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-3 text-base font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  Home
+                </Link>
+              )}
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
@@ -111,9 +148,11 @@ export function Header() {
                 <Button href={SECONDARY_CTA.href} variant="secondary" tone="dark" onClick={() => setOpen(false)}>
                   {SECONDARY_CTA.label}
                 </Button>
-                <Button href={PRIMARY_CTA.href} variant="primary" tone="dark" onClick={() => setOpen(false)}>
-                  {PRIMARY_CTA.label}
-                </Button>
+                {!pathname.startsWith("/products") && (
+                  <Button href={PRIMARY_CTA.href} variant="primary" tone="dark" onClick={() => setOpen(false)}>
+                    {PRIMARY_CTA.label}
+                  </Button>
+                )}
               </div>
             </Container>
           </motion.div>
