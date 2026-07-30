@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/Button";
 import { NAV_LINKS, PRIMARY_CTA, SECONDARY_CTA } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 
+// A steadier, more even glide than the site's usual snappy ease-out — used
+// for header chrome that appears/disappears while the user is reading, so
+// it should never feel like a jump-cut.
+const TRANSITION = { duration: 0.55, ease: [0.65, 0, 0.35, 1] as const };
+
 export function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -18,7 +23,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-ink-950/95 backdrop-blur-md">
       <Container className="flex h-20 items-center justify-between lg:h-24">
-        <Link href="/" className="flex shrink-0 items-center gap-4" onClick={() => setOpen(false)}>
+        <Link href="/" className="flex shrink-0 items-center gap-3" onClick={() => setOpen(false)}>
           <Image
             src="/logo/logo-mark-no-tagline.png"
             alt="Maple Imprint Ltd."
@@ -36,16 +41,16 @@ export function Header() {
         </Link>
 
         <nav aria-label="Primary" className="hidden lg:block">
-          <ul className="flex items-center gap-5 text-sm font-medium text-white/80">
+          <ul className="flex items-center gap-4 text-sm font-medium text-white/80">
             <AnimatePresence mode="popLayout" initial={false}>
               {pathname !== "/" && (
                 <motion.li
                   key="home"
                   layout
-                  initial={{ opacity: 0, x: -8 }}
+                  initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={TRANSITION}
                 >
                   <Link href="/" className="whitespace-nowrap transition-colors hover:text-white">
                     Home
@@ -56,7 +61,7 @@ export function Header() {
             {NAV_LINKS.map((link) => {
               const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
-                <motion.li key={link.href} layout transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
+                <motion.li key={link.href} layout transition={TRANSITION}>
                   <Link
                     href={link.href}
                     className={cn(
@@ -72,7 +77,7 @@ export function Header() {
           </ul>
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-3 lg:flex">
+        <div className="hidden shrink-0 items-center gap-2.5 lg:flex">
           <button
             type="button"
             aria-label="Search"
@@ -87,14 +92,21 @@ export function Header() {
           >
             <ShoppingBag className="size-5" />
           </Link>
+          <Link
+            href={SECONDARY_CTA.href}
+            className="whitespace-nowrap px-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+          >
+            {SECONDARY_CTA.label}
+          </Link>
           <AnimatePresence mode="popLayout" initial={false}>
             {!pathname.startsWith("/products") && (
               <motion.div
                 key="start-designing"
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.92 }}
-                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                layout
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={TRANSITION}
               >
                 <Button href={PRIMARY_CTA.href} variant="primary" tone="dark" className="text-sm">
                   {PRIMARY_CTA.label}
