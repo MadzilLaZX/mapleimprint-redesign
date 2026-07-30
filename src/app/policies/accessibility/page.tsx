@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PolicyLayout, PolicySection } from "@/components/policy/PolicyLayout";
+import { BUSINESS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Accessibility Statement",
@@ -26,7 +27,7 @@ export default function AccessibilityPolicyPage() {
       </PolicySection>
       <PolicySection title="Reporting an issue">
         <p>
-          If you experience a barrier using this site, contact hello@mapleimprint.ca and we&apos;ll address it as a
+          If you experience a barrier using this site, contact {BUSINESS.email} and we&apos;ll address it as a
           priority.
         </p>
       </PolicySection>

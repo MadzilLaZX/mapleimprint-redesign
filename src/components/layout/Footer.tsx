@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { EnvelopeSimple, InstagramLogo, MapPin, Phone } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "@/components/ui/Container";
-import { PRODUCT_CATEGORIES, SOLUTIONS } from "@/lib/constants";
+import { BUSINESS, BUSINESS_ADDRESS_ONE_LINE, PRODUCT_CATEGORIES, SOLUTIONS } from "@/lib/constants";
 
 const helpLinks = [
   { label: "How It Works", href: "/how-it-works" },
@@ -39,18 +39,20 @@ export function Footer() {
           <ul className="mt-6 space-y-3 text-sm">
             <li className="flex items-start gap-2.5">
               <MapPin className="mt-0.5 size-4 shrink-0 text-orange" />
-              <span>Ottawa, Ontario, Canada</span>
+              <span>
+                {BUSINESS.addressLine1}, {BUSINESS_ADDRESS_ONE_LINE}
+              </span>
             </li>
             <li className="flex items-start gap-2.5">
               <Phone className="mt-0.5 size-4 shrink-0 text-orange" />
-              <a href="tel:+16135550142" className="hover:text-white">
-                (613) 555-0142
+              <a href={BUSINESS.phoneHref} className="hover:text-white">
+                {BUSINESS.phoneDisplay}
               </a>
             </li>
             <li className="flex items-start gap-2.5">
               <EnvelopeSimple className="mt-0.5 size-4 shrink-0 text-orange" />
-              <a href="mailto:hello@mapleimprint.ca" className="hover:text-white">
-                hello@mapleimprint.ca
+              <a href={`mailto:${BUSINESS.email}`} className="hover:text-white">
+                {BUSINESS.email}
               </a>
             </li>
           </ul>

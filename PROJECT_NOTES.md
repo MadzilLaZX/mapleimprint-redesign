@@ -65,6 +65,15 @@ Real / functional:
 - The general inquiry form and order-tracking form are likewise real client/server round trips.
   Order tracking honestly reports "not found" for every lookup, since there is no order backend
   to check against yet — it does not fabricate order data.
+- `/contact` now has four tabs (`src/components/contact/ContactTabs.tsx`): Location, Get a
+  Project Quote, Book an Appointment, General Inquiry. Location reveals a Google Maps embed
+  (`google.com/maps?q=...&output=embed`, no API key required for this basic query-based embed)
+  plus deep links to Google Maps, Waze and Apple Maps built from the real address. Appointment
+  is a custom month calendar (Sundays and past dates disabled) plus six hourly slots from
+  12pm-6pm, using the maple gradient for the selected date/time (dark text on the gradient fill,
+  same accessible pattern as the primary Button — see the contrast note below), backed by a real
+  `POST /api/appointment` round trip. Neither the map embed nor the appointment slots check a
+  real calendar for conflicts yet — see Missing Inputs.
 - Sitemap, robots.txt, per-page metadata, Open Graph image, and Organization/LocalBusiness
   JSON-LD are all generated from real routes/data (see caveat on NAP data below).
 - Real client-provided cover photography is in for all 8 product categories
@@ -94,10 +103,12 @@ Placeholder, clearly scoped as such:
   real client project galleries and reviews will join later, not claim these already are that.
 - Every page under `/policies/*` displays a visible "draft, pending legal review" banner. None
   of that legal copy should be treated as final or published as-is.
-- Business phone/email/address used in the footer, contact page and JSON-LD
-  (`(613) 555-0142`, `hello@mapleimprint.ca`, "Ottawa, Ontario, Canada") are placeholders
-  matching the brief's example data, not verified real business details.
 - `/account` is a sign-in gate (visibly disabled) rather than a working auth system.
+
+Business contact details (address, phone, email, hours) are now the client's real, provided
+values, centralized in `BUSINESS` / `BUSINESS_ADDRESS_ONE_LINE` in `src/lib/constants.ts` and
+consumed by the footer, the contact page, the Location and Appointment panels, and the
+Organization/LocalBusiness JSON-LD in `layout.tsx`. Update that one object if any of it changes.
 
 ## 4a. Header behavior and page transitions
 
@@ -135,7 +146,9 @@ Placeholder, clearly scoped as such:
 ## 6. Missing inputs (blocking a real launch — condensed from the brief's section 15)
 
 - Admin/staging access to the current WooCommerce site, customizer plugin, hosting and database.
-- Verified legal business name, address, phone, email, hours, and pickup instructions.
+- A real scheduling backend for the Appointment tab (the current 12-6 slots and calendar are not
+  checked against actual staff availability, and the map embed's basic query-based mode should
+  move to a proper Google Maps Embed API key before launch, for reliability/quota reasons).
 - Real product catalogue with accurate pricing rules (what's included, minimums, bulk tiers,
   setup/rush fees, taxes).
 - Real production/shipping timelines per product and decoration method.

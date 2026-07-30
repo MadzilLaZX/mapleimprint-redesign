@@ -4,12 +4,15 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/ui/Reveal";
-import { ContactTabs } from "@/components/contact/ContactTabs";
+import { ContactTabs, type ContactTab } from "@/components/contact/ContactTabs";
+import { BUSINESS, BUSINESS_ADDRESS_ONE_LINE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Get a project quote or send a general question to Maple Imprint in Ottawa.",
+  description: "Get a project quote, book an appointment, find our Ottawa location, or send a general question to Maple Imprint.",
 };
+
+const TAB_PARAMS: ContactTab[] = ["quote", "general", "location", "appointment"];
 
 export default async function ContactPage({
   searchParams,
@@ -17,14 +20,17 @@ export default async function ContactPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const initialTab = params.type === "general" ? "general" : "quote";
+  const requested = typeof params.type === "string" ? params.type : "";
+  const initialTab: ContactTab = TAB_PARAMS.includes(requested as ContactTab)
+    ? (requested as ContactTab)
+    : "quote";
 
   return (
     <>
       <PageHeader
         eyebrow="Contact"
         title="Start a quote, or just ask a question"
-        description="Business and bulk projects get a guided quote form below. For anything else, switch to general inquiry."
+        description="Business and bulk projects get a guided quote form below. Find our location, book an appointment, or switch to general inquiry."
       />
 
       <Section tone="canvas">
@@ -35,15 +41,17 @@ export default async function ContactPage({
                 <MapPin className="mt-0.5 size-5 shrink-0 text-crimson" />
                 <div>
                   <p className="font-display font-semibold text-ink-900">Location</p>
-                  <p className="mt-1 text-sm text-muted">Ottawa, Ontario, Canada</p>
+                  <p className="mt-1 text-sm text-muted">
+                    {BUSINESS.addressLine1}, {BUSINESS_ADDRESS_ONE_LINE}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="mt-0.5 size-5 shrink-0 text-crimson" />
                 <div>
                   <p className="font-display font-semibold text-ink-900">Phone</p>
-                  <a href="tel:+16135550142" className="mt-1 block text-sm text-muted hover:text-ink-900">
-                    (613) 555-0142
+                  <a href={BUSINESS.phoneHref} className="mt-1 block text-sm text-muted hover:text-ink-900">
+                    {BUSINESS.phoneDisplay}
                   </a>
                 </div>
               </div>
@@ -51,8 +59,8 @@ export default async function ContactPage({
                 <EnvelopeSimple className="mt-0.5 size-5 shrink-0 text-crimson" />
                 <div>
                   <p className="font-display font-semibold text-ink-900">Email</p>
-                  <a href="mailto:hello@mapleimprint.ca" className="mt-1 block text-sm text-muted hover:text-ink-900">
-                    hello@mapleimprint.ca
+                  <a href={`mailto:${BUSINESS.email}`} className="mt-1 block text-sm text-muted hover:text-ink-900">
+                    {BUSINESS.email}
                   </a>
                 </div>
               </div>
@@ -60,7 +68,13 @@ export default async function ContactPage({
                 <Clock className="mt-0.5 size-5 shrink-0 text-crimson" />
                 <div>
                   <p className="font-display font-semibold text-ink-900">Hours</p>
-                  <p className="mt-1 text-sm text-muted">Monday to Friday, 9am to 5pm</p>
+                  <ul className="mt-1 space-y-0.5 text-sm text-muted">
+                    {BUSINESS.hours.map((h) => (
+                      <li key={h.days}>
+                        {h.days}: {h.time}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>

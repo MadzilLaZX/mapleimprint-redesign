@@ -5,37 +5,46 @@ import { Check } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/Button";
 import { FieldError, FieldLabel, TextArea, TextInput } from "@/components/ui/Field";
 import { QuoteWizard } from "@/components/contact/QuoteWizard";
+import { LocationPanel } from "@/components/contact/LocationPanel";
+import { AppointmentPanel } from "@/components/contact/AppointmentPanel";
 import { cn } from "@/lib/cn";
 
-export function ContactTabs({ initialTab }: { initialTab: "quote" | "general" }) {
-  const [tab, setTab] = useState(initialTab);
+export type ContactTab = "location" | "quote" | "general" | "appointment";
+
+const TABS: { key: ContactTab; label: string }[] = [
+  { key: "location", label: "Location" },
+  { key: "quote", label: "Get a Project Quote" },
+  { key: "appointment", label: "Book an Appointment" },
+  { key: "general", label: "General Inquiry" },
+];
+
+export function ContactTabs({ initialTab }: { initialTab: ContactTab }) {
+  const [tab, setTab] = useState<ContactTab>(initialTab);
 
   return (
     <div>
-      <div className="inline-flex rounded-full bg-canvas p-1">
-        <button
-          type="button"
-          onClick={() => setTab("quote")}
-          className={cn(
-            "rounded-full px-5 py-2.5 text-sm font-semibold transition-colors",
-            tab === "quote" ? "bg-ink-950 text-white" : "text-ink-900/70 hover:text-ink-900",
-          )}
-        >
-          Get a project quote
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("general")}
-          className={cn(
-            "rounded-full px-5 py-2.5 text-sm font-semibold transition-colors",
-            tab === "general" ? "bg-ink-950 text-white" : "text-ink-900/70 hover:text-ink-900",
-          )}
-        >
-          General inquiry
-        </button>
+      <div className="flex flex-wrap gap-2 rounded-[28px] bg-canvas p-1.5 sm:inline-flex sm:rounded-full">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setTab(t.key)}
+            className={cn(
+              "whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-semibold transition-colors sm:px-5",
+              tab === t.key ? "bg-ink-950 text-white" : "text-ink-900/70 hover:text-ink-900",
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      <div className="mt-8">{tab === "quote" ? <QuoteWizard /> : <GeneralInquiryForm />}</div>
+      <div className="mt-8">
+        {tab === "location" && <LocationPanel />}
+        {tab === "quote" && <QuoteWizard />}
+        {tab === "appointment" && <AppointmentPanel />}
+        {tab === "general" && <GeneralInquiryForm />}
+      </div>
     </div>
   );
 }

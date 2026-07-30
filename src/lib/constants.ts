@@ -3,10 +3,25 @@ export const SITE_URL = "https://mapleimprint.ca";
 export const BUSINESS = {
   name: "Maple Imprint Ltd.",
   tagline: "Let's print your story.",
+  addressLine1: "Suite 125",
+  addressLine2: "2487 Kaladar Ave",
   city: "Ottawa",
-  region: "Ontario",
+  region: "ON",
+  regionFull: "Ontario",
+  postalCode: "K1V 8B9",
   country: "Canada",
+  phoneDisplay: "+1 (613) 981-4329",
+  phoneHref: "tel:+16139814329",
+  email: "info@mapleimprint.ca",
+  hours: [
+    { days: "Monday, Wednesday, Thursday", time: "11am to 7pm" },
+    { days: "Tuesday, Friday, Saturday", time: "By appointment only" },
+    { days: "Sunday", time: "Closed" },
+  ],
 } as const;
+
+export const BUSINESS_ADDRESS_ONE_LINE = `${BUSINESS.addressLine2}, ${BUSINESS.city}, ${BUSINESS.region} ${BUSINESS.postalCode}`;
+export const BUSINESS_ADDRESS_FULL = `${BUSINESS.addressLine1}, ${BUSINESS.addressLine2}, ${BUSINESS.city}, ${BUSINESS.region} ${BUSINESS.postalCode}`;
 
 export const NAV_LINKS = [
   { label: "Products", href: "/products" },

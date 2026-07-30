@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PolicyLayout, PolicySection } from "@/components/policy/PolicyLayout";
+import { BUSINESS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -37,7 +38,7 @@ export default function PrivacyPolicyPage() {
         </p>
       </PolicySection>
       <PolicySection title="Contact">
-        <p>Questions about this policy can be sent to hello@mapleimprint.ca.</p>
+        <p>Questions about this policy can be sent to {BUSINESS.email}.</p>
       </PolicySection>
     </PolicyLayout>
   );

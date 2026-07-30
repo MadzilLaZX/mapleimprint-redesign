@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import "./globals.css";
-import { SITE_URL } from "@/lib/constants";
+import { BUSINESS, SITE_URL } from "@/lib/constants";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -66,15 +66,25 @@ const organizationJsonLd = {
   url: SITE_URL,
   logo: `${SITE_URL}/logo/logo-lockup.png`,
   image: `${SITE_URL}/og-image.png`,
-  telephone: "+1-613-555-0142",
-  email: "hello@mapleimprint.ca",
+  telephone: BUSINESS.phoneHref.replace("tel:", ""),
+  email: BUSINESS.email,
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Ottawa",
-    addressRegion: "ON",
+    streetAddress: `${BUSINESS.addressLine1}, ${BUSINESS.addressLine2}`,
+    addressLocality: BUSINESS.city,
+    addressRegion: BUSINESS.region,
+    postalCode: BUSINESS.postalCode,
     addressCountry: "CA",
   },
-  areaServed: "Ottawa, Ontario, Canada",
+  areaServed: `${BUSINESS.city}, ${BUSINESS.regionFull}, ${BUSINESS.country}`,
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Wednesday", "Thursday"],
+      opens: "11:00",
+      closes: "19:00",
+    },
+  ],
 };
 
 export default function RootLayout({
