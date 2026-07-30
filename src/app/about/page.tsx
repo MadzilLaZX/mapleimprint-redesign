@@ -44,11 +44,11 @@ export default function AboutPage() {
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <Reveal className="relative aspect-[4/3] overflow-hidden rounded-[28px]">
             <Image
-              src="https://picsum.photos/seed/mi-about-shop/1000/800"
-              alt=""
+              src="/images/about.jpg"
+              alt="Maple Imprint branded apparel, drinkware and print materials in the shop"
               fill
               sizes="(min-width: 1024px) 45vw, 100vw"
-              className="img-brand object-cover"
+              className="object-cover"
             />
           </Reveal>
           <Reveal delay={0.1}>

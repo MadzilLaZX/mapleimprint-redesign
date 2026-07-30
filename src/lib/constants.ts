@@ -85,31 +85,37 @@ export const SOLUTIONS = [
     slug: "businesses",
     name: "For Businesses",
     blurb: "Recurring staff apparel, signage and print with one point of contact.",
+    cover: "/images/solutions/businesses.jpg",
   },
   {
     slug: "teams-schools",
     name: "Teams & Schools",
     blurb: "Spirit wear and fundraising merchandise with simple size collection.",
+    cover: "/images/solutions/teams-schools.jpg",
   },
   {
     slug: "events-fundraisers",
     name: "Events & Fundraisers",
     blurb: "Coordinated apparel, signage and cards for a firm event date.",
+    cover: "/images/solutions/events-fundraisers.jpg",
   },
   {
     slug: "creators-clothing-brands",
     name: "Creators & Clothing Brands",
     blurb: "Small runs, samples and repeat drops on premium blanks.",
+    cover: "/images/solutions/creators-clothing-brands.jpg",
   },
   {
     slug: "corporate-merchandise",
     name: "Corporate Merchandise",
     blurb: "Branded gifts and kits for staff, clients and conferences.",
+    cover: "/images/solutions/corporate-merchandise.jpg",
   },
   {
     slug: "bulk-orders",
     name: "Bulk Orders",
     blurb: "Volume pricing and one proof approval across the full run.",
+    cover: "/images/solutions/bulk-orders.jpg",
   },
 ] as const;
 

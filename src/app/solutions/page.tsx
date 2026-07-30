@@ -30,11 +30,11 @@ export default function SolutionsPage() {
               <Link href={`/solutions/${s.slug}`} className="group flex h-full flex-col overflow-hidden rounded-[28px] bg-white">
                 <div className="relative aspect-[16/10] w-full overflow-hidden">
                   <Image
-                    src={`https://picsum.photos/seed/mi-solution-${s.slug}/800/500`}
+                    src={s.cover}
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="img-brand object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+                    className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
                   />
                 </div>
                 <div className="flex flex-1 flex-col p-6">
