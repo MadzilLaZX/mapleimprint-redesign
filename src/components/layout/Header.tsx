@@ -92,12 +92,25 @@ export function Header() {
           >
             <ShoppingBag className="size-5" />
           </Link>
-          <Link
-            href={SECONDARY_CTA.href}
-            className="whitespace-nowrap px-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
-          >
-            {SECONDARY_CTA.label}
-          </Link>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!pathname.startsWith("/contact") && (
+              <motion.div
+                key="get-a-quote"
+                layout
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={TRANSITION}
+              >
+                <Link
+                  href={SECONDARY_CTA.href}
+                  className="whitespace-nowrap px-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+                >
+                  {SECONDARY_CTA.label}
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <AnimatePresence mode="popLayout" initial={false}>
             {!pathname.startsWith("/products") && (
               <motion.div
@@ -157,9 +170,11 @@ export function Header() {
                 </Link>
               ))}
               <div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4">
-                <Button href={SECONDARY_CTA.href} variant="secondary" tone="dark" onClick={() => setOpen(false)}>
-                  {SECONDARY_CTA.label}
-                </Button>
+                {!pathname.startsWith("/contact") && (
+                  <Button href={SECONDARY_CTA.href} variant="secondary" tone="dark" onClick={() => setOpen(false)}>
+                    {SECONDARY_CTA.label}
+                  </Button>
+                )}
                 {!pathname.startsWith("/products") && (
                   <Button href={PRIMARY_CTA.href} variant="primary" tone="dark" onClick={() => setOpen(false)}>
                     {PRIMARY_CTA.label}
