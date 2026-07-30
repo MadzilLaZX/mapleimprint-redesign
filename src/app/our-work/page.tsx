@@ -4,37 +4,36 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
-import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
   title: "Our Work",
   description: "A look at the materials, methods and finishing behind Maple Imprint orders.",
 };
 
-type Shot = { key: string; src: string; h: number; realPhoto?: boolean };
+type Shot = { key: string; src: string; h: number };
 
-// CSS multi-column layout balances by height, not by source order, so the
-// masonry is built as three explicit column stacks instead of one flat list
-// — that's the only way to guarantee the two real photos land top-left and
-// top-right rather than wherever the browser's balancing algorithm puts them.
+// CSS multi-column layout balances by cumulative height, not by source order,
+// so the masonry is built as three explicit column stacks instead of one flat
+// list — that's the only reliable way to control exactly which photo lands
+// in which column.
 const columns: Shot[][] = [
   [
-    { key: "fabric-stack", src: "/images/our-work/fabric-stack.jpg", h: 467, realPhoto: true },
-    { key: "craft-2", src: "https://picsum.photos/seed/craft-2/700/320", h: 320 },
-    { key: "craft-3", src: "https://picsum.photos/seed/craft-3/700/340", h: 340 },
-    { key: "ink-drop", src: "https://picsum.photos/seed/ink-drop/700/340", h: 340 },
+    { key: "fabric-stack", src: "/images/our-work/fabric-stack.jpg", h: 467 },
+    { key: "catalogue-laser-spread", src: "/images/our-work/catalogue-laser-spread.jpg", h: 467 },
+    { key: "hoodie-flatlay", src: "/images/our-work/hoodie-flatlay.jpg", h: 467 },
+    { key: "laser-engraving-action", src: "/images/our-work/laser-engraving-action.jpg", h: 373 },
   ],
   [
-    { key: "weave-2", src: "https://picsum.photos/seed/weave-2/700/340", h: 340 },
-    { key: "material-3", src: "https://picsum.photos/seed/material-3/700/420", h: 420 },
-    { key: "material-5", src: "https://picsum.photos/seed/material-5/700/460", h: 460 },
-    { key: "fabric-macro", src: "https://picsum.photos/seed/fabric-macro/700/420", h: 420 },
+    { key: "premium-metal-card", src: "/images/our-work/premium-metal-card.jpg", h: 467 },
+    { key: "cutting-board-trophy", src: "/images/our-work/cutting-board-trophy.jpg", h: 467 },
+    { key: "mug-plaque-array", src: "/images/our-work/mug-plaque-array.jpg", h: 467 },
+    { key: "printer-apparel-catalogue", src: "/images/our-work/printer-apparel-catalogue.jpg", h: 373 },
   ],
   [
-    { key: "embroidery-thread", src: "/images/our-work/embroidery-thread.jpg", h: 467, realPhoto: true },
-    { key: "screen-1", src: "https://picsum.photos/seed/screen-1/700/480", h: 480 },
-    { key: "weave-3", src: "https://picsum.photos/seed/weave-3/700/380", h: 380 },
-    { key: "vinyl-1", src: "https://picsum.photos/seed/vinyl-1/700/400", h: 400 },
+    { key: "embroidery-thread", src: "/images/our-work/embroidery-thread.jpg", h: 467 },
+    { key: "tumbler-cap-box", src: "/images/our-work/tumbler-cap-box.jpg", h: 467 },
+    { key: "bottle-notebook-pen", src: "/images/our-work/bottle-notebook-pen.jpg", h: 467 },
+    { key: "hoodie-tote-cap-mug", src: "/images/our-work/hoodie-tote-cap-mug.jpg", h: 467 },
   ],
 ];
 
@@ -44,7 +43,7 @@ export default function OurWorkPage() {
       <PageHeader
         eyebrow="Our work"
         title="Materials, methods and finishing"
-        description="Real client galleries, before/after artwork and verified reviews land here as orders are photographed and approved for use. For now, this page shows the craft behind the catalogue."
+        description="A closer look at the products, materials and finishing behind every order. Real client project galleries and verified reviews will join this page as jobs are completed and approved for use."
       />
 
       <Section tone="canvas">
@@ -60,7 +59,7 @@ export default function OurWorkPage() {
                       width={700}
                       height={shot.h}
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className={cn("h-auto w-full object-cover", !shot.realPhoto && "img-brand")}
+                      className="h-auto w-full object-cover"
                     />
                   </div>
                 </Reveal>

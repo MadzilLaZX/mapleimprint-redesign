@@ -68,23 +68,30 @@ Real / functional:
 - Sitemap, robots.txt, per-page metadata, Open Graph image, and Organization/LocalBusiness
   JSON-LD are all generated from real routes/data (see caveat on NAP data below).
 - Real client-provided cover photography is in for all 8 product categories
-  (`public/images/products/*.jpg`, sourced from `Mapleimprint LTD/Products/`) and 4 of the 6
-  "Popular right now" picks (`public/images/popular/*.jpg`). These appear on the homepage bento
-  grid, the `/products` grid, the `/products/[category]` cover banner, and the homepage popular
-  rail. Originals were ~2.2MB PNGs each; `scripts/import-cover-photos.js` resizes/compresses them
-  to web-appropriate JPEGs (~180-250KB) — re-run it if new source exports are dropped in.
+  (`public/images/products/*.jpg`, sourced from `Mapleimprint LTD/Products/`), 4 of the 6
+  "Popular right now" picks (`public/images/popular/*.jpg`), all 6 `/solutions` cards and detail
+  heroes (`public/images/solutions/*.jpg`), the About page hero, and the full 12-photo `/our-work`
+  gallery (`public/images/our-work/*.jpg`). Originals were ~1.8-2.5MB PNGs each; the various
+  `scripts/import-*-photos.js` scripts resize/compress them to web-appropriate JPEGs
+  (~50-275KB) — re-run the relevant one if new source exports are dropped in.
+- The `/our-work` masonry is built as three explicit column arrays (`columns` in
+  `src/app/our-work/page.tsx`), not one flat list fed through CSS `columns-3`. That layout
+  balances by cumulative height, not source order, so it wouldn't reliably put a given photo in
+  a given column — explicit column arrays are the only way to control exact placement.
 
 Placeholder, clearly scoped as such:
 - Everywhere else, photography is Lorem Picsum placeholder imagery, unified under one
   brand-consistent duotone treatment (`.img-brand` in `globals.css`) so it doesn't clash with the
   locked palette. This includes 2 of 6 "Popular right now" picks (tumblers, stickers — no cover
-  photo provided yet), the "Our Work" gallery, subcategory tiles within each category page, and
-  hero/about/solutions imagery. Swap in real photography as it's provided, following the pattern
-  in `src/lib/constants.ts` (`cover` field) and `PopularCategories.tsx`.
+  photo provided yet) and subcategory tiles within each category page. Swap in real photography
+  as it's provided, following the pattern in `src/lib/constants.ts` (`cover` field) and
+  `PopularCategories.tsx`.
 - Category/solution/print-method copy is honest and non-fabricated, but not yet reviewed or
   approved by the client, and contains no real pricing (by design — see non-negotiable #4 in
   the master prompt: never imply pricing without a real product/pricing model behind it).
-  "Our Work" explicitly labels itself as placeholder pending real project photography.
+  The `/our-work` gallery now shows real branded product photography, but it's still brand/product
+  photography rather than a specific client's finished project — the page copy is careful to say
+  real client project galleries and reviews will join later, not claim these already are that.
 - Every page under `/policies/*` displays a visible "draft, pending legal review" banner. None
   of that legal copy should be treated as final or published as-is.
 - Business phone/email/address used in the footer, contact page and JSON-LD
