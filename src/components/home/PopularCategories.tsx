@@ -4,12 +4,44 @@ import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/ui/Reveal";
 
 const picks = [
-  { name: "Staff polos", tag: "Popular for teams", href: "/products/workwear-uniforms", seed: "mi-polo" },
-  { name: "Custom hoodies", tag: "Ottawa favourite", href: "/products/custom-apparel", seed: "mi-hoodie" },
-  { name: "Event banners", tag: "Ready in days", href: "/products/signs-banners", seed: "mi-banner" },
-  { name: "Business cards", tag: "Small runs welcome", href: "/products/business-printing", seed: "mi-cards" },
-  { name: "Custom tumblers", tag: "Great for gifts", href: "/products/drinkware", seed: "mi-tumbler" },
-  { name: "Die-cut stickers", tag: "No minimum", href: "/products/stickers-labels", seed: "mi-sticker" },
+  {
+    name: "Staff polos",
+    tag: "Popular for teams",
+    href: "/products/workwear-uniforms",
+    image: "/images/popular/staff-polos.jpg",
+  },
+  {
+    name: "Custom hoodies",
+    tag: "Ottawa favourite",
+    href: "/products/custom-apparel",
+    image: "/images/popular/custom-hoodies.jpg",
+  },
+  {
+    name: "Event banners",
+    tag: "Ready in days",
+    href: "/products/signs-banners",
+    image: "/images/popular/event-banners.jpg",
+  },
+  {
+    name: "Business cards",
+    tag: "Small runs welcome",
+    href: "/products/business-printing",
+    image: "/images/popular/business-cards.jpg",
+  },
+  {
+    name: "Custom tumblers",
+    tag: "Great for gifts",
+    href: "/products/drinkware",
+    image: "https://picsum.photos/seed/mi-tumbler/700/900",
+    brandTone: true,
+  },
+  {
+    name: "Die-cut stickers",
+    tag: "No minimum",
+    href: "/products/stickers-labels",
+    image: "https://picsum.photos/seed/mi-sticker/700/900",
+    brandTone: true,
+  },
 ];
 
 export function PopularCategories() {
@@ -37,11 +69,11 @@ export function PopularCategories() {
               >
                 <div className="relative aspect-[4/5] w-full">
                   <Image
-                    src={`https://picsum.photos/seed/${pick.seed}/700/900`}
+                    src={pick.image}
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 29vw, (min-width: 640px) 45vw, 76vw"
-                    className="img-brand object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+                    className={`object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105 ${pick.brandTone ? "img-brand" : ""}`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />
                 </div>

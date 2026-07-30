@@ -76,6 +76,14 @@ export default async function CategoryPage({
     <>
       <PageHeader eyebrow="Products" title={cat.name} description={cat.blurb} />
 
+      <div className="bg-canvas pt-10 md:pt-14">
+        <Container>
+          <Reveal className="relative aspect-[21/9] w-full overflow-hidden rounded-[28px]">
+            <Image src={cat.cover} alt="" fill sizes="100vw" priority className="object-cover" />
+          </Reveal>
+        </Container>
+      </div>
+
       <Section tone="canvas">
         <Reveal className="max-w-2xl">
           <h2 className="font-display text-2xl font-semibold text-ink-900 md:text-3xl">

@@ -34,11 +34,11 @@ export default function ProductsPage() {
               >
                 <div className="relative aspect-[4/3] w-full overflow-hidden">
                   <Image
-                    src={`https://picsum.photos/seed/mi-${cat.slug}/800/600`}
+                    src={cat.cover}
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="img-brand object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+                    className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
                   />
                 </div>
                 <div className="flex flex-1 flex-col p-6">

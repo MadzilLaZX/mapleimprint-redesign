@@ -67,11 +67,20 @@ Real / functional:
   to check against yet — it does not fabricate order data.
 - Sitemap, robots.txt, per-page metadata, Open Graph image, and Organization/LocalBusiness
   JSON-LD are all generated from real routes/data (see caveat on NAP data below).
+- Real client-provided cover photography is in for all 8 product categories
+  (`public/images/products/*.jpg`, sourced from `Mapleimprint LTD/Products/`) and 4 of the 6
+  "Popular right now" picks (`public/images/popular/*.jpg`). These appear on the homepage bento
+  grid, the `/products` grid, the `/products/[category]` cover banner, and the homepage popular
+  rail. Originals were ~2.2MB PNGs each; `scripts/import-cover-photos.js` resizes/compresses them
+  to web-appropriate JPEGs (~180-250KB) — re-run it if new source exports are dropped in.
 
 Placeholder, clearly scoped as such:
-- All photography is Lorem Picsum placeholder imagery, unified under one brand-consistent
-  duotone treatment (`.img-brand` in `globals.css`) so it doesn't clash with the locked palette.
-  It needs to be replaced with real product/process photography before launch.
+- Everywhere else, photography is Lorem Picsum placeholder imagery, unified under one
+  brand-consistent duotone treatment (`.img-brand` in `globals.css`) so it doesn't clash with the
+  locked palette. This includes 2 of 6 "Popular right now" picks (tumblers, stickers — no cover
+  photo provided yet), the "Our Work" gallery, subcategory tiles within each category page, and
+  hero/about/solutions imagery. Swap in real photography as it's provided, following the pattern
+  in `src/lib/constants.ts` (`cover` field) and `PopularCategories.tsx`.
 - Category/solution/print-method copy is honest and non-fabricated, but not yet reviewed or
   approved by the client, and contains no real pricing (by design — see non-negotiable #4 in
   the master prompt: never imply pricing without a real product/pricing model behind it).

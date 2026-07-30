@@ -31,11 +31,11 @@ export function ShopByNeed() {
                 className="group relative flex h-56 w-full flex-col justify-end overflow-hidden rounded-[28px] md:h-full"
               >
                 <Image
-                  src={`https://picsum.photos/seed/mi-${cat.slug}/900/900`}
+                  src={cat.cover}
                   alt=""
                   fill
                   sizes="(min-width: 768px) 25vw, 100vw"
-                  className="img-brand object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/25 to-transparent" />
                 <div className="relative flex items-end justify-between gap-3 p-5">
