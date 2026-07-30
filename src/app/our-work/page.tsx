@@ -4,25 +4,38 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
+import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
   title: "Our Work",
   description: "A look at the materials, methods and finishing behind Maple Imprint orders.",
 };
 
-const shots = [
-  { seed: "texture-a", h: 460 },
-  { seed: "weave-2", h: 340 },
-  { seed: "signage-1", h: 400 },
-  { seed: "screen-1", h: 480 },
-  { seed: "craft-2", h: 320 },
-  { seed: "material-3", h: 420 },
-  { seed: "weave-3", h: 380 },
-  { seed: "craft-3", h: 340 },
-  { seed: "material-5", h: 460 },
-  { seed: "vinyl-1", h: 400 },
-  { seed: "ink-drop", h: 340 },
-  { seed: "fabric-macro", h: 420 },
+type Shot = { key: string; src: string; h: number; realPhoto?: boolean };
+
+// CSS multi-column layout balances by height, not by source order, so the
+// masonry is built as three explicit column stacks instead of one flat list
+// — that's the only way to guarantee the two real photos land top-left and
+// top-right rather than wherever the browser's balancing algorithm puts them.
+const columns: Shot[][] = [
+  [
+    { key: "fabric-stack", src: "/images/our-work/fabric-stack.jpg", h: 467, realPhoto: true },
+    { key: "craft-2", src: "https://picsum.photos/seed/craft-2/700/320", h: 320 },
+    { key: "craft-3", src: "https://picsum.photos/seed/craft-3/700/340", h: 340 },
+    { key: "ink-drop", src: "https://picsum.photos/seed/ink-drop/700/340", h: 340 },
+  ],
+  [
+    { key: "weave-2", src: "https://picsum.photos/seed/weave-2/700/340", h: 340 },
+    { key: "material-3", src: "https://picsum.photos/seed/material-3/700/420", h: 420 },
+    { key: "material-5", src: "https://picsum.photos/seed/material-5/700/460", h: 460 },
+    { key: "fabric-macro", src: "https://picsum.photos/seed/fabric-macro/700/420", h: 420 },
+  ],
+  [
+    { key: "embroidery-thread", src: "/images/our-work/embroidery-thread.jpg", h: 467, realPhoto: true },
+    { key: "screen-1", src: "https://picsum.photos/seed/screen-1/700/480", h: 480 },
+    { key: "weave-3", src: "https://picsum.photos/seed/weave-3/700/380", h: 380 },
+    { key: "vinyl-1", src: "https://picsum.photos/seed/vinyl-1/700/400", h: 400 },
+  ],
 ];
 
 export default function OurWorkPage() {
@@ -35,20 +48,24 @@ export default function OurWorkPage() {
       />
 
       <Section tone="canvas">
-        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-          {shots.map((shot, i) => (
-            <Reveal key={shot.seed} delay={(i % 6) * 0.04} className="mb-4 break-inside-avoid">
-              <div className="overflow-hidden rounded-3xl">
-                <Image
-                  src={`https://picsum.photos/seed/${shot.seed}/700/${shot.h}`}
-                  alt=""
-                  width={700}
-                  height={shot.h}
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="img-brand h-auto w-full object-cover"
-                />
-              </div>
-            </Reveal>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {columns.map((column, colIndex) => (
+            <div key={colIndex} className="flex flex-col gap-4">
+              {column.map((shot, i) => (
+                <Reveal key={shot.key} delay={(i % 4) * 0.04 + colIndex * 0.02}>
+                  <div className="overflow-hidden rounded-3xl">
+                    <Image
+                      src={shot.src}
+                      alt=""
+                      width={700}
+                      height={shot.h}
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className={cn("h-auto w-full object-cover", !shot.realPhoto && "img-brand")}
+                    />
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           ))}
         </div>
       </Section>

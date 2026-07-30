@@ -22,64 +22,66 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-ink-950/95 backdrop-blur-md">
-      <Container wide className="flex h-20 items-center justify-between lg:h-24">
-        <div className="flex min-w-0 items-center gap-6 2xl:gap-10">
-          <Link href="/" className="flex shrink-0 items-center gap-3" onClick={() => setOpen(false)}>
-            <Image
-              src="/logo/logo-mark-no-tagline.png"
-              alt="Maple Imprint Ltd."
-              width={1529}
-              height={432}
-              priority
-              className="h-11 w-auto sm:h-12 lg:h-14"
-            />
-            <span className="hidden h-8 w-px bg-white/15 lg:block" aria-hidden />
-            <span className="hidden whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55 lg:block">
-              Let&rsquo;s print
-              <br />
-              your story
-            </span>
-          </Link>
+      <Container wide className="grid h-20 grid-cols-[auto_1fr_auto] items-center gap-6 lg:h-24">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-3 justify-self-start"
+          onClick={() => setOpen(false)}
+        >
+          <Image
+            src="/logo/logo-mark-no-tagline.png"
+            alt="Maple Imprint Ltd."
+            width={1529}
+            height={432}
+            priority
+            className="h-11 w-auto sm:h-12 lg:h-14"
+          />
+          <span className="hidden h-8 w-px bg-white/15 lg:block" aria-hidden />
+          <span className="hidden whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55 lg:block">
+            Let&rsquo;s print
+            <br />
+            your story
+          </span>
+        </Link>
 
-          <nav aria-label="Primary" className="hidden 2xl:block">
-            <ul className="flex items-center gap-4 text-sm font-medium text-white/80">
-              <AnimatePresence mode="popLayout" initial={false}>
-                {pathname !== "/" && (
-                  <motion.li
-                    key="home"
-                    layout
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={TRANSITION}
+        <nav aria-label="Primary" className="hidden justify-self-center 2xl:block">
+          <ul className="flex items-center gap-4 text-sm font-medium text-white/80">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {pathname !== "/" && (
+                <motion.li
+                  key="home"
+                  layout
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={TRANSITION}
+                >
+                  <Link href="/" className="whitespace-nowrap transition-colors hover:text-white">
+                    Home
+                  </Link>
+                </motion.li>
+              )}
+            </AnimatePresence>
+            {NAV_LINKS.map((link) => {
+              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              return (
+                <motion.li key={link.href} layout transition={TRANSITION}>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "whitespace-nowrap transition-colors hover:text-white",
+                      active && "text-white",
+                    )}
                   >
-                    <Link href="/" className="whitespace-nowrap transition-colors hover:text-white">
-                      Home
-                    </Link>
-                  </motion.li>
-                )}
-              </AnimatePresence>
-              {NAV_LINKS.map((link) => {
-                const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
-                return (
-                  <motion.li key={link.href} layout transition={TRANSITION}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        "whitespace-nowrap transition-colors hover:text-white",
-                        active && "text-white",
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.li>
-                );
-              })}
-            </ul>
-          </nav>
-        </div>
+                    {link.label}
+                  </Link>
+                </motion.li>
+              );
+            })}
+          </ul>
+        </nav>
 
-        <div className="flex shrink-0 items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-2.5 justify-self-end">
           <div className="hidden items-center gap-2.5 2xl:flex">
             <button
               type="button"
