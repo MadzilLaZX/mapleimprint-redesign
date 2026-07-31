@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { notifyInquiry } from "@/lib/automation/notify";
 import { generateReference } from "@/lib/automation/reference";
-import { saveInquiry } from "@/lib/automation/save";
+import { appendInquiryRow } from "@/lib/automation/sheets";
 import { scoreInquiry } from "@/lib/automation/scoring";
 import type { NormalizedInquiry } from "@/lib/automation/types";
 
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const reference = await generateReference();
   const scored = { ...inquiry, reference, score, tags };
 
-  await saveInquiry(scored);
+  await appendInquiryRow(scored);
   await notifyInquiry(scored);
 
   return NextResponse.json({ ok: true, reference });

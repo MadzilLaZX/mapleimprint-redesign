@@ -1,27 +1,44 @@
 # Contact automation setup
 
 This covers what's needed to make the `/contact` page's three forms (quote wizard, general
-inquiry, appointment request) actually deliver: a CRM record, a customer confirmation email, an
-owner notification (email + Telegram), and real file uploads. Code lives in
-`src/lib/automation/` and `src/app/api/{quote,contact,appointment,upload}/route.ts`.
+inquiry, appointment request) actually deliver: a lead logged to a Google Sheet, a customer
+confirmation email, an owner notification (email + Telegram), and real file uploads to Google
+Drive. Code lives in `src/lib/automation/` and
+`src/app/api/{quote,contact,appointment,upload}/route.ts`.
 
 Without any of the accounts below configured, the forms still work end-to-end and return a real
 reference number — they just log a warning and skip that channel (see "Degrades gracefully"
 below). Nothing here is required to keep the site building/deploying.
 
-## 1. Supabase (CRM database + file storage)
+## 1. Google Cloud service account (Sheets + Drive)
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Open the SQL Editor and run `src/lib/automation/schema.sql` once — creates the `inquiries` and
-   `attachments` tables.
-3. Go to Storage and create a new bucket named `inquiry-attachments`. Leave it **private** (not
-   public) since uploaded artwork may not be meant for public URLs.
-4. Go to Project Settings > API and copy:
-   - **Project URL** → `SUPABASE_URL`
-   - **service_role key** (not the anon key) → `SUPABASE_SERVICE_ROLE_KEY`
+One service account covers both the spreadsheet and file uploads — set it up once.
 
-The service role key bypasses row-level security, which is intentional here: only the server-side
-API routes ever use it, never the browser.
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create a project (or
+   use an existing one), e.g. "Maple Imprint Automation".
+2. In **APIs & Services > Library**, enable both **Google Sheets API** and **Google Drive API**.
+3. In **APIs & Services > Credentials**, click **Create Credentials > Service account**. Give it
+   any name (e.g. `contact-automation`). No roles/permissions are needed at the project level —
+   access is granted per-file in steps 5-6 below.
+4. Open the new service account, go to the **Keys** tab, **Add Key > Create new key > JSON**, and
+   download it. Open that JSON file:
+   - `client_email` → `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+   - `private_key` → `GOOGLE_PRIVATE_KEY` (paste the whole string including
+     `-----BEGIN PRIVATE KEY-----`/`-----END PRIVATE KEY-----`; keep the `\n` sequences as literal
+     backslash-n, don't convert them to real newlines)
+5. Create a new Google Sheet (e.g. "Maple Imprint Leads"). Add a header row in row 1 exactly
+   matching the columns in `src/lib/automation/sheets.ts` (`Timestamp`, `Reference`, `Source`,
+   `Score`, `Tags`, `Name`, `Organization`, `Email`, `Phone`, `Preferred Contact`, `Project Type`,
+   `Product Description`, `Quantity`, `Budget Range`, `Decoration Method`, `Placements`,
+   `Design Help`, `Needed By`, `Event Date`, `Delivery Method`, `Postal Code`, `Message`,
+   `File Links`, `Status`). Rename the tab itself to `Leads` (the default "Sheet1" won't match).
+   Click **Share** and add the service account's `client_email` as an **Editor**. Copy the sheet
+   ID from the URL (`.../spreadsheets/d/<ID>/edit`) → `GOOGLE_SHEET_ID`.
+6. Create a Google Drive folder (e.g. "Maple Imprint — Uploaded Artwork"). Share it with the
+   service account's `client_email` as an **Editor**. Copy the folder ID from its URL
+   (`drive.google.com/drive/folders/<ID>`) → `GOOGLE_DRIVE_FOLDER_ID`. Files the automation
+   uploads will appear inside this folder, visible to anyone who already has access to it (e.g.
+   you, since you created it) — no separate sharing step per file.
 
 ## 2. Resend (transactional email)
 
@@ -49,9 +66,10 @@ pairs in the Vercel dashboard: Project → Settings → Environment Variables, t
 ## Degrades gracefully
 
 Each channel is independently optional at runtime:
-- No Supabase configured → inquiry isn't saved to a CRM table, file uploads return a friendly 503
-  error client-side (the wizard's Files step is optional, so the customer can still submit),
-  and reference numbers fall back to a random suffix instead of a per-day sequence.
+- No Google service account configured → the inquiry isn't logged to the Sheet, file uploads
+  return a friendly 503 error client-side (the wizard's Files step is optional, so the customer
+  can still submit), and reference numbers fall back to a random suffix instead of a per-day
+  sequence.
 - No Resend configured → no emails sent, logged as a warning server-side.
 - No Telegram configured → no Telegram message sent, logged as a warning server-side.
 
@@ -60,11 +78,14 @@ missing third-party integration should never look like a broken form to a custom
 
 ## What's not built yet
 
-- No CRM UI/dashboard to browse or update inquiry status — the `inquiries`/`attachments` tables
-  exist, but reading them means using the Supabase table editor directly for now.
+- No dashboard beyond the spreadsheet itself — status changes, notes, and staff assignment would
+  need to be tracked as extra columns/manual edits in the Sheet for now.
 - No real calendar-conflict checking for `/api/appointment` — it validates and records the
   request but doesn't check staff availability.
 - Lead scoring parses the wizard's free-text quantity/budget fields with simple heuristics (looks
   for numbers like "500+" or "$2500"), since those are text inputs, not the dropdown tiers from
   the original spec. Converting them to dropdowns would make scoring more precise, but is a UI
   change outside this pass.
+- The Sheets-based reference-number sequence reads the whole `Reference` column on every
+  submission to count today's rows — fine at this scale, but would need a different approach
+  (e.g. a real database) if lead volume grows very large.

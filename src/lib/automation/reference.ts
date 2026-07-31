@@ -1,4 +1,4 @@
-import { getSupabase } from "./supabase";
+import { countReferencesWithPrefix } from "./sheets";
 
 function todayStamp(): string {
   const now = new Date();
@@ -10,25 +10,16 @@ function todayStamp(): string {
 
 /**
  * Generates a reference number in the MI-YYYYMMDD-#### format, with the
- * sequence for a given day derived from how many inquiries already have
- * today's date prefix. Falls back to a random 4-digit suffix when Supabase
- * isn't configured, so submissions still succeed without a DB attached.
+ * sequence for a given day derived from how many existing rows in the
+ * "Leads" sheet already have today's date prefix. Falls back to a random
+ * 4-digit suffix when Google Sheets isn't configured, so submissions still
+ * succeed without a spreadsheet attached.
  */
 export async function generateReference(): Promise<string> {
   const stamp = todayStamp();
   const prefix = `MI-${stamp}-`;
 
-  const supabase = getSupabase();
-  if (!supabase) {
-    const fallback = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-    return `${prefix}${fallback}`;
-  }
-
-  const { count, error } = await supabase
-    .from("inquiries")
-    .select("id", { count: "exact", head: true })
-    .like("reference", `${prefix}%`);
-
-  const sequence = error || count === null ? Math.floor(Math.random() * 10000) : count + 1;
+  const count = await countReferencesWithPrefix(prefix);
+  const sequence = count === null ? Math.floor(Math.random() * 10000) : count + 1;
   return `${prefix}${String(sequence).padStart(4, "0")}`;
 }

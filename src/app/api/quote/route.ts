@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
+import { appendInquiryRow } from "@/lib/automation/sheets";
 import { notifyInquiry } from "@/lib/automation/notify";
 import { generateReference } from "@/lib/automation/reference";
-import { saveInquiry } from "@/lib/automation/save";
 import { scoreInquiry } from "@/lib/automation/scoring";
 import type { NormalizedInquiry } from "@/lib/automation/types";
 
-type UploadedFile = { storagePath: string; fileName: string; fileSize?: number; contentType?: string };
+type UploadedFile = { fileId: string; fileName: string; webViewLink: string | null };
 
 function str(body: Record<string, unknown>, key: string): string {
   const v = body[key];
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const uploadedFiles: UploadedFile[] = Array.isArray(body.uploadedFiles)
     ? (body.uploadedFiles as UploadedFile[]).filter(
-        (f) => f && typeof f.storagePath === "string" && typeof f.fileName === "string",
+        (f) => f && typeof f.fileId === "string" && typeof f.fileName === "string",
       )
     : [];
 
@@ -61,7 +61,8 @@ export async function POST(request: Request) {
   const reference = await generateReference();
   const scored = { ...inquiry, reference, score, tags };
 
-  await saveInquiry(scored, uploadedFiles);
+  const fileLinks = uploadedFiles.map((f) => f.webViewLink).filter((l): l is string => Boolean(l));
+  await appendInquiryRow(scored, fileLinks);
   await notifyInquiry(scored);
 
   return NextResponse.json({ reference });

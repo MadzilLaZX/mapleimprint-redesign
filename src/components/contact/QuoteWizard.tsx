@@ -27,7 +27,7 @@ type ProjectType =
 type DeliveryMethod = "pickup" | "shipping";
 type ContactMethod = "email" | "phone";
 
-type UploadedFile = { storagePath: string; fileName: string; fileSize?: number; contentType?: string };
+type UploadedFile = { fileId: string; fileName: string; webViewLink: string | null };
 
 type QuoteData = {
   projectType: ProjectType | null;

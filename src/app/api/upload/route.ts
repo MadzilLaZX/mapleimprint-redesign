@@ -1,6 +1,5 @@
-import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { ATTACHMENTS_BUCKET, getSupabase } from "@/lib/automation/supabase";
+import { uploadToDrive } from "@/lib/automation/drive";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_EXTENSIONS = new Set(["ai", "eps", "pdf", "svg", "png", "jpg", "jpeg", "psd", "zip"]);
@@ -10,14 +9,6 @@ function extensionOf(fileName: string): string {
 }
 
 export async function POST(request: Request) {
-  const supabase = getSupabase();
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "File uploads aren't configured yet. Describe your files in the notes field instead." },
-      { status: 503 },
-    );
-  }
-
   let formData: FormData;
   try {
     formData = await request.formData();
@@ -42,26 +33,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "File is too large. Maximum size is 100MB." }, { status: 422 });
   }
 
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const storagePath = `${year}/${month}/uploads/${randomUUID()}-${safeName}`;
+  const bytes = Buffer.from(await file.arrayBuffer());
 
-  const bytes = await file.arrayBuffer();
-  const { error } = await supabase.storage
-    .from(ATTACHMENTS_BUCKET)
-    .upload(storagePath, bytes, { contentType: file.type || undefined, upsert: false });
-
-  if (error) {
-    console.error("[automation] Supabase Storage upload failed:", error);
+  let uploaded;
+  try {
+    uploaded = await uploadToDrive(bytes, file.name, file.type || null);
+  } catch (err) {
+    console.error("[automation] Google Drive upload failed:", err);
     return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 502 });
   }
 
-  return NextResponse.json({
-    storagePath,
-    fileName: file.name,
-    fileSize: file.size,
-    contentType: file.type || null,
-  });
+  if (!uploaded) {
+    return NextResponse.json(
+      { error: "File uploads aren't configured yet. Describe your files in the notes field instead." },
+      { status: 503 },
+    );
+  }
+
+  return NextResponse.json(uploaded);
 }
