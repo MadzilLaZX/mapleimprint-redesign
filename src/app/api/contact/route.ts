@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import { notifyInquiry } from "@/lib/automation/notify";
+import { generateReference } from "@/lib/automation/reference";
+import { saveInquiry } from "@/lib/automation/save";
+import { scoreInquiry } from "@/lib/automation/scoring";
+import type { NormalizedInquiry } from "@/lib/automation/types";
 
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
@@ -16,5 +21,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Name, email and message are required." }, { status: 422 });
   }
 
-  return NextResponse.json({ ok: true });
+  const inquiry: NormalizedInquiry = { source: "contact", name, email, message };
+
+  const { score, tags } = scoreInquiry(inquiry);
+  const reference = await generateReference();
+  const scored = { ...inquiry, reference, score, tags };
+
+  await saveInquiry(scored);
+  await notifyInquiry(scored);
+
+  return NextResponse.json({ ok: true, reference });
 }

@@ -60,11 +60,16 @@ Real / functional:
 - Full responsive, accessible design system (colors, type, motion, components).
 - All 34 routes render, build cleanly (`npm run build`), pass lint and typecheck.
 - The quote request flow (`/contact`) is a genuine 7-step wizard with client validation,
-  a real `POST /api/quote` round trip, and a generated reference number. It does not yet send
-  email or write to a CRM — see Missing Inputs.
-- The general inquiry form and order-tracking form are likewise real client/server round trips.
-  Order tracking honestly reports "not found" for every lookup, since there is no order backend
-  to check against yet — it does not fabricate order data.
+  a real `POST /api/quote` round trip, and a generated reference number
+  (`MI-YYYYMMDD-####`). Submissions are scored/tagged, written to a Supabase `inquiries` table,
+  and trigger a customer confirmation email, an owner notification email, and a Telegram alert
+  (Resend + Supabase, see `AUTOMATION.md`). The Files step uploads real bytes to Supabase Storage
+  via `POST /api/upload` rather than only capturing file names. All of this degrades gracefully
+  (submission still succeeds, still returns a reference) if those third-party accounts aren't
+  configured — see `AUTOMATION.md`'s "Degrades gracefully" section.
+- The general inquiry and appointment forms go through the same scoring/save/notify pipeline
+  (`src/lib/automation/`). Order tracking is unchanged: it honestly reports "not found" for every
+  lookup, since there is no order backend to check against yet — it does not fabricate order data.
 - `/contact` now has four tabs (`src/components/contact/ContactTabs.tsx`): Location, Get a
   Project Quote, Book an Appointment, General Inquiry. Location reveals a Google Maps embed
   (`google.com/maps?q=...&output=embed`, no API key required for this basic query-based embed)
@@ -160,6 +165,9 @@ Organization/LocalBusiness JSON-LD in `layout.tsx`. Update that one object if an
   clean transparent lockup for this build — see `scripts/process-logo-variants.js` — but a
   vector source would be more durable long-term).
 - Search Console, Analytics, Google Business Profile, Merchant Center access.
+- Live Resend, Supabase and Telegram accounts/credentials to activate the contact automation
+  built in this session — the code is in place and degrades gracefully without them, but no
+  real email/CRM/alert will go out until someone sets these up per `AUTOMATION.md`.
 
 ## 7. Suggested next phases
 
@@ -169,7 +177,12 @@ Organization/LocalBusiness JSON-LD in `layout.tsx`. Update that one object if an
 3. Replace placeholder content module-by-module (`src/lib/constants.ts`, `src/lib/faq.ts`,
    `src/lib/solutionDetails.ts`, `src/lib/printMethodDetails.ts`) with client-approved copy
    and a real product data source.
-4. Wire `/api/quote` and `/api/contact` to real email/CRM delivery.
+4. `/api/quote`, `/api/contact` and `/api/appointment` are now wired to real
+   email/CRM/Telegram delivery via `src/lib/automation/` — see `AUTOMATION.md` for the
+   Resend/Supabase/Telegram account setup needed to actually activate delivery. Still open: a
+   CRM dashboard/UI to browse and update inquiries (the Supabase tables exist but have no UI),
+   and converting the quote wizard's free-text quantity/budget fields to the original spec's
+   dropdown tiers for more precise lead scoring.
 5. Replace placeholder photography.
 6. Legal review of everything under `/policies/*`.
 7. Full accessibility (manual screen reader + axe) and performance (Lighthouse/CWV) passes

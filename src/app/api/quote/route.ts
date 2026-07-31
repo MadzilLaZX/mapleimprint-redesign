@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
+import { notifyInquiry } from "@/lib/automation/notify";
+import { generateReference } from "@/lib/automation/reference";
+import { saveInquiry } from "@/lib/automation/save";
+import { scoreInquiry } from "@/lib/automation/scoring";
+import type { NormalizedInquiry } from "@/lib/automation/types";
 
-function randomReference() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return `MI-${code}`;
+type UploadedFile = { storagePath: string; fileName: string; fileSize?: number; contentType?: string };
+
+function str(body: Record<string, unknown>, key: string): string {
+  const v = body[key];
+  return typeof v === "string" ? v.trim() : "";
 }
 
 export async function POST(request: Request) {
@@ -17,8 +20,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const email = typeof body.email === "string" ? body.email.trim() : "";
-  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const email = str(body, "email");
+  const name = str(body, "name");
 
   if (!email || !name) {
     return NextResponse.json(
@@ -27,11 +30,39 @@ export async function POST(request: Request) {
     );
   }
 
-  // NOTE: this endpoint currently validates and acknowledges the request only.
-  // Wiring to real email delivery / CRM intake is tracked in PROJECT_NOTES.md
-  // as part of the commerce-architecture phase, once staff workflow tooling
-  // (see ARCHITECTURE_DECISION section) is chosen.
-  const reference = randomReference();
+  const uploadedFiles: UploadedFile[] = Array.isArray(body.uploadedFiles)
+    ? (body.uploadedFiles as UploadedFile[]).filter(
+        (f) => f && typeof f.storagePath === "string" && typeof f.fileName === "string",
+      )
+    : [];
+
+  const inquiry: NormalizedInquiry = {
+    source: "quote",
+    name,
+    email,
+    organization: str(body, "organization") || undefined,
+    phone: str(body, "phone") || undefined,
+    preferredContact: str(body, "preferredContact") || undefined,
+    projectType: str(body, "projectType") || undefined,
+    productDescription: str(body, "productDescription") || undefined,
+    quantity: str(body, "quantity") || undefined,
+    budgetRange: str(body, "budgetRange") || undefined,
+    decorationMethod: str(body, "decorationMethod") || undefined,
+    placements: str(body, "placements") || undefined,
+    designHelp: body.designHelp === true,
+    neededBy: str(body, "neededBy") || undefined,
+    eventDate: str(body, "eventDate") || undefined,
+    deliveryMethod: str(body, "deliveryMethod") || undefined,
+    postalCode: str(body, "postalCode") || undefined,
+    fileNames: uploadedFiles.map((f) => f.fileName),
+  };
+
+  const { score, tags } = scoreInquiry(inquiry);
+  const reference = await generateReference();
+  const scored = { ...inquiry, reference, score, tags };
+
+  await saveInquiry(scored, uploadedFiles);
+  await notifyInquiry(scored);
 
   return NextResponse.json({ reference });
 }

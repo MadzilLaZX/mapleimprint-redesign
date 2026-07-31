@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-
-function randomReference() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return `MI-APT-${code}`;
-}
+import { notifyInquiry } from "@/lib/automation/notify";
+import { generateReference } from "@/lib/automation/reference";
+import { saveInquiry } from "@/lib/automation/save";
+import { scoreInquiry } from "@/lib/automation/scoring";
+import type { NormalizedInquiry } from "@/lib/automation/types";
 
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
@@ -33,11 +29,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "We're closed Sundays. Choose another day." }, { status: 422 });
   }
 
-  // NOTE: this endpoint validates and acknowledges the request only. It does
-  // not yet check a real calendar for conflicts or write to one — wiring to
-  // real scheduling (and email confirmation) is tracked in PROJECT_NOTES.md
-  // alongside the other intake endpoints.
-  const reference = randomReference();
+  const inquiry: NormalizedInquiry = {
+    source: "appointment",
+    name,
+    email,
+    phone: typeof body.phone === "string" ? body.phone.trim() || undefined : undefined,
+    message: `Appointment requested for ${date} at ${time}.`,
+    neededBy: date,
+  };
+
+  const { score, tags } = scoreInquiry(inquiry);
+  const reference = await generateReference();
+  const scored = { ...inquiry, reference, score, tags };
+
+  await saveInquiry(scored);
+  await notifyInquiry(scored);
 
   return NextResponse.json({ reference });
 }

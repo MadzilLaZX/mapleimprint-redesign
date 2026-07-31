@@ -27,6 +27,8 @@ type ProjectType =
 type DeliveryMethod = "pickup" | "shipping";
 type ContactMethod = "email" | "phone";
 
+type UploadedFile = { storagePath: string; fileName: string; fileSize?: number; contentType?: string };
+
 type QuoteData = {
   projectType: ProjectType | null;
   productDescription: string;
@@ -39,6 +41,7 @@ type QuoteData = {
   designHelp: boolean;
   fileNotes: string;
   fileNames: string[];
+  uploadedFiles: UploadedFile[];
   neededBy: string;
   eventDate: string;
   deliveryMethod: DeliveryMethod | null;
@@ -63,6 +66,7 @@ const initialData: QuoteData = {
   designHelp: false,
   fileNotes: "",
   fileNames: [],
+  uploadedFiles: [],
   neededBy: "",
   eventDate: "",
   deliveryMethod: null,
@@ -103,6 +107,8 @@ export function QuoteWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   function update<K extends keyof QuoteData>(key: K, value: QuoteData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -133,6 +139,32 @@ export function QuoteWizard() {
 
   function goTo(index: number) {
     setStep(index);
+  }
+
+  async function handleFileSelect(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploadError(null);
+    setUploading(true);
+    try {
+      const uploaded: UploadedFile[] = [];
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || `Couldn't upload ${file.name}.`);
+        uploaded.push(json);
+      }
+      setData((prev) => ({
+        ...prev,
+        fileNames: [...prev.fileNames, ...uploaded.map((f) => f.fileName)],
+        uploadedFiles: [...prev.uploadedFiles, ...uploaded],
+      }));
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit() {
@@ -333,10 +365,12 @@ export function QuoteWizard() {
                     className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-sand bg-canvas px-6 py-8 text-center text-sm text-muted hover:border-orange/50"
                   >
                     <PaperclipHorizontal className="size-6 text-crimson" />
-                    {data.fileNames.length > 0 ? (
+                    {uploading ? (
+                      <span className="text-ink-900">Uploading…</span>
+                    ) : data.fileNames.length > 0 ? (
                       <span className="text-ink-900">{data.fileNames.join(", ")}</span>
                     ) : (
-                      <span>Click to attach logos, artwork or reference images</span>
+                      <span>Click to attach logos, artwork or reference images (AI, EPS, PDF, SVG, PNG, JPEG, PSD, ZIP — up to 100MB each)</span>
                     )}
                   </label>
                   <input
@@ -344,10 +378,13 @@ export function QuoteWizard() {
                     type="file"
                     multiple
                     className="sr-only"
-                    onChange={(e) =>
-                      update("fileNames", Array.from(e.target.files ?? []).map((f) => f.name))
-                    }
+                    disabled={uploading}
+                    onChange={(e) => {
+                      handleFileSelect(e.target.files);
+                      e.target.value = "";
+                    }}
                   />
+                  <FieldError>{uploadError ?? undefined}</FieldError>
                 </div>
                 <div className="mt-5">
                   <FieldLabel htmlFor="fileNotes" optional>Notes about your files</FieldLabel>
