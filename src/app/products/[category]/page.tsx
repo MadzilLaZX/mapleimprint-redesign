@@ -11,6 +11,7 @@ import { Accordion } from "@/components/ui/Accordion";
 import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES, PRINT_METHODS, SECONDARY_CTA } from "@/lib/constants";
+import { slugify } from "@/lib/slugify";
 
 const methodsByCategory: Record<string, string[]> = {
   "custom-apparel": ["screen-printing", "embroidery", "dtf-dtg"],
@@ -95,11 +96,11 @@ export default async function CategoryPage({
             <Reveal key={sub} delay={i * 0.04}>
               <div className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl">
                 <Image
-                  src={`https://picsum.photos/seed/mi-${cat.slug}-${sub}/500/620`}
+                  src={`/images/products/subcategories/${cat.slug}/${slugify(sub)}.jpg`}
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                  className="img-brand object-cover"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />
                 <p className="relative p-3 text-sm font-semibold text-white">{sub}</p>
