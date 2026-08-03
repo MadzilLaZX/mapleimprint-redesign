@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, CheckCircle } from "@phosphor-icons/react/dist/ssr";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
@@ -11,7 +11,8 @@ import { Accordion } from "@/components/ui/Accordion";
 import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES, PRINT_METHODS, SECONDARY_CTA } from "@/lib/constants";
-import { getProductsBySubcategory, subcategorySlugify } from "@/lib/products";
+import { getProductsBySubcategory } from "@/lib/products";
+import { slugify } from "@/lib/slugify";
 
 const methodsByCategory: Record<string, string[]> = {
   "custom-apparel": ["screen-printing", "embroidery", "dtf-dtg"],
@@ -79,8 +80,31 @@ export default async function CategoryPage({
 
       <div className="bg-canvas pt-10 md:pt-14">
         <Container>
-          <Reveal className="relative aspect-[21/9] w-full overflow-hidden rounded-[28px]">
-            <Image src={cat.cover} alt="" fill sizes="100vw" priority className="object-cover" />
+          <Reveal>
+            <Link
+              href={`/shop?category=${cat.slug}`}
+              aria-label={`Shop all ${cat.name}`}
+              className="group relative block aspect-[21/9] w-full overflow-hidden rounded-[28px]"
+            >
+              <Image
+                src={cat.cover}
+                alt=""
+                fill
+                sizes="100vw"
+                priority
+                className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-[1.03]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 via-ink-950/10 to-transparent transition-opacity duration-300 group-hover:from-ink-950/85" />
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 p-5 md:p-8">
+                <span className="font-display text-lg font-semibold text-white md:text-xl">
+                  Shop all {cat.name}
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-ink-900 transition-transform duration-300 ease-[var(--ease-premium)] group-hover:translate-x-1">
+                  Browse products
+                  <ArrowRight className="size-4" weight="bold" />
+                </span>
+              </div>
+            </Link>
           </Reveal>
         </Container>
       </div>
@@ -93,21 +117,28 @@ export default async function CategoryPage({
         </Reveal>
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {cat.subcategories.map((sub, i) => {
-            const subSlug = subcategorySlugify(sub);
+            const subSlug = slugify(sub);
             const subProducts = getProductsBySubcategory(cat.slug, subSlug);
-            const cover = subProducts[0]?.images[0]?.url;
+            // Real branded photography now exists for every subcategory (see
+            // /public/images/products/subcategories) — always use it as the tile image. Only the
+            // link destination depends on whether real backend product data exists yet: subcategories
+            // with real imported products (e.g. T-shirts) go to the priced product listing; everything
+            // else still goes to the general shop view until it has real catalogue data too.
+            const href = subProducts.length > 0
+              ? `/products/${cat.slug}/${subSlug}`
+              : `/shop?category=${cat.slug}&subcategory=${subSlug}`;
             return (
               <Reveal key={sub} delay={i * 0.04}>
                 <Link
-                  href={`/products/${cat.slug}/${subSlug}`}
+                  href={href}
                   className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl"
                 >
                   <Image
-                    src={cover ?? `https://picsum.photos/seed/mi-${cat.slug}-${sub}/500/620`}
+                    src={`/images/products/subcategories/${cat.slug}/${subSlug}.jpg`}
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                    className="img-brand object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />
                   <div className="relative p-3">

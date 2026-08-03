@@ -82,24 +82,55 @@ Real / functional:
 - Sitemap, robots.txt, per-page metadata, Open Graph image, and Organization/LocalBusiness
   JSON-LD are all generated from real routes/data (see caveat on NAP data below).
 - Real client-provided cover photography is in for all 8 product categories
-  (`public/images/products/*.jpg`, sourced from `Mapleimprint LTD/Products/`), 4 of the 6
-  "Popular right now" picks (`public/images/popular/*.jpg`), all 6 `/solutions` cards and detail
-  heroes (`public/images/solutions/*.jpg`), the About page hero, and the full 12-photo `/our-work`
-  gallery (`public/images/our-work/*.jpg`). Originals were ~1.8-2.5MB PNGs each; the various
-  `scripts/import-*-photos.js` scripts resize/compress them to web-appropriate JPEGs
-  (~50-275KB) — re-run the relevant one if new source exports are dropped in.
+  (`public/images/products/*.jpg`, sourced from `Mapleimprint LTD/Products/`), all 33 of their
+  subcategory tiles (`public/images/products/subcategories/<category>/<subcategory>.jpg`,
+  matched to `PRODUCT_CATEGORIES[].subcategories` names via `slugify()` in `src/lib/slugify.ts`
+  — reuse that helper rather than hand-writing paths, so filenames always stay in sync with the
+  constant), 4 of the 6 "Popular right now" picks (`public/images/popular/*.jpg`), all 6
+  `/solutions` cards and detail heroes (`public/images/solutions/*.jpg`), the About page hero, and
+  the full 12-photo `/our-work` gallery (`public/images/our-work/*.jpg`). Originals were
+  ~1.8-2.5MB PNGs each; the various `scripts/import-*-photos.js` scripts resize/compress them to
+  web-appropriate JPEGs (~35-275KB) — re-run the relevant one if new source exports are dropped in.
 - The `/our-work` masonry is built as three explicit column arrays (`columns` in
   `src/app/our-work/page.tsx`), not one flat list fed through CSS `columns-3`. That layout
   balances by cumulative height, not source order, so it wouldn't reliably put a given photo in
   a given column — explicit column arrays are the only way to control exact placement.
+- A real, working shop and cart: `/shop` lists all 33 subcategory-derived products
+  (`src/lib/shopProducts.ts` — one product per subcategory, since that's the honest grain of
+  detail available without a real SKU/pricing catalogue), filterable by category and
+  subcategory via chips and via `?category=`/`?subcategory=` query params. A category page's
+  cover photo (`/products/[category]`) is now a full-bleed link button to `/shop?category=...`,
+  and each subcategory tile links to the matching filtered shop view. "Add to Cart"
+  (`src/components/cart/CartProvider.tsx`) is a real client-side cart persisted to
+  localStorage, with a live count badge on the header's cart icon. There's deliberately no
+  price anywhere in the shop or cart — per non-negotiable #4, there's no real pricing model to
+  show one truthfully. Instead, the cart's "Get a quote for these items" button hands a plain
+  summary string to the QuoteWizard via a one-shot `sessionStorage` key
+  (`QUOTE_PREFILL_KEY` in `CartProvider.tsx`) that prefills the quote form's product
+  description field on mount.
+- Every interior page (everything using `PageHeader`, i.e. everything except the homepage) has
+  a "Back" button (`src/components/ui/BackButton.tsx`, `router.back()`) at the top of the dark
+  header band, below the sticky site header so it never competes with the logo/nav.
+
+**Lesson learned — scroll-triggered reveals don't suit variable-height interactive grids.**
+The shop's product grid initially reused the `RevealGroup`/`RevealItem` pattern (Framer Motion
+`whileInView`, `amount: 0.2`) used elsewhere on the site. For a short, fixed grid (e.g. 5 print
+methods) that's fine. For a tall, filterable grid (33 products across ~9 rows), `amount: 0.2`
+means 20% of the *entire grid's* height must be on-screen before anything fades in — on load,
+only the top slice is visible, so the whole grid could sit at `opacity: 0` indefinitely without
+a large scroll. Confirmed via a headless browser check that images were present in the DOM but
+stuck at `opacity: 0` well above the fold. Fixed by switching to a mount-triggered stagger
+(`initial`/`animate`, not `whileInView`), keyed by the active filter so it also replays on
+filter changes. Rule of thumb: use `whileInView` reveals only for content whose full height
+reasonably fits near the viewport; use mount-triggered animation for anything tall,
+paginated, or filterable.
 
 Placeholder, clearly scoped as such:
 - Everywhere else, photography is Lorem Picsum placeholder imagery, unified under one
   brand-consistent duotone treatment (`.img-brand` in `globals.css`) so it doesn't clash with the
-  locked palette. This includes 2 of 6 "Popular right now" picks (tumblers, stickers — no cover
-  photo provided yet) and subcategory tiles within each category page. Swap in real photography
-  as it's provided, following the pattern in `src/lib/constants.ts` (`cover` field) and
-  `PopularCategories.tsx`.
+  locked palette. This is now down to 2 of 6 "Popular right now" picks (tumblers, stickers — no
+  cover photo provided yet). Swap in real photography as it's provided, following the pattern in
+  `src/lib/constants.ts` (`cover` field) and `PopularCategories.tsx`.
 - Category/solution/print-method copy is honest and non-fabricated, but not yet reviewed or
   approved by the client, and contains no real pricing (by design — see non-negotiable #4 in
   the master prompt: never imply pricing without a real product/pricing model behind it).

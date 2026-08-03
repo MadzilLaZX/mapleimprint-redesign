@@ -4,6 +4,7 @@
 // elsewhere in this app. Re-run the export script and rebuild to pick up catalogue changes.
 
 import rawProducts from "./generated/products.json";
+import { slugify } from "./slugify";
 
 export interface ProductImage {
   url: string;
@@ -54,11 +55,10 @@ export function getProduct(categorySlug: string, subcategorySlug: string, produc
   );
 }
 
-/** Product count per subcategory label (e.g. "T-shirts" -> 6), for tile badges. Slugified the
- *  same way the export script derives subcategory slugs from PRODUCT_CATEGORIES labels. */
-export function subcategorySlugify(label: string): string {
-  return label.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "");
-}
+/** Alias for the shared slugify() helper (src/lib/slugify.ts) — kept under this name here since
+ *  callers in this file's consumers read more clearly as "the subcategory slug", but there's only
+ *  one slugify implementation in the app now, not two independently-drifting copies. */
+export const subcategorySlugify = slugify;
 
 export function countInSubcategory(categorySlug: string, subcategoryLabel: string): number {
   return getProductsBySubcategory(categorySlug, subcategorySlugify(subcategoryLabel)).length;

@@ -5,6 +5,7 @@ import { BUSINESS, SITE_URL } from "@/lib/constants";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { CartProvider } from "@/components/cart/CartProvider";
 
 const display = Bricolage_Grotesque({
   variable: "--font-display",
@@ -108,11 +109,13 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <Header />
-        <main id="main-content" className="flex-1">
-          <PageTransition>{children}</PageTransition>
-        </main>
-        <Footer />
+        <CartProvider>
+          <Header />
+          <main id="main-content" className="flex-1">
+            <PageTransition>{children}</PageTransition>
+          </main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
