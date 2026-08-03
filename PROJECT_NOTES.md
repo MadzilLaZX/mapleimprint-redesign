@@ -188,3 +188,31 @@ Organization/LocalBusiness JSON-LD in `layout.tsx`. Update that one object if an
 6. Legal review of everything under `/policies/*`.
 7. Full accessibility (manual screen reader + axe) and performance (Lighthouse/CWV) passes
    against real content and images.
+
+## 8. Related subsystem: `catalogue-engine/` (supplier catalogue, inventory sync, pricing)
+
+A second, independent piece of work lives at `catalogue-engine/` in this same repo: a
+supplier-independent product catalogue, inventory-sync, and dynamic-pricing engine, covering the
+business problem described in the client's separate catalogue/pricing brief (normalizing SanMar,
+S&S Activewear, Joto, and possibly Condé into one internal product model instead of four raw
+supplier feeds).
+
+It is **deliberately decoupled from this frontend and from the Gate A decision above** — it's a
+standalone Node/TypeScript package with its own `package.json`, schema, and test suite, backed by
+a real Supabase Postgres project (`maple-imprint-catalogue`, see `catalogue-engine/README.md` for
+connection details). The reasoning: supplier normalization, sync safety, product deduplication,
+and pricing calculation are the same problem regardless of which commerce platform Gate A lands
+on (WooCommerce rebuild, Shopify migration, or custom) — so it can be built and proven now without
+waiting for that decision, and becomes the thing that feeds product/price/inventory data into
+whichever platform gets chosen, via that platform's API, once Gate A resolves.
+
+**Status as of 2026-08-02:** Phase 1 (schema, staged sync with safety-stop thresholds, product
+dedup with a full auto-approve/needs_review/reject flow, pricing engine seeded from the client's
+real cost sheet, admin dashboard read queries, image-ingestion pipeline short of cloud upload) is
+complete and proven end-to-end — 75 tests passing against the live database, including real
+integration tests, not just mocks. Blocked on: real supplier API/account access (the actual next
+phase — see `catalogue-engine/README.md`'s "What I need from you" section for the full list),
+plus several business decisions (Condé, full pricing rules, Gate A itself, image-storage/rights).
+
+See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
+get back up to speed on that subsystem.

@@ -1,0 +1,29 @@
+{
+  "name": "@mapleimprint/catalogue-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Supplier-independent product catalogue, inventory sync and dynamic pricing engine for Maple Imprint. Backend-agnostic: feeds whichever commerce platform is chosen (Gate A decision, not yet made).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.0",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "prisma": "^6.3.0",
+    "typescript": "^5",
+    "vitest": "^3.0.0"
+  }
+}

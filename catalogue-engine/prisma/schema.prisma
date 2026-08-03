@@ -1,0 +1,384 @@
+// Maple Imprint catalogue-engine schema.
+// See ../README.md and the architecture doc for the rationale behind each table.
+// Non-negotiable invariants enforced by this schema (do not "simplify" these away):
+//   - PricingSnapshot rows are append-only. Nothing in this codebase should ever UPDATE one.
+//   - ProductVariant/SupplierVariantOffer are soft-deleted (status), never hard-deleted,
+//     because PricingSnapshot and historical orders reference them by id.
+//   - Sync writes go through SyncJob + staging first; nothing here models "direct write to
+//     live catalogue" as a first-class path.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SupplierIntegrationType {
+  api
+  csv_feed
+  ftp
+  manual
+}
+
+enum SupplierIntegrationStatus {
+  active
+  degraded
+  disabled
+  not_configured
+}
+
+enum PublicationStatus {
+  imported
+  needs_review
+  approved
+  published
+  hidden
+  discontinued
+  blocked
+}
+
+enum VariantStatus {
+  active
+  discontinued
+  no_supplier
+}
+
+enum SupplierProductStatus {
+  active
+  discontinued_by_supplier
+}
+
+enum MatchStatus {
+  unmatched
+  auto_matched
+  needs_review
+  confirmed
+  rejected
+}
+
+enum ImageSource {
+  supplier
+  maple_imprint
+}
+
+enum ImageIngestStatus {
+  pending
+  downloaded
+  validated
+  published
+  rejected
+}
+
+enum SyncType {
+  full_catalogue
+  price_delta
+  inventory
+  images
+}
+
+enum SyncJobStatus {
+  running
+  completed
+  completed_with_warnings
+  failed
+  aborted_safety_stop
+}
+
+model Supplier {
+  id                  String                    @id @default(cuid())
+  name                String
+  code                String                    @unique // 'sanmar' | 'ss_activewear' | 'joto' | 'conde'
+  website             String?
+  integrationType     SupplierIntegrationType    @default(manual)
+  integrationStatus   SupplierIntegrationStatus  @default(not_configured)
+  credentialsRef      String? // pointer into secrets manager, NEVER the secret itself
+  lastSuccessfulSyncAt DateTime?
+  lastFailedSyncAt    DateTime?
+  isActive            Boolean                   @default(true)
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  supplierProducts    SupplierProduct[]
+  syncJobs            SupplierSyncJob[]
+  images              ProductImage[]
+}
+
+model Brand {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  logoUrl     String?
+  isActive    Boolean  @default(true)
+
+  masterProducts MasterProduct[]
+}
+
+model Category {
+  id              String     @id @default(cuid())
+  name            String
+  slug            String     @unique
+  parentCategoryId String?
+  parentCategory  Category?  @relation("CategoryToParent", fields: [parentCategoryId], references: [id])
+  children        Category[] @relation("CategoryToParent")
+  description     String?
+  imageUrl        String?
+  sortOrder       Int        @default(0)
+  isActive        Boolean    @default(true)
+
+  masterProducts  MasterProduct[]
+}
+
+model MasterProduct {
+  id                       String             @id @default(cuid())
+  brandId                  String
+  brand                    Brand              @relation(fields: [brandId], references: [id])
+  primaryCategoryId        String
+  primaryCategory          Category           @relation(fields: [primaryCategoryId], references: [id])
+  slug                     String             @unique
+  name                     String
+  shortDescription         String?
+  fullDescription          String?
+  productType              String // 't_shirt' | 'hoodie' | 'mug' | 'hat' | ...
+  decorationCompatibility  String[]           @default([]) // ['screen_print','dtg','embroidery',...]
+  status                   PublicationStatus  @default(imported)
+  isPublished              Boolean            @default(false)
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  variants                ProductVariant[]
+  supplierProducts        SupplierProduct[]
+  images                  ProductImage[]
+  matchCandidates         MatchCandidate[]
+  manualPriceAdjustments  ManualPriceAdjustment[]
+
+  @@index([status, isPublished])
+  @@index([productType])
+}
+
+model ProductVariant {
+  id               String         @id @default(cuid())
+  masterProductId  String
+  masterProduct    MasterProduct  @relation(fields: [masterProductId], references: [id])
+  internalSku      String         @unique // Maple Imprint's own SKU, stable across supplier changes. NEVER reused.
+  colourName       String
+  normalizedColour String // canonical colour bucket for filtering, e.g. "navy" for "True Navy"/"Navy Blue"
+  colourHex        String?
+  size             String
+  sizeSortOrder    Int            @default(0)
+  status           VariantStatus  @default(active)
+
+  supplierOffers          SupplierVariantOffer[]
+  images                  ProductImage[]
+  manualPriceAdjustments  ManualPriceAdjustment[]
+
+  @@index([masterProductId])
+  @@index([normalizedColour, size])
+}
+
+model SupplierProduct {
+  id                  String                 @id @default(cuid())
+  supplierId          String
+  supplier            Supplier               @relation(fields: [supplierId], references: [id])
+  masterProductId     String? // null until matched/approved — see MatchCandidate
+  masterProduct       MasterProduct?         @relation(fields: [masterProductId], references: [id])
+  supplierStyleCode   String
+  supplierBrandName   String
+  supplierProductName String
+  rawPayload          Json // verbatim supplier response, for debugging/re-mapping without re-fetching
+  matchStatus         MatchStatus            @default(unmatched)
+  matchConfidence     Float?
+  lastSyncedAt        DateTime
+  status              SupplierProductStatus  @default(active)
+
+  variantOffers    SupplierVariantOffer[]
+  matchCandidates  MatchCandidate[]
+
+  @@unique([supplierId, supplierStyleCode])
+  @@index([matchStatus])
+}
+
+model SupplierVariantOffer {
+  id                    String          @id @default(cuid())
+  supplierProductId     String
+  supplierProduct       SupplierProduct @relation(fields: [supplierProductId], references: [id])
+  productVariantId      String? // null until matched to an internal variant
+  productVariant        ProductVariant? @relation(fields: [productVariantId], references: [id])
+  supplierVariantId     String
+  supplierSku           String
+  colourName            String // as reported by the supplier — not yet normalized; that happens on ProductVariant
+  size                  String
+  wholesaleCost         Decimal         @db.Decimal(10, 2)
+  currency              String          @default("CAD") // 'CAD' | 'USD'
+  mapPrice              Decimal?        @db.Decimal(10, 2)
+  isOrderable           Boolean         @default(true)
+  lastPriceSyncAt       DateTime
+  lastInventorySyncAt   DateTime
+
+  warehouseInventory  SupplierWarehouseInventory[]
+  pricingSnapshots    PricingSnapshot[]
+
+  @@unique([supplierProductId, supplierVariantId])
+  @@index([productVariantId])
+}
+
+model SupplierWarehouseInventory {
+  id                     String                @id @default(cuid())
+  supplierVariantOfferId String
+  supplierVariantOffer   SupplierVariantOffer  @relation(fields: [supplierVariantOfferId], references: [id])
+  warehouseCode          String
+  warehouseName          String?
+  availableQty           Int
+  incomingQty            Int                   @default(0)
+  expectedRestockDate    DateTime?
+  lastSyncedAt           DateTime
+  // Anything older than a configurable TTL is treated as stale, not authoritative — see sync/staleness.ts
+
+  @@unique([supplierVariantOfferId, warehouseCode])
+  @@index([lastSyncedAt])
+}
+
+model ProductImage {
+  id               String            @id @default(cuid())
+  masterProductId  String?
+  masterProduct    MasterProduct?    @relation(fields: [masterProductId], references: [id])
+  productVariantId String?
+  productVariant   ProductVariant?   @relation(fields: [productVariantId], references: [id])
+  supplierId       String?
+  supplier         Supplier?         @relation(fields: [supplierId], references: [id])
+  source           ImageSource
+  sourceUrl        String // original supplier (or Maple Imprint upload) URL
+  cachedUrl        String? // CDN URL once ingested
+  imageType        String // 'primary' | 'front' | 'back' | 'side' | 'lifestyle' | 'swatch' | 'detail' | 'size_chart'
+  colourName       String?
+  sortOrder        Int               @default(0)
+  width            Int?
+  height           Int?
+  checksum         String? // sha256 of downloaded bytes, for dedup detection
+  status           ImageIngestStatus @default(pending)
+  lastSyncedAt     DateTime          @default(now())
+
+  @@index([masterProductId, sortOrder])
+  @@index([checksum])
+}
+
+model MatchCandidate {
+  id                     String          @id @default(cuid())
+  supplierProductId      String
+  supplierProduct        SupplierProduct @relation(fields: [supplierProductId], references: [id])
+  candidateMasterProductId String
+  candidateMasterProduct MasterProduct   @relation(fields: [candidateMasterProductId], references: [id])
+  confidence             Float // 0-1
+  matchSignals           Json // { brandMatch, styleNumberMatch, upcMatch, nameSimilarity }
+  status                 MatchStatus     @default(needs_review)
+  reviewedBy             String?
+  reviewedAt             DateTime?
+  createdAt              DateTime        @default(now())
+
+  @@index([status])
+}
+
+model PricingRule {
+  id                    String    @id @default(cuid())
+  name                  String
+  productType           String // 't_shirt' | 'hat' | 'mug' | ...
+  printMethod           String // 'screen_print' | 'dtg' | 'embroidery' | ...
+  quantityMinimum       Int
+  quantityMaximum       Int?
+  basePrintCost         Decimal   @db.Decimal(10, 2)
+  additionalLocationCost Decimal? @db.Decimal(10, 2)
+  oneSideCost           Decimal?  @db.Decimal(10, 2)
+  wrapAroundCost        Decimal?  @db.Decimal(10, 2)
+  currency              String    @default("CAD")
+  effectiveFrom         DateTime  @default(now())
+  effectiveUntil        DateTime?
+  priority              Int       @default(0)
+  isActive              Boolean   @default(true)
+
+  @@index([productType, printMethod, isActive])
+}
+
+model MarkupRule {
+  id              String    @id @default(cuid())
+  name            String
+  supplierId      String?
+  brandId         String?
+  categoryId      String?
+  productType     String?
+  minimumCost     Decimal?  @db.Decimal(10, 2)
+  maximumCost     Decimal?  @db.Decimal(10, 2)
+  markupType      String // 'percentage' | 'fixed'
+  markupValue     Decimal   @db.Decimal(10, 4)
+  minimumMargin   Decimal?  @db.Decimal(10, 4)
+  priority        Int       @default(0)
+  isActive        Boolean   @default(true)
+
+  @@index([isActive, priority])
+}
+
+model ManualPriceAdjustment {
+  id               String          @id @default(cuid())
+  masterProductId  String?
+  masterProduct    MasterProduct?  @relation(fields: [masterProductId], references: [id])
+  variantId        String?
+  variant          ProductVariant? @relation(fields: [variantId], references: [id])
+  adjustmentType   String // 'percentage' | 'fixed' | 'override'
+  adjustmentValue  Decimal         @db.Decimal(10, 4)
+  reason           String
+  startDate        DateTime        @default(now())
+  endDate          DateTime?
+  isActive         Boolean         @default(true)
+}
+
+// Append-only. Never UPDATE a row here — see file header.
+model PricingSnapshot {
+  id                     String                @id @default(cuid())
+  orderLineItemId        String?
+  quoteLineItemId        String?
+  supplierVariantOfferId String
+  supplierVariantOffer   SupplierVariantOffer  @relation(fields: [supplierVariantOfferId], references: [id])
+  supplierUsed           String
+  wholesaleCostAtCalc    Decimal               @db.Decimal(10, 2)
+  printRuleVersion       String
+  markupRuleVersion      String
+  quantityTier           String
+  printLocations         Int
+  decorationMethod       String
+  surcharges             Json // [{ type, amount }]
+  discounts              Json // [{ type, amount }]
+  finalUnitPrice         Decimal               @db.Decimal(10, 2)
+  finalTotal             Decimal               @db.Decimal(10, 2)
+  calculatedAt           DateTime              @default(now())
+
+  @@index([orderLineItemId])
+  @@index([quoteLineItemId])
+}
+
+// NOTE: a partial unique index — CREATE UNIQUE INDEX supplier_sync_job_one_running_per_supplier
+// ON "SupplierSyncJob" ("supplierId") WHERE status = 'running' — exists on the live database but
+// cannot be expressed in Prisma's schema language (no support for filtered/partial @@unique).
+// It enforces "at most one running sync per supplier" at the DB level; see src/sync/orchestrator.ts's
+// runPriceSync for how the app catches and handles a rejected insert. Do NOT drop this index if
+// ever regenerating this schema file from the live database, and re-create it manually after any
+// `prisma migrate reset`.
+model SupplierSyncJob {
+  id               String         @id @default(cuid())
+  supplierId       String
+  supplier         Supplier       @relation(fields: [supplierId], references: [id])
+  syncType         SyncType
+  status           SyncJobStatus  @default(running)
+  recordsReceived  Int            @default(0)
+  recordsCreated   Int            @default(0)
+  recordsUpdated   Int            @default(0)
+  recordsSkipped   Int            @default(0)
+  recordsFailed    Int            @default(0)
+  changeSummary    Json? // structured diff report — see sync/change-detection.ts
+  errorSummary     String?
+  startedAt        DateTime       @default(now())
+  finishedAt       DateTime?
+
+  @@index([supplierId, syncType, startedAt])
+}

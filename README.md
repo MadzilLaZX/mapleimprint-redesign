@@ -6,6 +6,12 @@ custom-printing business. Built with Next.js, TypeScript, Tailwind CSS v4 and Fr
 See [`PROJECT_NOTES.md`](./PROJECT_NOTES.md) for what's real, what's placeholder, the
 accessibility/contrast decisions made, and what's needed before this can launch.
 
+This repo also contains [`catalogue-engine/`](./catalogue-engine/README.md), a separate,
+standalone Node/TypeScript package (its own `package.json`, own database) implementing the
+supplier catalogue, inventory sync, and dynamic pricing system described in the client's
+catalogue/pricing brief. It's independent of the frontend below and doesn't require the same
+`npm install`/`npm run dev` — see its own README for setup.
+
 ## Getting started
 
 ```bash

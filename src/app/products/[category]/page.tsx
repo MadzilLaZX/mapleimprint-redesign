@@ -11,6 +11,7 @@ import { Accordion } from "@/components/ui/Accordion";
 import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES, PRINT_METHODS, SECONDARY_CTA } from "@/lib/constants";
+import { getProductsBySubcategory, subcategorySlugify } from "@/lib/products";
 
 const methodsByCategory: Record<string, string[]> = {
   "custom-apparel": ["screen-printing", "embroidery", "dtf-dtg"],
@@ -91,21 +92,34 @@ export default async function CategoryPage({
           </h2>
         </Reveal>
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {cat.subcategories.map((sub, i) => (
-            <Reveal key={sub} delay={i * 0.04}>
-              <div className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl">
-                <Image
-                  src={`https://picsum.photos/seed/mi-${cat.slug}-${sub}/500/620`}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                  className="img-brand object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />
-                <p className="relative p-3 text-sm font-semibold text-white">{sub}</p>
-              </div>
-            </Reveal>
-          ))}
+          {cat.subcategories.map((sub, i) => {
+            const subSlug = subcategorySlugify(sub);
+            const subProducts = getProductsBySubcategory(cat.slug, subSlug);
+            const cover = subProducts[0]?.images[0]?.url;
+            return (
+              <Reveal key={sub} delay={i * 0.04}>
+                <Link
+                  href={`/products/${cat.slug}/${subSlug}`}
+                  className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl"
+                >
+                  <Image
+                    src={cover ?? `https://picsum.photos/seed/mi-${cat.slug}-${sub}/500/620`}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                    className="img-brand object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />
+                  <div className="relative p-3">
+                    <p className="text-sm font-semibold text-white">{sub}</p>
+                    {subProducts.length > 0 && (
+                      <p className="text-xs text-white/70">{subProducts.length} product{subProducts.length === 1 ? "" : "s"}</p>
+                    )}
+                  </div>
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
       </Section>
 
