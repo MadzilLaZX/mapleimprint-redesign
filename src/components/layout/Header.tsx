@@ -10,6 +10,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { NAV_LINKS, PRIMARY_CTA, SECONDARY_CTA } from "@/lib/constants";
 import { cn } from "@/lib/cn";
+import { useCart } from "@/components/cart/CartProvider";
 
 // A steadier, more even glide than the site's usual snappy ease-out — used
 // for header chrome that appears/disappears while the user is reading, so
@@ -19,6 +20,7 @@ const TRANSITION = { duration: 0.55, ease: [0.65, 0, 0.35, 1] as const };
 export function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { totalCount } = useCart();
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-ink-950/95 backdrop-blur-md">
@@ -92,10 +94,24 @@ export function Header() {
             </button>
             <Link
               href="/cart"
-              aria-label="Cart"
-              className="rounded-full p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label={`Cart${totalCount > 0 ? `, ${totalCount} item${totalCount === 1 ? "" : "s"}` : ""}`}
+              className="relative rounded-full p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ShoppingBag className="size-5" />
+              <AnimatePresence>
+                {totalCount > 0 && (
+                  <motion.span
+                    key="cart-count"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-maple-gradient text-[10px] font-bold text-ink-950"
+                  >
+                    {totalCount > 9 ? "9+" : totalCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
             <AnimatePresence mode="popLayout" initial={false}>
               {!pathname.startsWith("/contact") && (
@@ -175,6 +191,14 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/cart"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-3 py-3 text-base font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <ShoppingBag className="size-5" />
+                Cart{totalCount > 0 ? ` (${totalCount})` : ""}
+              </Link>
               <div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4">
                 {!pathname.startsWith("/contact") && (
                   <Button href={SECONDARY_CTA.href} variant="secondary" tone="dark" onClick={() => setOpen(false)}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, PaperclipHorizontal, PencilSimple } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import {
   TextInput,
 } from "@/components/ui/Field";
 import { cn } from "@/lib/cn";
+import { QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
 
 type ProjectType =
   | "apparel"
@@ -109,6 +110,17 @@ export function QuoteWizard() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // One-shot read from a browser-only external store (sessionStorage) on
+    // mount, written by the cart page's "Get a quote" handoff.
+    const prefill = window.sessionStorage.getItem(QUOTE_PREFILL_KEY);
+    if (prefill) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setData((prev) => (prev.productDescription ? prev : { ...prev, productDescription: prefill }));
+      window.sessionStorage.removeItem(QUOTE_PREFILL_KEY);
+    }
+  }, []);
 
   function update<K extends keyof QuoteData>(key: K, value: QuoteData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));

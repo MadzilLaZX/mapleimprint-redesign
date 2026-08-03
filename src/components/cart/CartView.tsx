@@ -1,0 +1,107 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Minus, Plus, ShoppingBag, Trash } from "@phosphor-icons/react/dist/ssr";
+import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import { useCart, QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
+import { PRIMARY_CTA } from "@/lib/constants";
+
+export function CartView() {
+  const { items, removeItem, updateQuantity, totalCount } = useCart();
+  const router = useRouter();
+
+  function handleGetQuote() {
+    const summary = items.map((i) => `${i.name} x${i.quantity}`).join(", ");
+    window.sessionStorage.setItem(QUOTE_PREFILL_KEY, summary);
+    router.push("/contact?type=quote");
+  }
+
+  if (items.length === 0) {
+    return (
+      <Container className="max-w-lg text-center">
+        <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-white">
+          <ShoppingBag className="size-7 text-muted" />
+        </span>
+        <h2 className="mt-6 font-display text-2xl font-semibold text-ink-900">Your cart is empty</h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Browse the shop and add items you&apos;re interested in. We&apos;ll turn your cart into a scoped
+          quote, no payment required yet.
+        </p>
+        <Button href={PRIMARY_CTA.href} className="mt-8" showArrow>
+          Browse products
+        </Button>
+      </Container>
+    );
+  }
+
+  return (
+    <Container className="max-w-3xl">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-xl font-semibold text-ink-900">
+          {totalCount} item{totalCount === 1 ? "" : "s"}
+        </h2>
+      </div>
+
+      <ul className="mt-6 divide-y divide-sand rounded-[28px] bg-white px-6">
+        {items.map((item) => (
+          <li key={item.id} className="flex items-center gap-4 py-5">
+            <Link href={`/products/${item.categorySlug}`} className="relative size-20 shrink-0 overflow-hidden rounded-xl">
+              <Image src={item.image} alt="" fill sizes="80px" className="object-cover" />
+            </Link>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+                {item.categoryName}
+              </p>
+              <p className="mt-0.5 truncate font-display font-semibold text-ink-900">{item.name}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1 rounded-full border border-sand p-1">
+              <button
+                type="button"
+                aria-label={`Decrease quantity of ${item.name}`}
+                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                className="flex size-7 items-center justify-center rounded-full text-ink-900 transition-colors hover:bg-canvas"
+              >
+                <Minus className="size-3.5" weight="bold" />
+              </button>
+              <span className="w-6 text-center text-sm font-semibold text-ink-900">{item.quantity}</span>
+              <button
+                type="button"
+                aria-label={`Increase quantity of ${item.name}`}
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                className="flex size-7 items-center justify-center rounded-full text-ink-900 transition-colors hover:bg-canvas"
+              >
+                <Plus className="size-3.5" weight="bold" />
+              </button>
+            </div>
+            <button
+              type="button"
+              aria-label={`Remove ${item.name} from cart`}
+              onClick={() => removeItem(item.id)}
+              className="shrink-0 rounded-full p-2 text-muted transition-colors hover:bg-crimson/10 hover:text-crimson"
+            >
+              <Trash className="size-4" />
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-6 rounded-[28px] bg-canvas p-6">
+        <p className="text-sm leading-relaxed text-muted">
+          Pricing depends on decoration, quantity tiers and turnaround, so it&apos;s confirmed in your quote
+          rather than shown here. Submitting sends this list straight into a project quote request.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Button onClick={handleGetQuote} showArrow>
+            Get a quote for these items
+          </Button>
+          <Button href={PRIMARY_CTA.href} variant="secondary" tone="light">
+            Keep browsing
+          </Button>
+        </div>
+      </div>
+    </Container>
+  );
+}
