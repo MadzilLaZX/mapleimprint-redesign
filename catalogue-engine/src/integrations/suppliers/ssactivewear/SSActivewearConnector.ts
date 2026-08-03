@@ -55,18 +55,75 @@ interface SSStyle {
   title: string;
   description: string;
   baseCategory: string;
+  // Comma-separated S&S internal category tag IDs (verified live 2026-08-03 via /v2/categories/,
+  // 622 total tags e.g. "Youth", "Aprons", "Corporate Uniforms" — much finer-grained than
+  // baseCategory). Used by SPECIAL_CATEGORY_OVERRIDES below to route use-case-specific product
+  // lines (workwear, youth, aprons) that baseCategory alone can't distinguish.
+  categories: string;
 }
 
 // S&S's own `baseCategory` values, confirmed live by pulling the full /styles/ list and counting
-// distinct values (2026-08-02) — see ssactivewear/README.md. Only mapping what's needed today
-// (T-shirts); everything else stays undefined rather than guessing a productType for categories
-// nobody's asked for yet ("Outerwear", "Polos", "Headwear", etc. all exist as real baseCategory
-// values but have no mapping here on purpose).
+// distinct values (2026-08-02) — see ssactivewear/README.md. Every value below was seen in that
+// real distribution (197 Outerwear, 162 T-Shirts - Premium, 153 Polos, 115 Knits & Layering, 100
+// Headwear, 71 Wovens, 61 T-Shirts - Long Sleeve, 59 Fleece - Premium - Hood, 48 Bottoms, 43 Bags,
+// 37 Fleece - Premium - Crew, 16 Accessories, 13 Fleece - Core - Hood, 10 T-Shirts - Core, 6
+// Fleece - Core - Crew, 1 Office Use). Deliberately NOT mapped: "Knits & Layering" and "Wovens"
+// (no clean fit to any of the site's Custom Apparel subcategories — guessing would misfile real
+// products), "Bottoms"/"Accessories"/"Office Use" (no matching site subcategory at all).
 const BASE_CATEGORY_TO_PRODUCT_TYPE: Record<string, string> = {
   'T-Shirts - Premium': 't_shirt',
   'T-Shirts - Core': 't_shirt',
-  'T-Shirts - Long Sleeve': 't_shirt_long_sleeve',
+  'T-Shirts - Long Sleeve': 't_shirt', // still a tee for site-routing/pricing purposes
+  Polos: 'polo',
+  'Fleece - Premium - Hood': 'hoodie',
+  'Fleece - Core - Hood': 'hoodie',
+  'Fleece - Premium - Crew': 'crewneck',
+  'Fleece - Core - Crew': 'crewneck',
+  Outerwear: 'jacket',
+  Headwear: 'headwear', // caps vs beanies/toques split by product name — see export script
+  Bags: 'bag',
 };
+
+// Use-case-specific product lines that baseCategory can't express (a "Corporate Uniforms" style
+// might have baseCategory "Polos" same as a plain polo). Checked in order, first match wins, and
+// checked BEFORE the baseCategory fallback above — a style tagged "Aprons" or "Safety" should
+// route to that dedicated site section instead of wherever its raw garment type would otherwise
+// land. Category IDs verified live against /v2/categories/ + real /styles/ tag membership
+// (2026-08-03) — see README.md's "Category mapping" section for counts and sample titles.
+const SPECIAL_CATEGORY_OVERRIDES: Array<{ categoryIds: number[]; productType: string }> = [
+  { categoryIds: [1, 1196], productType: 'apron' }, // Aprons / Silo Accessories - Aprons/Chefwear
+  { categoryIds: [1127, 314], productType: 'workwear_healthcare' }, // Medical & Med Spa Staff Uniforms / Scrubs
+  { categoryIds: [1103], productType: 'workwear_hospitality' }, // Restaurant & Hospitality Staff Uniforms
+  { categoryIds: [1101], productType: 'workwear_construction' }, // Industrial & Workwear - In the Field
+  { categoryIds: [40], productType: 'workwear_safety' }, // Safety
+  { categoryIds: [1066], productType: 'workwear_business' }, // Corporate Uniforms
+];
+// Youth is only routed to its own section when the underlying garment is one we already sell as
+// apparel (t-shirt/polo/hoodie/crewneck/jacket) — a youth apron or youth cap stays an apron/cap.
+const YOUTH_CATEGORY_ID = 28;
+
+function resolveProductType(style: SSStyle): string | undefined {
+  const styleCategoryIds = new Set(
+    (style.categories ?? '')
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isFinite(n)),
+  );
+
+  for (const rule of SPECIAL_CATEGORY_OVERRIDES) {
+    if (rule.categoryIds.some((id) => styleCategoryIds.has(id))) return rule.productType;
+  }
+
+  const baseType = BASE_CATEGORY_TO_PRODUCT_TYPE[style.baseCategory];
+  if (
+    styleCategoryIds.has(YOUTH_CATEGORY_ID) &&
+    baseType &&
+    ['t_shirt', 'polo', 'hoodie', 'crewneck', 'jacket'].includes(baseType)
+  ) {
+    return 'youth_apparel';
+  }
+  return baseType;
+}
 
 interface SSWarehouse {
   warehouseAbbr: string;
@@ -192,7 +249,7 @@ export class SSActivewearConnector implements SupplierConnector {
           brandName: style.brandName,
           productName: style.title || style.styleName,
           description: style.description ?? '', // raw HTML as returned by S&S, not sanitized here
-          productType: BASE_CATEGORY_TO_PRODUCT_TYPE[style.baseCategory],
+          productType: resolveProductType(style),
           variants: styleRows.map((row): RawSupplierVariant => {
             // A SKU counts as orderable if at least one warehouse carries it and isn't a closeout.
             const orderableWarehouse = row.warehouses.some((w) => !w.closeout && w.qty > 0);

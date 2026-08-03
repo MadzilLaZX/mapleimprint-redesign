@@ -17,7 +17,8 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
-import { APPAREL_PRINT_TIERS, PRINT_RULE_VERSION } from '../dist/index.js';
+import { APPAREL_PRINT_TIERS, HAT_PRINT_TIERS, PRINT_RULE_VERSION } from '../dist/index.js';
+import { routeFor, APPAREL_PRODUCT_TYPES, HEADWEAR_PRODUCT_TYPE } from './route-map.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const envPath = resolve(here, '..', '.env');
@@ -52,21 +53,22 @@ function stripHtml(html) {
     .trim();
 }
 
-// productType -> which category/subcategory slug pair it belongs to on the frontend. Grows as
-// more product types get imported; t_shirt is the only one populated today.
-const PRODUCT_TYPE_ROUTES = {
-  t_shirt: { categorySlug: 'custom-apparel', subcategorySlug: 't-shirts' },
-};
-
 function priceTiersFor(productType) {
-  if (productType === 't_shirt') {
+  if (APPAREL_PRODUCT_TYPES.has(productType)) {
     return APPAREL_PRINT_TIERS.map((t) => ({
       minQty: t.quantityMin,
       maxQty: t.quantityMax,
       pricePerUnit: t.firstPrintCost,
     }));
   }
-  return null; // no chart mapped for this productType yet — export with priceTiers: null, not a guess
+  if (productType === HEADWEAR_PRODUCT_TYPE) {
+    return HAT_PRINT_TIERS.map((t) => ({
+      minQty: t.quantityMin,
+      maxQty: t.quantityMax,
+      pricePerUnit: t.firstPrintCost,
+    }));
+  }
+  return null; // no chart for this productType (e.g. bags) — export with priceTiers: null, not a guess
 }
 
 async function main() {
@@ -84,7 +86,7 @@ async function main() {
 
   const exported = [];
   for (const p of products) {
-    const route = PRODUCT_TYPE_ROUTES[p.productType];
+    const route = routeFor(p.productType, p.name);
     if (!route) {
       console.warn(`Skipping "${p.name}" — no frontend route mapped for productType "${p.productType}"`);
       continue;

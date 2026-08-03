@@ -48,6 +48,12 @@ export interface RunCatalogueImportResult {
   matchesAutoApproved: number;
   matchesNeedingReview: number;
   itemErrors: string[];
+  /** Exactly which SupplierProduct rows this run touched (created or updated) — the only safe
+   *  way for a caller to know which rows belong to this run, e.g. before promoting them. Re-querying
+   *  "any unpromoted row for this supplier" is NOT safe when running several imports back to back
+   *  (a filtered-by-productType import followed by another), since a row a previous run failed to
+   *  promote would still be sitting there with no masterProductId and get mis-attributed. */
+  supplierProductIds: string[];
 }
 
 function emptyResult(
@@ -66,6 +72,7 @@ function emptyResult(
     matchesAutoApproved: 0,
     matchesNeedingReview: 0,
     itemErrors,
+    supplierProductIds: [],
   };
 }
 
@@ -105,6 +112,7 @@ export async function runCatalogueImport(
   let autoApproved = 0;
   let needsReview = 0;
   const itemErrors: string[] = [];
+  const supplierProductIds: string[] = [];
 
   try {
     for await (const raw of connector.fetchProductCatalogue()) {
@@ -161,6 +169,8 @@ export async function runCatalogueImport(
             else needsReview++;
           }
         }
+
+        supplierProductIds.push(supplierProductId);
 
         // Persist raw image URLs now (source: supplier, status: pending) so they exist even for
         // products nobody has promoted to a MasterProduct yet. Not linked to a MasterProduct/
@@ -307,6 +317,7 @@ export async function runCatalogueImport(
       matchesAutoApproved: autoApproved,
       matchesNeedingReview: needsReview,
       itemErrors,
+      supplierProductIds,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -329,6 +340,7 @@ export async function runCatalogueImport(
       matchesAutoApproved: autoApproved,
       matchesNeedingReview: needsReview,
       itemErrors: [...itemErrors, message],
+      supplierProductIds,
     };
   }
 }

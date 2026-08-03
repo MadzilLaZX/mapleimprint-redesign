@@ -89,6 +89,34 @@ Relative paths like `Images/Color/115711_f_fm.jpg` are served from `https://cdn.
   the composite `{styleID}:{sku}` id (same string produced as `supplierVariantId` during a
   catalogue sync), not a bare SKU.
 
+## Category mapping (`baseCategory` -> site productType)
+
+Pulled the full live `/styles/` list and counted every distinct `baseCategory` value
+(2026-08-02/03) — this is the real, complete distribution, not a guess:
+
+| baseCategory | count | mapped to |
+|---|---|---|
+| Outerwear | 197 | `jacket` |
+| T-Shirts - Premium | 162 | `t_shirt` |
+| Polos | 153 | `polo` |
+| Knits & Layering | 115 | *(not mapped — no clean fit to a site subcategory)* |
+| Headwear | 100 | `headwear` (split into caps/beanies by product name at export time) |
+| Wovens | 71 | *(not mapped — no clean fit)* |
+| T-Shirts - Long Sleeve | 61 | `t_shirt` |
+| Fleece - Premium - Hood | 59 | `hoodie` |
+| Bottoms | 48 | *(not mapped — no site subcategory for this)* |
+| Bags | 43 | `bag` |
+| Fleece - Premium - Crew | 37 | `crewneck` |
+| Accessories | 16 | *(not mapped — too vague, no site subcategory)* |
+| Fleece - Core - Hood | 13 | `hoodie` |
+| T-Shirts - Core | 10 | `t_shirt` |
+| Fleece - Core - Crew | 6 | `crewneck` |
+| Office Use | 1 | *(not mapped — irrelevant)* |
+
+See `catalogue-engine/scripts/route-map.mjs` for where this becomes an actual site
+category/subcategory, and the mapping table in `SSActivewearConnector.ts`
+(`BASE_CATEGORY_TO_PRODUCT_TYPE`) for where the raw string becomes a `productType`.
+
 ## Credentials
 
 Live in `catalogue-engine/.env` (git-ignored), not in this file. See that file's comments for
