@@ -51,7 +51,7 @@ export default async function ProductDetailPage({
       <Section tone="canvas">
         <div className="grid gap-10 lg:grid-cols-2">
           <Reveal>
-            <div className="relative aspect-square w-full overflow-hidden rounded-[28px] bg-white">
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-white">
               {primaryImage ? (
                 <Image
                   src={primaryImage.url}
@@ -59,7 +59,7 @@ export default async function ProductDetailPage({
                   fill
                   sizes="(min-width: 1024px) 50vw, 100vw"
                   priority
-                  className="object-contain p-8"
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted">No image yet</div>
@@ -69,7 +69,7 @@ export default async function ProductDetailPage({
               <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6">
                 {galleryImages.map((img, i) => (
                   <div key={`${img.url}-${i}`} className="relative aspect-square overflow-hidden rounded-lg bg-white">
-                    <Image src={img.url} alt={img.colourName ?? p.name} fill sizes="120px" className="object-contain p-1.5" />
+                    <Image src={img.url} alt={img.colourName ?? p.name} fill sizes="120px" className="object-cover" />
                   </div>
                 ))}
               </div>
