@@ -59,7 +59,7 @@ export default async function ProductDetailPage({
                   fill
                   sizes="(min-width: 1024px) 50vw, 100vw"
                   priority
-                  className="object-cover"
+                  className="object-contain p-8"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted">No image yet</div>
@@ -69,7 +69,7 @@ export default async function ProductDetailPage({
               <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6">
                 {galleryImages.map((img, i) => (
                   <div key={`${img.url}-${i}`} className="relative aspect-square overflow-hidden rounded-lg bg-white">
-                    <Image src={img.url} alt={img.colourName ?? p.name} fill sizes="120px" className="object-cover" />
+                    <Image src={img.url} alt={img.colourName ?? p.name} fill sizes="120px" className="object-contain p-1.5" />
                   </div>
                 ))}
               </div>

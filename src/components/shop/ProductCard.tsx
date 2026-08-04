@@ -36,7 +36,7 @@ export function ProductCard({ product }: { product: ShopProduct }) {
           alt=""
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-          className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+          className="object-contain p-4 transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
         />
       </Link>
       <div className="flex flex-1 flex-col p-4">
