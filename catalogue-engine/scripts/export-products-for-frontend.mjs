@@ -101,10 +101,14 @@ async function main() {
 
     const priceTiers = priceTiersFor(p.productType);
 
-    // Prefer real product photos over colour-swatch thumbnails as the lead image — swatches are
-    // tiny colour chips, not product shots, and were ending up first purely by DB insertion order.
+    // Colour swatches are tiny colour-chip thumbnails (a few pixels), not product photos — never
+    // usable as a lead/gallery image, since stretched to tile size they render as a misleading
+    // flat colour block instead of an actual photo. Exclude them entirely here; a product with
+    // only swatch rows in the DB (S&S provided no real photo for it) correctly falls through to
+    // an honest "no image yet" placeholder on the frontend rather than a fake-looking colour tile.
+    const realPhotos = p.images.filter((img) => img.imageType !== 'swatch');
     const imageTypeRank = { front: 0, back: 1, side: 2, primary: 0 };
-    const sortedImages = [...p.images].sort(
+    const sortedImages = [...realPhotos].sort(
       (a, b) => (imageTypeRank[a.imageType] ?? 9) - (imageTypeRank[b.imageType] ?? 9),
     );
 
