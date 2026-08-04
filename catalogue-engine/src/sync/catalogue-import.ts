@@ -175,18 +175,21 @@ export async function runCatalogueImport(
         // Persist raw image URLs now (source: supplier, status: pending) so they exist even for
         // products nobody has promoted to a MasterProduct yet. Not linked to a MasterProduct/
         // ProductVariant here — that link happens in catalogue/promote.ts once a human/curation
-        // step decides this supplier product should actually go live. Keyed loosely by
-        // (supplierId, sourceUrl) since there's no unique constraint on ProductImage to upsert
-        // against — re-running an import just skips URLs already recorded rather than duplicating.
+        // step decides this supplier product should actually go live. Keyed by
+        // (supplierProductId, sourceUrl), NOT just (supplierId, sourceUrl) — S&S sometimes reuses
+        // the exact same photo across companion styles (e.g. a "Tall" size sharing images with the
+        // regular version). Deduping by URL alone would let the first style to see that URL claim
+        // it and leave every other style that legitimately shares the same photo with nothing.
         for (const image of raw.images) {
           const alreadyRecorded = await prisma.productImage.findFirst({
-            where: { supplierId, sourceUrl: image.url },
+            where: { supplierProductId, sourceUrl: image.url },
             select: { id: true },
           });
           if (alreadyRecorded) continue;
           await prisma.productImage.create({
             data: {
               supplierId,
+              supplierProductId,
               source: 'supplier',
               sourceUrl: image.url,
               imageType: image.imageType ?? 'primary',
