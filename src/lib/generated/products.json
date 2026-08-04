@@ -95132,6 +95132,176 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "artisan-collection-by-reprime-recycled-bib-apron",
+    "name": "Recycled Bib Apron",
+    "brandName": "Artisan Collection by Reprime",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "6 oz. (US), 10 oz./L yd (CA), 65/35 recycled polyester/organic cotton\nDenim colors are 8 oz./yd², 70/30 organic cotton/recycled polyester\nAdjustable neck strap with sliding buckle\nSelf-fabric neckband and waist ties (35 1/2\")\nResponsible Supplier: this product was made in a facility that is OCS, GRS, RCS, GOTS and OEKO-TEX certified.Responsible Materials: contains recycled polyester and  organic cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121517_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121518_f_fm.jpg",
+        "colourName": "Black Denim",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121519_f_fm.jpg",
+        "colourName": "Bottle",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121521_f_fm.jpg",
+        "colourName": "Dark Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121522_f_fm.jpg",
+        "colourName": "Denim Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121527_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121528_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121531_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121532_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/121536_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45467_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45480_fm.jpg",
+        "colourName": "Black Denim",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45469_fm.jpg",
+        "colourName": "Bottle",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45472_fm.jpg",
+        "colourName": "Dark Grey",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45494_fm.jpg",
+        "colourName": "Denim Blue",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45474_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45475_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45477_fm.jpg",
+        "colourName": "Red",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45478_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45468_fm.jpg",
+        "colourName": "White",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "White",
+      "Black Denim",
+      "Natural",
+      "Black",
+      "Bottle",
+      "Dark Grey",
+      "Navy",
+      "Denim Blue",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black Denim",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Natural",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Bottle",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Dark Grey",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Navy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Denim Blue",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Red",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Royal",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "columbia-men-s-powder-lite-ii-vest",
     "name": "Men's Powder Lite™ II Vest",
     "brandName": "Columbia",
@@ -101701,6 +101871,120 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "artisan-collection-by-reprime-unisex-ten-studded-front-short-sleeve-chef-coat",
+    "name": "Unisex Ten Studded Front Short Sleeve Chef Coat",
+    "brandName": "Artisan Collection by Reprime",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "5.8 oz. (US), 9.7 oz./L yd (CA),  65/35 polyester/cotton\nMandarin collar with topstitching\nTen press stud front fasteners\nDouble pen pocket on left sleeve\nResponsible Supplier: this product was made in a facility that is OCS, GRS, RCS, GOTS and OEKO-TEX certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/117878_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/117879_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/117878_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/117879_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45453_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45454_fm.jpg",
+        "colourName": "White",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "White",
+      "Black"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "XS"
+      },
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "q-tees-12l-economical-tote",
     "name": "12L Economical Tote",
     "brandName": "Q-Tees",
@@ -101981,6 +102265,86 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "q-tees-butcher-apron",
+    "name": "Butcher Apron",
+    "brandName": "Q-Tees",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "7.5 oz./yd² (US), 12.5 oz/L yd (CA), 55/45 cotton/polyester\nSelf-fabric neck strap\nWrap around waist side ties (37\")\nNatural color is not a dyed fabric, what you are seeing are fibers and cotton seeds.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/50998_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51001_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51005_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/50998_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51001_b_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51005_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37354_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37355_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37359_fm.jpg",
+        "colourName": "White",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "White",
+      "Natural",
+      "Black"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Natural",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "under-armour-undeniable-5-0-xs-duffel-bag",
     "name": "Undeniable 5.0 XS Duffel Bag",
     "brandName": "Under Armour",
@@ -102041,6 +102405,66 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "q-tees-waist-apron-with-pockets",
+    "name": "Waist Apron with Pockets",
+    "brandName": "Q-Tees",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "7.5 oz./yd² (US), 12.5 oz/L yd (CA), 55/45 cotton/polyester\nWaist side ties\nThree-section front pouch pocket\nNatural color is not a dyed fabric, what you are seeing are fibers and cotton seeds.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51006_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51009_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51006_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51009_b_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37360_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37361_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "Natural",
+      "Black"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "Natural",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "under-armour-undeniable-5-0-sm-duffel-bag",
     "name": "Undeniable 5.0 SM Duffel Bag",
     "brandName": "Under Armour",
@@ -102093,6 +102517,166 @@
       },
       {
         "colourName": "Pitch Grey Medium Heather/ Black",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "q-tees-full-length-apron-with-pouch-pocket",
+    "name": "Full-Length Apron with Pouch Pocket",
+    "brandName": "Q-Tees",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "7.5 oz./yd² (US), 12.5 oz/L yd (CA), 55/45 cotton/polyester\nAdjustable neck strap with buckle\nWaist side ties (length 24\")\nThree-section front pouch pocket\nNatural color is not a dyed fabric, what you are seeing are fibers and cotton seeds.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63839_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63845_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63840_f_fm.jpg",
+        "colourName": "Forest",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63841_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63842_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63843_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63844_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63844_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63839_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63840_b_fm.jpg",
+        "colourName": "Forest",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63841_b_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63842_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63843_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/63845_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37378_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37373_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37374_fm.jpg",
+        "colourName": "Forest",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37375_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37376_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37377_fm.jpg",
+        "colourName": "Red",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37379_fm.jpg",
+        "colourName": "White",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "White",
+      "Natural",
+      "Black",
+      "Forest",
+      "Navy",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Natural",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Forest",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Navy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Red",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Royal",
         "size": "One Size"
       }
     ],
@@ -102253,6 +102837,146 @@
       },
       {
         "colourName": "Midnight Navy/ Metallic Silver",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "q-tees-full-length-apron-with-pockets",
+    "name": "Full-Length Apron with Pockets",
+    "brandName": "Q-Tees",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "7.5 oz./yd² (US), 12.5 oz/L yd (CA), 55/45 cotton/polyester\nAdjustable neck strap with buckle\nWaist side ties (length 25 1/2\")\nTwo patch pockets\nNatural color is not a dyed fabric, what you are seeing are fibers and cotton seeds.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51030_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51033_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51034_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51035_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51037_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51036_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51030_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51033_b_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51034_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51035_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51037_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51036_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37380_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37382_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37383_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37384_fm.jpg",
+        "colourName": "Red",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/14128_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/37385_fm.jpg",
+        "colourName": "White",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "White",
+      "Natural",
+      "Black",
+      "Navy",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Natural",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Navy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Red",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Royal",
         "size": "One Size"
       }
     ],
@@ -102633,6 +103357,386 @@
       },
       {
         "colourName": "Midnight Navy/ Metallic Silver",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "artisan-collection-by-reprime-espresso-bib-apron",
+    "name": "Espresso Bib Apron",
+    "brandName": "Artisan Collection by Reprime",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "6 oz. (US), 10 oz./L yd (CA), 65/35 cotton/polyester\n100% polyurethane trim\nFaux leather top trim and neckband\nAdjustable neck strap with stud buttons\nTwo pleat pockets\nResponsible Supplier: this product was made in a facility that is OCS, GRS, RCS, GOTS and OEKO-TEX certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118502_f_fm.jpg",
+        "colourName": "Black/ Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118503_f_fm.jpg",
+        "colourName": "Black/ Brown",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118504_f_fm.jpg",
+        "colourName": "Khaki/ Brown",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118505_f_fm.jpg",
+        "colourName": "Navy/ Brown",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44277_fm.jpg",
+        "colourName": "Black/ Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44279_fm.jpg",
+        "colourName": "Black/ Brown",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44295_fm.jpg",
+        "colourName": "Khaki/ Brown",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44299_fm.jpg",
+        "colourName": "Navy/ Brown",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "Black/ Brown",
+      "Khaki/ Brown",
+      "Black/ Black",
+      "Navy/ Brown"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "Black/ Brown",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Khaki/ Brown",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black/ Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Navy/ Brown",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "artisan-collection-by-reprime-jeans-stitch-denim-bib-apron",
+    "name": "Jeans Stitch Denim Bib Apron",
+    "brandName": "Artisan Collection by Reprime",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "8 oz. (US), 13.4 oz./L yd (CA), 70/30 cotton/polyester twill\nAdjustable neck strap with buckle\n35\" long waist ties (tie width 1\")\nFour pocket compartments\nContrast-stitched\nResponsible Supplier: this product was made in a facility that is OCS, GRS, RCS, GOTS and OEKO-TEX certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118544_f_fm.jpg",
+        "colourName": "Black Denim",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118545_f_fm.jpg",
+        "colourName": "Indigo Denim",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44303_fm.jpg",
+        "colourName": "Black Denim",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44313_fm.jpg",
+        "colourName": "Indigo Denim",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "Indigo Denim",
+      "Black Denim"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "Indigo Denim",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black Denim",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "artisan-collection-by-reprime-calibre-heavy-cotton-canvas-pocket-apron",
+    "name": "Calibre Heavy Cotton Canvas Pocket Apron",
+    "brandName": "Artisan Collection by Reprime",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "9.4 oz. (US), 15.7 oz./L yd (CA), 100% heavy cotton canvas\nAdjustable neck strap with metal eyelet\n35\" self-fabric waist ties\nPouch pocket stitched into four compartments\nResponsible Supplier: this product was made in a facility that is OCS, GRS, RCS, GOTS and OEKO-TEX certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118125_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118126_f_fm.jpg",
+        "colourName": "Burgundy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118127_f_fm.jpg",
+        "colourName": "Dark Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118128_f_fm.jpg",
+        "colourName": "Khaki",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118129_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118131_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118132_f_fm.jpg",
+        "colourName": "Silver",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44329_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44334_fm.jpg",
+        "colourName": "Burgundy",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44340_fm.jpg",
+        "colourName": "Dark Grey",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44344_fm.jpg",
+        "colourName": "Khaki",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/44330_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45377_fm.jpg",
+        "colourName": "Red",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45379_fm.jpg",
+        "colourName": "Silver",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "Silver",
+      "Natural",
+      "Khaki",
+      "Black",
+      "Burgundy",
+      "Dark Grey",
+      "Red"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "Silver",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Natural",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Khaki",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Dark Grey",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Red",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "artisan-collection-by-reprime-youth-recycled-apron",
+    "name": "Youth Recycled Apron",
+    "brandName": "Artisan Collection by Reprime",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "aprons",
+    "description": "5.8 oz. (US), 9.7 oz./L yd (CA), 65/35 recycled polyester/cotton\nSelf-fabric neckband with safety release mechanism\nSelf-fabric ties\nResponsible Supplier: this product was made in a facility that is OCS, GRS, RCS, GOTS and OEKO-TEX certified.\nResponsible Materials: contains 65% recycled polyester",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118144_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118147_f_fm.jpg",
+        "colourName": "Dark Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118149_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118150_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118153_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118154_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/118156_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45413_fm.jpg",
+        "colourName": "Black",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45421_fm.jpg",
+        "colourName": "Dark Grey",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45432_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45436_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45442_fm.jpg",
+        "colourName": "Red",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45443_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "swatch"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/ColorSwatch/45451_fm.jpg",
+        "colourName": "White",
+        "imageType": "swatch"
+      }
+    ],
+    "colours": [
+      "White",
+      "Natural",
+      "Black",
+      "Dark Grey",
+      "Navy",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Natural",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Dark Grey",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Navy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Red",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Royal",
         "size": "One Size"
       }
     ],
