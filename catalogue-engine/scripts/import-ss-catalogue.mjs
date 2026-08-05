@@ -24,6 +24,7 @@ import {
   FilteredCatalogueConnector,
   runCatalogueImport,
   promoteSupplierProductToCatalogue,
+  linkSupplierProductImages,
 } from '../dist/index.js';
 import { MAPPED_PRODUCT_TYPES, routeFor } from './route-map.mjs';
 
@@ -157,12 +158,14 @@ async function main() {
       break;
     }
 
-    // Only promote the exact rows THIS import call touched (by id, from the result) — never
+    // Only touch the exact rows THIS import call processed (by id, from the result) — never
     // re-query "any unpromoted row for this supplier", which would wrongly sweep up a row a
     // PREVIOUS productType's promotion attempt failed on and re-promote it under this category.
-    const toPromote = await prisma.supplierProduct.findMany({
-      where: { id: { in: importResult.supplierProductIds }, masterProductId: null },
+    const touched = await prisma.supplierProduct.findMany({
+      where: { id: { in: importResult.supplierProductIds } },
     });
+    const toPromote = touched.filter((sp) => !sp.masterProductId);
+    const alreadyPromoted = touched.filter((sp) => sp.masterProductId);
 
     console.log(`Promoting up to ${toPromote.length} ${productType} supplier products...`);
     for (const sp of toPromote) {
@@ -182,6 +185,22 @@ async function main() {
         }
       } catch (err) {
         console.error(`  FAILED to promote "${sp.supplierProductName}": ${err.message}`);
+      }
+    }
+
+    // Repair pass: products promoted before the supplierProductId image-scoping fix existed
+    // never got correctly-linked images and never will on their own (promotion is a one-time,
+    // idempotent no-op). Re-link now that this run has re-persisted their images with
+    // supplierProductId set (see catalogue-import.ts's backfill-on-re-import step).
+    if (alreadyPromoted.length > 0) {
+      console.log(`Re-linking images for ${alreadyPromoted.length} already-promoted ${productType} products...`);
+      for (const sp of alreadyPromoted) {
+        try {
+          const linked = await linkSupplierProductImages(prisma, sp.id, sp.masterProductId);
+          if (linked > 0) console.log(`  Linked ${linked} images for "${sp.supplierProductName}"`);
+        } catch (err) {
+          console.error(`  FAILED to link images for "${sp.supplierProductName}": ${err.message}`);
+        }
       }
     }
   }

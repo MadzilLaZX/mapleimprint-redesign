@@ -103,6 +103,7 @@ export {
 } from './catalogue/curation.js';
 export {
   promoteSupplierProductToCatalogue,
+  linkSupplierProductImages,
   type PromoteToCatalogueOptions,
   type PromoteToCatalogueResult,
 } from './catalogue/promote.js';

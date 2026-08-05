@@ -54,6 +54,25 @@ async function uniqueSlug(
   return slug;
 }
 
+// Links a SupplierProduct's already-ingested images (persisted by catalogue-import.ts) to a
+// MasterProduct, scoped by supplierProductId — NOT by colourName alone. Colour names like
+// "Black" or "White" repeat across many different styles, so matching on colour without also
+// pinning the exact style would let whichever product promotes first claim every unlinked image
+// of that colour, regardless of which style it actually came from. Exported separately from
+// promoteSupplierProductToCatalogue so a repair pass can re-run this for products that were
+// promoted before this scoping fix existed, without redoing the whole promotion.
+export async function linkSupplierProductImages(
+  prisma: PrismaClient,
+  supplierProductId: string,
+  masterProductId: string,
+): Promise<number> {
+  const result = await prisma.productImage.updateMany({
+    where: { supplierProductId, masterProductId: null },
+    data: { masterProductId, status: 'published' },
+  });
+  return result.count;
+}
+
 export async function promoteSupplierProductToCatalogue(
   opts: PromoteToCatalogueOptions,
 ): Promise<PromoteToCatalogueResult> {
@@ -146,18 +165,7 @@ export async function promoteSupplierProductToCatalogue(
     });
   }
 
-  // Link already-ingested supplier images (persisted by catalogue-import.ts) by colour name —
-  // these were recorded with no masterProductId yet since promotion hadn't happened. One call per
-  // colour rather than a single blanket update, since each colour needs its own match condition.
-  const productColours = [...new Set(supplierProduct.variantOffers.map((o) => o.colourName))];
-  let imagesLinked = 0;
-  for (const colourName of productColours) {
-    const result = await prisma.productImage.updateMany({
-      where: { supplierId: supplierProduct.supplierId, masterProductId: null, colourName },
-      data: { masterProductId: masterProduct.id, status: 'published' },
-    });
-    imagesLinked += result.count;
-  }
+  const imagesLinked = await linkSupplierProductImages(prisma, supplierProductId, masterProduct.id);
 
   // Link the SupplierProduct back to its new MasterProduct — without this, a second call would
   // never see masterProductId set and would create a duplicate MasterProduct every time.

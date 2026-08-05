@@ -2,6 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+export type CartItemPriceTier = { minQty: number; maxQty: number | null; pricePerUnit: number };
+
 export type CartItem = {
   id: string;
   name: string;
@@ -12,6 +14,13 @@ export type CartItem = {
   /** Price at the lowest quantity tier, from the real print-cost chart — null when this item has
    *  no real catalogue product yet (shown as quote-only in the cart, never a guessed number). */
   startingPrice?: number | null;
+  /** Set only by the product customizer (colour + per-size quantity picker). When present, the
+   *  cart prices this item off the tier matching its CURRENT quantity rather than startingPrice's
+   *  fixed lowest-tier number — so the price stays accurate if the customer adjusts quantity from
+   *  the cart, instead of quietly showing a stale 1-2-unit price for a 50-unit order. */
+  priceTiers?: CartItemPriceTier[];
+  colourName?: string;
+  sizeBreakdown?: { size: string; qty: number }[];
 };
 
 type CartContextValue = {
@@ -58,7 +67,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
-        return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + qty } : i));
+        return prev.map((i) => {
+          if (i.id !== item.id) return i;
+          // Merge per-size quantities (same colour/product re-configured) rather than losing the
+          // original breakdown — sizes in common get summed, new sizes get appended.
+          const mergedSizes = item.sizeBreakdown
+            ? [...(i.sizeBreakdown ?? [])]
+            : i.sizeBreakdown;
+          if (item.sizeBreakdown && mergedSizes) {
+            for (const incoming of item.sizeBreakdown) {
+              const match = mergedSizes.find((s) => s.size === incoming.size);
+              if (match) match.qty += incoming.qty;
+              else mergedSizes.push({ ...incoming });
+            }
+          }
+          return { ...i, quantity: i.quantity + qty, sizeBreakdown: mergedSizes ?? item.sizeBreakdown };
+        });
       }
       return [...prev, { ...item, quantity: qty }];
     });

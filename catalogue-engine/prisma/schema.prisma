@@ -196,6 +196,7 @@ model SupplierProduct {
 
   variantOffers    SupplierVariantOffer[]
   matchCandidates  MatchCandidate[]
+  images           ProductImage[]
 
   @@unique([supplierId, supplierStyleCode])
   @@index([matchStatus])
@@ -249,6 +250,12 @@ model ProductImage {
   productVariant   ProductVariant?   @relation(fields: [productVariantId], references: [id])
   supplierId       String?
   supplier         Supplier?         @relation(fields: [supplierId], references: [id])
+  // Which specific SupplierProduct (style) this image came from — without this, linking images
+  // to a MasterProduct by colourName alone is ambiguous across styles that share common colour
+  // names ("Black", "White"), and the first-promoted product wrongly claims every unlinked image
+  // for that colour regardless of which style it actually belongs to.
+  supplierProductId String?
+  supplierProduct   SupplierProduct? @relation(fields: [supplierProductId], references: [id])
   source           ImageSource
   sourceUrl        String // original supplier (or Maple Imprint upload) URL
   cachedUrl        String? // CDN URL once ingested

@@ -4,11 +4,11 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
-import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
-import { SECONDARY_CTA } from "@/lib/constants";
+import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { PRODUCTS, getProduct } from "@/lib/products";
+import { ProductCustomizer } from "@/components/products/ProductCustomizer";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({
@@ -43,6 +43,7 @@ export default async function ProductDetailPage({
 
   const primaryImage = p.images[0];
   const galleryImages = p.images.slice(0, 6);
+  const categoryName = PRODUCT_CATEGORIES.find((c) => c.slug === p.categorySlug)?.name ?? p.categorySlug;
 
   return (
     <>
@@ -88,36 +89,8 @@ export default async function ProductDetailPage({
               <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-muted">{p.description}</p>
             )}
 
-            {p.colours.length > 0 && (
-              <div className="mt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/70">Colours</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {p.colours.map((c) => (
-                    <span key={c} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-ink-900">
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {p.sizes.length > 0 && (
-              <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/70">Sizes</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {p.sizes.map((s) => (
-                    <span key={s} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-ink-900">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-8">
-              <Button href={SECONDARY_CTA.href} showArrow>
-                Start customizing
-              </Button>
+            <div className="mt-6">
+              <ProductCustomizer product={p} categoryName={categoryName} />
             </div>
           </Reveal>
         </div>

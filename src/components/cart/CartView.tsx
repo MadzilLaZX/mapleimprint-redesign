@@ -6,16 +6,29 @@ import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Trash } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { useCart, QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
+import { useCart, QUOTE_PREFILL_KEY, type CartItem } from "@/components/cart/CartProvider";
 import { PRIMARY_CTA } from "@/lib/constants";
+
+/** Real per-unit price for this item's CURRENT quantity — uses the tier matching `item.quantity`
+ *  when the customizer attached a tier table, falling back to the flat startingPrice (lowest-tier
+ *  quick-add) otherwise. Keeps the price honest if quantity is adjusted from the cart. */
+function unitPriceFor(item: CartItem): number | null {
+  if (item.priceTiers && item.priceTiers.length > 0) {
+    const tier = item.priceTiers.find(
+      (t) => item.quantity >= t.minQty && (t.maxQty === null || item.quantity <= t.maxQty),
+    );
+    return tier ? tier.pricePerUnit : null;
+  }
+  return item.startingPrice ?? null;
+}
 
 export function CartView() {
   const { items, removeItem, updateQuantity, totalCount } = useCart();
   const router = useRouter();
 
-  const pricedItems = items.filter((i) => i.startingPrice !== null && i.startingPrice !== undefined);
+  const pricedItems = items.filter((i) => unitPriceFor(i) !== null);
   const unpricedCount = items.length - pricedItems.length;
-  const estimatedSubtotal = pricedItems.reduce((sum, i) => sum + (i.startingPrice ?? 0) * i.quantity, 0);
+  const estimatedSubtotal = pricedItems.reduce((sum, i) => sum + (unitPriceFor(i) ?? 0) * i.quantity, 0);
 
   function handleGetQuote() {
     const summary = items.map((i) => `${i.name} x${i.quantity}`).join(", ");
@@ -60,11 +73,20 @@ export function CartView() {
                 {item.categoryName}
               </p>
               <p className="mt-0.5 truncate font-display font-semibold text-ink-900">{item.name}</p>
-              {item.startingPrice !== null && item.startingPrice !== undefined && (
-                <p className="mt-0.5 text-xs text-muted">
-                  From ${item.startingPrice.toFixed(2)} / unit
+              {item.colourName && (
+                <p className="mt-0.5 truncate text-xs text-muted">
+                  {item.colourName}
+                  {item.sizeBreakdown && item.sizeBreakdown.length > 0 && (
+                    <> · {item.sizeBreakdown.map((s) => `${s.size} ×${s.qty}`).join(", ")}</>
+                  )}
                 </p>
               )}
+              {(() => {
+                const price = unitPriceFor(item);
+                return price !== null ? (
+                  <p className="mt-0.5 text-xs text-muted">${price.toFixed(2)} / unit</p>
+                ) : null;
+              })()}
             </div>
             <div className="flex shrink-0 items-center gap-1 rounded-full border border-sand p-1">
               <button
