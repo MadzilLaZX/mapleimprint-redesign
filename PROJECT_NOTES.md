@@ -87,8 +87,10 @@ Real / functional:
   matched to `PRODUCT_CATEGORIES[].subcategories` names via `slugify()` in `src/lib/slugify.ts`
   — reuse that helper rather than hand-writing paths, so filenames always stay in sync with the
   constant), 4 of the 6 "Popular right now" picks (`public/images/popular/*.jpg`), all 6
-  `/solutions` cards and detail heroes (`public/images/solutions/*.jpg`), the About page hero, and
-  the full 12-photo `/our-work` gallery (`public/images/our-work/*.jpg`). Originals were
+  `/solutions` cards and detail heroes (`public/images/solutions/*.jpg`), the About page hero,
+  the full 12-photo `/our-work` gallery, and all 6 tiles in the homepage's "materials behind
+  every order" preview (`OurWorkPreview.tsx`, all reusing/extending `public/images/our-work/*.jpg`
+  — real photos there get plain `object-cover`, no `.img-brand` filter). Originals were
   ~1.8-2.5MB PNGs each; the various `scripts/import-*-photos.js` scripts resize/compress them to
   web-appropriate JPEGs (~35-275KB) — re-run the relevant one if new source exports are dropped in.
 - The `/our-work` masonry is built as three explicit column arrays (`columns` in
@@ -111,10 +113,18 @@ Real / functional:
 - Every interior page (everything using `PageHeader`, i.e. everything except the homepage) has
   a "Back" button (`src/components/ui/BackButton.tsx`, `router.back()`) at the top of the dark
   header band, below the sticky site header so it never competes with the logo/nav.
+- The homepage's "Popular right now" rail (`PopularCategories.tsx`) has a single scroll arrow
+  (right by default; flips to left once the rail reaches its end, never both at once), driven by
+  a `scroll` listener on the rail ref rather than a fixed step count, so it stays correct if picks
+  are added/removed.
+- Print methods (`PRINT_METHODS` in `constants.ts`) are DTF & DTG Printing, Sublimation, Paper &
+  Large Format and Laser Engraving — Screen Printing and Embroidery were removed sitewide (they
+  aren't actually offered) and every copy reference (`/print-methods`, category pages, homepage
+  preview, FAQ, resources, quote wizard placeholder, SEO keywords) was updated to match.
 
 **Lesson learned — scroll-triggered reveals don't suit variable-height interactive grids.**
 The shop's product grid initially reused the `RevealGroup`/`RevealItem` pattern (Framer Motion
-`whileInView`, `amount: 0.2`) used elsewhere on the site. For a short, fixed grid (e.g. 5 print
+`whileInView`, `amount: 0.2`) used elsewhere on the site. For a short, fixed grid (e.g. the 4 print
 methods) that's fine. For a tall, filterable grid (33 products across ~9 rows), `amount: 0.2`
 means 20% of the *entire grid's* height must be on-screen before anything fades in — on load,
 only the top slice is visible, so the whole grid could sit at `opacity: 0` indefinitely without
@@ -247,3 +257,12 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
+
+**Build note:** a separate, more recent change wired ~545 real S&S Activewear products directly
+into the frontend as static routes (`src/lib/generated/products.json`, `src/lib/products.ts`,
+`generateStaticParams` in `src/app/products/[category]/[subcategory]/[product]/page.tsx`) — over
+600 static routes total. `next build`'s static-generation worker pool defaults to one worker per
+CPU core, which OOM'd on this ~16GB dev machine (32 logical cores) once that many routes were
+being generated concurrently. Fixed by capping `experimental.cpus: 4` in `next.config.ts` — bounds
+peak memory at the cost of some build wall-clock time. Raise that cap on a machine with more RAM
+per core, or investigate `--experimental-build-mode` if the route count keeps growing.
