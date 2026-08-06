@@ -334,7 +334,7 @@ export function QuoteWizard() {
                     <FieldLabel htmlFor="decorationMethod" optional>Decoration method, if known</FieldLabel>
                     <TextInput
                       id="decorationMethod"
-                      placeholder="e.g. Embroidery"
+                      placeholder="e.g. Laser engraving"
                       value={data.decorationMethod}
                       onChange={(e) => update("decorationMethod", e.target.value)}
                     />

@@ -10,7 +10,7 @@ import { PRINT_METHOD_DETAILS } from "@/lib/printMethodDetails";
 export const metadata: Metadata = {
   title: "Print Methods",
   description:
-    "Screen printing, embroidery, DTF and DTG, sublimation and large format printing explained in plain language, with guidance on which method suits which job.",
+    "DTF and DTG, sublimation, large format printing and laser engraving explained in plain language, with guidance on which method suits which job.",
 };
 
 export default function PrintMethodsPage() {
@@ -18,7 +18,7 @@ export default function PrintMethodsPage() {
     <>
       <PageHeader
         eyebrow="Print methods"
-        title="Five ways we decorate, explained honestly"
+        title="Four ways we decorate, explained honestly"
         description="Every product page states which methods it supports. This page explains why one might suit your job better than another."
       />
 

@@ -136,16 +136,6 @@ export const SOLUTIONS = [
 
 export const PRINT_METHODS = [
   {
-    slug: "screen-printing",
-    name: "Screen Printing",
-    blurb: "The standard for bold, opaque colour on larger apparel runs.",
-  },
-  {
-    slug: "embroidery",
-    name: "Embroidery",
-    blurb: "Stitched logos for a durable, premium finish on workwear.",
-  },
-  {
     slug: "dtf-dtg",
     name: "DTF & DTG Printing",
     blurb: "Full-colour detail with no minimums, ideal for smaller runs.",
@@ -159,5 +149,10 @@ export const PRINT_METHODS = [
     slug: "large-format",
     name: "Paper & Large Format",
     blurb: "Business printing, signage and banners at any size.",
+  },
+  {
+    slug: "laser-engraving",
+    name: "Laser Engraving",
+    blurb: "Permanent, precise marking into wood, metal and other hard surfaces.",
   },
 ] as const;

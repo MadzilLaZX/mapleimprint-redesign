@@ -31,7 +31,7 @@ const guides = [
   {
     icon: Palette,
     title: "Print Method Comparison",
-    detail: "Screen printing, embroidery, DTF/DTG and sublimation, compared.",
+    detail: "DTF/DTG, sublimation, large format and laser engraving, compared.",
     href: "/print-methods",
   },
   {

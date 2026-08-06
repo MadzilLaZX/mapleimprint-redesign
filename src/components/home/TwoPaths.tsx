@@ -23,7 +23,7 @@ const paths = [
     icon: Truck,
     title: "Plan a bulk order",
     description:
-      "For embroidery, mixed garments, rush jobs and corporate packages that need a scoped quote.",
+      "For laser engraving, mixed garments, rush jobs and corporate packages that need a scoped quote.",
     steps: [
       "Describe the project and quantities",
       "Upload files or request design help",

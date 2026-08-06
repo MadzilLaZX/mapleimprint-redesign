@@ -30,9 +30,9 @@ export const metadata: Metadata = {
   keywords: [
     "custom printing Ottawa",
     "custom t-shirt printing Ottawa",
-    "embroidery Ottawa",
+    "laser engraving Ottawa",
     "business uniforms Ottawa",
-    "screen printing Ottawa",
+    "DTF & DTG printing Ottawa",
     "promotional products Ottawa",
   ],
   openGraph: {

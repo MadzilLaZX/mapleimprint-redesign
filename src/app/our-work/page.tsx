@@ -33,7 +33,7 @@ const columns: Shot[][] = [
     { key: "embroidery-thread", src: "/images/our-work/embroidery-thread.jpg", h: 467 },
     { key: "tumbler-cap-box", src: "/images/our-work/tumbler-cap-box.jpg", h: 467 },
     { key: "bottle-notebook-pen", src: "/images/our-work/bottle-notebook-pen.jpg", h: 467 },
-    { key: "hoodie-tote-cap-mug", src: "/images/our-work/hoodie-tote-cap-mug.jpg", h: 373 },
+    { key: "hoodie-tote-cap-mug-2", src: "/images/our-work/hoodie-tote-cap-mug-2.jpg", h: 373 },
   ],
 ];
 

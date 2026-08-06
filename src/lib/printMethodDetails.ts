@@ -2,22 +2,6 @@ export const PRINT_METHOD_DETAILS: Record<
   string,
   { bestFor: string; considerations: string[] }
 > = {
-  "screen-printing": {
-    bestFor: "Larger runs of the same design in one to a few solid colours.",
-    considerations: [
-      "Most cost-effective as quantity increases",
-      "Each additional colour adds a separate screen and setup step",
-      "Bold, opaque colour that holds up to repeated washing",
-    ],
-  },
-  embroidery: {
-    bestFor: "Logos on workwear, headwear and structured garments.",
-    considerations: [
-      "Best for simpler shapes and up to roughly a dozen thread colours",
-      "Very fine detail or gradients don't translate well to stitching",
-      "Higher perceived quality and durability than printed logos",
-    ],
-  },
   "dtf-dtg": {
     bestFor: "Full-colour or photographic designs, especially smaller runs.",
     considerations: [
@@ -40,6 +24,14 @@ export const PRINT_METHOD_DETAILS: Record<
       "Paper stock and finish affect both feel and price",
       "Outdoor signage uses weatherproof material and lamination",
       "Proof colour can vary slightly from screen to final print",
+    ],
+  },
+  "laser-engraving": {
+    bestFor: "Permanent marking on wood, metal, glass and other hard-surface gifts and awards.",
+    considerations: [
+      "Etches into the material itself rather than adding a surface layer",
+      "Single-colour result that follows the natural tone of the material",
+      "No thread or ink to fade, crack or wash out over time",
     ],
   },
 };

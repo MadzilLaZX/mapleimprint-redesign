@@ -15,14 +15,14 @@ import { getProductsBySubcategory } from "@/lib/products";
 import { slugify } from "@/lib/slugify";
 
 const methodsByCategory: Record<string, string[]> = {
-  "custom-apparel": ["screen-printing", "embroidery", "dtf-dtg"],
-  "workwear-uniforms": ["embroidery", "screen-printing"],
-  "hats-accessories": ["embroidery", "dtf-dtg"],
+  "custom-apparel": ["dtf-dtg"],
+  "workwear-uniforms": ["dtf-dtg"],
+  "hats-accessories": ["dtf-dtg"],
   "business-printing": ["large-format"],
   "signs-banners": ["large-format"],
   "stickers-labels": ["large-format", "dtf-dtg"],
-  drinkware: ["sublimation"],
-  "gifts-promo": ["sublimation", "large-format"],
+  drinkware: ["sublimation", "laser-engraving"],
+  "gifts-promo": ["sublimation", "large-format", "laser-engraving"],
 };
 
 export function generateStaticParams() {

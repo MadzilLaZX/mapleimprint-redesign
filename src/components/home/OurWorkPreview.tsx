@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 
 const shots = [
-  { seed: "texture-a", h: 420 },
-  { seed: "weave-2", h: 320 },
-  { seed: "signage-1", h: 360 },
-  { seed: "screen-1", h: 440 },
-  { seed: "craft-2", h: 300 },
-  { seed: "material-3", h: 380 },
+  { key: "laser-engraving-action", src: "/images/our-work/laser-engraving-action.jpg", h: 420 },
+  { key: "fabric-stack", src: "/images/our-work/fabric-stack.jpg", h: 320 },
+  { key: "embroidery-thread", src: "/images/our-work/embroidery-thread.jpg", h: 360 },
+  { key: "dtf-dtg-printing", src: "/images/our-work/dtf-dtg-printing.jpg", h: 440 },
+  { key: "sublimation-process", src: "/images/our-work/sublimation-process.jpg", h: 300 },
+  { key: "premium-metal-card", src: "/images/our-work/premium-metal-card.jpg", h: 380 },
 ];
 
 export function OurWorkPreview() {
@@ -35,16 +35,15 @@ export function OurWorkPreview() {
         <Reveal delay={0.15}>
           <div className="mt-12 columns-2 gap-4 lg:columns-3">
             {shots.map((shot) => (
-              <div key={shot.seed} className="relative mb-4 break-inside-avoid overflow-hidden rounded-3xl">
+              <div key={shot.key} className="relative mb-4 break-inside-avoid overflow-hidden rounded-3xl">
                 <Image
-                  src={`https://picsum.photos/seed/${shot.seed}/700/${shot.h}`}
+                  src={shot.src}
                   alt=""
                   width={700}
                   height={shot.h}
                   sizes="(min-width: 1024px) 33vw, 50vw"
-                  className="img-brand h-auto w-full object-cover"
+                  className="h-auto w-full object-cover"
                 />
-                <div className="pointer-events-none absolute inset-0 bg-maple-gradient mix-blend-soft-light opacity-40" />
               </div>
             ))}
           </div>

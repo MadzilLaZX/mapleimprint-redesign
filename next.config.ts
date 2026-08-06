@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The static-generation worker pool defaults to one worker per CPU core (32 here), which
+  // exceeds this machine's ~16GB of RAM once the 545-product catalogue's ~600 static routes are
+  // being generated concurrently and crashes the build with an OOM. Capping it keeps peak memory
+  // bounded at the cost of some build wall-clock time.
+  experimental: {
+    cpus: 4,
+  },
   images: {
     remotePatterns: [
       {

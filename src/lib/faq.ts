@@ -2,7 +2,7 @@ export const FULL_FAQ = [
   {
     question: "Is there a minimum order quantity?",
     answer:
-      "Most products have no minimum for instant online orders. Some bulk decoration methods, like embroidery, may carry a method-specific minimum, which is stated clearly before you commit.",
+      "Most products have no minimum for instant online orders. Some bulk decoration methods, like laser engraving, may carry a method-specific minimum, which is stated clearly before you commit.",
   },
   {
     question: "How does pricing work?",
@@ -50,7 +50,7 @@ export const HOME_FAQ = [
   {
     question: "Is there a minimum order quantity?",
     answer:
-      "Most products have no minimum for instant online orders. Some bulk decoration methods, like embroidery, may carry a method-specific minimum, which we state clearly before you commit.",
+      "Most products have no minimum for instant online orders. Some bulk decoration methods, like laser engraving, may carry a method-specific minimum, which we state clearly before you commit.",
   },
   {
     question: "Will I see a proof before anything is printed?",

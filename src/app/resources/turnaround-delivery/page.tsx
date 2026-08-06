@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const factors = [
   {
     title: "Decoration method",
-    detail: "Embroidery and multi-colour screen printing generally take longer to set up than DTF, DTG or sublimation.",
+    detail: "Laser engraving and large-format runs generally take longer to set up than DTF or DTG.",
   },
   {
     title: "Quantity",
