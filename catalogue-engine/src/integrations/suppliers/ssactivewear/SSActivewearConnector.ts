@@ -196,14 +196,36 @@ export class SSActivewearConnector implements SupplierConnector {
 
   private async apiGet<T>(path: string): Promise<T> {
     await this.throttle();
-    const res = await fetch(`${API_BASE}${path}`, {
-      headers: { Authorization: this.authHeader, Accept: 'application/json' },
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`ssactivewear: GET ${path} failed with ${res.status}: ${body.slice(0, 300)}`);
+    // Plain fetch() has no default timeout — a stalled connection to S&S would otherwise hang
+    // this call (and the whole import) forever with no error, no log line, nothing to act on.
+    // Observed live 2026-08-08: an import genuinely hung for 6+ minutes with zero output.
+    //
+    // The timer MUST stay armed through res.json(), not just the initial fetch(): headers can
+    // arrive fine and then the body stream (batches run up to ~8MB) stalls mid-download. An
+    // earlier version cleared the timeout as soon as fetch() resolved, leaving res.json() with
+    // zero timeout protection — confirmed live 2026-08-09 as the actual cause of repeated
+    // multi-minute silent hangs (no error, no log line, DB writes just stop) that a 45s-on-
+    // fetch-only timer never caught.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45_000);
+    try {
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: { Authorization: this.authHeader, Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`ssactivewear: GET ${path} failed with ${res.status}: ${body.slice(0, 300)}`);
+      }
+      return (await res.json()) as T;
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error(`ssactivewear: GET ${path} timed out after 45s`);
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeout);
     }
-    return (await res.json()) as T;
   }
 
   async authenticate(): Promise<void> {
