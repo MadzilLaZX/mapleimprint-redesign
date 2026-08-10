@@ -24,6 +24,8 @@ export const MAPPED_PRODUCT_TYPES = [
   'workwear_hospitality',
   'workwear_healthcare',
   'workwear_safety',
+  'woven_shirt',
+  'knit_layering',
 ];
 
 /** productType (+ product name, for headwear's caps-vs-beanies split) -> {categorySlug, subcategorySlug}. */
@@ -40,6 +42,10 @@ export function routeFor(productType, productName) {
       return { categorySlug: CUSTOM_APPAREL, subcategorySlug: 'jackets-outerwear' };
     case 'youth_apparel':
       return { categorySlug: CUSTOM_APPAREL, subcategorySlug: 'youth-performance' };
+    case 'woven_shirt':
+      return { categorySlug: CUSTOM_APPAREL, subcategorySlug: 'button-ups-wovens' };
+    case 'knit_layering':
+      return { categorySlug: CUSTOM_APPAREL, subcategorySlug: 'sweaters-layering' };
     case 'bag':
       return { categorySlug: HATS_ACCESSORIES, subcategorySlug: 'bags' };
     case 'apron':
@@ -80,5 +86,7 @@ export const APPAREL_PRODUCT_TYPES = new Set([
   'workwear_hospitality',
   'workwear_healthcare',
   'workwear_safety',
+  'woven_shirt',
+  'knit_layering',
 ]);
 export const HEADWEAR_PRODUCT_TYPE = 'headwear';

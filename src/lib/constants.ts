@@ -41,7 +41,7 @@ export const PRODUCT_CATEGORIES = [
     slug: "custom-apparel",
     name: "Custom Apparel",
     blurb: "T-shirts, hoodies, polos and premium blanks, decorated to spec.",
-    subcategories: ["T-shirts", "Polos", "Hoodies & sweatshirts", "Jackets & outerwear", "Youth & performance"],
+    subcategories: ["T-shirts", "Polos", "Hoodies & sweatshirts", "Jackets & outerwear", "Youth & performance", "Button-ups & wovens", "Sweaters & layering"],
     cover: "/images/products/custom-apparel.jpg",
   },
   {

@@ -82,6 +82,8 @@ const BASE_CATEGORY_TO_PRODUCT_TYPE: Record<string, string> = {
   Outerwear: 'jacket',
   Headwear: 'headwear', // caps vs beanies/toques split by product name — see export script
   Bags: 'bag',
+  Wovens: 'woven_shirt', // button-up/dress shirts — previously unmapped, silently dropped
+  'Knits & Layering': 'knit_layering', // quarter-zips, cardigans, sweaters — same as above
 };
 
 // Use-case-specific product lines that baseCategory can't express (a "Corporate Uniforms" style

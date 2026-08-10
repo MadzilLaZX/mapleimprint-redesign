@@ -50,7 +50,7 @@ const CATEGORY_TAXONOMY = [
   {
     slug: 'custom-apparel',
     name: 'Custom Apparel',
-    subcategories: ['T-shirts', 'Polos', 'Hoodies & sweatshirts', 'Jackets & outerwear', 'Youth & performance'],
+    subcategories: ['T-shirts', 'Polos', 'Hoodies & sweatshirts', 'Jackets & outerwear', 'Youth & performance', 'Button-ups & wovens', 'Sweaters & layering'],
   },
   {
     slug: 'workwear-uniforms',
