@@ -142600,6 +142600,237 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "comfort-colors-unisex-colorblast-heavyweight-t-shirt",
+    "name": "Unisex Colorblast™ Heavyweight T-Shirt",
+    "brandName": "Comfort Colors",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "6.1 oz./yd², (US), 10.2 oz./Lyd (CA), 100% ring-spun cotton,  20 singles\nComfort Colors styles are garment dyed for a lived-in feel with minimal shrinkage.\nFeaturing 100% ring spun U.S. cotton jersey and cotton threads.\nRelaxed fit\nTopstitched, classic width, rib collar\nShoulder to shoulder twill tape\nSignature twill label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/91614_f_fm.jpg",
+        "colourName": "Amethyst",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/91617_f_fm.jpg",
+        "colourName": "Clay",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/107773_f_fm.jpg",
+        "colourName": "Fiji Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/91616_f_fm.jpg",
+        "colourName": "Ocean",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/93120_f_fm.jpg",
+        "colourName": "Smoke",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/91614_b_fm.jpg",
+        "colourName": "Amethyst",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/91617_b_fm.jpg",
+        "colourName": "Clay",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/107773_b_fm.jpg",
+        "colourName": "Fiji Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/91616_b_fm.jpg",
+        "colourName": "Ocean",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/93120_b_fm.jpg",
+        "colourName": "Smoke",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Smoke",
+      "Fiji Blue",
+      "Clay",
+      "Amethyst",
+      "Ocean"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Smoke",
+        "size": "S"
+      },
+      {
+        "colourName": "Smoke",
+        "size": "M"
+      },
+      {
+        "colourName": "Smoke",
+        "size": "L"
+      },
+      {
+        "colourName": "Smoke",
+        "size": "XL"
+      },
+      {
+        "colourName": "Smoke",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Smoke",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Fiji Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Fiji Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Fiji Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Fiji Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Fiji Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Fiji Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Clay",
+        "size": "S"
+      },
+      {
+        "colourName": "Clay",
+        "size": "M"
+      },
+      {
+        "colourName": "Clay",
+        "size": "L"
+      },
+      {
+        "colourName": "Clay",
+        "size": "XL"
+      },
+      {
+        "colourName": "Clay",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Clay",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Amethyst",
+        "size": "S"
+      },
+      {
+        "colourName": "Amethyst",
+        "size": "M"
+      },
+      {
+        "colourName": "Amethyst",
+        "size": "L"
+      },
+      {
+        "colourName": "Amethyst",
+        "size": "XL"
+      },
+      {
+        "colourName": "Amethyst",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Amethyst",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Ocean",
+        "size": "S"
+      },
+      {
+        "colourName": "Ocean",
+        "size": "M"
+      },
+      {
+        "colourName": "Ocean",
+        "size": "L"
+      },
+      {
+        "colourName": "Ocean",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ocean",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Ocean",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "north-end-men-s-spirit-textured-hooded-pullover",
     "name": "Men's Spirit Textured Hooded Pullover",
     "brandName": "North End",
@@ -143633,6 +143864,433 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "comfort-colors-women-s-garment-dyed-heavyweight-boxy-t-shirt",
+    "name": "Women's Garment-Dyed Heavyweight Boxy T-Shirt",
+    "brandName": "Comfort Colors",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "6.1 oz./yd², (US), 10.2 oz./Lyd (CA), 100% ring-spun cotton, 20 singles\nComfort Colors styles are garment dyed for a lived-in feel with minimal shrinkage.\n\nFeaturing 100% ring spun U.S. cotton jersey and cotton threads.\n\nBoxy, mid-length fit\nTopstitched, classic width, rib collar\nShoulder to shoulder twill tape\nSignature twill label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65502_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65505_f_fm.jpg",
+        "colourName": "Butter",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65508_f_fm.jpg",
+        "colourName": "Chalky Mint",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65509_f_fm.jpg",
+        "colourName": "Chambray",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65519_f_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65532_f_fm.jpg",
+        "colourName": "Neon Cantaloupe",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65500_f_fm.jpg",
+        "colourName": "Neon Lemon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65522_f_fm.jpg",
+        "colourName": "Neon Violet",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65529_f_fm.jpg",
+        "colourName": "Orchid",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65523_f_fm.jpg",
+        "colourName": "Peachy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65520_f_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65531_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65502_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65505_b_fm.jpg",
+        "colourName": "Butter",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65508_b_fm.jpg",
+        "colourName": "Chalky Mint",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65509_b_fm.jpg",
+        "colourName": "Chambray",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65519_b_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65532_b_fm.jpg",
+        "colourName": "Neon Cantaloupe",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65500_b_fm.jpg",
+        "colourName": "Neon Lemon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65522_b_fm.jpg",
+        "colourName": "Neon Violet",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65529_b_fm.jpg",
+        "colourName": "Orchid",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65523_b_fm.jpg",
+        "colourName": "Peachy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65520_b_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65531_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Neon Violet",
+      "Neon Cantaloupe",
+      "Peachy",
+      "Neon Lemon",
+      "Ivory",
+      "Butter",
+      "Chalky Mint",
+      "Pepper",
+      "Black",
+      "Orchid",
+      "Chambray"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "S"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "M"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "L"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "XL"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Neon Cantaloupe",
+        "size": "S"
+      },
+      {
+        "colourName": "Neon Cantaloupe",
+        "size": "M"
+      },
+      {
+        "colourName": "Neon Cantaloupe",
+        "size": "L"
+      },
+      {
+        "colourName": "Neon Cantaloupe",
+        "size": "XL"
+      },
+      {
+        "colourName": "Neon Cantaloupe",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Peachy",
+        "size": "S"
+      },
+      {
+        "colourName": "Peachy",
+        "size": "M"
+      },
+      {
+        "colourName": "Peachy",
+        "size": "L"
+      },
+      {
+        "colourName": "Peachy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Peachy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Neon Lemon",
+        "size": "S"
+      },
+      {
+        "colourName": "Neon Lemon",
+        "size": "M"
+      },
+      {
+        "colourName": "Neon Lemon",
+        "size": "L"
+      },
+      {
+        "colourName": "Neon Lemon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Neon Lemon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "S"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "M"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "L"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Butter",
+        "size": "S"
+      },
+      {
+        "colourName": "Butter",
+        "size": "M"
+      },
+      {
+        "colourName": "Butter",
+        "size": "L"
+      },
+      {
+        "colourName": "Butter",
+        "size": "XL"
+      },
+      {
+        "colourName": "Butter",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "S"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "M"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "L"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "XL"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "S"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "M"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "L"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "S"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "M"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "L"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "XL"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "S"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "M"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "L"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "berne-apparel-safety-striped-gasket-unlined-coverall",
     "name": "Safety Striped Gasket Unlined Coverall",
     "brandName": "Berne Apparel",
@@ -143665,6 +144323,1147 @@
       {
         "colourName": "Navy",
         "size": "40"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "comfort-colors-unisex-garment-dyed-heavyweight-long-sleeve-t-shirt",
+    "name": "Unisex Garment-Dyed Heavyweight Long Sleeve T-Shirt",
+    "brandName": "Comfort Colors",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "6.1 oz./yd² (US), 10 oz/L yd (CA), 100% ring spun cotton, 20 singles\nComfort Colors styles are garment dyed for a lived-in feel with minimal shrinkage.\n\nFeaturing 100% ring-spun U.S. cotton jersey and cotton threads.\n\nRelaxed fit\nTopstitched, classic width, collar\nRib cuffs\nShoulder to shoulder twill tape\nSignature twill label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46697_f_fm.jpg",
+        "colourName": "Berry",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46698_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46699_f_fm.jpg",
+        "colourName": "Blossom",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34060_f_fm.jpg",
+        "colourName": "Blue Jean",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46700_f_fm.jpg",
+        "colourName": "Blue Spruce",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46701_f_fm.jpg",
+        "colourName": "Brick",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46704_f_fm.jpg",
+        "colourName": "Butter",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46706_f_fm.jpg",
+        "colourName": "Chalky Mint",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46707_f_fm.jpg",
+        "colourName": "Chambray",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34062_f_fm.jpg",
+        "colourName": "Crimson",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46714_f_fm.jpg",
+        "colourName": "Denim",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46716_f_fm.jpg",
+        "colourName": "Flo Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46717_f_fm.jpg",
+        "colourName": "Granite",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46719_f_fm.jpg",
+        "colourName": "Graphite",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34067_f_fm.jpg",
+        "colourName": "Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34063_f_fm.jpg",
+        "colourName": "Hemp",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46721_f_fm.jpg",
+        "colourName": "Ice Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46722_f_fm.jpg",
+        "colourName": "Island Reef",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46723_f_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46726_f_fm.jpg",
+        "colourName": "Lagoon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46727_f_fm.jpg",
+        "colourName": "Light Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34064_f_fm.jpg",
+        "colourName": "Mustard",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46735_f_fm.jpg",
+        "colourName": "Neon Red Orange",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/73480_f_fm.jpg",
+        "colourName": "Orchid",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34061_f_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46754_f_fm.jpg",
+        "colourName": "Sandstone",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/42398_f_fm.jpg",
+        "colourName": "Seafoam",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46756_f_fm.jpg",
+        "colourName": "True Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46759_f_fm.jpg",
+        "colourName": "Watermelon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46760_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34065_f_fm.jpg",
+        "colourName": "Yam",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46697_b_fm.jpg",
+        "colourName": "Berry",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46698_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46699_b_fm.jpg",
+        "colourName": "Blossom",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34060_b_fm.jpg",
+        "colourName": "Blue Jean",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46700_b_fm.jpg",
+        "colourName": "Blue Spruce",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46701_b_fm.jpg",
+        "colourName": "Brick",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46704_b_fm.jpg",
+        "colourName": "Butter",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46706_b_fm.jpg",
+        "colourName": "Chalky Mint",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46707_b_fm.jpg",
+        "colourName": "Chambray",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34062_b_fm.jpg",
+        "colourName": "Crimson",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46714_b_fm.jpg",
+        "colourName": "Denim",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46716_b_fm.jpg",
+        "colourName": "Flo Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46717_b_fm.jpg",
+        "colourName": "Granite",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46719_b_fm.jpg",
+        "colourName": "Graphite",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34067_b_fm.jpg",
+        "colourName": "Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34063_b_fm.jpg",
+        "colourName": "Hemp",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46721_b_fm.jpg",
+        "colourName": "Ice Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46722_b_fm.jpg",
+        "colourName": "Island Reef",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46723_b_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46726_b_fm.jpg",
+        "colourName": "Lagoon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46727_b_fm.jpg",
+        "colourName": "Light Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34064_b_fm.jpg",
+        "colourName": "Mustard",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46735_b_fm.jpg",
+        "colourName": "Neon Red Orange",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/73480_b_fm.jpg",
+        "colourName": "Orchid",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34061_b_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46754_b_fm.jpg",
+        "colourName": "Sandstone",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/42398_b_fm.jpg",
+        "colourName": "Seafoam",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46756_b_fm.jpg",
+        "colourName": "True Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46759_b_fm.jpg",
+        "colourName": "Watermelon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46760_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/34065_b_fm.jpg",
+        "colourName": "Yam",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Orchid",
+      "Seafoam",
+      "Pepper",
+      "Graphite",
+      "Neon Red Orange",
+      "Light Green",
+      "Crimson",
+      "Ivory",
+      "Mustard",
+      "Blossom",
+      "Yam",
+      "Grey",
+      "Ice Blue",
+      "Butter",
+      "Watermelon",
+      "Chalky Mint",
+      "Flo Blue",
+      "Black",
+      "Brick",
+      "Granite",
+      "True Navy",
+      "Lagoon",
+      "Hemp",
+      "Denim",
+      "Chambray",
+      "Berry",
+      "Island Reef",
+      "Sandstone",
+      "Blue Spruce",
+      "Blue Jean"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "S"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "M"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "L"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "XL"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Orchid",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Seafoam",
+        "size": "S"
+      },
+      {
+        "colourName": "Seafoam",
+        "size": "M"
+      },
+      {
+        "colourName": "Seafoam",
+        "size": "L"
+      },
+      {
+        "colourName": "Seafoam",
+        "size": "XL"
+      },
+      {
+        "colourName": "Seafoam",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Seafoam",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "S"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "M"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "L"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Graphite",
+        "size": "S"
+      },
+      {
+        "colourName": "Graphite",
+        "size": "M"
+      },
+      {
+        "colourName": "Graphite",
+        "size": "L"
+      },
+      {
+        "colourName": "Graphite",
+        "size": "XL"
+      },
+      {
+        "colourName": "Graphite",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Graphite",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Neon Red Orange",
+        "size": "S"
+      },
+      {
+        "colourName": "Neon Red Orange",
+        "size": "M"
+      },
+      {
+        "colourName": "Neon Red Orange",
+        "size": "L"
+      },
+      {
+        "colourName": "Neon Red Orange",
+        "size": "XL"
+      },
+      {
+        "colourName": "Neon Red Orange",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Neon Red Orange",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Light Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Light Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Crimson",
+        "size": "S"
+      },
+      {
+        "colourName": "Crimson",
+        "size": "M"
+      },
+      {
+        "colourName": "Crimson",
+        "size": "L"
+      },
+      {
+        "colourName": "Crimson",
+        "size": "XL"
+      },
+      {
+        "colourName": "Crimson",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Crimson",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "S"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "M"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "L"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Mustard",
+        "size": "S"
+      },
+      {
+        "colourName": "Mustard",
+        "size": "M"
+      },
+      {
+        "colourName": "Mustard",
+        "size": "L"
+      },
+      {
+        "colourName": "Mustard",
+        "size": "XL"
+      },
+      {
+        "colourName": "Mustard",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Mustard",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Blossom",
+        "size": "S"
+      },
+      {
+        "colourName": "Blossom",
+        "size": "M"
+      },
+      {
+        "colourName": "Blossom",
+        "size": "L"
+      },
+      {
+        "colourName": "Blossom",
+        "size": "XL"
+      },
+      {
+        "colourName": "Blossom",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Blossom",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Yam",
+        "size": "S"
+      },
+      {
+        "colourName": "Yam",
+        "size": "M"
+      },
+      {
+        "colourName": "Yam",
+        "size": "L"
+      },
+      {
+        "colourName": "Yam",
+        "size": "XL"
+      },
+      {
+        "colourName": "Yam",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Yam",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Ice Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Ice Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Ice Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Ice Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ice Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Ice Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Butter",
+        "size": "S"
+      },
+      {
+        "colourName": "Butter",
+        "size": "M"
+      },
+      {
+        "colourName": "Butter",
+        "size": "L"
+      },
+      {
+        "colourName": "Butter",
+        "size": "XL"
+      },
+      {
+        "colourName": "Butter",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Butter",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Watermelon",
+        "size": "S"
+      },
+      {
+        "colourName": "Watermelon",
+        "size": "M"
+      },
+      {
+        "colourName": "Watermelon",
+        "size": "L"
+      },
+      {
+        "colourName": "Watermelon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Watermelon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Watermelon",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "S"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "M"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "L"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "XL"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Chalky Mint",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Flo Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Flo Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Flo Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Flo Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Flo Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Flo Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Brick",
+        "size": "S"
+      },
+      {
+        "colourName": "Brick",
+        "size": "M"
+      },
+      {
+        "colourName": "Brick",
+        "size": "L"
+      },
+      {
+        "colourName": "Brick",
+        "size": "XL"
+      },
+      {
+        "colourName": "Brick",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Brick",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Granite",
+        "size": "S"
+      },
+      {
+        "colourName": "Granite",
+        "size": "M"
+      },
+      {
+        "colourName": "Granite",
+        "size": "L"
+      },
+      {
+        "colourName": "Granite",
+        "size": "XL"
+      },
+      {
+        "colourName": "Granite",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Granite",
+        "size": "3XL"
+      },
+      {
+        "colourName": "True Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "True Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "True Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "True Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "True Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "True Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Lagoon",
+        "size": "S"
+      },
+      {
+        "colourName": "Lagoon",
+        "size": "M"
+      },
+      {
+        "colourName": "Lagoon",
+        "size": "L"
+      },
+      {
+        "colourName": "Lagoon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Lagoon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Lagoon",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Hemp",
+        "size": "S"
+      },
+      {
+        "colourName": "Hemp",
+        "size": "M"
+      },
+      {
+        "colourName": "Hemp",
+        "size": "L"
+      },
+      {
+        "colourName": "Hemp",
+        "size": "XL"
+      },
+      {
+        "colourName": "Hemp",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Hemp",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Denim",
+        "size": "S"
+      },
+      {
+        "colourName": "Denim",
+        "size": "M"
+      },
+      {
+        "colourName": "Denim",
+        "size": "L"
+      },
+      {
+        "colourName": "Denim",
+        "size": "XL"
+      },
+      {
+        "colourName": "Denim",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Denim",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "S"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "M"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "L"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Berry",
+        "size": "S"
+      },
+      {
+        "colourName": "Berry",
+        "size": "M"
+      },
+      {
+        "colourName": "Berry",
+        "size": "L"
+      },
+      {
+        "colourName": "Berry",
+        "size": "XL"
+      },
+      {
+        "colourName": "Berry",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Berry",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Island Reef",
+        "size": "S"
+      },
+      {
+        "colourName": "Island Reef",
+        "size": "M"
+      },
+      {
+        "colourName": "Island Reef",
+        "size": "L"
+      },
+      {
+        "colourName": "Island Reef",
+        "size": "XL"
+      },
+      {
+        "colourName": "Island Reef",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Island Reef",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sandstone",
+        "size": "S"
+      },
+      {
+        "colourName": "Sandstone",
+        "size": "M"
+      },
+      {
+        "colourName": "Sandstone",
+        "size": "L"
+      },
+      {
+        "colourName": "Sandstone",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sandstone",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sandstone",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Blue Spruce",
+        "size": "S"
+      },
+      {
+        "colourName": "Blue Spruce",
+        "size": "M"
+      },
+      {
+        "colourName": "Blue Spruce",
+        "size": "L"
+      },
+      {
+        "colourName": "Blue Spruce",
+        "size": "XL"
+      },
+      {
+        "colourName": "Blue Spruce",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Blue Spruce",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "S"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "M"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "L"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "XL"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "3XL"
       }
     ],
     "priceTiers": [
@@ -144497,6 +146296,215 @@
       {
         "colourName": "Black",
         "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "comfort-colors-unisex-garment-dyed-heavyweight-tank-top",
+    "name": "Unisex Garment-Dyed Heavyweight Tank Top",
+    "brandName": "Comfort Colors",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "6.1 oz./yd² (US), 10.2 oz/L yd (CA), 100% ring-spun U.S cotton, 20 singles\nComfort Colors styles are garment dyed for a lived-in feel with minimal shrinkage.\nFeaturing 100% ring-spun U.S. cotton jersey and cotton threads.\nRelaxed fit\nBound self-fabric neck and armholes\nSignature twill label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35472_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/42401_f_fm.jpg",
+        "colourName": "Chambray",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/47084_f_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35468_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35472_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/42401_b_fm.jpg",
+        "colourName": "Chambray",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/47084_b_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35468_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Pepper",
+      "Black",
+      "Chambray"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "XS"
+      },
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "S"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "M"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "L"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "XS"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "S"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "M"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "L"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Chambray",
+        "size": "3XL"
       }
     ],
     "priceTiers": [
@@ -145884,6 +147892,656 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "core365-women-s-capital-performance-long-sleeve-t-shirt",
+    "name": "Women's Capital Performance Long Sleeve T-Shirt",
+    "brandName": "CORE365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "4 oz/yd², 100% polyester interlock\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nTear away label\nUPF 50+",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136293_f_fm.jpg",
+        "colourName": "Acid Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136294_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136296_f_fm.jpg",
+        "colourName": "Burgundy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136297_f_fm.jpg",
+        "colourName": "Carbon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136298_f_fm.jpg",
+        "colourName": "Classic Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136299_f_fm.jpg",
+        "colourName": "Classic Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136301_f_fm.jpg",
+        "colourName": "Columbia Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136303_f_fm.jpg",
+        "colourName": "Forest",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136305_f_fm.jpg",
+        "colourName": "Military Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136307_f_fm.jpg",
+        "colourName": "Safety Orange",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136308_f_fm.jpg",
+        "colourName": "Safety Yellow",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136311_f_fm.jpg",
+        "colourName": "True Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136312_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136293_b_fm.jpg",
+        "colourName": "Acid Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136294_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136296_b_fm.jpg",
+        "colourName": "Burgundy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136297_b_fm.jpg",
+        "colourName": "Carbon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136298_b_fm.jpg",
+        "colourName": "Classic Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136299_b_fm.jpg",
+        "colourName": "Classic Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136301_b_fm.jpg",
+        "colourName": "Columbia Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136303_b_fm.jpg",
+        "colourName": "Forest",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136305_b_fm.jpg",
+        "colourName": "Military Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136307_b_fm.jpg",
+        "colourName": "Safety Orange",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136308_b_fm.jpg",
+        "colourName": "Safety Yellow",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136311_b_fm.jpg",
+        "colourName": "True Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136312_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Military Green",
+      "Safety Yellow",
+      "Acid Green",
+      "Columbia Blue",
+      "Platinum",
+      "Black",
+      "Burgundy",
+      "Forest",
+      "Carbon",
+      "Classic Navy",
+      "Safety Orange",
+      "Classic Red",
+      "True Royal"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "XS"
+      },
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "XS"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "XS"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "S"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "M"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "L"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "S"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "M"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "L"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "XS"
+      },
+      {
+        "colourName": "Forest",
+        "size": "S"
+      },
+      {
+        "colourName": "Forest",
+        "size": "M"
+      },
+      {
+        "colourName": "Forest",
+        "size": "L"
+      },
+      {
+        "colourName": "Forest",
+        "size": "XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "XS"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "S"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "M"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "L"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "XS"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "4XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "XS"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "core365-men-s-resolve-cvc-performance-pique-polo",
     "name": "Men's Resolve CVC Performance Pique Polo",
     "brandName": "CORE365",
@@ -147057,6 +149715,957 @@
       },
       {
         "colourName": "Royal",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "core365-women-s-capital-performance-t-shirt",
+    "name": "Women's Capital Performance T-Shirt",
+    "brandName": "CORE365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "4 oz/yd², 100% polyester interlock\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nTear away label\nUPF 50+",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136269_f_fm.jpg",
+        "colourName": "Acid Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136270_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136272_f_fm.jpg",
+        "colourName": "Burgundy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136273_f_fm.jpg",
+        "colourName": "Campus Gold",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136274_f_fm.jpg",
+        "colourName": "Campus Orange",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136275_f_fm.jpg",
+        "colourName": "Campus Purple",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136276_f_fm.jpg",
+        "colourName": "Carbon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136277_f_fm.jpg",
+        "colourName": "Charity Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136278_f_fm.jpg",
+        "colourName": "Classic Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136279_f_fm.jpg",
+        "colourName": "Classic Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136281_f_fm.jpg",
+        "colourName": "Columbia Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136282_f_fm.jpg",
+        "colourName": "Electric Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136283_f_fm.jpg",
+        "colourName": "Forest",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136284_f_fm.jpg",
+        "colourName": "Marina Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136285_f_fm.jpg",
+        "colourName": "Military Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136286_f_fm.jpg",
+        "colourName": "Platinum",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136287_f_fm.jpg",
+        "colourName": "Safety Orange",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136290_f_fm.jpg",
+        "colourName": "Stone",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136291_f_fm.jpg",
+        "colourName": "True Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136292_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136269_b_fm.jpg",
+        "colourName": "Acid Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136270_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136272_b_fm.jpg",
+        "colourName": "Burgundy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136273_b_fm.jpg",
+        "colourName": "Campus Gold",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136274_b_fm.jpg",
+        "colourName": "Campus Orange",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136275_b_fm.jpg",
+        "colourName": "Campus Purple",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136276_b_fm.jpg",
+        "colourName": "Carbon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136277_b_fm.jpg",
+        "colourName": "Charity Pink",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136278_b_fm.jpg",
+        "colourName": "Classic Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136279_b_fm.jpg",
+        "colourName": "Classic Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136281_b_fm.jpg",
+        "colourName": "Columbia Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136282_b_fm.jpg",
+        "colourName": "Electric Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136283_b_fm.jpg",
+        "colourName": "Forest",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136284_b_fm.jpg",
+        "colourName": "Marina Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136285_b_fm.jpg",
+        "colourName": "Military Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136286_b_fm.jpg",
+        "colourName": "Platinum",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136287_b_fm.jpg",
+        "colourName": "Safety Orange",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136290_b_fm.jpg",
+        "colourName": "Stone",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136291_b_fm.jpg",
+        "colourName": "True Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136292_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Charity Pink",
+      "Marina Red",
+      "Campus Gold",
+      "Military Green",
+      "Safety Orange",
+      "Safety Yellow",
+      "Acid Green",
+      "Stone",
+      "Columbia Blue",
+      "Platinum",
+      "Black",
+      "Burgundy",
+      "Forest",
+      "Carbon",
+      "Classic Navy",
+      "Campus Orange",
+      "Campus Purple",
+      "Classic Red",
+      "True Royal",
+      "Electric Blue"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "XS"
+      },
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "XS"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "S"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "M"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "L"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "XL"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Charity Pink",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Marina Red",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "XS"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "S"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "M"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "L"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "XL"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Campus Gold",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "XS"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "XS"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Yellow",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Acid Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Stone",
+        "size": "XS"
+      },
+      {
+        "colourName": "Stone",
+        "size": "S"
+      },
+      {
+        "colourName": "Stone",
+        "size": "M"
+      },
+      {
+        "colourName": "Stone",
+        "size": "L"
+      },
+      {
+        "colourName": "Stone",
+        "size": "XL"
+      },
+      {
+        "colourName": "Stone",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Stone",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Stone",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Columbia Blue",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "XS"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "S"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "M"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "L"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Platinum",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "S"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "M"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "L"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Burgundy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "XS"
+      },
+      {
+        "colourName": "Forest",
+        "size": "S"
+      },
+      {
+        "colourName": "Forest",
+        "size": "M"
+      },
+      {
+        "colourName": "Forest",
+        "size": "L"
+      },
+      {
+        "colourName": "Forest",
+        "size": "XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Forest",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "XS"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "S"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "M"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "L"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Carbon",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Classic Navy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "XS"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "S"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "M"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "L"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "XL"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Campus Orange",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "XS"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "S"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "M"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "L"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "XL"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Campus Purple",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Classic Red",
+        "size": "4XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "XS"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "True Royal",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Electric Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Electric Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Electric Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Electric Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Electric Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Electric Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Electric Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Electric Blue",
         "size": "4XL"
       }
     ],
@@ -150116,6 +153725,223 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "gildan-unisex-ultra-cotton-tank-top",
+    "name": "Unisex Ultra Cotton® Tank Top",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "6 oz./yd² (US) 10.1 oz./L yd (CA), 100% U.S. cotton, 18 singles\nSport Grey is 90/10 cotton/polyester\nInnovation you can feel. Made with 100% U.S. cotton and the latest breakthrough in soft cotton technology, the Gildan® Ultra Cotton family has been remastered for improved printability, quality and comfort you can see and feel.\nClassic fit\nBound neck and armholes\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18365_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18366_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/27469_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18367_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18368_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18369_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18365_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18366_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/27469_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18367_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18368_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/18369_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Black",
+      "Sport Grey",
+      "Navy",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "core365-unisex-capital-long-sleeve-performance-t-shirt",
     "name": "Unisex Capital Long Sleeve Performance T-Shirt",
     "brandName": "CORE365",
@@ -151337,6 +155163,2266 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "gildan-unisex-light-cotton-t-shirt",
+    "name": "Unisex Light Cotton T-Shirt",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "4.45 oz./yd² (US), 7.4 oz./L yd (CA), 100% U.S. cotton, 30 singles\nAsh Grey is 99/1 cotton/polyester\nSport Grey is 90/10 cotton/black polyester\nGraphite Heather & Safety colors are 50/50 cotton/polyester\nAll other Heathers are 65/35 cotton/polyester\nFeatures Innovation you can feel. Made with 100% U.S. cotton and the latest breakthrough in soft cotton technology, the Gildan® Light Cotton family has been remastered for improved printability, quality and comfort you can see and feel.\nModern classic fit\nNarrow width, rib collar\nTaped neck and shoulders\nTear away label\nNatural is not a dyed fabric, the specks that you see are fibers and cotton seeds.\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131224_f_fm.jpg",
+        "colourName": "Ash",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114912_f_fm.jpg",
+        "colourName": "Azalea",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114911_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131225_f_fm.jpg",
+        "colourName": "Carolina Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114914_f_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131226_f_fm.jpg",
+        "colourName": "Cherry Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131227_f_fm.jpg",
+        "colourName": "Daisy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131228_f_fm.jpg",
+        "colourName": "Dark Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114916_f_fm.jpg",
+        "colourName": "Forest Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131229_f_fm.jpg",
+        "colourName": "Gold",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114917_f_fm.jpg",
+        "colourName": "Graphite Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114931_f_fm.jpg",
+        "colourName": "Gravel",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131230_f_fm.jpg",
+        "colourName": "Heather Dark Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131231_f_fm.jpg",
+        "colourName": "Heather Irish Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114918_f_fm.jpg",
+        "colourName": "Heather Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131232_f_fm.jpg",
+        "colourName": "Heather Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131233_f_fm.jpg",
+        "colourName": "Heather Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131234_f_fm.jpg",
+        "colourName": "Heather Sapphire",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131235_f_fm.jpg",
+        "colourName": "Heliconia",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114910_f_fm.jpg",
+        "colourName": "Indigo Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131236_f_fm.jpg",
+        "colourName": "Irish Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114913_f_fm.jpg",
+        "colourName": "Light Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131237_f_fm.jpg",
+        "colourName": "Light Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114920_f_fm.jpg",
+        "colourName": "Maroon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131238_f_fm.jpg",
+        "colourName": "Military Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114919_f_fm.jpg",
+        "colourName": "Mint Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131239_f_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114921_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131240_f_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131241_f_fm.jpg",
+        "colourName": "Orange",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131242_f_fm.jpg",
+        "colourName": "Paragon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131243_f_fm.jpg",
+        "colourName": "Pistachio",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114925_f_fm.jpg",
+        "colourName": "Purple",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114926_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114927_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114923_f_fm.jpg",
+        "colourName": "Safety Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114922_f_fm.jpg",
+        "colourName": "Safety Orange",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114929_f_fm.jpg",
+        "colourName": "Safety Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131244_f_fm.jpg",
+        "colourName": "Sage",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114928_f_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114924_f_fm.jpg",
+        "colourName": "Sapphire",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114915_f_fm.jpg",
+        "colourName": "Sky",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131245_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131246_f_fm.jpg",
+        "colourName": "Stone Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131247_f_fm.jpg",
+        "colourName": "Tropical Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131248_f_fm.jpg",
+        "colourName": "Violet",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114930_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131224_b_fm.jpg",
+        "colourName": "Ash",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114912_b_fm.jpg",
+        "colourName": "Azalea",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114911_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131225_b_fm.jpg",
+        "colourName": "Carolina Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114914_b_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131226_b_fm.jpg",
+        "colourName": "Cherry Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131227_b_fm.jpg",
+        "colourName": "Daisy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131228_b_fm.jpg",
+        "colourName": "Dark Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114916_b_fm.jpg",
+        "colourName": "Forest Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131229_b_fm.jpg",
+        "colourName": "Gold",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114917_b_fm.jpg",
+        "colourName": "Graphite Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114931_b_fm.jpg",
+        "colourName": "Gravel",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131230_b_fm.jpg",
+        "colourName": "Heather Dark Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131231_b_fm.jpg",
+        "colourName": "Heather Irish Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114918_b_fm.jpg",
+        "colourName": "Heather Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131232_b_fm.jpg",
+        "colourName": "Heather Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131233_b_fm.jpg",
+        "colourName": "Heather Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131234_b_fm.jpg",
+        "colourName": "Heather Sapphire",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131235_b_fm.jpg",
+        "colourName": "Heliconia",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114910_b_fm.jpg",
+        "colourName": "Indigo Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131236_b_fm.jpg",
+        "colourName": "Irish Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114913_b_fm.jpg",
+        "colourName": "Light Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131237_b_fm.jpg",
+        "colourName": "Light Pink",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114920_b_fm.jpg",
+        "colourName": "Maroon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131238_b_fm.jpg",
+        "colourName": "Military Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114919_b_fm.jpg",
+        "colourName": "Mint Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131239_b_fm.jpg",
+        "colourName": "Natural",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114921_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131240_b_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131241_b_fm.jpg",
+        "colourName": "Orange",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131242_b_fm.jpg",
+        "colourName": "Paragon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131243_b_fm.jpg",
+        "colourName": "Pistachio",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114925_b_fm.jpg",
+        "colourName": "Purple",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114926_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114927_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114923_b_fm.jpg",
+        "colourName": "Safety Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114922_b_fm.jpg",
+        "colourName": "Safety Orange",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114929_b_fm.jpg",
+        "colourName": "Safety Pink",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131244_b_fm.jpg",
+        "colourName": "Sage",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114928_b_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114924_b_fm.jpg",
+        "colourName": "Sapphire",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114915_b_fm.jpg",
+        "colourName": "Sky",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131245_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131246_b_fm.jpg",
+        "colourName": "Stone Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131247_b_fm.jpg",
+        "colourName": "Tropical Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/131248_b_fm.jpg",
+        "colourName": "Violet",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114930_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Off White",
+      "Ash",
+      "Graphite Heather",
+      "Heather Navy",
+      "Navy",
+      "Safety Green",
+      "Royal",
+      "Safety Pink",
+      "Gravel",
+      "Carolina Blue",
+      "Mint Green",
+      "Cherry Red",
+      "Sand",
+      "Daisy",
+      "Dark Heather",
+      "Gold",
+      "Heather Dark Grey",
+      "Heather Irish Green",
+      "Light Blue",
+      "Heather Red",
+      "Heather Royal",
+      "Heliconia",
+      "Irish Green",
+      "Azalea",
+      "Light Pink",
+      "Military Green",
+      "Natural",
+      "Orange",
+      "Paragon",
+      "Pistachio",
+      "Sage",
+      "Sport Grey",
+      "Stone Blue",
+      "Tropical Blue",
+      "Violet",
+      "Black",
+      "Maroon",
+      "Forest Green",
+      "Charcoal",
+      "Sky",
+      "Indigo Blue",
+      "Safety Orange",
+      "Purple",
+      "Red",
+      "Heather Sapphire",
+      "Sapphire"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL",
+      "5XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "5XL"
+      },
+      {
+        "colourName": "White",
+        "size": "XS"
+      },
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Off White",
+        "size": "S"
+      },
+      {
+        "colourName": "Off White",
+        "size": "M"
+      },
+      {
+        "colourName": "Off White",
+        "size": "L"
+      },
+      {
+        "colourName": "Off White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "XS"
+      },
+      {
+        "colourName": "Ash",
+        "size": "S"
+      },
+      {
+        "colourName": "Ash",
+        "size": "M"
+      },
+      {
+        "colourName": "Ash",
+        "size": "L"
+      },
+      {
+        "colourName": "Ash",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "XS"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Navy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "XS"
+      },
+      {
+        "colourName": "Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "XS"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "XS"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "S"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "M"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "L"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "XL"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Gravel",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Mint Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sand",
+        "size": "S"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Cherry Red",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "S"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "M"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "L"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "XS"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Gold",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Gold",
+        "size": "XS"
+      },
+      {
+        "colourName": "Gold",
+        "size": "S"
+      },
+      {
+        "colourName": "Gold",
+        "size": "M"
+      },
+      {
+        "colourName": "Gold",
+        "size": "L"
+      },
+      {
+        "colourName": "Gold",
+        "size": "XL"
+      },
+      {
+        "colourName": "Gold",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Gold",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Gold",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Dark Grey",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Irish Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sand",
+        "size": "M"
+      },
+      {
+        "colourName": "Sand",
+        "size": "L"
+      },
+      {
+        "colourName": "Sand",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Red",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Royal",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "S"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "M"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "L"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "XS"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "S"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "M"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "L"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "XL"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "XS"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Military Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Natural",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Natural",
+        "size": "XS"
+      },
+      {
+        "colourName": "Natural",
+        "size": "S"
+      },
+      {
+        "colourName": "Natural",
+        "size": "M"
+      },
+      {
+        "colourName": "Natural",
+        "size": "L"
+      },
+      {
+        "colourName": "Natural",
+        "size": "XL"
+      },
+      {
+        "colourName": "Natural",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Natural",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Natural",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "XS"
+      },
+      {
+        "colourName": "Orange",
+        "size": "S"
+      },
+      {
+        "colourName": "Orange",
+        "size": "M"
+      },
+      {
+        "colourName": "Orange",
+        "size": "L"
+      },
+      {
+        "colourName": "Orange",
+        "size": "XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "XS"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "S"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "M"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "L"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Paragon",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "XS"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "S"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "M"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "L"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "XL"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Pistachio",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sage",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Sage",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sage",
+        "size": "S"
+      },
+      {
+        "colourName": "Sage",
+        "size": "M"
+      },
+      {
+        "colourName": "Sage",
+        "size": "L"
+      },
+      {
+        "colourName": "Sage",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sage",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sage",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sage",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Tropical Blue",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Violet",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Violet",
+        "size": "XS"
+      },
+      {
+        "colourName": "Violet",
+        "size": "S"
+      },
+      {
+        "colourName": "Violet",
+        "size": "M"
+      },
+      {
+        "colourName": "Violet",
+        "size": "L"
+      },
+      {
+        "colourName": "Violet",
+        "size": "XL"
+      },
+      {
+        "colourName": "Violet",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Violet",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Violet",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "XS"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "S"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "M"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "L"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "XS"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Forest Green",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "XS"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "S"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "M"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "L"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sky",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Sky",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sky",
+        "size": "S"
+      },
+      {
+        "colourName": "Sky",
+        "size": "M"
+      },
+      {
+        "colourName": "Sky",
+        "size": "L"
+      },
+      {
+        "colourName": "Sky",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sky",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sky",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sky",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "XS"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Indigo Blue",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "XS"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Orange",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "XS"
+      },
+      {
+        "colourName": "Purple",
+        "size": "S"
+      },
+      {
+        "colourName": "Purple",
+        "size": "M"
+      },
+      {
+        "colourName": "Purple",
+        "size": "L"
+      },
+      {
+        "colourName": "Purple",
+        "size": "XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "S"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "M"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "L"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "S"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "M"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "L"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "core365-women-s-radiant-performance-piqu-polo-with-reflective-piping",
     "name": "Women's Radiant Performance Piqué Polo with Reflective Piping",
     "brandName": "CORE365",
@@ -152364,6 +158450,947 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "gildan-women-s-heavy-cotton-t-shirt",
+    "name": "Women's Heavy Cotton™ T-Shirt",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "5.3 oz./yd² (US) 8.8 oz./L yd (CA), 100% U.S. cotton, 20 singles\n Sport Grey is 90/10 cotton/polyester\nDark Heather, Graphite Heather, Heather colors are 50/50 cotton/polyester\nInnovation you can feel. Made with 100% U.S. cotton and the latest breakthrough in soft cotton technology, the Gildan® Heavy Cotton family has been remastered for improved printability, quality and comfort you can see and feel.\nSemi-fitted\nNarrow width rib collar\nTaped neck and shoulders\nCap sleeves\nSide seams\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114524_f_fm.jpg",
+        "colourName": "Aquatic",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33412_f_fm.jpg",
+        "colourName": "Azalea",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33413_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114532_f_fm.jpg",
+        "colourName": "Blue Dusk",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37386_f_fm.jpg",
+        "colourName": "Carolina Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33414_f_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33432_f_fm.jpg",
+        "colourName": "Coral Silk",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37387_f_fm.jpg",
+        "colourName": "Daisy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40578_f_fm.jpg",
+        "colourName": "Dark Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114526_f_fm.jpg",
+        "colourName": "Dusty Rose",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46154_f_fm.jpg",
+        "colourName": "Graphite Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33417_f_fm.jpg",
+        "colourName": "Heather Sapphire",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33419_f_fm.jpg",
+        "colourName": "Heliconia",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33430_f_fm.jpg",
+        "colourName": "Irish Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33420_f_fm.jpg",
+        "colourName": "Light Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37389_f_fm.jpg",
+        "colourName": "Light Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33422_f_fm.jpg",
+        "colourName": "Maroon",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33423_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114529_f_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33424_f_fm.jpg",
+        "colourName": "Orange",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33425_f_fm.jpg",
+        "colourName": "Purple",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33426_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33427_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33431_f_fm.jpg",
+        "colourName": "Sapphire",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33428_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37394_f_fm.jpg",
+        "colourName": "Violet",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33429_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114524_b_fm.jpg",
+        "colourName": "Aquatic",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33412_b_fm.jpg",
+        "colourName": "Azalea",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33413_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114532_b_fm.jpg",
+        "colourName": "Blue Dusk",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37386_b_fm.jpg",
+        "colourName": "Carolina Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33414_b_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33432_b_fm.jpg",
+        "colourName": "Coral Silk",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37387_b_fm.jpg",
+        "colourName": "Daisy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40578_b_fm.jpg",
+        "colourName": "Dark Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114526_b_fm.jpg",
+        "colourName": "Dusty Rose",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46154_b_fm.jpg",
+        "colourName": "Graphite Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33417_b_fm.jpg",
+        "colourName": "Heather Sapphire",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33419_b_fm.jpg",
+        "colourName": "Heliconia",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33430_b_fm.jpg",
+        "colourName": "Irish Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33420_b_fm.jpg",
+        "colourName": "Light Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37389_b_fm.jpg",
+        "colourName": "Light Pink",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33422_b_fm.jpg",
+        "colourName": "Maroon",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33423_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114529_b_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33424_b_fm.jpg",
+        "colourName": "Orange",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33425_b_fm.jpg",
+        "colourName": "Purple",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33426_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33427_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33431_b_fm.jpg",
+        "colourName": "Sapphire",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33428_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/37394_b_fm.jpg",
+        "colourName": "Violet",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33429_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Dark Heather",
+      "Coral Silk",
+      "Charcoal",
+      "Irish Green",
+      "Light Blue",
+      "Carolina Blue",
+      "Light Pink",
+      "Dusty Rose",
+      "Aquatic",
+      "Daisy",
+      "Off White",
+      "Graphite Heather",
+      "Black",
+      "Maroon",
+      "Azalea",
+      "Violet",
+      "Sport Grey",
+      "Navy",
+      "Orange",
+      "Purple",
+      "Heliconia",
+      "Red",
+      "Royal",
+      "Sapphire",
+      "Heather Sapphire",
+      "Blue Dusk"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Coral Silk",
+        "size": "S"
+      },
+      {
+        "colourName": "Coral Silk",
+        "size": "M"
+      },
+      {
+        "colourName": "Coral Silk",
+        "size": "L"
+      },
+      {
+        "colourName": "Coral Silk",
+        "size": "XL"
+      },
+      {
+        "colourName": "Coral Silk",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "S"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "M"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "L"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Irish Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Carolina Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Dusty Rose",
+        "size": "S"
+      },
+      {
+        "colourName": "Dusty Rose",
+        "size": "M"
+      },
+      {
+        "colourName": "Dusty Rose",
+        "size": "L"
+      },
+      {
+        "colourName": "Dusty Rose",
+        "size": "XL"
+      },
+      {
+        "colourName": "Dusty Rose",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Dusty Rose",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Aquatic",
+        "size": "S"
+      },
+      {
+        "colourName": "Aquatic",
+        "size": "M"
+      },
+      {
+        "colourName": "Aquatic",
+        "size": "L"
+      },
+      {
+        "colourName": "Aquatic",
+        "size": "XL"
+      },
+      {
+        "colourName": "Aquatic",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Aquatic",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "S"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "M"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "L"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Daisy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "S"
+      },
+      {
+        "colourName": "Off White",
+        "size": "M"
+      },
+      {
+        "colourName": "Off White",
+        "size": "L"
+      },
+      {
+        "colourName": "Off White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "S"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "M"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "L"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "XL"
+      },
+      {
+        "colourName": "Maroon",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "S"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "M"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "L"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "XL"
+      },
+      {
+        "colourName": "Azalea",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Violet",
+        "size": "S"
+      },
+      {
+        "colourName": "Violet",
+        "size": "M"
+      },
+      {
+        "colourName": "Violet",
+        "size": "L"
+      },
+      {
+        "colourName": "Violet",
+        "size": "XL"
+      },
+      {
+        "colourName": "Violet",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "S"
+      },
+      {
+        "colourName": "Orange",
+        "size": "M"
+      },
+      {
+        "colourName": "Orange",
+        "size": "L"
+      },
+      {
+        "colourName": "Orange",
+        "size": "XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Orange",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "S"
+      },
+      {
+        "colourName": "Purple",
+        "size": "M"
+      },
+      {
+        "colourName": "Purple",
+        "size": "L"
+      },
+      {
+        "colourName": "Purple",
+        "size": "XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "S"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "M"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "L"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heliconia",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "S"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "M"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "L"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sapphire",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Sapphire",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Blue Dusk",
+        "size": "S"
+      },
+      {
+        "colourName": "Blue Dusk",
+        "size": "M"
+      },
+      {
+        "colourName": "Blue Dusk",
+        "size": "L"
+      },
+      {
+        "colourName": "Blue Dusk",
+        "size": "XL"
+      },
+      {
+        "colourName": "Blue Dusk",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Blue Dusk",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "core365-women-s-market-snag-protect-mesh-polo",
     "name": "Women's Market Snag Protect Mesh Polo",
     "brandName": "CORE365",
@@ -152900,6 +159927,878 @@
       {
         "colourName": "Electric Blue",
         "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-toddler-heavy-cotton-t-shirt",
+    "name": "Toddler Heavy Cotton™ T-Shirt",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "5.3 oz./yd² (US) 8.8 oz./L yd (CA), 100% U.S. cotton, 20 singles\nSport Grey is 90/10 cotton/polyester\nInnovation you can feel. Made with 100% U.S. cotton and the latest breakthrough in soft cotton technology, the Gildan® Heavy Cotton family has been remastered for improved printability, quality and comfort you can see and feel.\nClassic fit\nClassic width rib collar\nTaped neck and shoulders\nSide seams\nTear away label\nCPSIA Tracking Label Compliant\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/42461_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40587_f_fm.jpg",
+        "colourName": "Light Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40588_f_fm.jpg",
+        "colourName": "Light Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40594_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40591_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40593_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40592_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40590_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/42461_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40587_b_fm.jpg",
+        "colourName": "Light Blue",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40588_b_fm.jpg",
+        "colourName": "Light Pink",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40594_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40591_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40593_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40592_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/40590_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Light Blue",
+      "Light Pink",
+      "Black",
+      "Sport Grey",
+      "Navy",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "2T",
+      "3T",
+      "4T",
+      "5T"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "2T"
+      },
+      {
+        "colourName": "White",
+        "size": "3T"
+      },
+      {
+        "colourName": "White",
+        "size": "4T"
+      },
+      {
+        "colourName": "White",
+        "size": "5T"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "2T"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "3T"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "4T"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "5T"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "2T"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "3T"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "4T"
+      },
+      {
+        "colourName": "Light Pink",
+        "size": "5T"
+      },
+      {
+        "colourName": "Black",
+        "size": "2T"
+      },
+      {
+        "colourName": "Black",
+        "size": "3T"
+      },
+      {
+        "colourName": "Black",
+        "size": "4T"
+      },
+      {
+        "colourName": "Black",
+        "size": "5T"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2T"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3T"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "4T"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "5T"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2T"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3T"
+      },
+      {
+        "colourName": "Navy",
+        "size": "4T"
+      },
+      {
+        "colourName": "Navy",
+        "size": "5T"
+      },
+      {
+        "colourName": "Red",
+        "size": "2T"
+      },
+      {
+        "colourName": "Red",
+        "size": "3T"
+      },
+      {
+        "colourName": "Red",
+        "size": "4T"
+      },
+      {
+        "colourName": "Red",
+        "size": "5T"
+      },
+      {
+        "colourName": "Royal",
+        "size": "2T"
+      },
+      {
+        "colourName": "Royal",
+        "size": "3T"
+      },
+      {
+        "colourName": "Royal",
+        "size": "4T"
+      },
+      {
+        "colourName": "Royal",
+        "size": "5T"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-heavy-cotton-tank-top",
+    "name": "Unisex Heavy Cotton™ Tank Top",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "5.3 oz./yd² (US), 8.8 oz/L yd (CA), 100% cotton, 20 singles\nSport Grey is 90/10 cotton/polyester\nGraphite Heather, Neon Green & Safety Pink are 50/50 cotton/polyester\nInnovation you can feel. Made with 100% U.S. cotton and the latest breakthrough in soft cotton technology, the Gildan® Heavy Cotton family has been remastered for improved printability, quality and comfort you can see and feel.\nClassic fit\nBound neck and armholes\nSide seams\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46047_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46049_f_fm.jpg",
+        "colourName": "Graphite Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46051_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46054_f_fm.jpg",
+        "colourName": "Purple",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46055_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46056_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46057_f_fm.jpg",
+        "colourName": "Safety Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46059_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46061_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46047_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46049_b_fm.jpg",
+        "colourName": "Graphite Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46051_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46054_b_fm.jpg",
+        "colourName": "Purple",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46055_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46056_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46057_b_fm.jpg",
+        "colourName": "Safety Pink",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46059_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/46061_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Safety Pink",
+      "Graphite Heather",
+      "Black",
+      "Sport Grey",
+      "Navy",
+      "Purple",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Pink",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Graphite Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "S"
+      },
+      {
+        "colourName": "Purple",
+        "size": "M"
+      },
+      {
+        "colourName": "Purple",
+        "size": "L"
+      },
+      {
+        "colourName": "Purple",
+        "size": "XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Purple",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Royal",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 20
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 15
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 12
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 9
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 7
+      }
+    ],
+    "startingPrice": 20,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-heavy-cotton-pocket-t-shirt",
+    "name": "Unisex Heavy Cotton™ Pocket T-Shirt",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "t-shirts",
+    "description": "5.3 oz./yd² (US) 8.8 oz./L yd (CA), 100% cotton, 20 singles\nSport Grey is 90/10 cotton/polyester\nGraphite Heather & Safety Green are 50/50 cotton/polyester\nSafety Green is compliant with ANSI / ISEA 107 high-visibility standards\nInnovation you can feel. Made with 100% U.S. cotton and the latest breakthrough in soft cotton technology, the Gildan® Heavy Cotton family has been remastered for improved printability, quality and comfort you can see and feel.\nClassic fit\nClassic width, rib collar\nTaped neck and shoulders\nLeft chest pocket\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton\n\n.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52275_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52281_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52286_f_fm.jpg",
+        "colourName": "Safety Green",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52288_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52289_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52275_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52281_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52286_b_fm.jpg",
+        "colourName": "Safety Green",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52288_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/52289_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Safety Green",
+      "Black",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "S"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "M"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "L"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Safety Green",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
       }
     ],
     "priceTiers": [
