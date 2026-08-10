@@ -69,7 +69,7 @@ while true; do
       kill -9 "$pid" 2>/dev/null
       break
     fi
-    if grep -q "^Done\.\$" "$LOG" 2>/dev/null; then
+    if grep -q "^Done\." "$LOG" 2>/dev/null; then
       echo "[watchdog] import reported Done." >> "$LOG"
       exit 0
     fi
