@@ -18,8 +18,13 @@
 // those columns, expect everything that matches at all to land in needs_review, not auto-approved
 // — that's a real schema gap, not a bug in this file.
 
-import type { PrismaClient } from '@prisma/client';
-import type { SupplierConnector } from '../integrations/suppliers/contract.js';
+import { randomUUID } from 'node:crypto';
+import { Prisma, type PrismaClient } from '@prisma/client';
+import type {
+  RawInventoryRecord,
+  RawSupplierVariant,
+  SupplierConnector,
+} from '../integrations/suppliers/contract.js';
 import {
   matchProduct,
   type MatchableMasterProduct,
@@ -180,99 +185,61 @@ export async function runCatalogueImport(
         // the exact same photo across companion styles (e.g. a "Tall" size sharing images with the
         // regular version). Deduping by URL alone would let the first style to see that URL claim
         // it and leave every other style that legitimately shares the same photo with nothing.
-        for (const image of raw.images) {
-          const alreadyRecorded = await prisma.productImage.findFirst({
-            where: { supplierProductId, sourceUrl: image.url },
-            select: { id: true },
-          });
-          if (alreadyRecorded) continue;
-          await prisma.productImage.create({
-            data: {
-              supplierId,
-              supplierProductId,
-              source: 'supplier',
-              sourceUrl: image.url,
-              imageType: image.imageType ?? 'primary',
-              colourName: image.colourName ?? null,
-              sortOrder: image.sortOrder ?? 0,
-              status: 'pending',
-            },
-          });
+        // Batched instead of one findFirst+create round trip per image — a mega-SKU style (see
+        // batchUpsertVariantOffers below) can carry 200+ images, and sequential per-image calls
+        // were adding minutes on their own.
+        if (raw.images.length > 0) {
+          const existingUrls = new Set(
+            (
+              await prisma.productImage.findMany({
+                where: { supplierProductId },
+                select: { sourceUrl: true },
+              })
+            ).map((r) => r.sourceUrl),
+          );
+          const newImages = raw.images.filter((img) => !existingUrls.has(img.url));
+          if (newImages.length > 0) {
+            await prisma.productImage.createMany({
+              data: newImages.map((image) => ({
+                supplierId,
+                supplierProductId,
+                source: 'supplier',
+                sourceUrl: image.url,
+                imageType: image.imageType ?? 'primary',
+                colourName: image.colourName ?? null,
+                sortOrder: image.sortOrder ?? 0,
+                status: 'pending',
+              })),
+              skipDuplicates: true,
+            });
+          }
         }
 
-        const offerIdByVariantId = new Map<string, string>();
-        for (const variant of raw.variants) {
-          const offer = await prisma.supplierVariantOffer.upsert({
-            where: {
-              supplierProductId_supplierVariantId: {
-                supplierProductId,
-                supplierVariantId: variant.supplierVariantId,
-              },
-            },
-            create: {
-              supplierProductId,
-              supplierVariantId: variant.supplierVariantId,
-              supplierSku: variant.supplierSku,
-              colourName: variant.colourName,
-              size: variant.size,
-              wholesaleCost: variant.wholesaleCost,
-              currency: variant.currency,
-              mapPrice: variant.mapPrice ?? null,
-              isOrderable: variant.isOrderable,
-              lastPriceSyncAt: new Date(),
-              // Overwritten below once inventory is actually fetched for this product; this
-              // placeholder only matters if the inventory fetch throws before reaching it.
-              lastInventorySyncAt: new Date(0),
-            },
-            update: {
-              colourName: variant.colourName,
-              size: variant.size,
-              wholesaleCost: variant.wholesaleCost,
-              currency: variant.currency,
-              mapPrice: variant.mapPrice ?? null,
-              isOrderable: variant.isOrderable,
-              lastPriceSyncAt: new Date(),
-            },
-          });
-          offerIdByVariantId.set(variant.supplierVariantId, offer.id);
-          variantOffersUpserted++;
-        }
+        // Batched bulk upsert instead of one upsert-per-variant round trip. Real cause of
+        // multi-minute per-product stalls confirmed live 2026-08-10: a core blank like "Jersey
+        // Tee" carries 500+ variants and 1000+ warehouse rows — at ~280ms per sequential DB
+        // round trip that's 10+ minutes for a single product. Collapsing each product's variants
+        // (and separately, its warehouse rows) into one multi-row INSERT ... ON CONFLICT turns
+        // that into a handful of statements.
+        const offerIdByVariantId = await batchUpsertVariantOffers(
+          prisma,
+          supplierProductId,
+          raw.variants,
+        );
+        variantOffersUpserted += offerIdByVariantId.size;
 
         if (offerIdByVariantId.size > 0) {
           try {
             const inventoryRows = await connector.fetchInventory([...offerIdByVariantId.keys()]);
-            for (const inv of inventoryRows) {
-              const offerId = offerIdByVariantId.get(inv.supplierVariantId);
-              if (!offerId) continue;
-              await prisma.supplierWarehouseInventory.upsert({
-                where: {
-                  supplierVariantOfferId_warehouseCode: {
-                    supplierVariantOfferId: offerId,
-                    warehouseCode: inv.warehouseCode,
-                  },
-                },
-                create: {
-                  supplierVariantOfferId: offerId,
-                  warehouseCode: inv.warehouseCode,
-                  warehouseName: inv.warehouseName ?? null,
-                  availableQty: inv.availableQty,
-                  incomingQty: inv.incomingQty ?? 0,
-                  expectedRestockDate: inv.expectedRestockDate
-                    ? new Date(inv.expectedRestockDate)
-                    : null,
-                  lastSyncedAt: new Date(),
-                },
-                update: {
-                  availableQty: inv.availableQty,
-                  incomingQty: inv.incomingQty ?? 0,
-                  expectedRestockDate: inv.expectedRestockDate
-                    ? new Date(inv.expectedRestockDate)
-                    : null,
-                  lastSyncedAt: new Date(),
-                },
-              });
-              warehouseInventoryRowsUpserted++;
-            }
+            const rowsToWrite = inventoryRows
+              .map((inv) => {
+                const offerId = offerIdByVariantId.get(inv.supplierVariantId);
+                return offerId ? { ...inv, offerId } : null;
+              })
+              .filter((r): r is NonNullable<typeof r> => r !== null);
+            await batchUpsertWarehouseInventory(prisma, rowsToWrite);
+            warehouseInventoryRowsUpserted += rowsToWrite.length;
+
             await prisma.supplierVariantOffer.updateMany({
               where: { id: { in: [...offerIdByVariantId.values()] } },
               data: { lastInventorySyncAt: new Date() },
@@ -345,6 +312,80 @@ export async function runCatalogueImport(
       itemErrors: [...itemErrors, message],
       supplierProductIds,
     };
+  }
+}
+
+const BATCH_WRITE_CHUNK_SIZE = 150;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
+// Bulk upsert via a single multi-row INSERT ... ON CONFLICT per chunk, instead of one upsert
+// round trip per variant. Returns supplierVariantId -> row id, same shape callers previously
+// built up manually from N individual upsert() results.
+async function batchUpsertVariantOffers(
+  prisma: PrismaClient,
+  supplierProductId: string,
+  variants: RawSupplierVariant[],
+): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  if (variants.length === 0) return result;
+
+  const now = new Date();
+  for (const batch of chunk(variants, BATCH_WRITE_CHUNK_SIZE)) {
+    const values = Prisma.join(
+      batch.map(
+        (v) =>
+          Prisma.sql`(${randomUUID()}, ${supplierProductId}, ${v.supplierVariantId}, ${v.supplierSku}, ${v.colourName}, ${v.size}, ${v.wholesaleCost}, ${v.currency}, ${v.mapPrice ?? null}, ${v.isOrderable}, ${now}, ${new Date(0)})`,
+      ),
+    );
+    const rows = await prisma.$queryRaw<Array<{ id: string; supplierVariantId: string }>>`
+      INSERT INTO "SupplierVariantOffer"
+        (id, "supplierProductId", "supplierVariantId", "supplierSku", "colourName", "size", "wholesaleCost", "currency", "mapPrice", "isOrderable", "lastPriceSyncAt", "lastInventorySyncAt")
+      VALUES ${values}
+      ON CONFLICT ("supplierProductId", "supplierVariantId") DO UPDATE SET
+        "supplierSku" = EXCLUDED."supplierSku",
+        "colourName" = EXCLUDED."colourName",
+        "size" = EXCLUDED."size",
+        "wholesaleCost" = EXCLUDED."wholesaleCost",
+        "currency" = EXCLUDED."currency",
+        "mapPrice" = EXCLUDED."mapPrice",
+        "isOrderable" = EXCLUDED."isOrderable",
+        "lastPriceSyncAt" = EXCLUDED."lastPriceSyncAt"
+      RETURNING id, "supplierVariantId"
+    `;
+    for (const row of rows) result.set(row.supplierVariantId, row.id);
+  }
+  return result;
+}
+
+async function batchUpsertWarehouseInventory(
+  prisma: PrismaClient,
+  rows: Array<RawInventoryRecord & { offerId: string }>,
+): Promise<void> {
+  if (rows.length === 0) return;
+  const now = new Date();
+  for (const batch of chunk(rows, BATCH_WRITE_CHUNK_SIZE)) {
+    const values = Prisma.join(
+      batch.map(
+        (r) =>
+          Prisma.sql`(${randomUUID()}, ${r.offerId}, ${r.warehouseCode}, ${r.warehouseName ?? null}, ${r.availableQty}, ${r.incomingQty ?? 0}, ${r.expectedRestockDate ? new Date(r.expectedRestockDate) : null}, ${now})`,
+      ),
+    );
+    await prisma.$executeRaw`
+      INSERT INTO "SupplierWarehouseInventory"
+        (id, "supplierVariantOfferId", "warehouseCode", "warehouseName", "availableQty", "incomingQty", "expectedRestockDate", "lastSyncedAt")
+      VALUES ${values}
+      ON CONFLICT ("supplierVariantOfferId", "warehouseCode") DO UPDATE SET
+        "warehouseName" = EXCLUDED."warehouseName",
+        "availableQty" = EXCLUDED."availableQty",
+        "incomingQty" = EXCLUDED."incomingQty",
+        "expectedRestockDate" = EXCLUDED."expectedRestockDate",
+        "lastSyncedAt" = EXCLUDED."lastSyncedAt"
+    `;
   }
 }
 

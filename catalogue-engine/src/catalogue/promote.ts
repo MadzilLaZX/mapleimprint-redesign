@@ -15,8 +15,17 @@
 // the review/approval step — treat every call as a deliberate "yes, put this on the site" action,
 // not something to run unattended over an entire unreviewed catalogue import.
 
-import type { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import { Prisma, type PrismaClient } from '@prisma/client';
 import { transitionProductStatus } from './curation.js';
+
+const BATCH_WRITE_CHUNK_SIZE = 150;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
 
 export interface PromoteToCatalogueOptions {
   prisma: PrismaClient;
@@ -123,46 +132,106 @@ export async function promoteSupplierProductToCatalogue(
 
   // One ProductVariant per distinct (colourName, size) pair across this supplier's offers —
   // multiple offers can share a variant (e.g. if a future second supplier also offers M/Black).
-  const variantIdByKey = new Map<string, string>();
-  let variantsCreated = 0;
+  //
+  // Batched instead of one findUnique + create + update round trip per offer — a core blank
+  // style can carry 400+ variants, and at ~280ms per sequential DB call that was 10+ minutes
+  // per product (confirmed live 2026-08-10, same root cause as catalogue-import.ts's variant
+  // sync loop). Candidate SKU uniqueness is checked in one batch query up front; the (extremely
+  // rare in practice, since SKUs already encode style+colour+size) collision case falls back to
+  // the original per-item uniqueSlug loop.
   const sizeOrder: Record<string, number> = {
     xs: 1, s: 2, m: 3, l: 4, xl: 5, '2xl': 6, xxl: 6, '3xl': 7, xxxl: 7, '4xl': 8, xxxxl: 8,
   };
 
+  const distinctByKey = new Map<
+    string,
+    { colourName: string; size: string; normalizedColour: string; candidateSku: string }
+  >();
   for (const offer of supplierProduct.variantOffers) {
     const key = `${offer.colourName}|${offer.size}`;
-    let variantId = variantIdByKey.get(key);
-
-    if (!variantId) {
-      const normalizedColour = slugify(offer.colourName);
-      const internalSku = await uniqueSlug(
-        prisma,
+    if (distinctByKey.has(key)) continue;
+    const normalizedColour = slugify(offer.colourName);
+    distinctByKey.set(key, {
+      colourName: offer.colourName,
+      size: offer.size,
+      normalizedColour,
+      candidateSku:
         `MI-${slugify(supplierProduct.supplierStyleCode)}-${normalizedColour}-${slugify(offer.size)}`.toUpperCase(),
-        async (sku) => {
+    });
+  }
+  const distinct = [...distinctByKey.entries()];
+
+  const conflicting = new Set(
+    (
+      await prisma.productVariant.findMany({
+        where: { internalSku: { in: distinct.map(([, v]) => v.candidateSku) } },
+        select: { internalSku: true },
+      })
+    ).map((r) => r.internalSku),
+  );
+
+  const toInsert: Array<{
+    key: string;
+    id: string;
+    internalSku: string;
+    colourName: string;
+    normalizedColour: string;
+    size: string;
+    sizeSortOrder: number;
+  }> = [];
+  for (const [key, v] of distinct) {
+    const internalSku = conflicting.has(v.candidateSku)
+      ? await uniqueSlug(prisma, v.candidateSku, async (sku) => {
           const existing = await prisma.productVariant.findUnique({ where: { internalSku: sku } });
           return existing !== null;
-        },
-      );
-
-      const variant = await prisma.productVariant.create({
-        data: {
-          masterProductId: masterProduct.id,
-          internalSku,
-          colourName: offer.colourName,
-          normalizedColour,
-          size: offer.size,
-          sizeSortOrder: sizeOrder[offer.size.trim().toLowerCase()] ?? 99,
-        },
-      });
-      variantId = variant.id;
-      variantIdByKey.set(key, variantId);
-      variantsCreated++;
-    }
-
-    await prisma.supplierVariantOffer.update({
-      where: { id: offer.id },
-      data: { productVariantId: variantId },
+        })
+      : v.candidateSku;
+    toInsert.push({
+      key,
+      id: randomUUID(),
+      internalSku,
+      colourName: v.colourName,
+      normalizedColour: v.normalizedColour,
+      size: v.size,
+      sizeSortOrder: sizeOrder[v.size.trim().toLowerCase()] ?? 99,
     });
+  }
+
+  for (const batch of chunk(toInsert, BATCH_WRITE_CHUNK_SIZE)) {
+    if (batch.length === 0) continue;
+    const values = Prisma.join(
+      batch.map(
+        (v) =>
+          Prisma.sql`(${v.id}, ${masterProduct.id}, ${v.internalSku}, ${v.colourName}, ${v.normalizedColour}, ${v.size}, ${v.sizeSortOrder})`,
+      ),
+    );
+    await prisma.$executeRaw`
+      INSERT INTO "ProductVariant"
+        (id, "masterProductId", "internalSku", "colourName", "normalizedColour", "size", "sizeSortOrder")
+      VALUES ${values}
+    `;
+  }
+  const variantsCreated = toInsert.length;
+  const variantIdByKey = new Map(toInsert.map((v) => [v.key, v.id]));
+
+  const offerLinks = supplierProduct.variantOffers.map((offer) => ({
+    offerId: offer.id,
+    variantId: variantIdByKey.get(`${offer.colourName}|${offer.size}`),
+  }));
+  for (const batch of chunk(offerLinks, BATCH_WRITE_CHUNK_SIZE)) {
+    const rows = batch.filter(
+      (r): r is { offerId: string; variantId: string } => r.variantId !== undefined,
+    );
+    if (rows.length === 0) continue;
+    const values = Prisma.join(
+      rows.map((r) => Prisma.sql`(${r.offerId}, ${r.variantId})`),
+    );
+    await prisma.$executeRaw`
+      UPDATE "SupplierVariantOffer" AS t
+      SET "productVariantId" = v.variant_id
+      FROM (VALUES ${values}) AS v(offer_id, variant_id)
+      WHERE t.id = v.offer_id
+    `;
   }
 
   const imagesLinked = await linkSupplierProductImages(prisma, supplierProductId, masterProduct.id);
