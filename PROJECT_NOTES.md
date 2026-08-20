@@ -258,6 +258,20 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-08-20 shop rebuild (Phase 1 of the Studio brief):** `/shop` was a fully client-filtered
+blob (all products shipped to the browser, filtered in a `useState`) with misaligned cards on
+uneven titles and an "Add to Cart" that silently added unconfigured items. Rebuilt as a real
+server-rendered, paginated (24/page), sortable (featured/price asc/price desc — no fake "Popular"
+or "Newest," since no real view-count or import-date data exists to sort by honestly), searchable
+catalogue: `src/lib/shopQuery.ts` (URL-state helpers), `ShopFilters`/`ShopPagination` (server,
+plain `<Link>`s — crawlable, no client JS needed), `ShopSearchInput` (client, debounced), `loading.tsx`
+skeleton. Card CTA is now "Customize" linking to the real product page, not a cart mutation.
+Sort/search URL variants are `noindex` and canonicalize back to the clean category URL; category/
+subcategory/page URLs stay indexable and self-canonical. This was step 2 of a much larger brief
+(full "Maple Imprint Studio" design-customizer product) — see the audit report delivered in
+conversation for the full architecture plan; card/pricing/pagination was the "fix the shop before
+building Studio" phase, Studio itself hasn't been started.
+
 **2026-08-20 pricing fix:** every one of the 1,021 real products was showing an identical
 placeholder-looking price ($20 apparel/workwear, $12 hats) — a real bug in the export pipeline
 (it exported the decoration-cost chart as if it were the retail price, never touching real
