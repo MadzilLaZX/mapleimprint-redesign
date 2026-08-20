@@ -4,6 +4,45 @@ Supplier-independent product catalogue, inventory sync, and dynamic pricing engi
 Imprint. This is a **standalone, backend-agnostic package**, not part of the Next.js frontend in
 the parent `mapleimprint-redesign` repo — see "Why this is separate from the website" below.
 
+## 2026-08-20: fixed a real pricing bug — every product was showing an identical placeholder price
+
+`scripts/export-products-for-frontend.mjs` was exporting the client's decoration/print-cost chart
+(`APPAREL_PRINT_TIERS`/`HAT_PRINT_TIERS`) directly as if it *were* the retail product price,
+completely bypassing `wholesaleCost` (real, populated per variant on `SupplierVariantOffer`) and
+the `calculatePrice()` engine. Result: every one of the 1,021 live products showed exactly `$20`
+(apparel/workwear) or `$12` (hats) — a code bug, not a pricing decision, despite a comment in that
+file claiming otherwise (removed).
+
+Fixed:
+- Seeded the first-ever `MarkupRule` row: global, 40% (percentage, applies to wholesale/blank
+  cost only — decoration cost is added on top, not marked up, matching the client's formula
+  `retail = wholesale × markup`). `MarkupRule` had a real DB table and columns for
+  supplier/brand/category/productType overrides but zero rows and nothing that ever resolved one
+  — `resolveMarkupRule()` (new, in the export script) is the first thing that actually reads it,
+  picking the most-specific active rule that matches a given product.
+- Corrected `export-products-for-frontend.mjs` to compute each product's `priceTiers` from the
+  cheapest **orderable** variant's real wholesale cost run through `calculatePrice()`, not the
+  print chart alone. A product with no orderable offer, or no matching `MarkupRule`, exports as
+  `quote_required` (`priceTiers: null`) — never a guessed number.
+- The corrected script couldn't be run for real this session (no local `DATABASE_URL` — Supabase's
+  own integration can't read the DB password back out, and this session had no local `.env`).
+  Instead, computed the same formula via direct SQL (a compact per-product wholesale-cost query)
+  and patched `src/lib/generated/products.json`'s `priceTiers`/`startingPrice` fields in place,
+  leaving images/variants/descriptions untouched. Result: 848 of 1,021 products now price
+  correctly (463 distinct price points, $16.34–$284.60), 173 are honestly `quote_required`.
+  **Next time someone has local DB credentials, run the real script** (`node
+  scripts/export-products-for-frontend.mjs`) — it now has a `--force`-gated safety check that
+  refuses to overwrite the live file if the new export has less than half as many products as the
+  current one, specifically to prevent an accidental catalogue wipe like the near-miss below.
+- Also discovered mid-fix: the live Supabase project (`ovqkwedpwmuusnijbxro`) was paused
+  (free-tier auto-pause) and, immediately after restore, briefly reported **zero tables** —
+  looked like catastrophic data loss. It was eventiual-consistency lag during the `COMING_UP`
+  boot window, not real: re-querying a minute later showed the full schema and all 1,027
+  `MasterProduct` rows intact. No data was lost. Re-applying `migration_init.sql` against what
+  turned out to be a fully-populated database was caught before it did anything destructive (it
+  correctly errored on `already exists`). **Lesson: don't trust a schema/row-count read taken
+  immediately after `restore_project` returns success — wait for `ACTIVE_HEALTHY` and re-verify.**
+
 ## Status: Phase 1 + Phase 2 done, Phase 3 underway — 23 real, published products live on the site
 
 **2026-08-03: real products are live on mapleimprint.ca's product pages.** 23 real T-shirts

@@ -258,6 +258,14 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-08-20 pricing fix:** every one of the 1,021 real products was showing an identical
+placeholder-looking price ($20 apparel/workwear, $12 hats) — a real bug in the export pipeline
+(it exported the decoration-cost chart as if it were the retail price, never touching real
+wholesale cost or the 40% markup rule). Fixed and 848 products now show correct, varied,
+wholesale-derived pricing; 173 honestly show `quote_required`. Full incident writeup, including a
+false-alarm "the database lost all its data" scare that turned out to be Supabase restore lag, is
+in `catalogue-engine/README.md`'s "2026-08-20: fixed a real pricing bug" section.
+
 **Build note:** a separate, more recent change wired ~545 real S&S Activewear products directly
 into the frontend as static routes (`src/lib/generated/products.json`, `src/lib/products.ts`,
 `generateStaticParams` in `src/app/products/[category]/[subcategory]/[product]/page.tsx`) — over

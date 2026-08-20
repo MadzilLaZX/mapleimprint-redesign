@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // being generated concurrently and crashes the build with an OOM. Capping it keeps peak memory
   // bounded at the cost of some build wall-clock time.
   experimental: {
-    cpus: 4,
+    cpus: 2,
   },
   images: {
     remotePatterns: [

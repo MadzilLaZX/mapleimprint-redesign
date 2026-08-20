@@ -4,11 +4,16 @@
 // platform Gate A picks" for now the static-JSON approach). Re-run this any time the catalogue
 // changes; the frontend picks up new data on its next build.
 //
-// Pricing: per-unit price at each quantity tier comes straight from the client's own print-cost
-// chart (src/pricing/rules/seed-data.ts's APPAREL_PRINT_TIERS) — NOT wholesale cost + markup.
-// This is a deliberate choice, not an oversight: the client confirmed a plain tee at 1-2 units is
-// $20 each, exactly the chart's first-print-cost value, with no separate blank-garment charge
-// added on top. See catalogue-engine README / project memory for the full reasoning.
+// Pricing: retail price = wholesale cost (cheapest orderable variant offer for the product) run
+// through the real pricing engine (`calculatePrice()`), which applies a MarkupRule (looked up per
+// product from the DB, most-specific-match-wins) plus the client's decoration/print-cost chart on
+// top. This used to export APPAREL_PRINT_TIERS/HAT_PRINT_TIERS directly as if the chart WERE the
+// retail price — that was a bug (every product showed an identical $20/$12 "starting price"
+// regardless of what it actually costs), not a real client decision, despite a since-removed
+// comment here claiming otherwise. See PROJECT_NOTES.md for the incident writeup.
+//
+// A product with no orderable variant offer, or with no MarkupRule resolving for it, exports as
+// priceTiers: null / startingPrice: null (quote required) — never a guessed number.
 //
 // Descriptions come from raw supplier HTML — stripped to plain text here before ever reaching the
 // frontend, since dangerouslySetInnerHTML on un-sanitized third-party content is a real XSS risk.
@@ -17,7 +22,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
-import { APPAREL_PRINT_TIERS, HAT_PRINT_TIERS, PRINT_RULE_VERSION } from '../dist/index.js';
+import { APPAREL_PRINT_TIERS, HAT_PRINT_TIERS, PRINT_RULE_VERSION, calculatePrice } from '../dist/index.js';
 import { routeFor, APPAREL_PRODUCT_TYPES, HEADWEAR_PRODUCT_TYPE } from './route-map.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -37,6 +42,11 @@ if (existsSync(envPath)) {
   }
 }
 
+// Below this fraction of the previously-exported product count, refuse to overwrite the live
+// file — almost certainly a bad DB read (e.g. querying mid-restore, wrong env) rather than a real
+// catalogue shrink. Pass --force to override deliberately (e.g. a real, intentional mass-hide).
+const MIN_SURVIVING_FRACTION = 0.5;
+
 function stripHtml(html) {
   if (!html) return '';
   return html
@@ -53,38 +63,98 @@ function stripHtml(html) {
     .trim();
 }
 
-function priceTiersFor(productType) {
-  if (APPAREL_PRODUCT_TYPES.has(productType)) {
-    return APPAREL_PRINT_TIERS.map((t) => ({
-      minQty: t.quantityMin,
-      maxQty: t.quantityMax,
-      pricePerUnit: t.firstPrintCost,
-    }));
+function chartFor(productType) {
+  if (APPAREL_PRODUCT_TYPES.has(productType)) return { tiers: APPAREL_PRINT_TIERS, engineType: 'apparel' };
+  if (productType === HEADWEAR_PRODUCT_TYPE) return { tiers: HAT_PRINT_TIERS, engineType: 'hat' };
+  return null; // no chart for this productType (e.g. bags, aprons) — quote-required, not a guess
+}
+
+/** Picks the most specific active MarkupRule that matches this product, or null if none applies.
+ *  Specificity = how many of supplier/brand/category/productType are pinned (non-null) on the
+ *  rule; ties broken by `priority` (higher wins). A rule only matches if every pinned field on it
+ *  equals the product's value (or is null, i.e. a wildcard for that field) AND cost falls inside
+ *  its min/max cost band if set. This is the resolver the DB schema's override columns were
+ *  designed for but that nothing previously implemented. */
+function resolveMarkupRule(rules, { supplierId, brandId, categoryId, productType, cost }) {
+  const candidates = rules.filter(
+    (r) =>
+      (!r.supplierId || r.supplierId === supplierId) &&
+      (!r.brandId || r.brandId === brandId) &&
+      (!r.categoryId || r.categoryId === categoryId) &&
+      (!r.productType || r.productType === productType) &&
+      (r.minimumCost == null || cost >= Number(r.minimumCost)) &&
+      (r.maximumCost == null || cost <= Number(r.maximumCost)),
+  );
+  const specificity = (r) => [r.supplierId, r.brandId, r.categoryId, r.productType].filter(Boolean).length;
+  candidates.sort((a, b) => specificity(b) - specificity(a) || b.priority - a.priority);
+  return candidates[0] ?? null;
+}
+
+/** Cheapest currently-orderable wholesale offer across a product's variants — "the lowest
+ *  legitimate purchasable variant," not just the numerically lowest cost regardless of stock. */
+function cheapestOrderableOffer(variants) {
+  let best = null;
+  for (const v of variants) {
+    for (const offer of v.supplierOffers) {
+      if (!offer.isOrderable) continue;
+      const cost = Number(offer.wholesaleCost);
+      if (best === null || cost < best.cost) best = { cost, currency: offer.currency, supplierId: offer.supplierProduct.supplierId };
+    }
   }
-  if (productType === HEADWEAR_PRODUCT_TYPE) {
-    return HAT_PRINT_TIERS.map((t) => ({
-      minQty: t.quantityMin,
-      maxQty: t.quantityMax,
-      pricePerUnit: t.firstPrintCost,
-    }));
+  return best;
+}
+
+function buildPriceTiers(chart, engineType, cheapest, markupRule) {
+  if (!chart || !cheapest || !markupRule) return null;
+  const tiers = [];
+  for (const tier of chart.tiers) {
+    const result = calculatePrice({
+      productType: engineType,
+      quantity: tier.quantityMin,
+      wholesaleCostPerUnit: cheapest.cost,
+      wholesaleCostCurrency: cheapest.currency,
+      printLocations: 1,
+      markupRule: {
+        type: markupRule.markupType,
+        value: Number(markupRule.markupValue),
+        appliesTo: 'blank', // brief's formula: retail base product = wholesale x markup, decoration cost added on top, not marked up
+        version: markupRule.id,
+      },
+    });
+    if (result.status !== 'priced') return null; // any tier failing to price -> whole product is quote_required, not partially guessed
+    tiers.push({ minQty: tier.quantityMin, maxQty: tier.quantityMax, pricePerUnit: result.finalUnitPrice });
   }
-  return null; // no chart for this productType (e.g. bags) — export with priceTiers: null, not a guess
+  return tiers;
 }
 
 async function main() {
+  const force = process.argv.includes('--force');
   const prisma = new PrismaClient();
 
-  const products = await prisma.masterProduct.findMany({
-    where: { status: 'published', isPublished: true },
-    include: {
-      brand: true,
-      primaryCategory: true,
-      variants: { where: { status: 'active' } },
-      images: { where: { status: 'published' }, orderBy: { sortOrder: 'asc' } },
-    },
-  });
+  const [products, markupRules] = await Promise.all([
+    prisma.masterProduct.findMany({
+      where: { status: 'published', isPublished: true },
+      include: {
+        brand: true,
+        primaryCategory: true,
+        variants: {
+          where: { status: 'active' },
+          include: {
+            supplierOffers: {
+              where: { isOrderable: true },
+              select: { wholesaleCost: true, currency: true, isOrderable: true, supplierProduct: { select: { supplierId: true } } },
+            },
+          },
+        },
+        images: { where: { status: 'published' }, orderBy: { sortOrder: 'asc' } },
+      },
+    }),
+    prisma.markupRule.findMany({ where: { isActive: true } }),
+  ]);
 
   const exported = [];
+  let quoteRequiredCount = 0;
+
   for (const p of products) {
     const route = routeFor(p.productType, p.name);
     if (!route) {
@@ -99,7 +169,19 @@ async function main() {
       return va - vb;
     });
 
-    const priceTiers = priceTiersFor(p.productType);
+    const chart = chartFor(p.productType);
+    const cheapest = cheapestOrderableOffer(p.variants);
+    const markupRule = cheapest
+      ? resolveMarkupRule(markupRules, {
+          supplierId: cheapest.supplierId,
+          brandId: p.brandId,
+          categoryId: p.primaryCategoryId,
+          productType: p.productType,
+          cost: cheapest.cost,
+        })
+      : null;
+    const priceTiers = buildPriceTiers(chart, chart?.engineType, cheapest, markupRule);
+    if (!priceTiers) quoteRequiredCount++;
 
     // Colour swatches are tiny colour-chip thumbnails (a few pixels), not product photos — never
     // usable as a lead/gallery image, since stretched to tile size they render as a misleading
@@ -136,9 +218,24 @@ async function main() {
   const outDir = resolve(here, '..', '..', 'src', 'lib', 'generated');
   mkdirSync(outDir, { recursive: true });
   const outPath = resolve(outDir, 'products.json');
+
+  if (existsSync(outPath)) {
+    const previous = JSON.parse(readFileSync(outPath, 'utf-8'));
+    if (!force && previous.length > 0 && exported.length < previous.length * MIN_SURVIVING_FRACTION) {
+      console.error(
+        `Refusing to write: exported ${exported.length} products, previous file had ${previous.length} ` +
+          `(below ${MIN_SURVIVING_FRACTION * 100}% survival threshold). This is almost always a bad DB read, ` +
+          `not a real catalogue shrink. Re-run with --force if this drop is genuinely intended.`,
+      );
+      await prisma.$disconnect();
+      process.exit(1);
+    }
+  }
+
   writeFileSync(outPath, JSON.stringify(exported, null, 2), 'utf-8');
 
   console.log(`Exported ${exported.length} products to ${outPath}`);
+  console.log(`  ${exported.length - quoteRequiredCount} priced, ${quoteRequiredCount} quote_required (no orderable offer or no matching MarkupRule)`);
   await prisma.$disconnect();
 }
 
