@@ -52,10 +52,13 @@ export function ProductCard({ product }: { product: ShopProduct }) {
         </p>
         <Link
           href={product.href}
-          className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-maple-gradient px-4 py-2.5 text-sm font-semibold text-ink-950 transition-transform duration-300 ease-[var(--ease-premium)] hover:scale-[1.02]"
+          className="group/cta mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-ink-950 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 ease-[var(--ease-premium)] hover:bg-maple-gradient hover:text-ink-950 focus-visible:bg-maple-gradient focus-visible:text-ink-950"
         >
-          Customize
-          <ArrowRight className="size-3.5" weight="bold" />
+          View Item
+          <ArrowRight
+            className="size-3.5 transition-transform duration-200 ease-[var(--ease-premium)] group-hover/cta:translate-x-0.5"
+            weight="bold"
+          />
         </Link>
       </div>
     </div>

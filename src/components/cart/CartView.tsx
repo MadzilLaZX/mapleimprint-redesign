@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { useCart, QUOTE_PREFILL_KEY, type CartItem } from "@/components/cart/CartProvider";
 import { PRIMARY_CTA } from "@/lib/constants";
+import { cn } from "@/lib/cn";
 
 /** Real per-unit price for this item's CURRENT quantity — uses the tier matching `item.quantity`
  *  when the customizer attached a tier table, falling back to the flat startingPrice (lowest-tier
@@ -79,6 +80,20 @@ export function CartView() {
                   {item.sizeBreakdown && item.sizeBreakdown.length > 0 && (
                     <> · {item.sizeBreakdown.map((s) => `${s.size} ×${s.qty}`).join(", ")}</>
                   )}
+                </p>
+              )}
+              {item.customizationType && (
+                <p
+                  className={cn(
+                    "mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                    item.customizationType === "BLANK" && "bg-canvas text-ink-900/70",
+                    item.customizationType === "CUSTOM" && "bg-crimson/10 text-crimson",
+                    item.customizationType === "MAPLE_ASSISTED" && "bg-orange/10 text-orange",
+                  )}
+                >
+                  {item.customizationType === "BLANK" && "Blank — no printing"}
+                  {item.customizationType === "CUSTOM" && "Custom design"}
+                  {item.customizationType === "MAPLE_ASSISTED" && "Design help requested"}
                 </p>
               )}
               {(() => {

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
@@ -8,7 +7,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { PRODUCTS, getProduct } from "@/lib/products";
-import { ProductCustomizer } from "@/components/products/ProductCustomizer";
+import { ProductDetail } from "@/components/products/ProductDetail";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({
@@ -41,8 +40,6 @@ export default async function ProductDetailPage({
   const p = getProduct(category, subcategory, product);
   if (!p) notFound();
 
-  const primaryImage = p.images[0];
-  const galleryImages = p.images.slice(0, 6);
   const categoryName = PRODUCT_CATEGORIES.find((c) => c.slug === p.categorySlug)?.name ?? p.categorySlug;
 
   return (
@@ -50,50 +47,9 @@ export default async function ProductDetailPage({
       <PageHeader eyebrow={`${p.brandName} · ${p.subcategorySlug.replace(/-/g, " ")}`} title={p.name} />
 
       <Section tone="canvas">
-        <div className="grid gap-10 lg:grid-cols-2">
-          <Reveal>
-            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-white">
-              {primaryImage ? (
-                <Image
-                  src={primaryImage.url}
-                  alt={p.name}
-                  fill
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  priority
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted">No image yet</div>
-              )}
-            </div>
-            {galleryImages.length > 1 && (
-              <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6">
-                {galleryImages.map((img, i) => (
-                  <div key={`${img.url}-${i}`} className="relative aspect-square overflow-hidden rounded-lg bg-white">
-                    <Image src={img.url} alt={img.colourName ?? p.name} fill sizes="120px" className="object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </Reveal>
-
-          <Reveal delay={0.08}>
-            {p.startingPrice !== null && (
-              <p className="font-display text-3xl font-semibold text-ink-900">
-                From ${p.startingPrice.toFixed(2)}
-                <span className="text-base font-normal text-muted"> / unit, custom printed</span>
-              </p>
-            )}
-
-            {p.description && (
-              <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-muted">{p.description}</p>
-            )}
-
-            <div className="mt-6">
-              <ProductCustomizer product={p} categoryName={categoryName} />
-            </div>
-          </Reveal>
-        </div>
+        <Reveal>
+          <ProductDetail product={p} categoryName={categoryName} />
+        </Reveal>
       </Section>
 
       {p.priceTiers && (

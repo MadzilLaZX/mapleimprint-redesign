@@ -240,6 +240,16 @@ connections only. It's seeded with the four known suppliers (SanMar, S&S Activew
 Condé present but `isActive: false` pending the client's decision) and all 18 `PricingRule` rows
 from the client's cost sheet (apparel/hat/mug × 6 quantity tiers each).
 
+**2026-08-20 addition — this project also now hosts the frontend's Maple Studio tables.** Three
+tables not in `schema.prisma` (`DesignProject`, `DesignSide`, `DesignObject`, migration
+`add_design_studio_tables`) plus a `design-uploads` storage bucket live on this same Supabase
+project, owned and queried directly by `mapleimprint-redesign/src/lib/studio/` via
+`@supabase/supabase-js` and the anon key — **not** through this package or Prisma. Unlike every
+other table here, these use permissive RLS policies scoped by an anonymous session header rather
+than deny-all, since the frontend (not this backend package) needs runtime read/write access from
+a browser. Keep this distinction in mind before assuming "RLS is deny-all on this project" — it's
+deny-all specifically for the catalogue/pricing tables this package owns.
+
 `DATABASE_URL` is now configured in a local `.env` (git-ignored, never commit it). Important
 gotcha hit while setting this up: the **direct** connection string
 (`db.<ref>.supabase.co:5432`) only resolves to an IPv6 address, and this machine has no IPv6

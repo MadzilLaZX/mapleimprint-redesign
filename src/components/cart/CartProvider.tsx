@@ -21,6 +21,20 @@ export type CartItem = {
   priceTiers?: CartItemPriceTier[];
   colourName?: string;
   sizeBreakdown?: { size: string; qty: number }[];
+  /** How this line was configured. Absent/undefined on older cart items and on non-apparel
+   *  quick-add items — treat as equivalent to a plain quote-required line. */
+  customizationType?: "BLANK" | "CUSTOM" | "MAPLE_ASSISTED";
+  /** Set only for customizationType "CUSTOM" — the Studio project this line was built from. */
+  designProjectId?: string;
+  designRevision?: number;
+  /** Set only for "MAPLE_ASSISTED" — the customer's design-help brief (see LeaveItToUsPanel). */
+  assistanceBrief?: {
+    designStatus: "have-logo" | "need-help" | "not-sure";
+    placement: "front" | "back" | "left-chest" | "sleeve" | "recommend-for-me";
+    notes: string;
+    uploadedFileUrl?: string;
+  };
+  previewImageUrl?: string;
 };
 
 type CartContextValue = {

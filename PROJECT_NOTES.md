@@ -258,6 +258,69 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-08-20 Maple Studio MVP + product experience rebuild (Phase 2+ of the Studio brief):** the
+biggest single addition to the site so far — a real, working design customizer, not a stub.
+
+- **New runtime dependency:** the frontend now talks to a database at request time for the first
+  time (`@supabase/supabase-js`, `src/lib/studio/supabaseClient.ts`). Everything else on the site
+  is still static-JSON-only; this is scoped to Studio's own three new tables
+  (`DesignProject`/`DesignSide`/`DesignObject`, migration `add_design_studio_tables` on the same
+  `maple-imprint-catalogue` Supabase project) and a `design-uploads` storage bucket. Access uses
+  the anon/publishable key (safe to ship in the client bundle, hardcoded rather than an env var —
+  see that file's comment for why) with RLS policies scoping every row to the caller's
+  `x-mi-session` header/cookie (`src/lib/studio/session.ts`) — an anonymous-session-ownership
+  pattern, not Supabase Auth. Verified end-to-end against the live project, not just locally
+  mocked: autosave round-trips really persist and really reload.
+- **Product colour → image**: `ProductGallery.tsx` now shows the real supplier photo for whichever
+  colour is selected (150-250ms crossfade, thumbnail sync, reduced-motion aware), instead of a
+  static gallery that ignored colour selection entirely. 98.8% of colour/product pairs have a real
+  matching photo (7,084/7,171, checked directly against the DB); the rest fall back to the
+  product's default image with a visible "photo not available in this colour" note rather than
+  silently showing the wrong garment.
+- **Colour-change availability**: changing colour used to silently wipe every quantity you'd
+  entered. Now only sizes that don't exist in the new colour get cleared, with an explicit message
+  naming which size and why.
+- **Product page action hierarchy**: replaced the single "Add to Cart" button with three real,
+  independently-functional paths — Customize This Shirt (enters Studio), Buy It Blank
+  (`customizationType: "BLANK"`, no $20 design fee, added straight to cart), Leave It to Us
+  (`LeaveItToUsPanel.tsx`, a short brief + optional upload, `customizationType: "MAPLE_ASSISTED"`,
+  reuses the existing cart → quote pipeline rather than a new lead-capture system). `CartView.tsx`
+  now labels each line's customization type explicitly ("Blank — no printing" etc.) — the brief
+  called this out as needing to be unmistakable.
+- **Blank vs. customize pricing**: `src/lib/studio/pricing.ts` derives a pure blank-garment price
+  algebraically from the *existing* `priceTiers` (`blankPrice = priceTiers[0].pricePerUnit -
+  chartTier1Cost`) rather than adding a second pricing pipeline — the chart values it subtracts are
+  the same public print-cost chart already duplicated once in `catalogue-engine`'s
+  `seed-data.ts`; if that chart ever changes, both copies need updating. This is deliberately NOT a
+  change to `priceTiers`/`startingPrice` themselves — the shop's "From $X" pricing from the
+  previous fix is untouched.
+- **Maple Studio MVP** (`/studio/[id]`, `StudioClient.tsx` + `CanvasStage.tsx`): react-konva-based
+  (open source, no licensing decision pending — see the architecture report from this
+  conversation for the full SDK comparison; upgrade path to Polotno stays open later since it's
+  Konva-based). Real features, not stubs: upload (PNG/JPG; SVG deliberately deferred until it can
+  be sanitized safely), text with font/size/colour, move/resize/rotate/delete/duplicate, full
+  undo/redo, front/back sides, live price breakdown (blank + $20 design fee + chart printing cost,
+  recalculated as sides gain/lose artwork), autosave with a real Saving/Saved indicator, a
+  first-time onboarding choice, and a Review screen (read-only canvas preview, full price
+  breakdown, Approve & add to cart). Verified with a full Playwright run of the real user journey:
+  shop → View Item → colour change → quantities → Customize → Studio (correct product/colour
+  already loaded, confirmed via screenshot) → add text → autosave confirmed saved → Review → Approve
+  → real cart line with the right price. Print geometry is `src/lib/studio/printAreas.ts`'s
+  `PRINT_AREA_TEMPLATE_VERSION = "v1-apparel-front-back"` — one representative print-area box
+  applied to every apparel product, not real per-garment production measurements (documented there
+  as a deliberate MVP simplification; stored on every DesignProject so a future real template
+  doesn't retroactively shift existing designs).
+- **Not built yet, by design**: real production-file rendering (server-side PDF/CMYK/vector
+  export — Studio currently produces a preview, not a print master, exactly as the brief's Phase
+  14 asked for architecture-not-implementation here), colour-changing inside an existing Studio
+  session, per-product print-area calibration, an admin/staff order view, and everything in the
+  original brief's Phase 9 ("Studio MVP → generalize across all product types").
+- **Shop card CTA changed again**: "Customize" (from the previous pricing-fix batch) is now "View
+  Item" — the catalogue is for discovering products; committing to Customize/Buy Blank/Leave It to
+  Us happens on the product page once colour/size are chosen, not from the card. Near-black button
+  by default, full Maple gradient only on hover/focus — reserving the strongest brand treatment for
+  higher-intent actions per this batch's explicit visual-hierarchy note.
+
 **2026-08-20 shop rebuild (Phase 1 of the Studio brief):** `/shop` was a fully client-filtered
 blob (all products shipped to the browser, filtered in a `useState`) with misaligned cards on
 uneven titles and an "Add to Cart" that silently added unconfigured items. Rebuilt as a real
