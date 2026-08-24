@@ -33,6 +33,7 @@ type SidesState = Partial<Record<DesignSideType, DesignObjectRecord[]>>;
 
 const AUTOSAVE_DELAY_MS = 900;
 const FONT_CHOICES = ["Manrope, sans-serif", "Bricolage Grotesque, sans-serif", "Georgia, serif", "Courier New, monospace"];
+const LOCATION_LABELS: Record<DesignSideType, string> = { front: "Front", back: "Back", "left-chest": "Left Chest" };
 
 function emptyObject(type: "text" | "image", overrides: Partial<DesignObjectRecord>): DesignObjectRecord {
   return {
@@ -438,11 +439,11 @@ export function StudioClient({ projectId }: { projectId: string }) {
                     setSelectedId(null);
                   }}
                   className={cn(
-                    "rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-colors",
+                    "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
                     activeSide === side ? "bg-ink-950 text-white" : "text-ink-900/70 hover:bg-canvas",
                   )}
                 >
-                  {side}
+                  {LOCATION_LABELS[side]}
                 </button>
               ))}
             </div>
@@ -458,6 +459,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
             </div>
           )}
           <CanvasStage
+            location={activeSide}
             mockupUrl={project.mockupImages[activeSide] ?? null}
             objects={activeObjects}
             selectedId={selectedId}

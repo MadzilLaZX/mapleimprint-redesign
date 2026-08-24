@@ -23,15 +23,18 @@ export type CartItem = {
   sizeBreakdown?: { size: string; qty: number }[];
   /** How this line was configured. Absent/undefined on older cart items and on non-apparel
    *  quick-add items — treat as equivalent to a plain quote-required line. */
-  customizationType?: "BLANK" | "CUSTOM" | "MAPLE_ASSISTED";
+  customizationType?: "BLANK" | "CUSTOM" | "MAPLE_DESIGNER";
   /** Set only for customizationType "CUSTOM" — the Studio project this line was built from. */
   designProjectId?: string;
   designRevision?: number;
-  /** Set only for "MAPLE_ASSISTED" — the customer's design-help brief (see LeaveItToUsPanel). */
+  /** Set only for "MAPLE_DESIGNER" — the customer's mystery-design brief (see SurpriseMePanel).
+   *  Maple always sends a digital proof for approval before producing a designer-created piece —
+   *  this is never blind/unapproved production. */
   assistanceBrief?: {
-    designStatus: "have-logo" | "need-help" | "not-sure";
-    placement: "front" | "back" | "left-chest" | "sleeve" | "recommend-for-me";
-    notes: string;
+    purpose: "business" | "team" | "event" | "gift" | "personal" | "clothing-brand" | "other";
+    vibe: "clean" | "bold" | "fun" | "vintage" | "premium" | "streetwear" | "surprise-me";
+    includeNotes: string;
+    avoidNotes: string;
     uploadedFileUrl?: string;
   };
   previewImageUrl?: string;

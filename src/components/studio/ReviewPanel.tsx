@@ -14,6 +14,8 @@ const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then
   ),
 });
 
+const LOCATION_LABELS: Record<DesignSideType, string> = { front: "Front", back: "Back", "left-chest": "Left Chest" };
+
 interface PriceBreakdown {
   blankSubtotal: number;
   designFee: number;
@@ -40,6 +42,7 @@ export function ReviewPanel({
 }) {
   const availableSides = project.sides.map((s) => s.sideType);
   const noop = () => {};
+  const hasArt = (side: DesignSideType) => (sides[side]?.length ?? 0) > 0;
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -61,11 +64,15 @@ export function ReviewPanel({
         </p>
 
         <div className="mt-8 grid gap-8 md:grid-cols-2">
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             {availableSides.map((side) => (
               <div key={side}>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{side} preview</p>
+                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+                  {LOCATION_LABELS[side]} preview
+                  <span className={hasArt(side) ? "text-crimson" : "text-muted/50"}>{hasArt(side) ? "✓" : "—"}</span>
+                </p>
                 <CanvasStage
+                  location={side}
                   mockupUrl={project.mockupImages[side] ?? null}
                   objects={sides[side] ?? []}
                   selectedId={null}
@@ -80,7 +87,7 @@ export function ReviewPanel({
             ))}
           </div>
 
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <div className="rounded-2xl bg-white p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">Product</p>
               <p className="mt-1 font-display font-semibold text-ink-900">{project.productName}</p>

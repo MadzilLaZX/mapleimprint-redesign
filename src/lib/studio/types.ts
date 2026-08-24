@@ -3,7 +3,14 @@
 // Konva type; everything else in the app talks in these normalized, print-area-relative shapes so
 // swapping the rendering engine later doesn't touch the storefront/order model.
 
-export type DesignSideType = "front" | "back";
+// "Location," not strictly "side" — left-chest shares the front garment photo/mockup (a smaller
+// print area within the same view), it isn't a distinct camera angle. Kept as one flat union
+// rather than a separate side/location split so the rest of the app (mockupImages, DesignSide
+// rows, pricing's per-location counting) didn't need a second axis for what's still, for now,
+// three concretely-supported spots. Only ever offer locations here that either have their own
+// real product photography (front, back) or safely reuse an existing one (left-chest reuses
+// front) — see printAreas.ts's comment on why sleeve/collar/shoulder aren't offered yet.
+export type DesignSideType = "front" | "back" | "left-chest";
 export type DesignObjectType = "image" | "text";
 export type DesignProjectStatus = "draft" | "reviewed" | "ordered";
 

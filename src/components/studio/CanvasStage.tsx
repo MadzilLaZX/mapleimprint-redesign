@@ -1,25 +1,54 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Image as KonvaImage, Rect, Text as KonvaText, Transformer } from "react-konva";
 import useImage from "use-image";
 import type Konva from "konva";
 import { useReducedMotion } from "framer-motion";
 import { MOCKUP_PRINT_AREA_BOX } from "@/lib/studio/printAreas";
-import type { DesignObjectRecord } from "@/lib/studio/types";
+import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
 
-const STAGE_WIDTH = 520;
-const STAGE_HEIGHT = 650; // 4:5, matching the site's product-photo aspect convention
+// All object/print-area math below is done in this fixed "design space" — box coordinates,
+// object x/y/width/height are all computed against these constants, never against the container's
+// actual measured size. Responsiveness is handled entirely by Konva's own `scale` prop on <Stage>
+// (see renderScale below), which shrinks the rendered output — and, critically, the canvas's own
+// pixel buffer — to fit the container, rather than a CSS width:100% trick. A canvas's width/height
+// HTML attributes are its native pixel buffer size and are NOT affected by an ancestor's
+// max-width — that mismatch (fixed 520px buffer inside a narrower flex/grid column) is what
+// clipped the mockup at the right edge on narrower layouts. Konva's own `scale` is the standard
+// fix: it keeps pointer-event coordinates correctly mapped too, unlike a pure CSS transform.
+const NATURAL_WIDTH = 520;
+const NATURAL_HEIGHT = 650; // 4:5, matching the site's product-photo aspect convention
 
 function useHtmlImage(url: string | null) {
   const [img] = useImage(url ?? "", "anonymous");
   return url ? img : undefined;
 }
 
+/** Measures the wrapping element's content width so the stage can shrink to fit it — never grows
+ *  past NATURAL_WIDTH (no upscaling past native resolution on huge screens). */
+function useResponsiveScale() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width;
+      if (width) setScale(Math.min(1, width / NATURAL_WIDTH));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { containerRef, scale };
+}
+
 function MockupBackground({ url }: { url: string | null }) {
   const img = useHtmlImage(url);
   if (!img) return null;
-  return <KonvaImage image={img} width={STAGE_WIDTH} height={STAGE_HEIGHT} listening={false} />;
+  return <KonvaImage image={img} width={NATURAL_WIDTH} height={NATURAL_HEIGHT} listening={false} />;
 }
 
 function DesignImageNode({
@@ -135,6 +164,7 @@ function DesignTextNode({
 }
 
 export function CanvasStage({
+  location,
   mockupUrl,
   objects,
   selectedId,
@@ -145,6 +175,7 @@ export function CanvasStage({
   onEditCommit,
   readOnly = false,
 }: {
+  location: DesignSideType;
   mockupUrl: string | null;
   objects: DesignObjectRecord[];
   selectedId: string | null;
@@ -156,16 +187,19 @@ export function CanvasStage({
   readOnly?: boolean;
 }) {
   const reduce = useReducedMotion();
+  const { containerRef, scale } = useResponsiveScale();
   const stageRef = useRef<Konva.Stage | null>(null);
   const transformerRef = useRef<Konva.Transformer | null>(null);
   const nodeRefs = useRef<Map<string, Konva.Image | Konva.Text>>(new Map());
   const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const locationBox = MOCKUP_PRINT_AREA_BOX[location];
+  // Design-space box (fixed), used for all object math below.
   const box = {
-    x: MOCKUP_PRINT_AREA_BOX.xFrac * STAGE_WIDTH,
-    y: MOCKUP_PRINT_AREA_BOX.yFrac * STAGE_HEIGHT,
-    width: MOCKUP_PRINT_AREA_BOX.widthFrac * STAGE_WIDTH,
-    height: MOCKUP_PRINT_AREA_BOX.heightFrac * STAGE_HEIGHT,
+    x: locationBox.xFrac * NATURAL_WIDTH,
+    y: locationBox.yFrac * NATURAL_HEIGHT,
+    width: locationBox.widthFrac * NATURAL_WIDTH,
+    height: locationBox.heightFrac * NATURAL_HEIGHT,
   };
 
   useEffect(() => {
@@ -179,11 +213,13 @@ export function CanvasStage({
   const editingObj = editingTextId ? objects.find((o) => o.id === editingTextId) : null;
 
   return (
-    <div className="relative mx-auto" style={{ width: STAGE_WIDTH, maxWidth: "100%" }}>
+    <div ref={containerRef} className="relative mx-auto w-full" style={{ maxWidth: NATURAL_WIDTH }}>
       <Stage
         ref={stageRef}
-        width={STAGE_WIDTH}
-        height={STAGE_HEIGHT}
+        width={NATURAL_WIDTH * scale}
+        height={NATURAL_HEIGHT * scale}
+        scaleX={scale}
+        scaleY={scale}
         onMouseDown={(e) => {
           if (!readOnly && e.target === e.target.getStage()) onSelect(null);
         }}
@@ -257,12 +293,15 @@ export function CanvasStage({
       )}
 
       {!readOnly && editingObj && (
+        // This overlay is a real HTML element positioned on top of the (now responsively scaled)
+        // canvas, so its CSS position must be scaled by the same factor as the canvas itself —
+        // box.x/y/width are in fixed design-space pixels, not the canvas's current rendered size.
         <div
           className="absolute z-10 rounded-lg border-2 border-crimson bg-white/95 p-1 shadow-lg"
           style={{
-            left: box.x + editingObj.normalizedX * box.width,
-            top: box.y + editingObj.normalizedY * box.height,
-            width: Math.max(120, editingObj.normalizedWidth * box.width),
+            left: (box.x + editingObj.normalizedX * box.width) * scale,
+            top: (box.y + editingObj.normalizedY * box.height) * scale,
+            width: Math.max(120, editingObj.normalizedWidth * box.width * scale),
           }}
         >
           <textarea
@@ -285,7 +324,7 @@ export function CanvasStage({
             }}
             rows={2}
             className="w-full resize-none border-none bg-transparent text-sm text-ink-900 outline-none"
-            style={{ fontFamily: editingObj.fontFamily ?? undefined, fontSize: editingObj.fontSize ?? 16 }}
+            style={{ fontFamily: editingObj.fontFamily ?? undefined, fontSize: (editingObj.fontSize ?? 16) * scale }}
             aria-label="Edit text"
           />
         </div>

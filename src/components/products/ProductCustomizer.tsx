@@ -7,7 +7,8 @@ import { cn } from "@/lib/cn";
 import { useCart, QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { blankUnitPrice, calculateCustomizePrice } from "@/lib/studio/pricing";
-import { LeaveItToUsPanel } from "@/components/products/LeaveItToUsPanel";
+import { locationsFor } from "@/lib/studio/printAreas";
+import { SurpriseMePanel } from "@/components/products/SurpriseMePanel";
 import type { CatalogueProduct } from "@/lib/products";
 
 const VISIBLE_COLOUR_COUNT = 8;
@@ -45,7 +46,10 @@ export function ProductCustomizer({
 
   const blankPrice = blankUnitPrice(product);
   const quoteOnly = blankPrice === null;
-  const customizePricing = totalQty > 0 ? calculateCustomizePrice(product, totalQty, 1) : null;
+  // Always priced at at least qty 1, even before the customer picks a size, so the page shows a
+  // real "from" figure immediately rather than nothing — this is the current/default (front-only)
+  // configuration's price, not a fixed number; Studio updates it live as locations are added.
+  const customizePricing = calculateCustomizePrice(product, Math.max(1, totalQty), 1);
 
   const visibleColours = showAllColours ? product.colours : product.colours.slice(0, VISIBLE_COLOUR_COUNT);
   const hiddenColourCount = product.colours.length - VISIBLE_COLOUR_COUNT;
@@ -83,14 +87,20 @@ export function ProductCustomizer({
       // Ensures the mi-session cookie exists before the request fires — the API route reads it
       // from the request, it doesn't need the value passed explicitly.
       getOrCreateClientSessionToken();
-      const sides: ("front" | "back")[] = ["front"];
-      if (product.images.some((img) => img.imageType === "back")) sides.push("back");
 
       const frontImage =
         product.images.find((img) => img.colourName === selectedColour && img.imageType === "front")?.url ??
         product.images.find((img) => img.colourName === selectedColour)?.url ??
         product.images[0]?.url;
       const backImage = product.images.find((img) => img.colourName === selectedColour && img.imageType === "back")?.url;
+      const hasBackPhoto = product.images.some((img) => img.imageType === "back");
+
+      // locationsFor() only offers left-chest on real apparel (a torso to have a "chest"), and
+      // never offers a location this product has no photography for.
+      const sides = locationsFor(product.categorySlug).filter((loc) => loc !== "back" || hasBackPhoto);
+      const mockupImages = Object.fromEntries(
+        sides.map((loc) => [loc, loc === "back" ? backImage : frontImage]),
+      );
 
       const res = await fetch("/api/studio", {
         method: "POST",
@@ -114,7 +124,7 @@ export function ProductCustomizer({
             total: customizePricing.total,
             printRuleVersion: product.printRuleVersion,
           },
-          mockupImages: { front: frontImage, ...(backImage ? { back: backImage } : {}) },
+          mockupImages,
           sides,
         }),
       });
@@ -241,14 +251,16 @@ export function ProductCustomizer({
             This product isn&apos;t on our standard print-cost chart yet, so pricing is confirmed in
             a quote rather than shown here.
           </p>
-        ) : totalQty === 0 ? (
-          <p className="text-sm text-muted">Choose at least one size to continue.</p>
         ) : (
           <div>
-            <p className="text-sm text-muted">{totalQty} unit{totalQty === 1 ? "" : "s"}</p>
+            <p className="text-sm text-muted">
+              {totalQty > 0 ? `${totalQty} unit${totalQty === 1 ? "" : "s"}` : "Choose at least one size to continue."}
+            </p>
             <p className="font-display text-lg font-semibold text-ink-900">
-              ${blankPrice!.toFixed(2)} / unit blank
-              {customizePricing && <span className="text-sm font-normal text-muted"> · ${customizePricing.total.toFixed(2)} customized</span>}
+              Blank ${blankPrice!.toFixed(2)} / unit
+              {customizePricing && (
+                <span className="text-sm font-normal text-muted"> · Customize from ${customizePricing.total.toFixed(2)}</span>
+              )}
             </p>
           </div>
         )}
@@ -302,22 +314,29 @@ export function ProductCustomizer({
             </button>
             <p className="text-center text-xs text-muted">No print or design. Just the garment.</p>
 
-            <div className="pt-1 text-center">
-              <p className="text-xs text-muted">Not comfortable designing it yourself?</p>
-              <button
-                type="button"
-                onClick={() => setShowAssistPanel(true)}
-                className="mt-1 text-xs font-semibold text-crimson underline-offset-2 hover:underline"
-              >
-                Leave It to Us →
-              </button>
+            <div className="mt-2 rounded-2xl bg-gradient-to-br from-gold/40 via-orange/40 to-crimson/40 p-px">
+              <div className="rounded-[15px] bg-ink-950 p-5 text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-orange">✦ Want us to create it?</p>
+                <p className="mt-1.5 font-display text-base font-semibold text-white">Surprise Me — Designer&apos;s Choice</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-white/65">
+                  Give our design team the idea. We&apos;ll create something for your shirt and send it
+                  for approval before anything prints.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAssistPanel(true)}
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-maple-gradient px-5 py-2.5 text-xs font-semibold text-ink-950"
+                >
+                  Surprise Me →
+                </button>
+              </div>
             </div>
           </>
         )}
       </div>
 
       {showAssistPanel && (
-        <LeaveItToUsPanel
+        <SurpriseMePanel
           product={product}
           categoryName={categoryName}
           selectedColour={selectedColour}

@@ -88,12 +88,12 @@ export function CartView() {
                     "mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
                     item.customizationType === "BLANK" && "bg-canvas text-ink-900/70",
                     item.customizationType === "CUSTOM" && "bg-crimson/10 text-crimson",
-                    item.customizationType === "MAPLE_ASSISTED" && "bg-orange/10 text-orange",
+                    item.customizationType === "MAPLE_DESIGNER" && "bg-orange/10 text-orange",
                   )}
                 >
                   {item.customizationType === "BLANK" && "Blank — no printing"}
                   {item.customizationType === "CUSTOM" && "Custom design"}
-                  {item.customizationType === "MAPLE_ASSISTED" && "Design help requested"}
+                  {item.customizationType === "MAPLE_DESIGNER" && "✦ Surprise me — designer's choice"}
                 </p>
               )}
               {(() => {

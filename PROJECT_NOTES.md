@@ -258,6 +258,63 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-08-24 Studio expansion batch — responsive canvas fix, Surprise Me, left-chest location:**
+
+- **Real bug fixed: the Studio/Review canvas clipped on narrower layouts.** Root cause was two
+  compounding issues, both now fixed in `CanvasStage.tsx`/`ReviewPanel.tsx`: (1) a Konva `<Stage>`'s
+  `width`/`height` are its actual pixel-buffer size, not CSS — wrapping it in a `max-width: 100%`
+  div does nothing, since the canvas doesn't shrink on its own. Fixed with a `ResizeObserver` that
+  measures the container and drives Konva's own `scaleX`/`scaleY`, which resizes the real pixel
+  buffer (and keeps pointer coordinates correctly mapped, unlike a CSS transform). (2) Review's
+  `grid md:grid-cols-2` children had no `min-width: 0`, so a grid item containing a
+  fixed-intrinsic-width canvas couldn't shrink below that width — the container was *genuinely*
+  520px wide even in a 375px viewport, overflowing the page. Verified against real pixel
+  measurements (not just screenshots) across 375/768/1024/1440px, in both the editor and Review,
+  confirming zero overflow at every width.
+- **Product-page pricing language**: "Blank $X / unit · Customize from $Y" now shows even before a
+  size is chosen (previously blank until qty > 0), and says "from" rather than a bare number —
+  the customize total is the *current* configuration's price (front-only by default), not a fixed
+  figure, since it changes live if the customer adds locations in Studio.
+- **"Leave It to Us" → "Surprise Me — Designer's Choice"**: replaced the weak text-link with a
+  genuinely distinct third tier — black card, gradient-accent border, ✦ mark, gradient CTA —
+  matching Customize/Buy-Blank in visual weight without matching their exact treatment.
+  `SurpriseMePanel.tsx` (replacing the old `LeaveItToUsPanel.tsx`) asks purpose/vibe/notes/upload/
+  avoid, matching the brief's mystery-brief question set. `customizationType: "MAPLE_DESIGNER"`
+  (renamed from `MAPLE_ASSISTED`) always funnels through the existing cart→quote pipeline and
+  always ends in a digital proof before production — never blind printing.
+- **Print locations expanded to three: Front, Back, Left Chest** — `src/lib/studio/printAreas.ts`
+  now keys print-area geometry per location instead of one global box.
+  `locationsFor(categorySlug)` only offers left-chest on real apparel (custom-apparel,
+  workwear-uniforms) — hats/bags/aprons have no "chest." Left-chest deliberately reuses the front
+  garment photo (a smaller print-area box positioned on the same image) rather than needing new
+  photography. **Sleeve/collar/shoulder/upper-back were deliberately NOT added** — S&S's product
+  photography here is front/back only, so there is no real image to show what a sleeve print would
+  look like on a given garment, and Maple hasn't confirmed those positions are physically supported
+  across the catalogue. Adding a location with no matching mockup would show a front-view photo
+  while claiming to preview a different placement — see `printAreas.ts`'s comment for the full
+  reasoning. `PRINT_AREA_TEMPLATE_VERSION` bumped to `v2-apparel-front-back-leftchest`.
+- **Researched, not implemented (pending your decision):**
+  - *Size Guide / Find My Size*: **no real per-garment measurement data exists anywhere in this
+    system.** Checked the actual S&S `rawPayload` in the database directly — it contains only
+    style/brand/description metadata, no chest-width/body-length/sleeve-length figures. Building
+    either feature now would mean fabricating a size chart, which this project's own rules
+    (and this brief's own instruction) explicitly forbid. Not built. Real next step: S&S's API
+    likely has a separate size-chart endpoint that was never fetched during import — worth checking
+    in a future catalogue-engine session before revisiting this.
+  - *Ready-made design assets / clipart library*: researched Noun Project, Flaticon, Freepik,
+    Vecteezy, Iconscout, Canva Connect, Creative Fabrica. **Important finding: Flaticon's and
+    Vecteezy's licenses explicitly prohibit the exact workflow Studio needs** — embedding a library
+    where the end customer selects an asset that ends up on a physical product. The Noun Project
+    (API + NounPro subscription, ~$25/mo minimum) is the cleanest legally-defensible starting
+    point; Iconscout is architecturally built for embedding but needs a direct licensing
+    confirmation before committing. Not built — no licensed content exists to ship yet, and the
+    brief explicitly says not to scrape or fabricate a library.
+  - *Background removal*: researched remove.bg, Photoroom, Cloudinary, Slazzer, Clipdrop/Jasper,
+    Pixian.ai, BRIA AI. **Recommendation: Photoroom API** ($20/mo + $0.02/image, ~300ms latency,
+    best third-party accuracy score, explicit no-training-on-API-images policy, simple single-REST-
+    call integration) with remove.bg as a documented fallback. Not built — this is a real recurring
+    paid-vendor decision, not something to wire up without your sign-off.
+
 **2026-08-20 Maple Studio MVP + product experience rebuild (Phase 2+ of the Studio brief):** the
 biggest single addition to the site so far — a real, working design customizer, not a stub.
 
