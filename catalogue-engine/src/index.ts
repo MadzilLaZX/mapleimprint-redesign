@@ -20,6 +20,10 @@ export {
   SSActivewearConnector,
   type SSActivewearCredentials,
 } from './integrations/suppliers/ssactivewear/SSActivewearConnector.js';
+export {
+  SanMarConnector,
+  type SanMarCredentials,
+} from './integrations/suppliers/sanmar/SanMarConnector.js';
 export { FilteredCatalogueConnector } from './integrations/suppliers/filtered/FilteredCatalogueConnector.js';
 
 export {
