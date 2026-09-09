@@ -122,10 +122,80 @@ interface SanMarBulkRow {
   priceGroup?: string;
 }
 
+// PromoStandards-standardized error signal, per the official integration guide (b) — not yet
+// observed live, but documented as the convention services use to report a request-level failure
+// (as opposed to a SOAP fault) inside an otherwise "successful" envelope.
+interface SanMarServiceMessage {
+  code?: string;
+  description?: string;
+  severity?: string;
+}
+
 interface GetBulkDataResponse {
   ProductInventoryArray?: {
     Product?: SanMarBulkRow | SanMarBulkRow[];
   };
+  ServiceMessageArray?: {
+    ServiceMessage?: SanMarServiceMessage | SanMarServiceMessage[];
+  };
+}
+
+// (b) FROM THE OFFICIAL GUIDE — standardized PromoStandards error codes (shared 100/104/105/110/
+// 115/120/125 convention), with the Bulk-Data-specific text for each. 125 is the one directly
+// relevant to today's observed failure: "reached maximum limit of call" is exactly the once-per-
+// day quota this connector's disk cache exists to respect.
+const PROMOSTANDARDS_ERROR_MESSAGES: Record<string, string> = {
+  '100': 'Sender not Authorized to access this end point',
+  '104': 'Invalid Service',
+  '105': 'Unable to process request',
+  '110': 'Invalid Credentials',
+  '115': 'Account is on hold, please contact PromoStandards Supplier',
+  '120': 'productId is invalid',
+  '125': 'Reached maximum limit of call',
+};
+
+/** Pulls a human-readable error string out of a ServiceMessageArray, if one is present. Returns
+ *  undefined when there is no ServiceMessageArray or it is empty — that is the normal/success case. */
+function extractServiceMessageError(response: GetBulkDataResponse): string | undefined {
+  const messages = asArray(response.ServiceMessageArray?.ServiceMessage);
+  if (messages.length === 0) return undefined;
+  return messages
+    .map((m) => {
+      const known = m.code ? PROMOSTANDARDS_ERROR_MESSAGES[m.code] : undefined;
+      const text = m.description || known || 'Unknown error';
+      return m.code ? `[${m.code}] ${text}` : text;
+    })
+    .join('; ');
+}
+
+// --- Degenerate/placeholder-response detection ---------------------------------------------
+//
+// OBSERVED LIVE TODAY (2026-09-10, production VPS, real confirmed test — not a hypothetical):
+// a manual raw-SOAP test script made the day's first getBulkData call and got back a full, real
+// product list. Later the same day, this connector's own getBulkData call (the SECOND call that
+// day, via scripts/import-sanmar-catalogue.mjs) almost certainly tripped SanMar's once-per-day
+// server-side quota. Instead of a SOAP fault or a ServiceMessageArray error, it came back as an
+// otherwise "successful" envelope whose ProductInventoryArray.Product was a SINGLE row with every
+// field empty/null (productId: "", style: "", productName: "", ..., quantity: null, price: null).
+// That got silently treated downstream as "0 distinct styles, 0 classified, 0 unclassified" —
+// i.e. swallowed as if it were a legitimately empty catalogue. This exact silent-empty-data shape
+// already caused a real 177-product data-loss bug earlier in this project (a different supplier),
+// so it must never again be allowed to pass as valid data.
+//
+// The check below is deliberately narrow and shape-based, NOT a literal match on the observed
+// example: exactly one row whose primary identifier fields (productId, style) are both empty. A
+// genuinely empty response (rows.length === 0) is NOT flagged by this — nothing in the docs rules
+// out a legitimately empty catalogue, and conflating "zero rows" with "one degenerate placeholder
+// row" would risk false-positiving on a real edge case that has never actually been observed. The
+// discriminator is the placeholder SHAPE (one row, empty identifiers), not "few/no rows" generally.
+function isDegeneratePlaceholderRow(row: SanMarBulkRow): boolean {
+  return !row.productId && !row.style;
+}
+
+function looksLikeDegenerateBulkDataResponse(rows: SanMarBulkRow[]): boolean {
+  if (rows.length !== 1) return false;
+  const [only] = rows;
+  return only !== undefined && isDegeneratePlaceholderRow(only);
 }
 
 /** soap.js can deserialize a single-item XML array as a bare object — normalize both cases. (a) */
@@ -320,7 +390,41 @@ export class SanMarConnector implements SupplierConnector {
       );
     }
     const [result] = await soapMethod.call(client, args, { timeout: SOAP_TIMEOUT_MS });
-    return asArray(result?.ProductInventoryArray?.Product);
+
+    // Check for a standardized PromoStandards error signal first — if SanMar DID surface a real
+    // error/code (e.g. 125 = "Reached maximum limit of call"), surface that real code/message
+    // rather than inventing generic text.
+    const serviceMessageError = extractServiceMessageError(result);
+    if (serviceMessageError) {
+      throw new Error(
+        `sanmar: getBulkData returned a ServiceMessageArray error: ${serviceMessageError}. ` +
+          'If this is a "maximum limit of call" (125) error, it means today\'s once-per-day Bulk ' +
+          'Data quota has already been used — try again after the next UTC day boundary.',
+      );
+    }
+
+    const rows = asArray(result?.ProductInventoryArray?.Product);
+
+    // See the "Degenerate/placeholder-response detection" block above SanMarConnector for the
+    // full reasoning — this is a REAL failure mode confirmed by live testing today (2026-09-10),
+    // not a hypothetical. SanMar does not always signal the once-per-day quota via a SOAP fault or
+    // a ServiceMessageArray error (handled above); it can instead return a "successful" envelope
+    // containing exactly one placeholder row with every field empty/null. Treat that as a failure,
+    // never as "zero real products" — and deliberately do NOT disk-cache it (the caller here is
+    // fetchBulkDataLive; loadBulkData() only writes the disk cache after this function returns
+    // successfully, so throwing here already prevents that).
+    if (looksLikeDegenerateBulkDataResponse(rows)) {
+      throw new Error(
+        'sanmar: Bulk Data returned a degenerate/empty response — exactly one product row with ' +
+          'every field empty/null. This usually means today\'s once-per-day rate limit was already ' +
+          'used by another process (confirmed live 2026-09-10: a separate manual test script made ' +
+          "the day's first getBulkData call successfully; this connector's own call, made later the " +
+          'same day, got this placeholder back instead of real data). Try again after the next UTC ' +
+          'day boundary. This response has NOT been written to the disk cache.',
+      );
+    }
+
+    return rows;
   }
 
   async *fetchProductCatalogue(_opts?: { since?: Date }): AsyncGenerator<RawSupplierProduct> {
