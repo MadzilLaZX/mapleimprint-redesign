@@ -21,7 +21,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import {
   SanMarConnector,
@@ -65,8 +65,19 @@ async function main() {
     customerId: process.env.SANMAR_CUSTOMER_ID,
     ediEmail: process.env.SANMAR_EDI_EMAIL,
   });
-  await connector.authenticate();
-  console.log('SanMar SOAP client authenticated (WSDL reachable).');
+
+  // If capture-sanmar-bulkdata.mjs has already saved today's pull, the connector serves it from
+  // disk and makes NO live call — so we can skip authenticate() (a WSDL fetch that only works from
+  // a SanMar-allowed IP). This lets the import/promote step be re-run and debugged from anywhere,
+  // including a dev laptop with the cache file copied over.
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const cachedToday = existsSync(join(here, '..', '.cache', `sanmar-bulkdata-${todayKey}.json`));
+  if (cachedToday) {
+    console.log(`Found .cache/sanmar-bulkdata-${todayKey}.json — using it, no live SanMar call.`);
+  } else {
+    await connector.authenticate();
+    console.log('SanMar SOAP client authenticated (WSDL reachable). No disk cache for today — this run WILL make the one live call.');
+  }
 
   // --- Read-only stats pass over the FULL bulk pull, before the capped import runs. ---
   console.log('\nFetching full SanMar bulk data for classification stats (this is the one live, rate-limited getBulkData call for today, unless already cached on disk for this calendar date)...');
