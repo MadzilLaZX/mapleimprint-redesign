@@ -154,10 +154,22 @@ const PROMOSTANDARDS_ERROR_MESSAGES: Record<string, string> = {
   '125': 'Reached maximum limit of call',
 };
 
-/** Pulls a human-readable error string out of a ServiceMessageArray, if one is present. Returns
- *  undefined when there is no ServiceMessageArray or it is empty — that is the normal/success case. */
+// PromoStandards code 200 = "No Error - Information Requested" — a SUCCESS signal, not a failure.
+// OBSERVED LIVE 2026-09-11 (production VPS, real getBulkData call): SanMar attaches a single
+// `ServiceMessage` with code 200 to an otherwise-successful Bulk Data response. The earlier
+// version of extractServiceMessageError() treated ANY ServiceMessage as an error and threw before
+// reading ProductInventoryArray, silently discarding a good full-catalogue pull (and burning that
+// day's once-per-day quota for nothing). Only codes in PROMOSTANDARDS_ERROR_MESSAGES — plus any
+// other non-200 code — are real errors.
+const PROMOSTANDARDS_SUCCESS_CODES = new Set(['200']);
+
+/** Pulls a human-readable error string out of a ServiceMessageArray, if a real error is present.
+ *  Returns undefined when there is no ServiceMessageArray, it is empty, or every message is a
+ *  success/informational signal (code 200) — those are all the normal/success case. */
 function extractServiceMessageError(response: GetBulkDataResponse): string | undefined {
-  const messages = asArray(response.ServiceMessageArray?.ServiceMessage);
+  const messages = asArray(response.ServiceMessageArray?.ServiceMessage).filter(
+    (m) => !PROMOSTANDARDS_SUCCESS_CODES.has(String(m.code ?? '').trim()),
+  );
   if (messages.length === 0) return undefined;
   return messages
     .map((m) => {
