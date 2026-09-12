@@ -27,6 +27,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn.ssactivewear.com",
       },
+      {
+        // SanMar Canada's product-image CDN — same hotlinking stance as S&S above, same open
+        // image-rights question. Added 2026-09-12 with the first real SanMar products.
+        protocol: "https",
+        hostname: "media.sanmarcanada.com",
+      },
     ],
   },
 };
