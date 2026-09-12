@@ -252,13 +252,43 @@ function cleanDescription(html: string | undefined): string {
 // before generic ones (e.g. "hoodie" before the generic "sweatshirt" that would otherwise also
 // match a crewneck). Treat this as a starting point to refine once real SanMar product names are
 // available to audit against.
+// 2026-09-12 update: audited against the real distinct-style-name distribution from a live pull
+// (671 styles) — the original 8 rules left 123 styles unclassified. Added rules below in the same
+// first-match-wins, most-specific-first spirit, informed by what those 123 names actually were
+// (see catalogue-engine README/PROJECT_NOTES for the audit). Still a keyword heuristic, not a
+// confirmed category field — same caveat as the original list.
 const PRODUCT_TYPE_KEYWORD_RULES: Array<{ pattern: RegExp; productType: string }> = [
-  { pattern: /\b(cap|trucker|hat|beanie|toque|visor)\b/i, productType: 'headwear' },
+  // "Flexfit" is a headwear-specific brand (Yupoong's Flexfit line) — its styles use knit-fabric
+  // jargon like "wooly combed" or "mini pique" that would otherwise read as apparel, not caps.
+  { pattern: /\b(cap|trucker|hat|beanie|toque|visor|flexfit|snapback)\b/i, productType: 'headwear' },
+  // Bag-shaped items beyond the original duffel/backpack/tote list: messenger bags, packable
+  // spinners/luggage, hip/fanny/cinch/generic packs, soft coolers (e.g. "CARHARTT LUNCH 6-CAN
+  // COOLER" is a cooler bag, not drinkware) — all route to the same no-chart "bags" shelf.
+  { pattern: /\b(messenger|spinner|hip pack|fanny pack|cinch pack|\bpack\b|cooler)\b/i, productType: 'bag' },
+  // Small worn/carried accessories with no print-cost chart — same bucket as socks/scarves/gloves.
+  { pattern: /\b(scarf|gaiter|face mask|wristband|headband)\b/i, productType: 'accessory' },
+  // Brand- or keyword-flagged industrial/safety workwear (Red Kap, Bulwark, Dickies are all
+  // workwear-specific brands on SanMar; "coverall"/"bib overall"/"hi-visibility"/"FR " catch the
+  // rest) — checked before the generic woven-shirt/pants rules below so e.g. a Red Kap work shirt
+  // doesn't fall into the plain "woven_shirt" bucket instead.
+  { pattern: /\b(red kap|bulwark|dickies|coverall|bib overall|hi-visibility|\bfr\b)\b/i, productType: 'workwear_safety' },
+  { pattern: /\b(woven|work shirt|twill shirt|oxford)\b/i, productType: 'woven_shirt' },
+  // Pullovers/zips that aren't hoodies belong with the existing "knits & layering" category
+  // (quarter-zips, cardigans — see SSActivewearConnector.ts's identical mapping), not a new type.
+  { pattern: /\b(1\/4 zip|quarter zip|1\/2 zip|half zip|full zip|pullover)\b/i, productType: 'knit_layering' },
   { pattern: /\b(hoodie|hooded sweatshirt)\b/i, productType: 'hoodie' },
-  { pattern: /\b(crewneck|crew neck|sweatshirt|fleece crew)\b/i, productType: 'crewneck' },
+  // Bare "crew" (no "neck"/"sweatshirt") shows up on athletic-brand crewneck tops, e.g. "OGIO
+  // ENDURANCE PULSE CREW" or "NIKE CLUB FLEECE SLEEVE SWOOSH CREW" — same garment, different
+  // supplier's naming convention.
+  { pattern: /\b(crewneck|crew neck|sweatshirt|fleece crew|\bcrew\b)\b/i, productType: 'crewneck' },
   { pattern: /\bpolo\b/i, productType: 'polo' },
-  { pattern: /\b(jacket|outerwear|softshell|windbreaker|parka)\b/i, productType: 'jacket' },
-  { pattern: /\b(t-?shirt|tee)\b/i, productType: 't_shirt' },
+  { pattern: /\b(jacket|outerwear|softshell|windbreaker|parka|vest|trench)\b/i, productType: 'jacket' },
+  // Sweatpants/joggers/athletic shorts — decorated on the same apparel chart as tees (see
+  // route-map.mjs's APPAREL_PRODUCT_TYPES). Checked after workwear/woven rules above so a Red Kap
+  // work pant still lands in workwear_safety, not here.
+  { pattern: /\b(sweatpants|jogger|\bshorts?\b|\bpants?\b)\b/i, productType: 'bottoms' },
+  // Tanks, henleys and jerseys are still just decorated apparel priced on the same tee chart.
+  { pattern: /\b(t-?shirt|tee|tank|henley|jersey)\b/i, productType: 't_shirt' },
   { pattern: /\b(duffel|backpack|tote bag|tote|bag)\b/i, productType: 'bag' },
   { pattern: /\bapron\b/i, productType: 'apron' },
 ];
