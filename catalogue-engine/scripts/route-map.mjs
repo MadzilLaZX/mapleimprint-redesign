@@ -26,6 +26,8 @@ export const MAPPED_PRODUCT_TYPES = [
   'workwear_safety',
   'woven_shirt',
   'knit_layering',
+  'bottoms',
+  'accessory',
 ];
 
 /** productType (+ product name, for headwear's caps-vs-beanies split) -> {categorySlug, subcategorySlug}. */
@@ -46,6 +48,10 @@ export function routeFor(productType, productName) {
       return { categorySlug: CUSTOM_APPAREL, subcategorySlug: 'button-ups-wovens' };
     case 'knit_layering':
       return { categorySlug: CUSTOM_APPAREL, subcategorySlug: 'sweaters-layering' };
+    case 'bottoms':
+      return { categorySlug: CUSTOM_APPAREL, subcategorySlug: 'joggers-bottoms' };
+    case 'accessory':
+      return { categorySlug: HATS_ACCESSORIES, subcategorySlug: 'accessories' };
     case 'bag':
       return { categorySlug: HATS_ACCESSORIES, subcategorySlug: 'bags' };
     case 'apron':
@@ -88,5 +94,8 @@ export const APPAREL_PRODUCT_TYPES = new Set([
   'workwear_safety',
   'woven_shirt',
   'knit_layering',
+  'bottoms', // joggers/sweatpants are screen-printed/embroidered on the same apparel chart
 ]);
 export const HEADWEAR_PRODUCT_TYPE = 'headwear';
+// 'accessory' (socks/scarves/gloves) has no client print-cost chart — priced quote-required,
+// same as bags and aprons.

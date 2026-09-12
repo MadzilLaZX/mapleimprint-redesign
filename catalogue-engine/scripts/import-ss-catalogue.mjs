@@ -50,7 +50,7 @@ const CATEGORY_TAXONOMY = [
   {
     slug: 'custom-apparel',
     name: 'Custom Apparel',
-    subcategories: ['T-shirts', 'Polos', 'Hoodies & sweatshirts', 'Jackets & outerwear', 'Youth & performance', 'Button-ups & wovens', 'Sweaters & layering'],
+    subcategories: ['T-shirts', 'Polos', 'Hoodies & sweatshirts', 'Jackets & outerwear', 'Youth & performance', 'Button-ups & wovens', 'Sweaters & layering', 'Joggers & bottoms'],
   },
   {
     slug: 'workwear-uniforms',
@@ -60,7 +60,7 @@ const CATEGORY_TAXONOMY = [
   {
     slug: 'hats-accessories',
     name: 'Hats & Accessories',
-    subcategories: ['Caps', 'Beanies & toques', 'Bags', 'Aprons'],
+    subcategories: ['Caps', 'Beanies & toques', 'Bags', 'Aprons', 'Accessories'],
   },
   {
     slug: 'business-printing',

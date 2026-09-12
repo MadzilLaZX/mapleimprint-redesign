@@ -84,6 +84,8 @@ const BASE_CATEGORY_TO_PRODUCT_TYPE: Record<string, string> = {
   Bags: 'bag',
   Wovens: 'woven_shirt', // button-up/dress shirts — previously unmapped, silently dropped
   'Knits & Layering': 'knit_layering', // quarter-zips, cardigans, sweaters — same as above
+  Bottoms: 'bottoms', // joggers, sweatpants, athletic bottoms — decorated like apparel
+  Accessories: 'accessory', // socks, scarves, gloves, headbands — no print chart, quote-required
 };
 
 // Use-case-specific product lines that baseCategory can't express (a "Corporate Uniforms" style
