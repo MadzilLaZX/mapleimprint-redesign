@@ -293553,6 +293553,7565 @@
     "printRuleVersion": "2026-08-01-client-sheet-v1"
   },
   {
+    "slug": "american-apparel-unisex-reflex-fleece-sweatpants",
+    "name": "Unisex ReFlex Fleece Sweatpants",
+    "brandName": "American Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "7.6 oz./yd² (US), 12.7 oz/L yd (CA), 70/30 combed ring-spun US cotton/recycled polyester, 31 singles\nHeather Grey is 65/35 cotton/recycled polyester\nReimagined, ReFlex Fleece is the next evolution of fleece\n3-end lightweight fleece made using  recycled polyester\n100% combed ring-spun cotton face yarn for cotton friendly decorating technique\nRelaxed fit\nCovered elastic waistband with external dyed-to-match recycled polyester flat drawcords\nSide pockets\nDifferential rise\nRetro inspired 1\" covered elastic bottom band\nSide seams\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains recycled polyester and US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/107870_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/107874_f_fm.jpg",
+        "colourName": "Heather Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/107870_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/107874_b_fm.jpg",
+        "colourName": "Heather Grey",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Heather Grey"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 45.14
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 43.14
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 40.14
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 37.14
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 34.14
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 32.14
+      }
+    ],
+    "startingPrice": 45.14,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "bella-canvas-unisex-sponge-fleece-joggers",
+    "name": "Unisex Sponge Fleece Joggers",
+    "brandName": "BELLA + CANVAS",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US), 13.4 oz/L yd (CA), 52/48 Airlume combed and ring-spun cotton/polyester, 32 singles\nAthletic Heather is 90/10 Airlume combed and ring-spun cotton/polyester\nHeather Navy is 60/40 Airlume combed and ring-spun cotton/polyester\nPre-shrunk\nUnisex sizing\nSide pockets\nRibbed ankle cuffs\nElastic waistband with grommet and white drawcord\nSide seams\nTear away label",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66205_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66205_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "S",
+      "M"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "bella-canvas-unisex-10-oz-heavyweight-sweatpants",
+    "name": "Unisex 10 oz. Heavyweight Sweatpants",
+    "brandName": "BELLA + CANVAS",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "10 oz./yd² (US), 16.7 oz./L yd (CA), 60/40 Airlume combed and ring-spun cotton/polyester fleece\nUnisex silhouette\nInterior brushed fleece\nEasy pull-on waistband with encased elastic drawcord\nInterior waistband dyed to match drawcord for adjustability and custom fit\nEncased elastic leg cuff, scrunch ankle\nSide seam pockets\nTear away label",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/115999_f_fm.jpg",
+        "colourName": "Asphalt",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116261_f_fm.jpg",
+        "colourName": "Athletic Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116000_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116001_f_fm.jpg",
+        "colourName": "Dust",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116262_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/115999_b_fm.jpg",
+        "colourName": "Asphalt",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116261_b_fm.jpg",
+        "colourName": "Athletic Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116000_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116001_b_fm.jpg",
+        "colourName": "Dust",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/116262_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Athletic Heather",
+      "Asphalt",
+      "Black",
+      "Navy",
+      "Dust"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Athletic Heather",
+        "size": "XS"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "XS"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "S"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "M"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "L"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "XL"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Asphalt",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Dust",
+        "size": "XS"
+      },
+      {
+        "colourName": "Dust",
+        "size": "S"
+      },
+      {
+        "colourName": "Dust",
+        "size": "M"
+      },
+      {
+        "colourName": "Dust",
+        "size": "L"
+      },
+      {
+        "colourName": "Dust",
+        "size": "XL"
+      },
+      {
+        "colourName": "Dust",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Dust",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Dust",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-men-s-slab-unlined-duck-bib-overall",
+    "name": "Men's Slab Unlined Duck Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "10 oz./yd² Heavy-duty cotton duck\nWater-repellent surface\nRelaxed fit\nKnee-length heavy-duty brass zipper\nTriple-needle stitched main seams\nBrass rivets at stress points\nUtility pockets\nAdjustable elasticized straps\nReinforced knees\nHammer loop",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120062_f_fm.jpg",
+        "colourName": "Black_32",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120063_f_fm.jpg",
+        "colourName": "Black_34",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120064_f_fm.jpg",
+        "colourName": "Black_36",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120065_f_fm.jpg",
+        "colourName": "Black_38",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120066_f_fm.jpg",
+        "colourName": "Black_40",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120068_f_fm.jpg",
+        "colourName": "Black_44",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120069_f_fm.jpg",
+        "colourName": "Brown Duck_32",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120070_f_fm.jpg",
+        "colourName": "Brown Duck_34",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120071_f_fm.jpg",
+        "colourName": "Brown Duck_36",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120072_f_fm.jpg",
+        "colourName": "Brown Duck_38",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120073_f_fm.jpg",
+        "colourName": "Brown Duck_40",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120074_f_fm.jpg",
+        "colourName": "Brown Duck_42",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120075_f_fm.jpg",
+        "colourName": "Brown Duck_44",
+        "imageType": "front"
+      }
+    ],
+    "colours": [
+      "Black_34",
+      "Black_36",
+      "Black_38",
+      "Black_40",
+      "Black_44",
+      "Brown Duck_34",
+      "Brown Duck_36",
+      "Brown Duck_38",
+      "Brown Duck_40",
+      "Brown Duck_42",
+      "Brown Duck_44",
+      "Black_32",
+      "Brown Duck_32"
+    ],
+    "sizes": [
+      "32"
+    ],
+    "variants": [
+      {
+        "colourName": "Black_34",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_36",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_38",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_40",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_44",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck_34",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck_36",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck_38",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck_40",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck_42",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck_44",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_32",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck_32",
+        "size": "32"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 107.09
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 105.09
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 102.09
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 99.09
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 96.09
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 94.09
+      }
+    ],
+    "startingPrice": 107.09,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-tall-slab-unlined-duck-bib-overall",
+    "name": "Tall Slab Unlined Duck Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "10 oz. (US), 16.7 oz./L yd (CA), Heavy-duty cotton duck\nWater-repellent surface\nRelaxed fit\nKnee-length heavy-duty brass zipper\nTriple-needle stitched main seams\nBrass rivets at stress points\nUtility pockets\nAdjustable elasticized straps\nReinforced knees\nHammer loop",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/133622_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/132992_f_fm.jpg",
+        "colourName": "Brown Duck",
+        "imageType": "front"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Brown Duck"
+    ],
+    "sizes": [
+      "32",
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "32"
+      },
+      {
+        "colourName": "Black",
+        "size": "34"
+      },
+      {
+        "colourName": "Black",
+        "size": "36"
+      },
+      {
+        "colourName": "Black",
+        "size": "38"
+      },
+      {
+        "colourName": "Black",
+        "size": "40"
+      },
+      {
+        "colourName": "Black",
+        "size": "42"
+      },
+      {
+        "colourName": "Black",
+        "size": "44"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "32"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "34"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "36"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "38"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "40"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "42"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "44"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 96.69
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 94.69
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 91.69
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 88.69
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 85.69
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 83.69
+      }
+    ],
+    "startingPrice": 96.69,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-men-s-acre-unlined-washed-bib-overall",
+    "name": "Men's Acre Unlined Washed Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "12 oz. (US), 20 oz./L yd (CA), super-duty cotton duck\nGenerously sized for maximum comfort\nTriple-needle stitched seams\nAdjustable elasticized bib straps\nCovered knee-length zipper\nBrass pocket and fly zipper\nSide utility pockets\nBrass rivets at front stress points\nReinforced knees\nManufactured in a LEED (Leadership in Energy and Environmental Design) certified factory",
+    "images": [],
+    "colours": [
+      "Bark_32",
+      "Bark_34",
+      "Bark_36",
+      "Bark_38",
+      "Bark_40",
+      "Bark_42",
+      "Bark_44",
+      "Black_34",
+      "Black_32",
+      "Black_36",
+      "Black_38",
+      "Black_40",
+      "Black_42",
+      "Black_44"
+    ],
+    "sizes": [
+      "32"
+    ],
+    "variants": [
+      {
+        "colourName": "Bark_32",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark_34",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark_36",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark_38",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark_40",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark_42",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark_44",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_34",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_32",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_36",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_38",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_40",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_42",
+        "size": "32"
+      },
+      {
+        "colourName": "Black_44",
+        "size": "32"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 137.29
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 135.29
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 132.29
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 129.29
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 126.29
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 124.29
+      }
+    ],
+    "startingPrice": 137.29,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-short-length-acre-unlined-washed-bib-overall",
+    "name": "Short-Length Acre Unlined Washed Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "12 oz. (US), 20 oz./L yd (CA), super-duty cotton duck\nGenerously sized for maximum comfort\nAdjustable elasticized bib straps\nBrass pocket and fly zipper\nCovered knee-length zipper\nBrass rivets at front stress points\nReinforced knees\nSide utility pockets\nTriple-needle stitched seams\nManufactured in a LEED (Leadership in Energy and Environmental Design) certified factory",
+    "images": [],
+    "colours": [
+      "Bark",
+      "Black"
+    ],
+    "sizes": [
+      "32",
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
+    ],
+    "variants": [
+      {
+        "colourName": "Bark",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark",
+        "size": "34"
+      },
+      {
+        "colourName": "Bark",
+        "size": "36"
+      },
+      {
+        "colourName": "Bark",
+        "size": "38"
+      },
+      {
+        "colourName": "Bark",
+        "size": "40"
+      },
+      {
+        "colourName": "Bark",
+        "size": "42"
+      },
+      {
+        "colourName": "Bark",
+        "size": "44"
+      },
+      {
+        "colourName": "Black",
+        "size": "32"
+      },
+      {
+        "colourName": "Black",
+        "size": "34"
+      },
+      {
+        "colourName": "Black",
+        "size": "36"
+      },
+      {
+        "colourName": "Black",
+        "size": "38"
+      },
+      {
+        "colourName": "Black",
+        "size": "40"
+      },
+      {
+        "colourName": "Black",
+        "size": "42"
+      },
+      {
+        "colourName": "Black",
+        "size": "44"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 139.59
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 137.59
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 134.59
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 131.59
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 128.59
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 126.59
+      }
+    ],
+    "startingPrice": 139.59,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-tall-acre-unlined-washed-bib-overall",
+    "name": "Tall Acre Unlined Washed Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "12 oz./yd², 100% cotton sanded duck\nAdjustable elasticized bib straps\nBass rivets at front stress points\nTriple-needle stitched main seams\nZippered chest pocket\nPatch pocket with snap closure\nSide utility pockets\nHammer loop\nCovered knee-length zipper\nReinforced knees",
+    "images": [],
+    "colours": [
+      "Bark",
+      "Black"
+    ],
+    "sizes": [
+      "32",
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
+    ],
+    "variants": [
+      {
+        "colourName": "Bark",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark",
+        "size": "34"
+      },
+      {
+        "colourName": "Bark",
+        "size": "36"
+      },
+      {
+        "colourName": "Bark",
+        "size": "38"
+      },
+      {
+        "colourName": "Bark",
+        "size": "40"
+      },
+      {
+        "colourName": "Bark",
+        "size": "42"
+      },
+      {
+        "colourName": "Bark",
+        "size": "44"
+      },
+      {
+        "colourName": "Black",
+        "size": "32"
+      },
+      {
+        "colourName": "Black",
+        "size": "34"
+      },
+      {
+        "colourName": "Black",
+        "size": "36"
+      },
+      {
+        "colourName": "Black",
+        "size": "38"
+      },
+      {
+        "colourName": "Black",
+        "size": "40"
+      },
+      {
+        "colourName": "Black",
+        "size": "42"
+      },
+      {
+        "colourName": "Black",
+        "size": "44"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-tall-acre-unlined-washed-bib-overall-2",
+    "name": "Tall Acre Unlined Washed Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "12 oz./yd², 100% cotton sanded duck\nAdjustable elasticized bib straps\nBass rivets at front stress points\nTriple-needle stitched main seams\nZippered chest pocket\nPatch pocket with snap closure\nSide utility pockets\nHammer loop\nCovered knee-length zipper\nReinforced knees",
+    "images": [],
+    "colours": [
+      "Bark",
+      "Black"
+    ],
+    "sizes": [
+      "32",
+      "34",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44"
+    ],
+    "variants": [
+      {
+        "colourName": "Bark",
+        "size": "32"
+      },
+      {
+        "colourName": "Bark",
+        "size": "34"
+      },
+      {
+        "colourName": "Bark",
+        "size": "36"
+      },
+      {
+        "colourName": "Bark",
+        "size": "38"
+      },
+      {
+        "colourName": "Bark",
+        "size": "40"
+      },
+      {
+        "colourName": "Bark",
+        "size": "42"
+      },
+      {
+        "colourName": "Bark",
+        "size": "44"
+      },
+      {
+        "colourName": "Black",
+        "size": "32"
+      },
+      {
+        "colourName": "Black",
+        "size": "34"
+      },
+      {
+        "colourName": "Black",
+        "size": "36"
+      },
+      {
+        "colourName": "Black",
+        "size": "38"
+      },
+      {
+        "colourName": "Black",
+        "size": "40"
+      },
+      {
+        "colourName": "Black",
+        "size": "42"
+      },
+      {
+        "colourName": "Black",
+        "size": "44"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 139.59
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 137.59
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 134.59
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 131.59
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 128.59
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 126.59
+      }
+    ],
+    "startingPrice": 139.59,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-men-s-heritage-insulated-bib-overall",
+    "name": "Men's Heritage Insulated Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "10 oz./yd² (US), 16.7 oz./L yd (CA), super-duty 100% cotton duck\nWater-repellent finish\nMedium-weight quilt lined taffeta\nInsulated \"High Back\" design\nTriple-needle stitched main seams\nFull-length heavy-duty brass zipper\nDouble inside chest pockets",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/119307_f_fm.jpg",
+        "colourName": "Brown Duck",
+        "imageType": "front"
+      }
+    ],
+    "colours": [
+      "Brown Duck"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL",
+      "5XL",
+      "6XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Brown Duck",
+        "size": "5XL"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "6XL"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "S"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "M"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "L"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "XL"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 158.49
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 156.49
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 153.49
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 150.49
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 147.49
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 145.49
+      }
+    ],
+    "startingPrice": 158.49,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-men-s-tall-heritage-insulated-bib-overall",
+    "name": "Men's Tall Heritage Insulated Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "10 oz. (US), 16.7 oz./L yd (CA), super-duty 100% cotton duck\nMedium-weight quilt lined taffeta\nInsulated \"High Back\" design\nWater-repellent finish\nTriple-needle stitched main seams\nFull-length heavy-duty brass zipper\nDouble inside chest pockets",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/119637_f_fm.jpg",
+        "colourName": "Brown Duck",
+        "imageType": "front"
+      }
+    ],
+    "colours": [
+      "Brown Duck"
+    ],
+    "sizes": [
+      "5XLT",
+      "6XLT",
+      "MT",
+      "LT",
+      "XLT",
+      "2XLT",
+      "3XLT",
+      "4XLT"
+    ],
+    "variants": [
+      {
+        "colourName": "Brown Duck",
+        "size": "5XLT"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "6XLT"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "MT"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "LT"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "XLT"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "2XLT"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "3XLT"
+      },
+      {
+        "colourName": "Brown Duck",
+        "size": "4XLT"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 158.49
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 156.49
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 153.49
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 150.49
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 147.49
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 145.49
+      }
+    ],
+    "startingPrice": 158.49,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-men-s-heritage-tall-duck-insulated-coverall",
+    "name": "Men's Heritage Tall Duck Insulated Coverall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "Shell: Heavy-duty 10 oz./yd², 16.7 oz./L yd (CA), 100% cotton duck\nLining: Medium weight insulation quilted to polyester taffeta\nPleated bi-swing action back, pleated elbows\nSnap closure at neck opening, corduroy collar with snaps for optional hood\nTwo-way brass front zipper\nHemmed sleeves with hidden knit storm cuffs\nFour-needle stitched waistband with elastic inserts move with you\nFull-length brass leg zipper\nAdjustable leg snaps for easy on and off",
+    "images": [],
+    "colours": [
+      "Black",
+      "Brown"
+    ],
+    "sizes": [
+      "MT",
+      "LT",
+      "XLT",
+      "2XLT",
+      "3XLT",
+      "4XLT"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "MT"
+      },
+      {
+        "colourName": "Black",
+        "size": "LT"
+      },
+      {
+        "colourName": "Black",
+        "size": "XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "MT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "LT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "2XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "3XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "4XLT"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-men-s-heritage-tall-duck-insulated-coverall-2",
+    "name": "Men's Heritage Tall Duck Insulated Coverall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "Shell: Heavy-duty 10 oz./yd², 16.7 oz./L yd (CA), 100% cotton duck\nLining: Medium weight insulation quilted to polyester taffeta\nPleated bi-swing action back, pleated elbows\nSnap closure at neck opening, corduroy collar with snaps for optional hood\nTwo-way brass front zipper\nHemmed sleeves with hidden knit storm cuffs\nFour-needle stitched waistband with elastic inserts move with you\nFull-length brass leg zipper\nAdjustable leg snaps for easy on and off",
+    "images": [],
+    "colours": [
+      "Black",
+      "Brown"
+    ],
+    "sizes": [
+      "MT",
+      "LT",
+      "XLT",
+      "2XLT",
+      "3XLT",
+      "4XLT"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "MT"
+      },
+      {
+        "colourName": "Black",
+        "size": "LT"
+      },
+      {
+        "colourName": "Black",
+        "size": "XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "MT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "LT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "2XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "3XLT"
+      },
+      {
+        "colourName": "Brown",
+        "size": "4XLT"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 211.72
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 209.72
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 206.72
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 203.72
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 200.72
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 198.72
+      }
+    ],
+    "startingPrice": 211.72,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-men-s-icecap-insulated-bib-overall",
+    "name": "Men's Icecap Insulated Bib Overall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "Shell: 1,000 denier nylon oxford\nLiner: Arctic-weight quilt-lined taffeta\nWaterproof\nWind-resistant\nAbrasion resistant\nTwo-way brass front zipper\nAdjustable elasticized straps\nDouble inside chest pockets\nInsulated \"High Back\" design\nTriple-needle stitched main seams\nUtility pockets\nHammer loop\nZippered left hip pocket\nAdjustable leg snaps",
+    "images": [],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 235.32
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 233.32
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 230.32
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 227.32
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 224.32
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 222.32
+      }
+    ],
+    "startingPrice": 235.32,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-icecap-insulated-bib-overall-tall-sizes",
+    "name": "Icecap Insulated Bib Overall - Tall Sizes",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "Shell: 1,000 denier nylon oxford\nLiner: Arctic-weight quilt-lined taffeta\nWaterproof\nWind-resistant\nAbrasion resistant\nTwo-way brass front zipper\nAdjustable elasticized straps\nDouble inside chest pockets\nInsulated \"High Back\" design\nTriple-needle stitched main seams\nUtility pockets\nHammer loop\nZippered left hip pocket\nAdjustable leg snaps",
+    "images": [],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "MT",
+      "LT",
+      "XLT",
+      "2XLT"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "MT"
+      },
+      {
+        "colourName": "Black",
+        "size": "LT"
+      },
+      {
+        "colourName": "Black",
+        "size": "XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XLT"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-icecap-insulated-bib-overall-tall-sizes-2",
+    "name": "Icecap Insulated Bib Overall - Tall Sizes",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "Shell: 1,000 denier nylon oxford\nLiner: Arctic-weight quilt-lined taffeta\nWaterproof\nWind-resistant\nAbrasion resistant\nTwo-way brass front zipper\nAdjustable elasticized straps\nDouble inside chest pockets\nInsulated \"High Back\" design\nTriple-needle stitched main seams\nUtility pockets\nHammer loop\nZippered left hip pocket\nAdjustable leg snaps",
+    "images": [],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "MT",
+      "LT",
+      "XLT",
+      "2XLT"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "MT"
+      },
+      {
+        "colourName": "Black",
+        "size": "LT"
+      },
+      {
+        "colourName": "Black",
+        "size": "XLT"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XLT"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 235.32
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 233.32
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 230.32
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 227.32
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 224.32
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 222.32
+      }
+    ],
+    "startingPrice": 235.32,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "berne-apparel-icecap-insulated-coverall",
+    "name": "Icecap Insulated Coverall",
+    "brandName": "Berne Apparel",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "Shell: 1,000 denier nylon oxford\nLining: Arctic-weight insulation quilted to polyester taffeta\nWaterproof fabric with wind and abrasion resistance creates a barrier against tough conditions\nFleece collar with snaps for removable hood adapts to the weather\nPleated elbows and action back for improved mobility\nTwo zippered chest pockets, three inside pockets, right with zip closure\nTwo reinforced back pockets, left with brass zipper\nTriple-needle stitched main seams, hold up to tough tasks\nHeavy-duty brass front and leg zippers, double layered knees\nSide utility pockets and hammer loop keep essentials close at hand",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/120308_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      }
+    ],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "S"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 267.02
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 265.02
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 262.02
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 259.02
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 256.02
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 254.02
+      }
+    ],
+    "startingPrice": 267.02,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "c2-sport-men-s-mesh-7-shorts",
+    "name": "Men's Mesh 7\" Shorts",
+    "brandName": "C2 Sport",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "100% polyester mesh\nSolid tricot liner\n1 1/2\" covered waistband\nInternal drawcord\nDouble-needle stitched hems",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/70467_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/70467_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "c2-sport-men-s-mesh-7-shorts-2",
+    "name": "Men's Mesh 7\" Shorts",
+    "brandName": "C2 Sport",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "100% polyester mesh\nSolid tricot liner\n1 1/2\" covered waistband\nInternal drawcord\nDouble-needle stitched hems",
+    "images": [],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 31.37
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 29.37
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 26.37
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 23.37
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 20.37
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 18.37
+      }
+    ],
+    "startingPrice": 31.37,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "c2-sport-men-s-mesh-9-shorts",
+    "name": "Men's Mesh 9\" Shorts",
+    "brandName": "C2 Sport",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "5.3 oz./yd² (US), 8.8 oz/L yd (CA), 100% polyester mesh\nSolid tricot liner\n1 1/2\" covered waistband\nInternal drawcord\nDouble-needle stitched hems",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35742_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35742_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "c2-sport-men-s-mesh-9-shorts-2",
+    "name": "Men's Mesh 9\" Shorts",
+    "brandName": "C2 Sport",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "5.3 oz./yd² (US), 8.8 oz/L yd (CA), 100% polyester mesh\nSolid tricot liner\n1 1/2\" covered waistband\nInternal drawcord\nDouble-needle stitched hems",
+    "images": [],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 32.74
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 30.74
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 27.74
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 24.74
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 21.74
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 19.74
+      }
+    ],
+    "startingPrice": 32.74,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "champion-unisex-cotton-gym-shorts",
+    "name": "Unisex Cotton Gym Shorts",
+    "brandName": "Champion",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "6 oz./yd², (US), 10 oz./L yd (CA), 100% US cotton, 18 singles\nOxford Grey is 90/10 cotton/polyester\nSilver Grey is 99/1 cotton/polyester\nHeavyweight 100% U.S. Cotton Jersey family delivers a soft hand and superior printability\nRelaxed fit\nMulti-needle stitched waistband\nInternal drawcord\nDouble-needle bottom hem\nWoven label\n“C” logo on left hip\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30421_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30422_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30426_f_fm.jpg",
+        "colourName": "Oxford Grey Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30427_f_fm.jpg",
+        "colourName": "Silver Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30421_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30422_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30426_b_fm.jpg",
+        "colourName": "Oxford Grey Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30427_b_fm.jpg",
+        "colourName": "Silver Grey",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Oxford Grey Heather",
+      "Silver Grey",
+      "Black",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Oxford Grey Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Oxford Grey Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Oxford Grey Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Oxford Grey Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Oxford Grey Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Oxford Grey Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Silver Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Silver Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Silver Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Silver Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Silver Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Silver Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 34.04
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 32.04
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 29.04
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 26.04
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 23.04
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 21.04
+      }
+    ],
+    "startingPrice": 34.04,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "champion-unisex-powerblend-open-bottom-sweatpants-with-pockets",
+    "name": "Unisex Powerblend® Open-Bottom Sweatpants with Pockets",
+    "brandName": "Champion",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "9 oz./yd²(US), 15 oz./L yd (CA), 50/50 US cotton/polyester, 24 singles\nMidweight 50% U.S. Cotton, 50% polyester fleece, for a variety of decorating techniques\nRelaxed fit\nElastic waistband with internal drawcord\nDifferential rise\nSide pockets with bartacks\nDouble needle open bottom hem\nWoven label\n\"C\" logo on left hip\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31113_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31115_f_fm.jpg",
+        "colourName": "Light Steel",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31114_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31113_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31115_b_fm.jpg",
+        "colourName": "Light Steel",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31114_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Light Steel",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "champion-unisex-powerblend-open-bottom-sweatpants-with-pockets-2",
+    "name": "Unisex Powerblend® Open-Bottom Sweatpants with Pockets",
+    "brandName": "Champion",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "9 oz./yd²(US), 15 oz./L yd (CA), 50/50 US cotton/polyester, 24 singles\nMidweight 50% U.S. Cotton, 50% polyester fleece, for a variety of decorating techniques\nRelaxed fit\nElastic waistband with internal drawcord\nDifferential rise\nSide pockets with bartacks\nDouble needle open bottom hem\nWoven label\n\"C\" logo on left hip\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [],
+    "colours": [
+      "Black",
+      "Light Steel",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 48.56
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 46.56
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 43.56
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 40.56
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 37.56
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 35.56
+      }
+    ],
+    "startingPrice": 48.56,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "champion-unisex-powerblend-fleece-joggers",
+    "name": "Unisex Powerblend® Fleece Joggers",
+    "brandName": "Champion",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "9 oz./yd², (US), 15 oz./L yd (CA), 50/50 cotton/polyester, 24 singles\nMidweight 50% U.S. Cotton, 50% polyester fleece, for a variety of decorating techniques\nRelaxed fit\nElastic waistband with dyed-to-match cotton drawcord\nDouble-needle stitched rises, outseam and cuffs\nSide seam pockets with bartacks\n1x1 rib with spandex at cuffs\nWoven label\n\"C\" logo on left hip\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/105206_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/105207_f_fm.jpg",
+        "colourName": "Light Steel",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/105208_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/105206_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/105207_b_fm.jpg",
+        "colourName": "Light Steel",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/105208_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Light Steel",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "S"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "M"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "L"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "XL"
+      },
+      {
+        "colourName": "Light Steel",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 50.06
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 48.06
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 45.06
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 42.06
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 39.06
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 37.06
+      }
+    ],
+    "startingPrice": 50.06,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "champion-unisex-9-mesh-shorts-with-pockets",
+    "name": "Unisex 9\" Mesh Shorts with Pockets",
+    "brandName": "Champion",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "3.7 oz./yd² (US), 6.1 oz/L yd (CA), 100% polyester mesh\n2.1 oz./yd² (US), 3.1 oz/L yd (CA), 100% polyester tricot liner\n100% polyester lightweight mesh\nRelaxed fit\nMulti-needle stitched elastic waistband\nInternal drawcord\nSide seam pockets\nDouble-needle bottom hem\nWoven label\n“C” logo on left hip (older inventory will have logo on lower hem, this is a rolling change and our inventory is mixed)\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30446_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30447_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30446_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30447_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "champion-unisex-9-mesh-shorts-with-pockets-2",
+    "name": "Unisex 9\" Mesh Shorts with Pockets",
+    "brandName": "Champion",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "3.7 oz./yd² (US), 6.1 oz/L yd (CA), 100% polyester mesh\n2.1 oz./yd² (US), 3.1 oz/L yd (CA), 100% polyester tricot liner\n100% polyester lightweight mesh\nRelaxed fit\nMulti-needle stitched elastic waistband\nInternal drawcord\nSide seam pockets\nDouble-needle bottom hem\nWoven label\n“C” logo on left hip (older inventory will have logo on lower hem, this is a rolling change and our inventory is mixed)\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.",
+    "images": [],
+    "colours": [
+      "Black",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 40.99
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 38.99
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 35.99
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 32.99
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 29.99
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 27.99
+      }
+    ],
+    "startingPrice": 40.99,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "comfort-colors-unisex-garment-dyed-lightweight-sweatpants",
+    "name": "Unisex Garment-Dyed Lightweight Sweatpants",
+    "brandName": "Comfort Colors",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "6.4 oz./yd², (US), 10.7 oz./Lyd (CA), 100% ring-spun U.S cotton, 31 singles\nComfort Colors styles are garment dyed for a lived-in feel with minimal shrinkage.\n\nFeaturing 100% ring spun U.S. cotton jersey and cotton threads.\n\nRelaxed fit\nNatural colored flat drawcord\nJersey-lined side pockets\nDifferential rise\nSide seams\nSignature twill label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108007_f_fm.jpg",
+        "colourName": "Blue Jean",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/110083_f_fm.jpg",
+        "colourName": "Espresso",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108008_f_fm.jpg",
+        "colourName": "Hydrangea",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108009_f_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108010_f_fm.jpg",
+        "colourName": "Neon Violet",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108012_f_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108007_b_fm.jpg",
+        "colourName": "Blue Jean",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/110083_b_fm.jpg",
+        "colourName": "Espresso",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108008_b_fm.jpg",
+        "colourName": "Hydrangea",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108009_b_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108010_b_fm.jpg",
+        "colourName": "Neon Violet",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108012_b_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Pepper",
+      "Ivory",
+      "Hydrangea",
+      "Espresso",
+      "Neon Violet",
+      "Blue Jean"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Pepper",
+        "size": "S"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "M"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "L"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "XL"
+      },
+      {
+        "colourName": "Pepper",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "S"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "M"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "L"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Hydrangea",
+        "size": "S"
+      },
+      {
+        "colourName": "Hydrangea",
+        "size": "M"
+      },
+      {
+        "colourName": "Hydrangea",
+        "size": "L"
+      },
+      {
+        "colourName": "Hydrangea",
+        "size": "XL"
+      },
+      {
+        "colourName": "Hydrangea",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Espresso",
+        "size": "S"
+      },
+      {
+        "colourName": "Espresso",
+        "size": "M"
+      },
+      {
+        "colourName": "Espresso",
+        "size": "L"
+      },
+      {
+        "colourName": "Espresso",
+        "size": "XL"
+      },
+      {
+        "colourName": "Espresso",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "S"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "M"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "L"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "XL"
+      },
+      {
+        "colourName": "Neon Violet",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "S"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "M"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "L"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "XL"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 55.08
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 53.08
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 50.08
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 47.08
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 44.08
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 42.08
+      }
+    ],
+    "startingPrice": 55.08,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-heavy-blend-pocket-sweatpants",
+    "name": "Unisex Heavy Blend™ Pocket Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US),13.36 oz./L yd (CA), 50/50 cotton/polyester, 24 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\n\nClassic Fit\nCovered elastic waistband with drawcord\nElasticized cuffs\nPockets\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/137517_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/137517_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Dark Heather",
+      "Black",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Dark Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-heavy-blend-pocket-sweatpants-2",
+    "name": "Unisex Heavy Blend™ Pocket Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US),13.36 oz./L yd (CA), 50/50 cotton/polyester, 24 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\n\nClassic Fit\nCovered elastic waistband with drawcord\nElasticized cuffs\nPockets\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [],
+    "colours": [
+      "Dark Heather",
+      "Black",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Dark Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Dark Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 39.05
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 37.05
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 34.05
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 31.05
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 28.05
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 26.05
+      }
+    ],
+    "startingPrice": 39.05,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-heavy-blend-sweatpants",
+    "name": "Unisex Heavy Blend™ Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US) 13.3 oz./L yd (CA), 50/50 cotton/polyester, 20 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\nClassic fit\nCovered elastic waistband with drawcord\nDifferential rise\nElasticized cuffs\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19980_f_fm.jpg",
+        "colourName": "Ash",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19981_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19983_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104231_f_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19985_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104232_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19980_b_fm.jpg",
+        "colourName": "Ash",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19981_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19983_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104231_b_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19985_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104232_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Ash",
+      "Sand",
+      "Black",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "M"
+      },
+      {
+        "colourName": "White",
+        "size": "L"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "S"
+      },
+      {
+        "colourName": "Ash",
+        "size": "M"
+      },
+      {
+        "colourName": "Ash",
+        "size": "L"
+      },
+      {
+        "colourName": "Ash",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "S"
+      },
+      {
+        "colourName": "Sand",
+        "size": "M"
+      },
+      {
+        "colourName": "Sand",
+        "size": "L"
+      },
+      {
+        "colourName": "Sand",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 33.3
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 31.3
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 28.3
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 25.3
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 22.3
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 20.3
+      }
+    ],
+    "startingPrice": 33.3,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-youth-heavy-blend-sweatpants",
+    "name": "Youth Heavy Blend™ Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US) 13.3 oz./L yd (CA), 50/50 cotton/polyester, 20 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\nClassic fit\nCovered elastic waistband, no drawcord\nElasticized cuffs\nTear away label\nCPSIA Tracking Label Compliant\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21350_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21352_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21354_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21350_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21352_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21354_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-youth-heavy-blend-sweatpants-2",
+    "name": "Youth Heavy Blend™ Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US) 13.3 oz./L yd (CA), 50/50 cotton/polyester, 20 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\nClassic fit\nCovered elastic waistband, no drawcord\nElasticized cuffs\nTear away label\nCPSIA Tracking Label Compliant\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [],
+    "colours": [
+      "Black",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 35.83
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 33.83
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 30.83
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 27.83
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 24.83
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 22.83
+      }
+    ],
+    "startingPrice": 35.83,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-heavy-blend-open-bottom-sweatpants",
+    "name": "Unisex Heavy Blend™ Open-Bottom Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US) 13.3 oz./L yd (CA), 50/50 cotton/polyester, 20 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\nClassic fit\nCovered elastic waistband with drawcord\nSlightly tapered leg with open bottom\nDifferential rise\nSide seams\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/29741_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/29743_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/29746_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/29741_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/29743_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/29746_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 39.89
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 37.89
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 34.89
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 31.89
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 28.89
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 26.89
+      }
+    ],
+    "startingPrice": 39.89,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-softstyle-midweight-pocket-sweatpants",
+    "name": "Unisex Softstyle® Midweight Pocket Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8.4 oz./yd², 80/20 U.S. ring-spun cotton/polyester, 20 singles\nSport Grey is 75/25 cotton/polyester\nSoftstyle Midweight Fleece features a cozy, brushed interior and a 100% ring-spun cotton face, ideal for a variety of cotton friendly decorating techniques\nClassic fit\nCovered elastic waistband with internal color matched drawcord\nDifferential front and back rise\nTapered legs with elasticized cuffs\nSlanted side pockets\nSide seams\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114442_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114449_f_fm.jpg",
+        "colourName": "Brown Savana",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114443_f_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114444_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114445_f_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114446_f_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114447_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114448_f_fm.jpg",
+        "colourName": "Stone Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114442_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114449_b_fm.jpg",
+        "colourName": "Brown Savana",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114443_b_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114444_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114445_b_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114446_b_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114447_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114448_b_fm.jpg",
+        "colourName": "Stone Blue",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Off White",
+      "Sand",
+      "Stone Blue",
+      "Charcoal",
+      "Black",
+      "Brown Savana",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Off White",
+        "size": "S"
+      },
+      {
+        "colourName": "Off White",
+        "size": "M"
+      },
+      {
+        "colourName": "Off White",
+        "size": "L"
+      },
+      {
+        "colourName": "Off White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "S"
+      },
+      {
+        "colourName": "Sand",
+        "size": "M"
+      },
+      {
+        "colourName": "Sand",
+        "size": "L"
+      },
+      {
+        "colourName": "Sand",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "S"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "M"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "L"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "S"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "M"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "L"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "XL"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-unisex-softstyle-midweight-pocket-sweatpants-2",
+    "name": "Unisex Softstyle® Midweight Pocket Sweatpants",
+    "brandName": "Gildan",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8.4 oz./yd², 80/20 U.S. ring-spun cotton/polyester, 20 singles\nSport Grey is 75/25 cotton/polyester\nSoftstyle Midweight Fleece features a cozy, brushed interior and a 100% ring-spun cotton face, ideal for a variety of cotton friendly decorating techniques\nClassic fit\nCovered elastic waistband with internal color matched drawcord\nDifferential front and back rise\nTapered legs with elasticized cuffs\nSlanted side pockets\nSide seams\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [],
+    "colours": [
+      "Off White",
+      "Sand",
+      "Stone Blue",
+      "Charcoal",
+      "Black",
+      "Brown Savana",
+      "Sport Grey",
+      "Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Off White",
+        "size": "S"
+      },
+      {
+        "colourName": "Off White",
+        "size": "M"
+      },
+      {
+        "colourName": "Off White",
+        "size": "L"
+      },
+      {
+        "colourName": "Off White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Off White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "S"
+      },
+      {
+        "colourName": "Sand",
+        "size": "M"
+      },
+      {
+        "colourName": "Sand",
+        "size": "L"
+      },
+      {
+        "colourName": "Sand",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sand",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "S"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "M"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "L"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Stone Blue",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "S"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "M"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "L"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Charcoal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "S"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "M"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "L"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "XL"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Brown Savana",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 53.18
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 51.18
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 48.18
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 45.18
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 42.18
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 40.18
+      }
+    ],
+    "startingPrice": 53.18,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "independent-trading-co-men-s-midweight-fleece-shorts",
+    "name": "Men's Midweight Fleece Shorts",
+    "brandName": "Independent Trading Co.",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8.5 oz./yd² (US) 14.2 oz./L yd (CA), 80/20 ring-spun cotton/polyester blend fleece with 100% cotton face, 32 singles\nGrey Heather is 52/48 cotton/polyester\nRelaxed fit with tapered knee opening\nElastic waistband with shoestring drawcord\nSewn eyelets\nSewn fly detail\nBack pocket & jersey lined hand pockets\nTear away label",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/86210_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/86210_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 49.95
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 47.95
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 44.95
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 41.95
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 38.95
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 36.95
+      }
+    ],
+    "startingPrice": 49.95,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "independent-trading-co-women-s-california-wave-wash-sweatpants",
+    "name": "Women's California Wave Wash Sweatpants",
+    "brandName": "Independent Trading Co.",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "7 oz./yd² (US) 11.7 oz./L yd (CA), 52/48 ring-spun cotton/polyester blend 3-end fleece\nWave wash garment-washed for softness and unique color\nClassic fit\nBlindstitch & coverstitch sewing\nElastic waistband with shoestring drawcord\n1x1 ribbing at ankle cuffs\nSewn eyelets\nJersey lined hand pockets\nWoven label",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/92913_f_fm.jpg",
+        "colourName": "Forest Camo Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/92914_f_fm.jpg",
+        "colourName": "Sage",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/92915_f_fm.jpg",
+        "colourName": "Shadow",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/92913_b_fm.jpg",
+        "colourName": "Forest Camo Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/92914_b_fm.jpg",
+        "colourName": "Sage",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/92915_b_fm.jpg",
+        "colourName": "Shadow",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Sage",
+      "Shadow",
+      "Forest Camo Heather"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Sage",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sage",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Shadow",
+        "size": "XS"
+      },
+      {
+        "colourName": "Shadow",
+        "size": "XL"
+      },
+      {
+        "colourName": "Shadow",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Forest Camo Heather",
+        "size": "XS"
+      },
+      {
+        "colourName": "Forest Camo Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Forest Camo Heather",
+        "size": "M"
+      },
+      {
+        "colourName": "Forest Camo Heather",
+        "size": "L"
+      },
+      {
+        "colourName": "Forest Camo Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Forest Camo Heather",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "jerzees-youth-nublend-sweatpants",
+    "name": "Youth NuBlend® Sweatpants",
+    "brandName": "JERZEES",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US), 13.3 oz/ L yd (CA), 50/50 cotton/polyester\nOxford is 48/52 cotton/polyester\nPre-shrunk\nNuBlend® pill-resistant fleece\nHigh-stitch density for a smooth printing canvas\nNo side seams\nDouble-needle stitched covered waistband\nElastic bottom leg openings with two-needle coverstitching\nCPSIA compliant tracking label",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21347_f_fm.jpg",
+        "colourName": "J. Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21347_b_fm.jpg",
+        "colourName": "J. Navy",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "J. Navy"
+    ],
+    "sizes": [
+      "L"
+    ],
+    "variants": [
+      {
+        "colourName": "J. Navy",
+        "size": "L"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "jerzees-unisex-nublend-sweatpants",
+    "name": "Unisex NuBlend® Sweatpants",
+    "brandName": "JERZEES",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8 oz./yd² (US), 13.3 oz/ L yd (CA), 50/50 cotton/polyester\nOxford is 48/52 cotton/polyester\nPre-shrunk\nNuBlend® pill-resistant fleece\nHigh-stitch density for a smooth printing canvas\nNo side seams\n\nDouble-needle stitched covered waistband with internal drawcord\n\nElastic bottom leg openings",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19972_f_fm.jpg",
+        "colourName": "Ash",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/39010_f_fm.jpg",
+        "colourName": "Athletic Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19973_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19977_f_fm.jpg",
+        "colourName": "J. Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/27719_f_fm.jpg",
+        "colourName": "Oxford",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19979_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19972_b_fm.jpg",
+        "colourName": "Ash",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/39010_b_fm.jpg",
+        "colourName": "Athletic Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19973_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19977_b_fm.jpg",
+        "colourName": "J. Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/27719_b_fm.jpg",
+        "colourName": "Oxford",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/19979_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Ash",
+      "Black",
+      "Oxford",
+      "Athletic Heather",
+      "J. Navy"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "S"
+      },
+      {
+        "colourName": "White",
+        "size": "XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "S"
+      },
+      {
+        "colourName": "Ash",
+        "size": "XL"
+      },
+      {
+        "colourName": "Ash",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Oxford",
+        "size": "S"
+      },
+      {
+        "colourName": "Oxford",
+        "size": "XL"
+      },
+      {
+        "colourName": "Oxford",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Oxford",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "J. Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "J. Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "jerzees-unisex-nublend-joggers",
+    "name": "Unisex Nublend® Joggers",
+    "brandName": "JERZEES",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "7.2 oz./yd² (US), 12 oz./L yd (CA), 60/40 cotton/polyester\nAthletic Heather is 55/45 cotton/polyester\nPre-shrunk\nModern fit in a lighter weight fleece\nNuBlend® pill-resistant fleece\nHigh-stitch density for a smooth printing canvas\nDifferential rise for a better fit\nTriple-needle stitched covered elastic waistband with external drawcord\nContrast-color drawcord and side entry pockets (all body colors include Charcoal Grey contrast detailing except Black Heather, which has Black, and White, which has White)\n1x1 ribbed cuffs with spandex for stretch and recovery",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66754_f_fm.jpg",
+        "colourName": "Athletic Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66755_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66756_f_fm.jpg",
+        "colourName": "Black Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66757_f_fm.jpg",
+        "colourName": "J. Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/95654_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66754_b_fm.jpg",
+        "colourName": "Athletic Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66755_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66756_b_fm.jpg",
+        "colourName": "Black Heather",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/66757_b_fm.jpg",
+        "colourName": "J. Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/95654_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Black Heather",
+      "Black",
+      "Athletic Heather",
+      "J. Navy"
+    ],
+    "sizes": [
+      "S",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black Heather",
+        "size": "S"
+      },
+      {
+        "colourName": "Black Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Athletic Heather",
+        "size": "3XL"
+      },
+      {
+        "colourName": "J. Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "J. Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "next-level-women-s-laguna-sueded-sweatpants",
+    "name": "Women's Laguna Sueded Sweatpants",
+    "brandName": "Next Level",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8.3 oz./yd² (US), 13.8 oz./L yd (CA), 60/40 ringspun cotton/polyester, 30 singles\n\nClassic fit\n\n1\" elastic overlock waistband\n\nDyed-to-match drawcords\nSide pockets\nElastic bottom hem\nTear away label\nResponsible Supplier: this product was made in a facility that is FLA certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108188_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108189_f_fm.jpg",
+        "colourName": "Desert Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108190_f_fm.jpg",
+        "colourName": "Heather Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108188_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108189_b_fm.jpg",
+        "colourName": "Desert Pink",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Desert Pink",
+      "Black",
+      "Heather Grey"
+    ],
+    "sizes": [
+      "XS",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Desert Pink",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "next-level-unisex-fleece-sweat-shorts",
+    "name": "Unisex Fleece Sweat Shorts",
+    "brandName": "Next Level",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "7.4 oz./yd² (US), 12.4 oz./L yd (CA), 80/20 combed ringspun cotton/polyester, 30 singles\nHeather Grey is 60/40 combed ringspun cotton/polyester\nClassic fit\nDyed-to-match drawcord waistband\nSide pockets\nBack patch pocket\nBottom hem with wide double needle topstitch\nTear away label\nResponsible Supplier: this product was made in a facility that is FLA certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108196_f_fm.jpg",
+        "colourName": "Heather Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108197_f_fm.jpg",
+        "colourName": "Midnight Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108196_b_fm.jpg",
+        "colourName": "Heather Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108197_b_fm.jpg",
+        "colourName": "Midnight Navy",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Heather Grey",
+      "Midnight Navy"
+    ],
+    "sizes": [
+      "XS",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Heather Grey",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Midnight Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Midnight Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Midnight Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "next-level-unisex-fleece-sweat-shorts-2",
+    "name": "Unisex Fleece Sweat Shorts",
+    "brandName": "Next Level",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "7.4 oz./yd² (US), 12.4 oz./L yd (CA), 80/20 combed ringspun cotton/polyester, 30 singles\nHeather Grey is 60/40 combed ringspun cotton/polyester\nClassic fit\nDyed-to-match drawcord waistband\nSide pockets\nBack patch pocket\nBottom hem with wide double needle topstitch\nTear away label\nResponsible Supplier: this product was made in a facility that is FLA certified.",
+    "images": [],
+    "colours": [
+      "Heather Grey",
+      "Midnight Navy"
+    ],
+    "sizes": [
+      "XS",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Heather Grey",
+        "size": "XS"
+      },
+      {
+        "colourName": "Heather Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Midnight Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Midnight Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Midnight Navy",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "team-365-unisex-zone-performance-reversible-shorts",
+    "name": "Unisex Zone Performance Reversible Shorts",
+    "brandName": "Team 365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "4 oz/yd², 100% Polyester Interlock\nTeam fit\nCationic dyes for superior brightness and color fastness\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nContrast side panel, white for all colors\nElastic waistband with drawcord\nTear away label\nUPF 40+\nResponsible Supplier: this product was made in a facility that is FLA certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136264_f_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136265_f_fm.jpg",
+        "colourName": "Sport Dark Navy/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136266_f_fm.jpg",
+        "colourName": "Sport Graphite/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136267_f_fm.jpg",
+        "colourName": "Sport Red/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136268_f_fm.jpg",
+        "colourName": "Sport Royal/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136264_b_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136265_b_fm.jpg",
+        "colourName": "Sport Dark Navy/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136266_b_fm.jpg",
+        "colourName": "Sport Graphite/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136267_b_fm.jpg",
+        "colourName": "Sport Red/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136268_b_fm.jpg",
+        "colourName": "Sport Royal/ White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black/ White",
+      "Sport Graphite/ White",
+      "Sport Dark Navy/ White",
+      "Sport Red/ White",
+      "Sport Royal/ White"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 37.01
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 35.01
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 32.01
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 29.01
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 26.01
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 24.01
+      }
+    ],
+    "startingPrice": 37.01,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "team-365-youth-zone-performance-reversible-shorts",
+    "name": "Youth Zone Performance Reversible Shorts",
+    "brandName": "Team 365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "4 oz/yd², 100% Polyester Interlock\nTeam fit\nCationic dyes for superior brightness and color fastness\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nContrast side panel, white for all colors\nElastic waistband\nTear away label\nUPF 40+\nResponsible Supplier: this product was made in a facility that is FLA certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136313_f_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136314_f_fm.jpg",
+        "colourName": "Sport Dark Navy/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136315_f_fm.jpg",
+        "colourName": "Sport Graphite/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136316_f_fm.jpg",
+        "colourName": "Sport Red/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136317_f_fm.jpg",
+        "colourName": "Sport Royal/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136313_b_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136314_b_fm.jpg",
+        "colourName": "Sport Dark Navy/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136315_b_fm.jpg",
+        "colourName": "Sport Graphite/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136316_b_fm.jpg",
+        "colourName": "Sport Red/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136317_b_fm.jpg",
+        "colourName": "Sport Royal/ White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black/ White",
+      "Sport Graphite/ White",
+      "Sport Dark Navy/ White",
+      "Sport Red/ White",
+      "Sport Royal/ White"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Graphite/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Dark Navy/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Red/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Royal/ White",
+        "size": "XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 37.01
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 35.01
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 32.01
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 29.01
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 26.01
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 24.01
+      }
+    ],
+    "startingPrice": 37.01,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "team-365-men-s-zone-performance-shorts",
+    "name": "Men's Zone Performance Shorts",
+    "brandName": "Team 365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "3.5 oz./yd² (US), 5.8 oz./L yd (CA), 100% polyester  interlock\nTeam fit\nCationic dyes for superior brightness and color fastness\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nUPF 40+\nElasticized waistband with flat internal drawcord\n Side pockets\n9\" inseam\nTransitioning from heat-seal label to tear away label",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130069_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130070_f_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130071_f_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130072_f_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130073_f_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130069_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130070_b_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130071_b_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130072_b_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/130073_b_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Sport Graphite",
+      "Black",
+      "Sport Dark Navy",
+      "Sport Red",
+      "Sport Royal"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Sport Graphite",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 34.49
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 32.49
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 29.49
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 26.49
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 23.49
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 21.49
+      }
+    ],
+    "startingPrice": 34.49,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "team-365-women-s-zone-performance-shorts",
+    "name": "Women's Zone Performance Shorts",
+    "brandName": "Team 365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "3.5 oz./yd², 100% polyester interlock\nTeam fit\nCationic dyes for superior brightness and color fastness\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nUPF 40+\nElasticized waistband with flat internal drawcord\nSide pockets\n4.5\" inseam\nTransitioning from heat-seal label to tear away label. Inventory may be mixed",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128205_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128206_f_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128207_f_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128208_f_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128209_f_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128205_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128206_b_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128207_b_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128208_b_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128209_b_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Sport Graphite",
+      "Black",
+      "Sport Dark Navy",
+      "Sport Red",
+      "Sport Royal"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Sport Graphite",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "team-365-women-s-zone-performance-shorts-2",
+    "name": "Women's Zone Performance Shorts",
+    "brandName": "Team 365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "3.5 oz./yd², 100% polyester interlock\nTeam fit\nCationic dyes for superior brightness and color fastness\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nUPF 40+\nElasticized waistband with flat internal drawcord\nSide pockets\n4.5\" inseam\nTransitioning from heat-seal label to tear away label. Inventory may be mixed",
+    "images": [],
+    "colours": [
+      "Sport Graphite",
+      "Black",
+      "Sport Dark Navy",
+      "Sport Red",
+      "Sport Royal"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Sport Graphite",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 34.49
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 32.49
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 29.49
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 26.49
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 23.49
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 21.49
+      }
+    ],
+    "startingPrice": 34.49,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "team-365-youth-zone-performance-shorts",
+    "name": "Youth Zone Performance Shorts",
+    "brandName": "Team 365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "3.5 oz./yd² (US), 5.8 oz./L yd (CA), 100% polyester interlock\nTeam fit\nCationic dyes for superior brightness and color fastness\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nUPF 40+\nNo drawcord\nSide pockets\n7\" inseam\nTransitioning from heat-seal label to tear away label",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122762_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122763_f_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122765_f_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122766_f_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122767_f_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122762_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122763_b_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122765_b_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122766_b_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/122767_b_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Sport Graphite",
+      "Black",
+      "Sport Dark Navy",
+      "Sport Red",
+      "Sport Royal"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Sport Graphite",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Red",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Royal",
+        "size": "XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 34.49
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 32.49
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 29.49
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 26.49
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 23.49
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 21.49
+      }
+    ],
+    "startingPrice": 34.49,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "team-365-unisex-squad-tech-fleece-pants",
+    "name": "Unisex Squad Tech Fleece Pants",
+    "brandName": "Team 365",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "7 oz/yd² / 240 gsm (US), 11.7 oz/L yd (CA), 100% polyester fleece\nCationic dyes for superior brightness and color fastness\nTeam fit\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nElastic waistband with inner drawcord\nCoil zipper with rubber pull at pockets\nResponsible Supplier: this product was made in a facility that is FLA certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/135003_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/135004_f_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/135005_f_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/135003_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/135004_b_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/135005_b_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Black",
+      "Sport Graphite",
+      "Sport Dark Navy"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Black",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black",
+        "size": "S"
+      },
+      {
+        "colourName": "Black",
+        "size": "M"
+      },
+      {
+        "colourName": "Black",
+        "size": "L"
+      },
+      {
+        "colourName": "Black",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Graphite",
+        "size": "4XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XS"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "S"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "M"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "L"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Sport Dark Navy",
+        "size": "4XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 47.72
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 45.72
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 42.72
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 39.72
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 36.72
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 34.72
+      }
+    ],
+    "startingPrice": 47.72,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "under-armour-men-s-icon-fleece-joggers",
+    "name": "Men's Icon Fleece Joggers",
+    "brandName": "Under Armour",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "8.26 oz/yd²., 80/20 cotton/polyester\nUltra-soft, mid-weight cotton-blend fleece with brushed interior\nLoose fit\nEncased elastic waistband with external drawcord\nOpen hand pockets & secure snap back pocket\nInseam: 31\"\nContrast embroidered logo on right leg\nPad-printed label\nComing Spring 2027: Replacement styles with expanded inventory availability.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136698_f_fm.jpg",
+        "colourName": "Black/ Pitch Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136699_f_fm.jpg",
+        "colourName": "Midnight Navy/ White ",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136700_f_fm.jpg",
+        "colourName": "Mod Grey Light Heather/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136698_b_fm.jpg",
+        "colourName": "Black/ Pitch Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136699_b_fm.jpg",
+        "colourName": "Midnight Navy/ White ",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/136700_b_fm.jpg",
+        "colourName": "Mod Grey Light Heather/ White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Mod Grey Light Heather/ White",
+      "Black/ Pitch Grey",
+      "Midnight Navy/ White "
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Mod Grey Light Heather/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Mod Grey Light Heather/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Mod Grey Light Heather/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Mod Grey Light Heather/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Mod Grey Light Heather/ White",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Mod Grey Light Heather/ White",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Black/ Pitch Grey",
+        "size": "S"
+      },
+      {
+        "colourName": "Black/ Pitch Grey",
+        "size": "M"
+      },
+      {
+        "colourName": "Black/ Pitch Grey",
+        "size": "L"
+      },
+      {
+        "colourName": "Black/ Pitch Grey",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black/ Pitch Grey",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black/ Pitch Grey",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Midnight Navy/ White ",
+        "size": "S"
+      },
+      {
+        "colourName": "Midnight Navy/ White ",
+        "size": "M"
+      },
+      {
+        "colourName": "Midnight Navy/ White ",
+        "size": "L"
+      },
+      {
+        "colourName": "Midnight Navy/ White ",
+        "size": "XL"
+      },
+      {
+        "colourName": "Midnight Navy/ White ",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Midnight Navy/ White ",
+        "size": "3XL"
+      }
+    ],
+    "priceTiers": [
+      {
+        "minQty": 1,
+        "maxQty": 2,
+        "pricePerUnit": 78.1
+      },
+      {
+        "minQty": 3,
+        "maxQty": 10,
+        "pricePerUnit": 76.1
+      },
+      {
+        "minQty": 11,
+        "maxQty": 35,
+        "pricePerUnit": 73.1
+      },
+      {
+        "minQty": 36,
+        "maxQty": 70,
+        "pricePerUnit": 70.1
+      },
+      {
+        "minQty": 71,
+        "maxQty": 99,
+        "pricePerUnit": 67.1
+      },
+      {
+        "minQty": 100,
+        "maxQty": null,
+        "pricePerUnit": 65.1
+      }
+    ],
+    "startingPrice": 78.1,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "under-armour-youth-tech-vent-athletic-shorts",
+    "name": "Youth Tech™ Vent Athletic Shorts",
+    "brandName": "Under Armour",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "4.51 oz/yd²., 90/10 polyester/elastane\nMoisture-wicking properties, material wicks sweat & dries really fast\nFour-way stretch material moves better in every direction\nNew, innovative NEOLAST™ fibers provide powerful stretch, durability, comfort & improved wicking\nNEOLAST™ is a high-performing alternative to elastane designed to begin addressing sustainability challenges associated with elastane\nLoose fit\nMesh side panels for added breathability\nEncased elastic waistband with internal drawcord\nOpen hand pockets and side-vent hem\nInseam 6\"",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134779_f_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134780_f_fm.jpg",
+        "colourName": "Castlerock/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134781_f_fm.jpg",
+        "colourName": "Midnight Navy/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134779_b_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134780_b_fm.jpg",
+        "colourName": "Castlerock/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134781_b_fm.jpg",
+        "colourName": "Midnight Navy/ White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Castlerock/ White",
+      "Black/ White",
+      "Midnight Navy/ White"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Castlerock/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "under-armour-youth-tech-vent-athletic-shorts-2",
+    "name": "Youth Tech™ Vent Athletic Shorts",
+    "brandName": "Under Armour",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "4.51 oz/yd²., 90/10 polyester/elastane\nMoisture-wicking properties, material wicks sweat & dries really fast\nFour-way stretch material moves better in every direction\nNew, innovative NEOLAST™ fibers provide powerful stretch, durability, comfort & improved wicking\nNEOLAST™ is a high-performing alternative to elastane designed to begin addressing sustainability challenges associated with elastane\nLoose fit\nMesh side panels for added breathability\nEncased elastic waistband with internal drawcord\nOpen hand pockets and side-vent hem\nInseam 6\"",
+    "images": [],
+    "colours": [
+      "Castlerock/ White",
+      "Black/ White",
+      "Midnight Navy/ White"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Castlerock/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Castlerock/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "XS"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Black/ White",
+        "size": "XL"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "S"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "M"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "L"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "under-armour-men-s-tech-vent-9-shorts",
+    "name": "Men's Tech™ Vent 9\" Shorts",
+    "brandName": "Under Armour",
+    "categorySlug": "custom-apparel",
+    "subcategorySlug": "joggers-bottoms",
+    "description": "4.66 oz/yd²., 90/10 polyester/spandex\nMoisture-wicking performance, material wicks sweat & dries really fast\nFour-way stretch material moves better in every direction\nNew, innovative NEOLAST™ fibers provide powerful stretch, durability, comfort & improved wicking\nNEOLAST™ is a high-performing alternative to elastane designed to begin addressing sustainability challenges associated with elastane\nSmooth, performance knit fabric is super-light, breathable & comfortable\nMesh side panels for added breathability\nOpen hand pockets & side-vent hem\n9\" inseam",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134809_f_fm.jpg",
+        "colourName": "Black/ Castlerock",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134807_f_fm.jpg",
+        "colourName": "Midnight Navy/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134808_f_fm.jpg",
+        "colourName": "Mod Grey/ Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134809_b_fm.jpg",
+        "colourName": "Black/ Castlerock",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134807_b_fm.jpg",
+        "colourName": "Midnight Navy/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134808_b_fm.jpg",
+        "colourName": "Mod Grey/ Black",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Mod Grey/ Black",
+      "Black/ Castlerock",
+      "Midnight Navy/ White"
+    ],
+    "sizes": [
+      "2XL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "colourName": "Mod Grey/ Black",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black/ Castlerock",
+        "size": "2XL"
+      },
+      {
+        "colourName": "Black/ Castlerock",
+        "size": "3XL"
+      },
+      {
+        "colourName": "Midnight Navy/ White",
+        "size": "2XL"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "comfort-colors-garment-dyed-fleece-dorm-blanket",
+    "name": "Garment-Dyed Fleece Dorm Blanket",
+    "brandName": "Comfort Colors",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "accessories",
+    "description": "9.5 oz./yd², (US), 16 oz./L yd (CA), 80/20 ring-spun cotton/polyester, 30 singles\nComfort Colors styles are garment dyed for a lived-in feel with minimal shrinkage.\nFeaturing 3-end heavyweight fleece and cotton threads; 100% ring spun U.S. cotton face for enhanced printability\nOversized\nHemmed sides all around\nSignature twill label on lower corner of blanket face\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114565_f_fm.jpg",
+        "colourName": "Blue Jean",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114567_f_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114568_f_fm.jpg",
+        "colourName": "Peachy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114566_f_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114565_b_fm.jpg",
+        "colourName": "Blue Jean",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114567_b_fm.jpg",
+        "colourName": "Ivory",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114568_b_fm.jpg",
+        "colourName": "Peachy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114566_b_fm.jpg",
+        "colourName": "Pepper",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Pepper",
+      "Ivory",
+      "Peachy",
+      "Blue Jean"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "Pepper",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Ivory",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Peachy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Blue Jean",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "gildan-heavy-blend-fleece-stadium-blanket",
+    "name": "Heavy Blend™ Fleece Stadium Blanket",
+    "brandName": "Gildan",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "accessories",
+    "description": "8 oz./yd² (US), 13.4 oz/L yd (CA), 50/50  cotton/polyester, 20 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\nHemmed sides all around\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104233_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104234_f_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104235_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104236_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104237_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104238_f_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104239_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104233_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104234_b_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104235_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104236_b_fm.jpg",
+        "colourName": "Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104237_b_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104238_b_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/104239_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "Charcoal",
+      "Black",
+      "Sport Grey",
+      "Navy",
+      "Red",
+      "Sand",
+      "Royal"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "Charcoal",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Sport Grey",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Navy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Red",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Sand",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Royal",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "q-tees-hemmed-fingertip-towel",
+    "name": "Hemmed Fingertip Towel",
+    "brandName": "Q-Tees",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "accessories",
+    "description": "100% cotton, one side velour, opposite side terrycloth\nApproximately 1.3lbs/dozen\nHemmed edges\n11\"W x 18\"L",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51110_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51123_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51110_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/51123_b_fm.jpg",
+        "colourName": "White",
+        "imageType": "back"
+      }
+    ],
+    "colours": [
+      "White",
+      "Black"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
+    "slug": "rabbit-skins-infant-premium-jersey-bib",
+    "name": "Infant Premium Jersey Bib",
+    "brandName": "Rabbit Skins",
+    "categorySlug": "hats-accessories",
+    "subcategorySlug": "accessories",
+    "description": "5.5 oz./yd² (US), 9.2 oz./L yd (CA), 100% combed ring-spun cotton jersey\nHeather is 90/10 combed ring-spun cotton/polyester\nWhite is sewn with 100% cotton thread\nSingle ply\n\nSelf-binding\n\nVelcro® brand hook-and-loop closure\nEasyTear™ label\nCPSIA compliant tracking label on side seam\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX certified.",
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/42822_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65276_f_fm.jpg",
+        "colourName": "Heather",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33749_f_fm.jpg",
+        "colourName": "Light Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65274_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33750_f_fm.jpg",
+        "colourName": "Pink",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65277_f_fm.jpg",
+        "colourName": "Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/65275_f_fm.jpg",
+        "colourName": "Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/33751_f_fm.jpg",
+        "colourName": "White",
+        "imageType": "front"
+      }
+    ],
+    "colours": [
+      "White",
+      "Light Blue",
+      "Pink",
+      "Black",
+      "Heather",
+      "Navy",
+      "Red",
+      "Royal"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "variants": [
+      {
+        "colourName": "White",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Light Blue",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Pink",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Black",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Heather",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Navy",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Red",
+        "size": "One Size"
+      },
+      {
+        "colourName": "Royal",
+        "size": "One Size"
+      }
+    ],
+    "priceTiers": null,
+    "startingPrice": null,
+    "printRuleVersion": "2026-08-01-client-sheet-v1"
+  },
+  {
     "slug": "ogio-ogio-crunch-duffel-41l",
     "name": "OGIO® CRUNCH DUFFEL. 41L",
     "brandName": "OGIO®",
