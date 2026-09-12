@@ -127,13 +127,23 @@ function buildPriceTiers(chart, engineType, cheapest, markupRule) {
   return tiers;
 }
 
-async function main() {
-  const force = process.argv.includes('--force');
-  const prisma = new PrismaClient();
+// Prisma compiles this deep an `include` (variants -> supplierOffers -> supplierProduct, plus
+// images) into a single query whose parameter count scales with the number of products x variants
+// x offers returned. At ~1099 published products this tripped Postgres's real hard limit of 32767
+// bind variables in one prepared statement (got exactly 32768 — one over). Fetching in pages by
+// `id` cursor keeps each individual query's parameter count bounded regardless of how large the
+// catalogue grows, instead of the whole export breaking again at the next few hundred products.
+const EXPORT_PAGE_SIZE = 200;
 
-  const [products, markupRules] = await Promise.all([
-    prisma.masterProduct.findMany({
+async function fetchAllPublishedProducts(prisma) {
+  const products = [];
+  let cursor;
+  for (;;) {
+    const page = await prisma.masterProduct.findMany({
       where: { status: 'published', isPublished: true },
+      orderBy: { id: 'asc' },
+      take: EXPORT_PAGE_SIZE,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       include: {
         brand: true,
         primaryCategory: true,
@@ -148,7 +158,20 @@ async function main() {
         },
         images: { where: { status: 'published' }, orderBy: { sortOrder: 'asc' } },
       },
-    }),
+    });
+    products.push(...page);
+    if (page.length < EXPORT_PAGE_SIZE) break;
+    cursor = page[page.length - 1].id;
+  }
+  return products;
+}
+
+async function main() {
+  const force = process.argv.includes('--force');
+  const prisma = new PrismaClient();
+
+  const [products, markupRules] = await Promise.all([
+    fetchAllPublishedProducts(prisma),
     prisma.markupRule.findMany({ where: { isActive: true } }),
   ]);
 
