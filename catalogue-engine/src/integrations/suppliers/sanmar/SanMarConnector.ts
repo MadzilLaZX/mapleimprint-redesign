@@ -458,6 +458,14 @@ export class SanMarConnector implements SupplierConnector {
       const first = styleRows[0];
       if (!first) continue;
       const cleanedDescription = cleanDescription(first.description);
+      // OBSERVED LIVE 2026-09-12: productName comes back with the same HTML-entity encoding as
+      // description ("CARHARTT&reg;", "CH ESSENTIAL&reg;") but was previously used raw — every
+      // promoted product name showed literal "&reg;" instead of "®" on the site. cleanDescription()
+      // already does exactly the right entity decode (plus a harmless no-op tag-strip; SanMar names
+      // have never been observed to contain tags), so reuse it here too rather than duplicating the
+      // entity list. Classification below still runs on the raw name — decoding doesn't change
+      // which keywords match.
+      const cleanedProductName = cleanDescription(first.productName);
       const productType = resolveProductType(first.productName, cleanedDescription);
       if (!productType) this.unclassifiedProductTypeCount += 1;
 
@@ -469,7 +477,7 @@ export class SanMarConnector implements SupplierConnector {
         supplierProductId: style,
         supplierStyleCode: style,
         brandName: first.brand ?? '',
-        productName: first.productName ?? '',
+        productName: cleanedProductName,
         description: cleanedDescription,
         productType,
         variants: styleRows.map((row): RawSupplierVariant => {
