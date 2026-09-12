@@ -30,7 +30,12 @@ import {
 } from '../dist/index.js';
 import { routeFor } from './route-map.mjs';
 
-const HARD_CAP = 15; // ABSOLUTE total products imported+promoted for this test run — not per category.
+// 2026-09-12: raised from the original first-test cap of 15 to comfortably cover the entire
+// observed SanMar bulk pull (671 distinct styles that day) now that the connector + degenerate-
+// response detection have been proven correct against real data. Re-running this against an
+// already-cached day (see capture-sanmar-bulkdata.mjs) costs nothing, so there's no reason to
+// keep it artificially small — leave headroom above whatever the largest observed pull has been.
+const HARD_CAP = 1000; // ABSOLUTE total products imported+promoted for this run — not per category.
 
 const here = dirname(fileURLToPath(import.meta.url));
 const envPath = resolve(here, '..', '.env');
