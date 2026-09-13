@@ -258,6 +258,36 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-13 Studio full-screen application shell:** Studio still rendered inside the normal
+marketing layout (header/footer/page-scroll) even after the V2 shell rebuild below — fixed via a
+real route-group split rather than a CSS/JS hack. `src/app/` now has two route groups:
+`(site)/layout.tsx` (Header/Footer/PageTransition — everything that used to be hardcoded in the
+root layout) and `(studio)/layout.tsx` (`h-dvh overflow-hidden`, no site chrome at all — not
+hidden, just never part of that route's layout tree). Every existing page moved into `(site)/` via
+`git mv` (route groups don't change URLs, so nothing about the site's actual paths changed);
+`studio/[id]` moved into `(studio)/`. Root `layout.tsx` now only owns `<html>/<body>`, the JSON-LD
+script, and `CartProvider` (shared context, not chrome, so it stays above both groups).
+StudioClient's own shell became a real `h-full flex-col overflow-hidden` box with `min-h-0` at
+every nested flex level (the classic nested-flex trap the brief called out) — verified with
+Playwright at 1366×768 through 2560×1440 plus three mobile sizes: 0px document-level scroll
+overflow and an unmoved `window.scrollY` after a mouse-wheel event, at every single size, both
+with and without a long template panel open. Zoom controls moved out of document flow entirely
+(floating, absolute-positioned, bottom-center over the canvas). CanvasStage's responsive-fit hook
+now fits BOTH width and height (previously width-only, which was fine before Studio had a bounded
+height at all — 1366×768 is short enough that the 4:5 canvas plus toolbar chrome doesn't fit on
+height even with plenty of width spare); ReviewPanel's stacked multi-location list explicitly opts
+back into the old width-only fit (`fitMode="width"`) since it's a normal scrollable list, not a
+space-constrained single view. Added a right InspectorDock that's a static side panel on desktop
+and a togglable bottom sheet on mobile (auto-opens on selection, or via a floating price pill) —
+closing the "mobile Inspector is just a static block" gap flagged in the previous report. "Back to
+Product" now flushes a pending autosave (fires it immediately instead of waiting out the rest of
+its 900ms debounce) before navigating, verified with a real edit-then-immediately-click-Back test:
+0 PATCH calls before the click, exactly 1 (the flush) before navigation, and the edit was still
+there on reopening the same design. A single 220ms fade+scale entrance plays once per Studio
+mount, not on every edit/preview/review toggle (those swap an inner `content` variable under one
+persistent motion wrapper, rather than each being its own top-level return that would remount and
+replay the transition).
+
 **2026-09-13 Studio V2 shell rebuild (Steps 1-4, 9-11 of the "Studio V2" brief):** replaced the
 single-panel MVP editor with the full tool-rail/secondary-panel/contextual-inspector shell, kept
 React-Konva (no IMG.LY migration — see below), and made print locations product-family-aware

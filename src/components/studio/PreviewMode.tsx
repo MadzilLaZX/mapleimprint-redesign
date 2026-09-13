@@ -39,8 +39,11 @@ export function PreviewMode({
   const isPlacementPreview = profile.find((l) => l.id === activeSide)?.usesPlacementPreview ?? false;
 
   return (
-    <div className="flex min-h-screen flex-col bg-canvas">
-      <header className="flex items-center justify-between border-b border-sand bg-white px-4 py-3 lg:px-6">
+    // Same reasoning as ReviewPanel: h-full + overflow-hidden on the shell, overflow-y-auto on
+    // the one scrollable region below, since this renders inside Studio's fixed h-dvh box rather
+    // than a normal scrollable page.
+    <div className="flex h-full flex-col overflow-hidden bg-canvas">
+      <header className="flex shrink-0 items-center justify-between border-b border-sand bg-white px-4 py-3 lg:px-6">
         <button
           type="button"
           onClick={onBack}
@@ -53,23 +56,28 @@ export function PreviewMode({
         <div className="w-24" />
       </header>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
-        <CanvasStage
-          location={activeSide}
-          mockupUrl={mockupUrl}
-          objects={objects}
-          selectedId={null}
-          onSelect={() => {}}
-          onCommitObject={() => {}}
-          editingTextId={null}
-          onEditRequest={() => {}}
-          onEditCommit={() => {}}
-          readOnly
-          placementPreview={isPlacementPreview}
-        />
+      <div className="flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto p-6">
+        {/* flex-1/min-h-0 here (not on the column above) is what actually gives CanvasStage a
+            real height to fit — the column's cross axis is horizontal (it's flex-col), so
+            centering it there doesn't stretch children vertically the way row-centering would. */}
+        <div className="min-h-0 w-full flex-1">
+          <CanvasStage
+            location={activeSide}
+            mockupUrl={mockupUrl}
+            objects={objects}
+            selectedId={null}
+            onSelect={() => {}}
+            onCommitObject={() => {}}
+            editingTextId={null}
+            onEditRequest={() => {}}
+            onEditCommit={() => {}}
+            readOnly
+            placementPreview={isPlacementPreview}
+          />
+        </div>
 
         {openSides.length > 1 && (
-          <div className="flex flex-wrap justify-center gap-2 rounded-full border border-sand bg-white p-1">
+          <div className="flex shrink-0 flex-wrap justify-center gap-2 rounded-full border border-sand bg-white p-1">
             {openSides.map((side) => (
               <button
                 key={side}

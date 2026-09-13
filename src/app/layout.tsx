@@ -2,9 +2,6 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import "./globals.css";
 import { BUSINESS, SITE_URL } from "@/lib/constants";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { PageTransition } from "@/components/layout/PageTransition";
 import { CartProvider } from "@/components/cart/CartProvider";
 
 const display = Bricolage_Grotesque({
@@ -98,7 +95,11 @@ export default function RootLayout({
       lang="en-CA"
       className={`${display.variable} ${body.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-canvas text-ink-900 font-body">
+      {/* No flex/min-height layout here on purpose — that's each route group's own job now:
+          (site)/layout.tsx pins its footer with min-h-dvh + flex-col, (studio)/layout.tsx locks
+          to exactly h-dvh with overflow-hidden so Studio never grows the document. A shared height
+          rule here would just be one more thing each group has to fight or override. */}
+      <body className="bg-canvas text-ink-900 font-body antialiased">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
@@ -109,13 +110,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <CartProvider>
-          <Header />
-          <main id="main-content" className="flex-1">
-            <PageTransition>{children}</PageTransition>
-          </main>
-          <Footer />
-        </CartProvider>
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );

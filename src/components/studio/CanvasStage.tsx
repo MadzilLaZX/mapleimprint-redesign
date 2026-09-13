@@ -27,9 +27,19 @@ function useHtmlImage(url: string | null) {
   return url ? img : undefined;
 }
 
-/** Measures the wrapping element's content width so the stage can shrink to fit it — never grows
- *  past NATURAL_WIDTH (no upscaling past native resolution on huge screens). */
-function useResponsiveScale() {
+/** Measures the wrapping element and fits the stage inside it. Two modes:
+ *
+ *  - `fitHeight: true` ("contain" — the live Studio editor and Preview): fits inside whichever of
+ *    width/height is tighter. The container must stretch to fill a REAL bounded height from its
+ *    flex parent (see CanvasStage's root div) — a common laptop resolution like 1366x768 can be
+ *    the shorter constraint once Studio is a fixed-height application shell (plenty of width left
+ *    over, but the 4:5 canvas plus toolbar/location-selector chrome doesn't fit that viewport's
+ *    height). Measuring both and taking the smaller ratio is what makes "Fit" actually mean fit.
+ *  - `fitHeight: false` ("width" — ReviewPanel's stacked, scrollable location list): fits width
+ *    only and lets height follow the aspect ratio, same as the original single-axis version. Those
+ *    previews live in a normal scrollable column with no bounded height to measure against, and
+ *    don't want one — the whole point there is a full-size preview per location, not a squeezed one. */
+function useResponsiveScale(fitHeight: boolean) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(1);
 
@@ -37,12 +47,19 @@ function useResponsiveScale() {
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width;
-      if (width) setScale(Math.min(1, width / NATURAL_WIDTH));
+      const rect = entries[0]?.contentRect;
+      if (!rect) return;
+      const widthScale = rect.width / NATURAL_WIDTH;
+      if (!fitHeight) {
+        setScale(Math.min(1, widthScale));
+        return;
+      }
+      const heightScale = rect.height / NATURAL_HEIGHT;
+      setScale(Math.min(1, widthScale, heightScale));
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [fitHeight]);
 
   return { containerRef, scale };
 }
@@ -358,6 +375,7 @@ export function CanvasStage({
   readOnly = false,
   placementPreview = false,
   zoom = 1,
+  fitMode = "contain",
 }: {
   location: DesignSideType;
   mockupUrl: string | null;
@@ -377,9 +395,13 @@ export function CanvasStage({
    *  the viewport at zoom > 1 is handled by the wrapping container's native scroll, not custom
    *  drag logic — see ZoomControls/CanvasWorkspace. */
   zoom?: number;
+  /** "contain" (default) fits inside both width and height of a real bounded container — use for
+   *  anything living in Studio's fixed-height shell. "width" fits width only, height follows the
+   *  aspect ratio — use for a normal scrollable list of full-size previews (ReviewPanel). */
+  fitMode?: "contain" | "width";
 }) {
   const reduce = useReducedMotion();
-  const { containerRef, scale: fitScale } = useResponsiveScale();
+  const { containerRef, scale: fitScale } = useResponsiveScale(fitMode === "contain");
   const scale = fitScale * zoom;
   const stageRef = useRef<Konva.Stage | null>(null);
   const transformerRef = useRef<Konva.Transformer | null>(null);
@@ -407,11 +429,23 @@ export function CanvasStage({
   const visibleObjects = objects.filter((o) => !o.hidden);
 
   return (
+    // Outer div is what ResizeObserver measures (see useResponsiveScale) and must have a REAL
+    // CSS-computed width/height of its own — h-full/w-full stretching to fill whatever flex/grid
+    // space the caller gives it, not sized to its own content, or width/height-based fitting would
+    // be circular. It centers a fixed-size inner box (exactly the stage's rendered pixel size) so
+    // that every absolutely-positioned overlay below (badge, text-edit textarea) can keep
+    // positioning itself relative to THAT inner box's 0,0 — i.e. the stage's own top-left corner —
+    // regardless of how much extra space the outer box centers around it.
     <div
       ref={containerRef}
-      className={cn("relative mx-auto w-full", zoom > 1 && "overflow-auto")}
-      style={{ maxWidth: NATURAL_WIDTH }}
+      className={cn(
+        "relative",
+        fitMode === "contain" ? "flex h-full w-full items-center justify-center" : "mx-auto flex w-full items-center justify-center",
+        zoom > 1 && "overflow-auto",
+      )}
+      style={fitMode === "width" ? { maxWidth: NATURAL_WIDTH } : undefined}
     >
+      <div className="relative" style={{ width: NATURAL_WIDTH * scale, height: NATURAL_HEIGHT * scale }}>
       <Stage
         ref={stageRef}
         width={NATURAL_WIDTH * scale}
@@ -546,6 +580,7 @@ export function CanvasStage({
           />
         </div>
       )}
+      </div>
     </div>
   );
 }

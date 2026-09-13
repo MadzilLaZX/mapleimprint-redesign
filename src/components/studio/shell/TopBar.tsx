@@ -1,12 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowLeft, ArrowUUpLeft, ArrowUUpRight, Eye, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
 
 /** Section 3. PREVIEW and REVIEW are deliberately two different buttons/destinations — Preview
- *  answers "what will this look like," Review is the order-approval step. Never combine them. */
+ *  answers "what will this look like," Review is the order-approval step. Never combine them.
+ *  Fixed ~56-64px tall (py-3 + text/icon sizing below), `shrink-0` set by the caller so it never
+ *  gets compressed by the flex column it sits in. */
 export function TopBar({
-  productHref,
+  onBack,
+  backPending,
   productName,
   colourName,
   canUndo,
@@ -19,7 +21,8 @@ export function TopBar({
   onPreview,
   onReview,
 }: {
-  productHref: string;
+  onBack: () => void;
+  backPending: boolean;
   productName: string;
   colourName: string;
   canUndo: boolean;
@@ -35,13 +38,15 @@ export function TopBar({
   return (
     <header className="flex items-center justify-between gap-3 border-b border-sand bg-white px-4 py-3 lg:px-6">
       <div className="flex min-w-0 items-center gap-3">
-        <Link
-          href={productHref}
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-sand px-3 py-1.5 text-xs font-semibold text-ink-900 transition-colors hover:border-ink-950/25"
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={backPending}
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-sand px-3 py-1.5 text-xs font-semibold text-ink-900 transition-colors hover:border-ink-950/25 disabled:cursor-wait disabled:opacity-60"
         >
-          <ArrowLeft className="size-3.5" weight="bold" />
+          {backPending ? <SpinnerGap className="size-3.5 animate-spin" weight="bold" /> : <ArrowLeft className="size-3.5" weight="bold" />}
           Product
-        </Link>
+        </button>
         <div className="min-w-0">
           <p className="truncate font-display text-sm font-semibold text-ink-900">{productName}</p>
           <p className="text-xs text-muted">{colourName}</p>

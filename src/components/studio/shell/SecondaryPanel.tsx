@@ -17,7 +17,7 @@ export function SecondaryPanel({ title, onClose, children }: { title: string; on
         transition={{ duration: 0.18, ease: "easeOut" }}
         // Bottom sheet above the fixed tool rail on mobile (Section 28); a normal static side
         // panel next to the rail at lg+.
-        className="fixed inset-x-0 bottom-14 z-20 flex max-h-[55vh] w-full flex-col rounded-t-3xl border border-sand bg-white shadow-2xl lg:static lg:z-auto lg:h-auto lg:max-h-none lg:w-72 lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none"
+        className="fixed inset-x-0 bottom-14 z-20 flex max-h-[55vh] w-full flex-col rounded-t-3xl border border-sand bg-white shadow-2xl lg:static lg:z-auto lg:h-full lg:max-h-none lg:w-72 lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none"
       >
         <div className="flex shrink-0 items-center justify-between border-b border-sand px-4 py-3">
           <p className="font-display text-sm font-semibold text-ink-900">{title}</p>

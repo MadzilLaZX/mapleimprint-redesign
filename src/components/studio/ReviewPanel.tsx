@@ -53,7 +53,11 @@ export function ReviewPanel({
   };
 
   return (
-    <div className="min-h-screen bg-canvas">
+    // h-full + overflow-y-auto, not min-h-screen: Review lives inside Studio's fixed h-dvh shell
+    // (same route, just a different `mode`, not a page navigation — see StudioClient), which is
+    // itself overflow-hidden, so this is what actually lets a tall review (many locations, full
+    // price breakdown) scroll on its own instead of being silently clipped by that ancestor.
+    <div className="h-full overflow-y-auto bg-canvas">
       <header className="border-b border-sand bg-white px-4 py-3 lg:px-6">
         <button
           type="button"
@@ -91,6 +95,7 @@ export function ReviewPanel({
                   onEditCommit={noop}
                   readOnly
                   placementPreview={isPlacementPreview(side)}
+                  fitMode="width"
                 />
               </div>
             ))}
