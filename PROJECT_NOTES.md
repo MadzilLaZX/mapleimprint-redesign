@@ -302,10 +302,14 @@ sheet views — screenshots kept in the session, not committed to the repo.
   render-time `scaleX/Y` flag, not a re-uploaded file. New nullable `DesignObject` columns for all
   of the above (shapes, richer text, layers, flip/crop) — three additive Supabase migrations this
   session, no data loss, `get_advisors`-clean.
-- **IMG.LY CreativeEditor SDK spike**: research-only this session (see the separate report) — no
-  code spike was built since the pricing/licensing research alone was decisive enough to not
-  warrant one; still gated behind explicit owner approval per the brief, and Studio stays on
-  React-Konva regardless.
+- **IMG.LY CreativeEditor SDK: researched, no spike built, no migration.** Feature coverage is
+  real (native curved text, DPI-accurate print export via Design Units, background removal, a
+  proper AssetSource provider interface, official Next.js/React wrappers) but pricing is entirely
+  sales-gated — usage-based per monthly-active-user, stacked per platform, no published rate card,
+  only a 30-day trial. That opacity alone is reason enough not to spike it without owner sign-off:
+  cost at this site's traffic can't be modeled without a sales call. No POD-specific licensing
+  restriction was found, but img.ly/tos is the governing document, not this summary. Full sourced
+  writeup delivered in conversation. Studio stays on React-Konva.
 - **Not done this session** (see the follow-up report for the full list): joggers/headwear
   end-to-end testing (only tee and hoodie were walked through live), pants-specific leg UI polish,
   a persistent cross-visit "My Uploads" library (needs real accounts), design-quality DPI feedback
