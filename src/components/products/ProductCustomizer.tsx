@@ -8,6 +8,7 @@ import { useCart, QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { blankUnitPrice, calculateCustomizePrice } from "@/lib/studio/pricing";
 import { standardLocationsFor } from "@/lib/studio/productDecorationProfile";
+import { heroImageFor } from "@/lib/productVariant";
 import { SurpriseMePanel } from "@/components/products/SurpriseMePanel";
 import { SizeGuidePanel } from "@/components/products/SizeGuidePanel";
 import type { CatalogueProduct } from "@/lib/products";
@@ -90,10 +91,7 @@ export function ProductCustomizer({
       // from the request, it doesn't need the value passed explicitly.
       getOrCreateClientSessionToken();
 
-      const frontImage =
-        product.images.find((img) => img.colourName === selectedColour && img.imageType === "front")?.url ??
-        product.images.find((img) => img.colourName === selectedColour)?.url ??
-        product.images[0]?.url;
+      const frontImage = heroImageFor(product, selectedColour, "front")?.url;
       const backImage = product.images.find((img) => img.colourName === selectedColour && img.imageType === "back")?.url;
       const hasBackPhoto = product.images.some((img) => img.imageType === "back");
 
@@ -149,7 +147,7 @@ export function ProductCustomizer({
       {
         id: `${product.categorySlug}-${product.subcategorySlug}-${product.slug}-${selectedColour}-blank`,
         name: product.name,
-        image: product.images.find((i) => i.colourName === selectedColour)?.url ?? product.images[0]?.url ?? "",
+        image: heroImageFor(product, selectedColour)?.url ?? "",
         categorySlug: product.categorySlug,
         categoryName,
         startingPrice: blankPrice,

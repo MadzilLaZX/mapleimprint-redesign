@@ -98,7 +98,7 @@ export default async function ProductDetailPage({
         </Section>
       )}
 
-      <FinalCTA />
+      <FinalCTA showStartDesigning={false} />
     </>
   );
 }

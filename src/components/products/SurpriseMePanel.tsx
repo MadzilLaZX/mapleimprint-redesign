@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Check, SpinnerGap, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { useCart } from "@/components/cart/CartProvider";
+import { heroImageFor } from "@/lib/productVariant";
 import type { CatalogueProduct } from "@/lib/products";
 
 type Purpose = "business" | "team" | "event" | "gift" | "personal" | "clothing-brand" | "other";
@@ -75,7 +76,9 @@ export function SurpriseMePanel({
       {
         id: `designer-${product.categorySlug}-${product.subcategorySlug}-${product.slug}-${selectedColour}-${Date.now()}`,
         name: product.name,
-        image: product.images[0]?.url ?? "",
+        // Was product.images[0] regardless of selectedColour — the cart line's colourName and its
+        // thumbnail could disagree (Black label, White photo) for the exact bug this task fixes.
+        image: heroImageFor(product, selectedColour)?.url ?? "",
         categorySlug: product.categorySlug,
         categoryName,
         colourName: selectedColour,

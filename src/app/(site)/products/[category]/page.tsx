@@ -214,7 +214,7 @@ export default async function CategoryPage({
         </Container>
       </Section>
 
-      <FinalCTA />
+      <FinalCTA showStartDesigning={false} />
     </>
   );
 }

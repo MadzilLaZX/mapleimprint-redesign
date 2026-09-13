@@ -74,7 +74,7 @@ export default function ProductsPage() {
         </Container>
       </Section>
 
-      <FinalCTA />
+      <FinalCTA showStartDesigning={false} />
     </>
   );
 }

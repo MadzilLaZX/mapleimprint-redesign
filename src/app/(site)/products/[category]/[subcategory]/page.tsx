@@ -9,6 +9,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { getProductsBySubcategory, subcategorySlugify } from "@/lib/products";
+import { defaultColourFor, heroImageFor } from "@/lib/productVariant";
 
 function findSubcategory(categorySlug: string, subcategorySlug: string) {
   const cat = PRODUCT_CATEGORIES.find((c) => c.slug === categorySlug);
@@ -73,7 +74,11 @@ export default async function SubcategoryPage({
         ) : (
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {products.map((product, i) => {
-              const cover = product.images[0];
+              // Same resolver ProductDetail.tsx uses for its initial colour — this grid links
+              // straight into the product page, so its cover photo must show the same colour the
+              // product page will open on (previously both independently guessed from array
+              // position and could disagree for the same product).
+              const cover = heroImageFor(product, defaultColourFor(product)) ?? product.images[0];
               return (
                 <Reveal key={product.slug} delay={i * 0.04}>
                   <Link
@@ -120,7 +125,7 @@ export default async function SubcategoryPage({
         )}
       </Section>
 
-      <FinalCTA />
+      <FinalCTA showStartDesigning={false} />
     </>
   );
 }

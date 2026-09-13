@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { PRIMARY_CTA, SECONDARY_CTA } from "@/lib/constants";
 
-export function FinalCTA() {
+/** `showStartDesigning` defaults to true (unchanged marketing-page behaviour everywhere this was
+ *  already used) — pass false on shopping-flow pages (products/[category]/[subcategory]/[product]
+ *  routes), where the page already has its own contextual CTA ("View Item", "Customize This
+ *  Shirt") and a second, generic "Start Designing" button pointing back to the top of the
+ *  catalogue is redundant at best, confusing at worst. Get a Quote stays either way — it's useful
+ *  in a shopping context too (COMMERCE HEADER keeps it for the same reason). */
+export function FinalCTA({ showStartDesigning = true }: { showStartDesigning?: boolean }) {
   return (
     <section className="relative overflow-hidden bg-ink-950 py-24 text-white md:py-32">
       <div
@@ -16,13 +22,17 @@ export function FinalCTA() {
             Let&rsquo;s print your story.
           </h2>
           <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-white/65">
-            Start a single custom order today, or tell us about a bigger project and get a scoped quote.
+            {showStartDesigning
+              ? "Start a single custom order today, or tell us about a bigger project and get a scoped quote."
+              : "Tell us about your project and we'll get you a scoped quote."}
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-            <Button href={PRIMARY_CTA.href} tone="dark" showArrow>
-              {PRIMARY_CTA.label}
-            </Button>
-            <Button href={SECONDARY_CTA.href} variant="secondary" tone="dark">
+            {showStartDesigning && (
+              <Button href={PRIMARY_CTA.href} tone="dark" showArrow>
+                {PRIMARY_CTA.label}
+              </Button>
+            )}
+            <Button href={SECONDARY_CTA.href} variant={showStartDesigning ? "secondary" : "primary"} tone="dark" showArrow={!showStartDesigning}>
               {SECONDARY_CTA.label}
             </Button>
           </div>

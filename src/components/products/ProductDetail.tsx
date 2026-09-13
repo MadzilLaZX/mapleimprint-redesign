@@ -4,10 +4,16 @@ import { useState } from "react";
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { ProductCustomizer } from "@/components/products/ProductCustomizer";
 import { blankUnitPrice, calculateCustomizePrice } from "@/lib/studio/pricing";
+import { defaultColourFor } from "@/lib/productVariant";
 import type { CatalogueProduct } from "@/lib/products";
 
 export function ProductDetail({ product, categoryName }: { product: CatalogueProduct; categoryName: string }) {
-  const [selectedColour, setSelectedColour] = useState(product.colours[0] ?? "");
+  // Same defaultColourFor() the shop card and subcategory listing grid use to pick their image —
+  // calling the identical pure function on the identical product record is what guarantees this
+  // always agrees with whatever colour the customer saw before clicking through, without needing
+  // to pass anything through the URL. See src/lib/productVariant.ts for why colours[0] (the
+  // previous initializer here) could disagree with the card's images[0] guess for the same product.
+  const [selectedColour, setSelectedColour] = useState(() => defaultColourFor(product));
 
   // The ONLY two calls that ever compute this product's price on this page — the panel below
   // calls the exact same functions, so this headline can never drift from it the way the old

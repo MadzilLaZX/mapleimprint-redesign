@@ -258,6 +258,67 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-13 shop card / product page colour mismatch, and a redundant header CTA:** two
+customer-facing bugs, both confirmed to be real before touching any UI.
+
+- **Colour mismatch was NOT a routing bug.** Traced the reported example (shop card shows White,
+  product page opens on Black) all the way down: same slug, same single record in
+  `products.json`, zero ambiguity — verified no slug collisions exist anywhere in the 1,749-product
+  catalogue (checked both the full `categorySlug/subcategorySlug/slug` key and slug-alone; existing
+  `-2`/`-3` suffixing already prevents this). The actual cause: `shopProducts.ts` picked the shop
+  card's image from `images[0]`, `ProductDetail.tsx` picked the initial colour from `colours[0]` —
+  two *independently ordered* arrays on the same record, with no relationship to each other,
+  because neither S&S's nor SanMar's connector ever populates `ProductImage.sortOrder` (confirmed
+  by grepping every connector — it's always the Prisma default of 0), so "images[0]" is really just
+  "whichever row sync happened to insert first." Measured impact before fixing: 18 of the first 24
+  t-shirt products (75%) showed a different colour on the card than the product page opened on.
+- **Fix:** `src/lib/productVariant.ts` — `defaultColourFor()` (alphabetically-first colour that
+  actually has a photo — deterministic, reproducible from the exported data, not a supplier-
+  declared default because no such signal exists anywhere in the pipeline) and `heroImageFor()`
+  (the one place that resolves "the picture for this product+colour"). Every place that used to
+  guess independently now calls one of these: `shopProducts.ts`, the `[category]/[subcategory]`
+  listing grid, `ProductDetail.tsx`'s initial `selectedColour`, `ProductCustomizer.tsx` (both
+  Customize and Buy It Blank), and `SurpriseMePanel.tsx` (whose cart-line image ignored
+  `selectedColour` entirely before this — a second, independent instance of the same "label says
+  one colour, photo shows another" bug). Re-simulated the fix against all 1,749 products: 1,748
+  resolve perfectly; the one exception (`gildan-unisex-heavy-blend-quarter-zip-sweatshirt`) is a
+  genuine supplier data inconsistency — its only variant is named "Sport Grey" but its only photo
+  is tagged "Ash" — already handled honestly by `ProductGallery.tsx`'s existing "showing another
+  colourway for reference" disclosure, not something worth a fuzzy-matching heuristic for one SKU.
+  No query-param plumbing needed for card→product continuity: since both sides call the identical
+  pure function on the identical record, they can't disagree — nothing has to "survive navigation"
+  because nothing is computed twice with different inputs. Verified colour identity survives
+  Product → Customize → Studio with a live test (selected White explicitly, confirmed
+  `DesignProject.colourName === "White"` and its mockup image was the White photo, not Black).
+  **Known gap, disclosed rather than papered over:** the frontend data model has no numeric
+  product/variant ID at all — `slug` (verified globally unique) and `colourName` (a plain string)
+  are the only identifiers that exist anywhere in `products.json`. That's real and pre-existing, not
+  something this fix introduced; adding stable IDs would mean touching catalogue-engine's export
+  pipeline and re-running it against the live DB, which is out of scope for a "don't redesign,
+  just fix the bug" task — flagged for a future dedicated pass if stable IDs matter for something
+  beyond this (analytics, inventory reconciliation).
+- **Pricing figures ($31.33 / $11.33 / $51.33) are one record, not a mismatch.** `31.33` is
+  `product.startingPrice` (= `priceTiers[0].pricePerUnit`); `11.33` is `blankUnitPrice()` =
+  `31.33 - chart[0].firstLocationCost($20)`; `51.33` is `calculateCustomizePrice()` =
+  blank + $20 design fee + $20 printing. All three are algebra on the exact same two fields of the
+  exact same product record (this was the Priority 0 fix from the 2026-08-25 entry below) — not a
+  different variant, not stale data. The "$31.33 custom printed" phrasing the brief quoted no
+  longer exists anywhere in the codebase (only in a code comment describing the old bug); the live
+  site the brief linked was presumably still serving a pre-Priority-0-fix deploy.
+- **Removed the redundant "Start Designing" header CTA from the shopping flow** — was a
+  `pathname.startsWith("/products")` check duplicated inline in Header.tsx (desktop nav AND the
+  mobile menu each had their own copy) that never covered `/shop` or `/cart` at all, which is
+  exactly why it kept showing up on the shop page. Replaced with `src/lib/headerVariant.ts`
+  (`headerVariantFor(pathname): "marketing" | "commerce"`), one function Header.tsx calls once.
+  Also found and fixed a second copy of the same redundant CTA: `FinalCTA` (a marketing closer
+  banner) was rendered at the bottom of all four products-flow pages
+  (`/products`, `/products/[category]`, `/products/[category]/[subcategory]`, and the product
+  detail page itself) with its own unconditional "Start Designing" button — gave `FinalCTA` a
+  `showStartDesigning` prop (default true, unchanged on all 11 marketing-page usages) and passed
+  `false` on those four, keeping "Get a Quote" since that's still useful mid-shop. Verified against
+  the brief's own acceptance table: Home/About show it, Shop/Product/Cart don't, Studio has no
+  header at all (unrelated to this fix — already true from the full-screen shell work).
+
 **2026-09-13 Studio full-screen application shell:** Studio still rendered inside the normal
 marketing layout (header/footer/page-scroll) even after the V2 shell rebuild below — fixed via a
 real route-group split rather than a CSS/JS hack. `src/app/` now has two route groups:

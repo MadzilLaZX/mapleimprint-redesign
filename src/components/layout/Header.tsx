@@ -9,6 +9,7 @@ import { List, MagnifyingGlass, ShoppingBag, X } from "@phosphor-icons/react/dis
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { NAV_LINKS, PRIMARY_CTA, SECONDARY_CTA } from "@/lib/constants";
+import { headerVariantFor } from "@/lib/headerVariant";
 import { cn } from "@/lib/cn";
 import { useCart } from "@/components/cart/CartProvider";
 
@@ -21,6 +22,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { totalCount } = useCart();
+  const variant = headerVariantFor(pathname);
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-ink-950/95 backdrop-blur-md">
@@ -133,7 +135,7 @@ export function Header() {
               )}
             </AnimatePresence>
             <AnimatePresence mode="popLayout" initial={false}>
-              {!pathname.startsWith("/products") && (
+              {variant === "marketing" && (
                 <motion.div
                   key="start-designing"
                   layout
@@ -205,7 +207,7 @@ export function Header() {
                     {SECONDARY_CTA.label}
                   </Button>
                 )}
-                {!pathname.startsWith("/products") && (
+                {variant === "marketing" && (
                   <Button href={PRIMARY_CTA.href} variant="primary" tone="dark" onClick={() => setOpen(false)}>
                     {PRIMARY_CTA.label}
                   </Button>
