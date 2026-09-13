@@ -69,6 +69,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [mode, setMode] = useState<"edit" | "review">("edit");
   const [addedToCart, setAddedToCart] = useState(false);
+  const [bgRemoval, setBgRemoval] = useState<{
+    forObjectId: string | null;
+    status: "idle" | "processing" | "ready" | "error";
+    resultUrl?: string;
+    error?: string;
+  }>({ forObjectId: null, status: "idle" });
 
   const [history, setHistory] = useState<{ past: SidesState[]; future: SidesState[] }>({ past: [], future: [] });
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -218,6 +224,38 @@ export function StudioClient({ projectId }: { projectId: string }) {
       ...sides,
       [activeSide]: activeObjects.map((o) => (o.id === id ? { ...o, ...patch } : o)),
     });
+  }
+
+  // Never overwrites the object's assetUrl until the customer explicitly picks "Use removed
+  // version" below — the original stays live in the canvas throughout processing/preview.
+  async function handleRemoveBackground(objectId: string, imageUrl: string) {
+    setBgRemoval({ forObjectId: objectId, status: "processing" });
+    try {
+      const res = await fetch("/api/studio/remove-background", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "We couldn't remove this background automatically.");
+      setBgRemoval({ forObjectId: objectId, status: "ready", resultUrl: data.url });
+    } catch (err) {
+      setBgRemoval({
+        forObjectId: objectId,
+        status: "error",
+        error: err instanceof Error ? err.message : "We couldn't remove this background automatically.",
+      });
+    }
+  }
+
+  function acceptRemovedBackground(objectId: string) {
+    if (bgRemoval.status !== "ready" || !bgRemoval.resultUrl) return;
+    commitObjectPatch(objectId, { assetUrl: bgRemoval.resultUrl });
+    setBgRemoval({ forObjectId: null, status: "idle" });
+  }
+
+  function dismissBackgroundRemoval() {
+    setBgRemoval({ forObjectId: null, status: "idle" });
   }
 
   function commitTextEdit(id: string, content: string) {
@@ -567,6 +605,67 @@ export function StudioClient({ projectId }: { projectId: string }) {
                     onChange={(e) => commitObjectPatch(selectedObject.id, { opacity: Number(e.target.value) })}
                     className="mt-1 w-full"
                   />
+
+                  <div className="mt-4 border-t border-sand pt-4" aria-live="polite">
+                    {bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "ready" ? (
+                      <div>
+                        <p className="text-xs font-medium text-ink-900/70">Background removed — preview</p>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div className="overflow-hidden rounded-lg border border-sand bg-white">
+                            {/* eslint-disable-next-line @next/next/no-img-element -- small inline before/after preview, not a Next/Image-worthy asset */}
+                            <img src={selectedObject.assetUrl ?? ""} alt="Original" className="aspect-square w-full object-contain" />
+                          </div>
+                          <div className="overflow-hidden rounded-lg border border-sand bg-[repeating-conic-gradient(#e9e4dc_0_25%,white_0_50%)] bg-[length:12px_12px]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={bgRemoval.resultUrl} alt="Background removed" className="aspect-square w-full object-contain" />
+                          </div>
+                        </div>
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => acceptRemovedBackground(selectedObject.id)}
+                            className="flex-1 rounded-full bg-ink-950 py-2 text-xs font-semibold text-white"
+                          >
+                            Use removed version
+                          </button>
+                          <button
+                            type="button"
+                            onClick={dismissBackgroundRemoval}
+                            className="flex-1 rounded-full border border-sand py-2 text-xs font-semibold text-ink-900 hover:bg-canvas"
+                          >
+                            Keep original
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => selectedObject.assetUrl && handleRemoveBackground(selectedObject.id, selectedObject.assetUrl)}
+                        disabled={bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "processing"}
+                        className="flex w-full items-center justify-center gap-1.5 rounded-full border border-sand py-2 text-xs font-semibold text-ink-900 transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "processing" ? (
+                          <>
+                            <SpinnerGap className="size-3.5 animate-spin" weight="bold" /> Processing…
+                          </>
+                        ) : (
+                          "Remove Background"
+                        )}
+                      </button>
+                    )}
+                    {bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "error" && (
+                      <div className="mt-2 rounded-lg bg-crimson/10 px-3 py-2 text-xs text-crimson">
+                        <p>{bgRemoval.error}</p>
+                        <button
+                          type="button"
+                          onClick={() => selectedObject.assetUrl && handleRemoveBackground(selectedObject.id, selectedObject.assetUrl)}
+                          className="mt-1 font-semibold underline underline-offset-2"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

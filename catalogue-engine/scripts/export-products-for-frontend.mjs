@@ -259,6 +259,35 @@ async function main() {
 
   console.log(`Exported ${exported.length} products to ${outPath}`);
   console.log(`  ${exported.length - quoteRequiredCount} priced, ${quoteRequiredCount} quote_required (no orderable offer or no matching MarkupRule)`);
+
+  // Separate small file, not merged into products.json — most products have zero spec rows
+  // today (sync-specs.mjs hasn't been run against real S&S credentials yet, see that script's
+  // header), so this keeps the (already large) main catalogue file from carrying an empty array
+  // on nearly every product. Keyed by product slug so the frontend can look it up independently
+  // of when/whether this ever gets populated. A product with no key here means "no synced specs
+  // yet" — the frontend's Size Guide treats that as an honest "not available" state, never a
+  // fabricated chart.
+  const slugByMasterProductId = new Map(products.map((p) => [p.id, p.slug]));
+  const specRows = await prisma.supplierProductSpec.findMany({
+    where: { masterProductId: { not: null } },
+  });
+  const sizeSpecs = {};
+  for (const row of specRows) {
+    const slug = slugByMasterProductId.get(row.masterProductId);
+    if (!slug) continue;
+    (sizeSpecs[slug] ??= []).push({
+      sizeName: row.sizeName,
+      sizeOrder: row.sizeOrder,
+      specName: row.specName,
+      normalizedSpecType: row.normalizedSpecType,
+      value: row.value,
+      unit: row.unit,
+    });
+  }
+  const specsOutPath = resolve(outDir, 'sizeSpecs.json');
+  writeFileSync(specsOutPath, JSON.stringify(sizeSpecs, null, 2), 'utf-8');
+  console.log(`Exported size specs for ${Object.keys(sizeSpecs).length} products to ${specsOutPath}`);
+
   await prisma.$disconnect();
 }
 

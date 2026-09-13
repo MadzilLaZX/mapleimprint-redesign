@@ -20,6 +20,7 @@ import type {
   RawSupplierImage,
   RawInventoryRecord,
   RawPriceRecord,
+  RawSpecRecord,
   LiveAvailability,
   SupplierOrderRequest,
   SupplierOrderResult,
@@ -148,6 +149,26 @@ interface SSProductRow {
   colorBackImage: string;
   colorSwatchImage: string;
   warehouses: SSWarehouse[];
+}
+
+// GET /v2/specs/?style=<id> — documented by S&S alongside /products/, /styles/, etc. (same
+// dealer Basic Auth, no separate permission tier per their docs). NOT yet called with live
+// credentials from this environment — the shape below is transcribed from S&S's own published
+// docs/example, not observed from a real response. `specName`/`value` is a flat, denormalized
+// row-per-(style, size, attribute) pair (e.g. specName "Neck Size", value "16"), not a fixed
+// measurement schema — the real vocabulary of specName strings (chest width vs. "Chest Width -
+// Flat" vs. something else entirely) is UNCONFIRMED until this runs against the live API. Verify
+// with a real call before trusting normalizeSpecs.ts's guessed vocabulary mapping.
+interface SSSpecRow {
+  specID: number;
+  styleID: number;
+  partNumber: string;
+  brandName: string;
+  styleName: string;
+  sizeName: string;
+  sizeOrder: string;
+  specName: string;
+  value: string;
 }
 
 function encodeVariantId(styleID: number, sku: string): string {
@@ -376,6 +397,24 @@ export class SSActivewearConnector implements SupplierConnector {
 
   async getShipmentStatus(_supplierOrderId: string): Promise<ShipmentStatus> {
     throw new NotImplementedError(this.supplierCode, 'getShipmentStatus');
+  }
+
+  async fetchSpecs(supplierStyleIds: string[]): Promise<RawSpecRecord[]> {
+    const styleIds = supplierStyleIds.map((id) => Number(id));
+    const out: RawSpecRecord[] = [];
+    for (const batch of chunk(styleIds, STYLE_BATCH_SIZE)) {
+      const rows = await this.apiGet<SSSpecRow[]>(`/specs/?style=${batch.join(',')}`);
+      for (const row of rows) {
+        out.push({
+          supplierStyleId: String(row.styleID),
+          sizeName: row.sizeName,
+          sizeOrder: row.sizeOrder,
+          specName: row.specName,
+          value: row.value,
+        });
+      }
+    }
+    return out;
   }
 
   private async fetchRowsForStyles(styleIds: number[]): Promise<Map<string, SSProductRow>> {

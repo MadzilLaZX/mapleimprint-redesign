@@ -104,6 +104,7 @@ model Supplier {
   supplierProducts    SupplierProduct[]
   syncJobs            SupplierSyncJob[]
   images              ProductImage[]
+  specs               SupplierProductSpec[]
 }
 
 model Brand {
@@ -154,6 +155,7 @@ model MasterProduct {
   images                  ProductImage[]
   matchCandidates         MatchCandidate[]
   manualPriceAdjustments  ManualPriceAdjustment[]
+  specs                   SupplierProductSpec[]
 
   @@index([status, isPublished])
   @@index([productType])
@@ -388,4 +390,34 @@ model SupplierSyncJob {
   finishedAt       DateTime?
 
   @@index([supplierId, syncType, startedAt])
+}
+
+// Garment measurement data, one row per (supplier style, size, spec attribute) — a flat,
+// denormalized shape matching how S&S's own /v2/specs/ endpoint returns rows (see
+// src/integrations/suppliers/ssactivewear/SSActivewearConnector.ts's fetchSpecs). Populated by
+// scripts/sync-specs.mjs, run as part of supplier sync, NOT on-demand when a customer opens a
+// size chart. `specName`/`value` preserve the supplier's raw label/value verbatim;
+// `normalizedSpecType` is the app's best-effort mapping (see src/sync/normalizeSpecs.ts) and is
+// nullable — an unrecognized spec label is still stored, just not renderable in the structured
+// Size Guide UI until the mapping is extended.
+model SupplierProductSpec {
+  id                  String         @id @default(cuid())
+  supplierId          String
+  supplier            Supplier       @relation(fields: [supplierId], references: [id])
+  supplierStyleId     String // supplier-native style/product identifier, e.g. S&S's styleID
+  masterProductId     String?
+  masterProduct       MasterProduct? @relation(fields: [masterProductId], references: [id])
+  sizeName            String
+  sizeOrder           String?
+  specName            String // raw supplier label, e.g. "Chest Width" — verbatim, never invented
+  normalizedSpecType  String? // one of NormalizedSpecType from normalizeSpecs.ts, or null if unmapped
+  value               String // raw supplier value, verbatim
+  unit                String? // 'in' | 'cm', parsed from value where possible — see normalizeSpecs.ts
+  rawValue            String? // original unparsed string, kept if `value`/`unit` required interpretation
+  syncedAt            DateTime       @default(now())
+
+  @@unique([supplierId, supplierStyleId, sizeName, specName])
+  @@index([masterProductId])
+  @@index([supplierId, supplierStyleId])
+  @@index([normalizedSpecType])
 }

@@ -258,6 +258,55 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-13 size guide + background removal (Priorities 1-3 and 6 of the size/asset-expansion
+brief):** researched, then built what's honestly buildable today; explicitly deferred what isn't.
+
+- **S&S's `/v2/specs/` garment-measurement endpoint is real** (confirmed via public S&S API docs —
+  `GET /v2/specs/?style=<id>`, same dealer Basic Auth already used, documented on the CA endpoint)
+  but has never been called — the existing sync only ever pulled `/v2/products/`, which carries
+  zero measurements (confirmed directly against every stored `SupplierProduct.rawPayload` row, not
+  assumed). Built the full pipeline ready to receive real data the moment someone runs it with live
+  credentials (none available in this environment): `SupplierProductSpec` table + Prisma model,
+  `SSActivewearConnector.fetchSpecs()` (added as an *optional* method on `SupplierConnector` — not
+  every supplier needs to implement it), `sync/normalizeSpecs.ts` (maps raw supplier spec labels to
+  a small set of `NormalizedSpecType`s — **vocabulary is an educated guess, not observed from a
+  real response**, flagged clearly in that file; verify and extend once real data lands), and
+  `scripts/sync-specs.mjs`. `export-products-for-frontend.mjs` now also writes
+  `src/lib/generated/sizeSpecs.json` (currently `{}` for every product, honestly, since nothing's
+  been synced yet).
+- **Size Guide ships today**, not gated behind a flag — `SizeGuidePanel.tsx`, wired into
+  `ProductCustomizer.tsx` next to "Quantity per size." Shows a real measurement table (chest
+  width/body length/etc., with an explicit "laid flat, not body circumference" clarification, a
+  small diagram, and an IN/CM toggle) *only* when `sizeSpecs.json` actually has rows for that
+  product slug — right now that's zero products, so every product honestly shows "Detailed
+  measurements aren't available for this style yet" with an escape hatch to ask Maple directly,
+  never a fabricated chart. Verified both code paths render correctly (temporarily injected fake
+  spec data locally to confirm the structured-table path works, then reverted to the honest `{}`
+  before committing — never shipped fake data).
+- **Find My Size (fit recommender) deliberately NOT built.** The brief's own Priority 3 already
+  ruled out a height/weight/age estimator as irresponsible without real fit data, and pivoted to a
+  "measure a shirt you own" comparison against real garment measurements — which needs the same
+  synced spec data Size Guide needs, which doesn't exist yet either. Building the UI now would mean
+  it's empty/non-functional for literally every product on the site. Revisit once `sync-specs.mjs`
+  has run for real.
+- **Vexels: researched, not integrated.** No self-serve API (Enterprise-only, unpriced, unscoped),
+  and their standard license never addresses the specific "end customer browses/selects inside a
+  third-party app" pattern Studio needs — silence, not permission, the same gap that already ruled
+  out Flaticon/Vecteezy. Do not build against Vexels without written confirmation from their
+  Business team covering that exact scenario.
+- **Photoroom Remove Background: built, server-side, degrades gracefully.**
+  `/api/studio/remove-background` follows the exact same pattern as every other optional
+  integration in this codebase (Resend/Google/Telegram) — missing `PHOTOROOM_API_KEY` env var
+  → friendly "not available yet" message, never a raw vendor error, verified live (see screenshot
+  history in the batch this shipped with). Original upload is never overwritten; the removed
+  version is a separate derived file (`<original>-nobg.png` in the same Supabase Storage path),
+  with a HEAD-request existence check before ever calling Photoroom again for the same source
+  image — the customer can click the button repeatedly without Maple paying twice. Customer chooses
+  "Use removed version" or "Keep original" from a side-by-side preview; nothing is swapped
+  automatically.
+- **Maple Templates and the Vexels/Noun asset library: not started.** No licensed graphic content
+  exists to build either from — this is real design/licensing work, not something to improvise.
+
 **2026-08-25 pricing-consistency audit (Priority 0 of the size/asset-expansion brief):** found and
 fixed a real bug — the product page's top-of-page headline showed `product.startingPrice` labelled
 "custom printed" (e.g. $31.33), while the customizer panel a few inches below it showed "Blank

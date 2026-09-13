@@ -9,6 +9,7 @@ import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { blankUnitPrice, calculateCustomizePrice } from "@/lib/studio/pricing";
 import { locationsFor } from "@/lib/studio/printAreas";
 import { SurpriseMePanel } from "@/components/products/SurpriseMePanel";
+import { SizeGuidePanel } from "@/components/products/SizeGuidePanel";
 import type { CatalogueProduct } from "@/lib/products";
 
 const VISIBLE_COLOUR_COUNT = 8;
@@ -33,6 +34,7 @@ export function ProductCustomizer({
   const [startingStudio, setStartingStudio] = useState(false);
   const [studioError, setStudioError] = useState<string | null>(null);
   const [showAssistPanel, setShowAssistPanel] = useState(false);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   const availableSizes = useMemo(
     () => product.sizes.filter((size) => product.variants.some((v) => v.colourName === selectedColour && v.size === size)),
@@ -208,7 +210,16 @@ export function ProductCustomizer({
 
       {availableSizes.length > 0 && (
         <div className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/70">Quantity per size</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/70">Quantity per size</p>
+            <button
+              type="button"
+              onClick={() => setShowSizeGuide(true)}
+              className="text-xs font-semibold text-crimson underline-offset-2 hover:underline"
+            >
+              Size Guide
+            </button>
+          </div>
           <div className="mt-2 space-y-2">
             {availableSizes.map((size) => (
               <div key={size} className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
@@ -334,6 +345,8 @@ export function ProductCustomizer({
           </>
         )}
       </div>
+
+      {showSizeGuide && <SizeGuidePanel productSlug={product.slug} onClose={() => setShowSizeGuide(false)} />}
 
       {showAssistPanel && (
         <SurpriseMePanel

@@ -44,6 +44,12 @@ export {
 } from './sync/catalogue-import.js';
 export { buildSyncReport, type SyncReportInput, type SyncReport } from './sync/report.js';
 export {
+  normalizeSpecName,
+  parseSpecValue,
+  SPEC_TYPE_INFO,
+  type NormalizedSpecType,
+} from './sync/normalizeSpecs.js';
+export {
   matchProduct,
   scoreMatch,
   computeMatchSignals,

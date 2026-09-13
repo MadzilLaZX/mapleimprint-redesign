@@ -49,6 +49,21 @@ export interface RawPriceRecord {
   mapPrice?: number;
 }
 
+// Garment measurement data — deliberately NOT part of RawSupplierProduct/RawSupplierVariant.
+// Not every supplier connector supports this (hence fetchSpecs being optional on the interface
+// below); a supplier's raw spec vocabulary (`specName`) is preserved verbatim rather than forced
+// into a fixed shape at the connector layer — normalization into a NormalizedSpecType happens one
+// layer up (see sync/normalizeSpecs.ts), so an unrecognized spec name is stored, not dropped, and
+// can be mapped later without re-fetching from the supplier.
+export interface RawSpecRecord {
+  supplierStyleId: string;
+  sizeName: string;
+  sizeOrder?: string;
+  specName: string;
+  value: string;
+  unit?: string;
+}
+
 export interface LiveAvailability {
   supplierSku: string;
   warehouseCode: string | null;
@@ -95,6 +110,11 @@ export interface SupplierConnector {
   fetchProductCatalogue(opts?: { since?: Date }): AsyncIterable<RawSupplierProduct>;
   fetchInventory(supplierVariantIds: string[]): Promise<RawInventoryRecord[]>;
   fetchPricing(supplierVariantIds: string[]): Promise<RawPriceRecord[]>;
+
+  // Optional: not every supplier exposes garment measurements, and not every connector has
+  // implemented this yet even where the supplier does (SanMar's doesn't as of this writing).
+  // Callers must check for its presence before calling — see sync/syncSpecs.ts.
+  fetchSpecs?(supplierStyleIds: string[]): Promise<RawSpecRecord[]>;
 
   checkLiveAvailability(supplierSku: string, warehouseCode?: string): Promise<LiveAvailability>;
 
