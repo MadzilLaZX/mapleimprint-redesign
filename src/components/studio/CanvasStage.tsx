@@ -6,8 +6,9 @@ import useImage from "use-image";
 import type Konva from "konva";
 import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { MOCKUP_PRINT_AREA_BOX } from "@/lib/studio/printAreas";
+import { PLACEMENT_GEOMETRY } from "@/lib/studio/printAreas";
 import { layoutCurvedText } from "@/lib/studio/curvedText";
+import { localPointToStage } from "@/lib/studio/localCoordinates";
 import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
 
 // All object/print-area math below is done in this fixed "design space" — box coordinates,
@@ -362,6 +363,86 @@ function ShapeNode({
   );
 }
 
+/** The inline text-edit textarea — a real HTML element positioned on top of the (responsively
+ *  scaled, possibly rotated) canvas, not a Konva node. Its own component so the textarea ref is
+ *  declared, assigned and read in one clearly-scoped place (React's ref-usage lint rule flags ref
+ *  reads that appear far from where the ref is declared much more readily when they're buried
+ *  inside a large parent's render body). localPointToStage carries the object's LOCAL top-left
+ *  corner through the same rotation+translation Konva applies to its print-area Group, so the edit
+ *  box lands in the right spot on a rotated sleeve instead of where it would sit unrotated; the
+ *  wrapper's own CSS rotation matches the Group's tilt for the same reason. (An object manually
+ *  rotated further on top of that isn't additionally accounted for here — a cosmetic gap in this
+ *  edit affordance only, never in the stored artwork, which always keeps its own exact rotation.) */
+function EditingTextOverlay({
+  editingObj,
+  box,
+  groupCenterX,
+  groupCenterY,
+  rotationDeg,
+  scale,
+  onEditCommit,
+}: {
+  editingObj: DesignObjectRecord;
+  box: { width: number; height: number };
+  groupCenterX: number;
+  groupCenterY: number;
+  rotationDeg: number;
+  scale: number;
+  onEditCommit: (id: string, content: string) => void;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    // Select the placeholder text once mounted, so typing immediately replaces it instead of
+    // inserting mid-string — matters most right after addText() seeds "Your text".
+    textareaRef.current?.select();
+  }, []);
+
+  const topLeft = localPointToStage(editingObj.normalizedX * box.width, editingObj.normalizedY * box.height, {
+    centerX: groupCenterX,
+    centerY: groupCenterY,
+    width: box.width,
+    height: box.height,
+    rotationDeg,
+  });
+
+  function commit() {
+    onEditCommit(editingObj.id, textareaRef.current?.value ?? "");
+  }
+
+  return (
+    <div
+      className="absolute z-10 rounded-lg border-2 border-crimson bg-white/95 p-1 shadow-lg"
+      style={{
+        left: topLeft.x * scale,
+        top: topLeft.y * scale,
+        width: Math.max(120, editingObj.normalizedWidth * box.width * scale),
+        transform: rotationDeg ? `rotate(${rotationDeg}deg)` : undefined,
+        transformOrigin: "top left",
+      }}
+    >
+      <textarea
+        key={editingObj.id}
+        ref={textareaRef}
+        autoFocus
+        defaultValue={editingObj.content ?? ""}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            commit();
+          }
+          if (e.key === "Escape") onEditCommit(editingObj.id, editingObj.content ?? "");
+        }}
+        rows={2}
+        className="w-full resize-none border-none bg-transparent text-sm text-ink-900 outline-none"
+        style={{ fontFamily: editingObj.fontFamily ?? undefined, fontSize: (editingObj.fontSize ?? 16) * scale }}
+        aria-label="Edit text"
+      />
+    </div>
+  );
+}
+
 export function CanvasStage({
   location,
   mockupUrl,
@@ -406,16 +487,31 @@ export function CanvasStage({
   const stageRef = useRef<Konva.Stage | null>(null);
   const transformerRef = useRef<Konva.Transformer | null>(null);
   const nodeRefs = useRef<Map<string, Konva.Node>>(new Map());
-  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const locationBox = MOCKUP_PRINT_AREA_BOX[location];
-  // Design-space box (fixed), used for all object math below.
+  const geometry = PLACEMENT_GEOMETRY[location];
+  // Every object's normalizedX/Y/Width/Height is measured in this LOCAL, top-left-origin,
+  // UNROTATED frame — box.x/y are always 0 now (they used to be the print area's absolute
+  // stage position back when nothing rotated). The actual stage position/rotation lives on the
+  // <Group> wrapping these objects below, not on the objects themselves, which is what keeps a
+  // sleeve's stored artwork coordinates identical in shape to a straight front print's (Section 9:
+  // production data must stay independent of mockup display rotation).
   const box = {
-    x: locationBox.xFrac * NATURAL_WIDTH,
-    y: locationBox.yFrac * NATURAL_HEIGHT,
-    width: locationBox.widthFrac * NATURAL_WIDTH,
-    height: locationBox.heightFrac * NATURAL_HEIGHT,
+    x: 0,
+    y: 0,
+    width: geometry.widthFrac * NATURAL_WIDTH,
+    height: geometry.heightFrac * NATURAL_HEIGHT,
   };
+  // Stage-space pivot the print-area Group rotates around — the center of its mockup position,
+  // not its top-left corner, so rotation reads as "tilting in place" rather than swinging the box
+  // off to one side.
+  const groupCenterX = (geometry.xFrac + geometry.widthFrac / 2) * NATURAL_WIDTH;
+  const groupCenterY = (geometry.yFrac + geometry.heightFrac / 2) * NATURAL_HEIGHT;
+  const rotationDeg = geometry.rotationDeg;
+  // Only rotated locations (currently: the two sleeves) get a hard clip — front/back/left-chest
+  // keep their existing "the dashed line is a guide, not a wall" behaviour unchanged. A rotated
+  // print area is the one case Section 11 specifically asks to constrain, since an unclipped
+  // rotated box makes it easy to drag artwork visibly outside the actual sleeve surface.
+  const shouldClip = rotationDeg !== 0;
 
   useEffect(() => {
     const transformer = transformerRef.current;
@@ -459,63 +555,83 @@ export function CanvasStage({
       >
         <Layer>
           <MockupBackground url={mockupUrl} />
-          {!readOnly && (
-            <Rect
-              x={box.x}
-              y={box.y}
-              width={box.width}
-              height={box.height}
-              stroke="#D41414"
-              strokeWidth={1}
-              dash={[6, 6]}
-              listening={false}
-              opacity={0.55}
-            />
-          )}
-          {visibleObjects.map((obj) => {
-            const nodeRef = (node: Konva.Node | null) => {
-              if (node) nodeRefs.current.set(obj.id, node);
-              else nodeRefs.current.delete(obj.id);
-            };
-            if (obj.type === "image") {
+          {/* This Group IS the print area's local coordinate space (Section 8) — positioned at
+              the mockup location's center and rotated by rotationDeg, with offsetX/Y set to its
+              own half-size so that rotation pivots around its center rather than its corner.
+              Every child below is drawn in LOCAL, unrotated coordinates (box.x/y are always 0);
+              Konva's own transform is what makes them appear rotated on the sleeve — nothing here
+              manually rotates an individual object because the location changed. Clipping (sleeve
+              locations only, see shouldClip) is applied in this same local frame, so it rotates
+              together with the content instead of clipping to an axis-aligned stage rectangle. */}
+          <Group
+            x={groupCenterX}
+            y={groupCenterY}
+            offsetX={box.width / 2}
+            offsetY={box.height / 2}
+            rotation={rotationDeg}
+            clipX={shouldClip ? 0 : undefined}
+            clipY={shouldClip ? 0 : undefined}
+            clipWidth={shouldClip ? box.width : undefined}
+            clipHeight={shouldClip ? box.height : undefined}
+          >
+            {!readOnly && (
+              <Rect
+                x={box.x}
+                y={box.y}
+                width={box.width}
+                height={box.height}
+                stroke="#D41414"
+                strokeWidth={1}
+                dash={[6, 6]}
+                listening={false}
+                opacity={0.55}
+              />
+            )}
+            {visibleObjects.map((obj) => {
+              const nodeRef = (node: Konva.Node | null) => {
+                if (node) nodeRefs.current.set(obj.id, node);
+                else nodeRefs.current.delete(obj.id);
+              };
+              if (obj.type === "image") {
+                return (
+                  <DesignImageNode
+                    key={obj.id}
+                    obj={obj}
+                    box={box}
+                    onSelect={() => onSelect(obj.id)}
+                    onCommit={(patch) => onCommitObject(obj.id, patch)}
+                    readOnly={readOnly}
+                    nodeRef={nodeRef as (node: Konva.Image | null) => void}
+                  />
+                );
+              }
+              if (obj.type === "shape") {
+                return (
+                  <ShapeNode
+                    key={obj.id}
+                    obj={obj}
+                    box={box}
+                    onSelect={() => onSelect(obj.id)}
+                    onCommit={(patch) => onCommitObject(obj.id, patch)}
+                    readOnly={readOnly}
+                    nodeRef={nodeRef}
+                  />
+                );
+              }
               return (
-                <DesignImageNode
+                <DesignTextNode
                   key={obj.id}
                   obj={obj}
                   box={box}
                   onSelect={() => onSelect(obj.id)}
                   onCommit={(patch) => onCommitObject(obj.id, patch)}
-                  readOnly={readOnly}
-                  nodeRef={nodeRef as (node: Konva.Image | null) => void}
-                />
-              );
-            }
-            if (obj.type === "shape") {
-              return (
-                <ShapeNode
-                  key={obj.id}
-                  obj={obj}
-                  box={box}
-                  onSelect={() => onSelect(obj.id)}
-                  onCommit={(patch) => onCommitObject(obj.id, patch)}
+                  onEditRequest={() => onEditRequest(obj.id)}
                   readOnly={readOnly}
                   nodeRef={nodeRef}
                 />
               );
-            }
-            return (
-              <DesignTextNode
-                key={obj.id}
-                obj={obj}
-                box={box}
-                onSelect={() => onSelect(obj.id)}
-                onCommit={(patch) => onCommitObject(obj.id, patch)}
-                onEditRequest={() => onEditRequest(obj.id)}
-                readOnly={readOnly}
-                nodeRef={nodeRef}
-              />
-            );
-          })}
+            })}
+          </Group>
           {!readOnly && (
             <Transformer
               ref={transformerRef}
@@ -544,41 +660,15 @@ export function CanvasStage({
       )}
 
       {!readOnly && editingObj && (
-        // This overlay is a real HTML element positioned on top of the (now responsively scaled)
-        // canvas, so its CSS position must be scaled by the same factor as the canvas itself —
-        // box.x/y/width are in fixed design-space pixels, not the canvas's current rendered size.
-        <div
-          className="absolute z-10 rounded-lg border-2 border-crimson bg-white/95 p-1 shadow-lg"
-          style={{
-            left: (box.x + editingObj.normalizedX * box.width) * scale,
-            top: (box.y + editingObj.normalizedY * box.height) * scale,
-            width: Math.max(120, editingObj.normalizedWidth * box.width * scale),
-          }}
-        >
-          <textarea
-            key={editingObj.id}
-            ref={(node) => {
-              editTextareaRef.current = node;
-              // Select the placeholder text on open so typing immediately replaces it instead of
-              // inserting mid-string — matters most right after addText() seeds "Your text".
-              node?.select();
-            }}
-            autoFocus
-            defaultValue={editingObj.content ?? ""}
-            onBlur={() => onEditCommit(editingObj.id, editTextareaRef.current?.value ?? "")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                onEditCommit(editingObj.id, editTextareaRef.current?.value ?? "");
-              }
-              if (e.key === "Escape") onEditCommit(editingObj.id, editingObj.content ?? "");
-            }}
-            rows={2}
-            className="w-full resize-none border-none bg-transparent text-sm text-ink-900 outline-none"
-            style={{ fontFamily: editingObj.fontFamily ?? undefined, fontSize: (editingObj.fontSize ?? 16) * scale }}
-            aria-label="Edit text"
-          />
-        </div>
+        <EditingTextOverlay
+          editingObj={editingObj}
+          box={box}
+          groupCenterX={groupCenterX}
+          groupCenterY={groupCenterY}
+          rotationDeg={rotationDeg}
+          scale={scale}
+          onEditCommit={onEditCommit}
+        />
       )}
       </div>
     </div>

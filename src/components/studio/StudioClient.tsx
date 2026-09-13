@@ -23,7 +23,7 @@ import { GraphicsPanel } from "@/components/studio/panels/GraphicsPanel";
 import { DesignsPanel } from "@/components/studio/panels/DesignsPanel";
 import { MyStuffPanel } from "@/components/studio/panels/MyStuffPanel";
 import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
-import { mockupViewFor, GENERIC_PLACEMENT_MOCKUP } from "@/lib/studio/printAreas";
+import { backgroundUrlFor } from "@/lib/studio/printAreas";
 import { resolveTemplateAssets, type DesignTemplate } from "@/lib/studio/templates";
 import type { DesignAsset } from "@/lib/studio/assetProviders";
 import type { StudioToolId } from "@/lib/studio/tools";
@@ -97,7 +97,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [mode, setMode] = useState<"edit" | "preview" | "review">("edit");
   const [addedToCart, setAddedToCart] = useState(false);
   const [activeTool, setActiveTool] = useState<StudioToolId | null>(null);
-  const [zoom, setZoom] = useState(1);
+  // Per-location, not a single shared value — Section 22 wants Inner Neck to auto-fit rather than
+  // inherit whatever zoom level Front happened to be at, and Front to come back the way the
+  // customer left it rather than staying zoomed in on a collar schematic's scale. Keying by
+  // location and defaulting to 1 (fit) gives both for free: a location's first visit is always a
+  // fresh fit, and revisiting it restores whatever the customer last set.
+  const [zoomByLocation, setZoomByLocation] = useState<Partial<Record<DesignSideType, number>>>({});
   const [addingLocation, setAddingLocation] = useState<DesignSideType | null>(null);
   const [cropTargetId, setCropTargetId] = useState<string | null>(null);
   const [bgRemoval, setBgRemoval] = useState<BgRemovalState>({ forObjectId: null, status: "idle" });
@@ -233,6 +238,8 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const hasBackPhoto = Boolean(project?.mockupImages.back);
   const profile = project ? decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).locations : [];
   const activeLocation = profile.find((l) => l.id === activeSide) ?? null;
+  const zoom = zoomByLocation[activeSide] ?? 1;
+  const setZoom = (next: number) => setZoomByLocation((prev) => ({ ...prev, [activeSide]: next }));
 
   function closePanelAnd<T>(fn: () => T): T {
     setActiveTool(null);
@@ -444,13 +451,17 @@ export function StudioClient({ projectId }: { projectId: string }) {
     if (selectedId === id) setSelectedId(null);
   }
 
+  // Every location the product's family supports is already visible in the strip (Section 1 — no
+  // "More" dropdown to hide the create-on-demand step behind), so selecting one that doesn't have
+  // a real DesignSide row yet needs to transparently create it first — the customer never sees a
+  // separate "add this location" action, just a brief pending spinner on that pill.
   async function handleSelectLocation(side: DesignSideType) {
-    setActiveSide(side);
-    setSelectedId(null);
-  }
-
-  async function handleAddLocation(side: DesignSideType) {
     if (!project) return;
+    if (openSides.includes(side)) {
+      setActiveSide(side);
+      setSelectedId(null);
+      return;
+    }
     setAddingLocation(side);
     try {
       const res = await fetch(`/api/studio/${projectId}/locations`, {
@@ -465,7 +476,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
       setActiveSide(side);
       setSelectedId(null);
     } catch {
-      // Silent no-op — the location simply doesn't appear; the customer can try again from More.
+      // Silent no-op — the location simply doesn't switch; the customer can just click it again.
     } finally {
       setAddingLocation(null);
     }
@@ -550,8 +561,9 @@ export function StudioClient({ projectId }: { projectId: string }) {
       />
     );
   } else if (mode === "preview") {
-    const view = mockupViewFor(activeSide);
-    const mockupUrl = project.mockupImages[view] ?? (activeLocation?.usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);
+    const mockupUrl = activeLocation
+      ? backgroundUrlFor(activeLocation.viewType, project.mockupImages, project.colourName, activeLocation.usesPlacementPreview)
+      : null;
     content = (
       <PreviewMode
         openSides={openSides}
@@ -564,8 +576,9 @@ export function StudioClient({ projectId }: { projectId: string }) {
       />
     );
   } else {
-    const view = mockupViewFor(activeSide);
-    const mockupUrl = project.mockupImages[view] ?? (activeLocation?.usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);
+    const mockupUrl = activeLocation
+      ? backgroundUrlFor(activeLocation.viewType, project.mockupImages, project.colourName, activeLocation.usesPlacementPreview)
+      : null;
     const cropTarget = cropTargetId ? activeObjects.find((o) => o.id === cropTargetId) ?? null : null;
 
     content = (
@@ -636,16 +649,22 @@ export function StudioClient({ projectId }: { projectId: string }) {
               share of the shell; zoom controls float over it (absolute) instead of sitting in
               flow, so they can never add to this column's height. */}
           <main className="relative flex min-h-0 min-w-0 flex-1 flex-col items-center gap-4 overflow-hidden p-6 pb-20 lg:pb-6">
-            <div className="shrink-0">
+            <div className="shrink-0 space-y-2">
               <LocationSelector
                 profile={profile}
-                openSides={openSides}
                 activeSide={activeSide}
                 sidesWithArt={new Set(openSides.filter((s) => (sides[s]?.length ?? 0) > 0))}
                 onSelect={handleSelectLocation}
-                onAddLocation={handleAddLocation}
-                addingLocation={addingLocation}
+                pendingLocation={addingLocation}
               />
+              {/* The strip itself only carries a quiet dot for REVIEW_REQUIRED (Section 4) — the
+                  actual explanation shows here, only for whichever location is currently active,
+                  so it never clutters the selector for the other eight locations. */}
+              {activeLocation?.status === "REVIEW_REQUIRED" && (
+                <p className="px-1 text-xs text-orange">
+                  Special placement — our team will confirm this location before production.
+                </p>
+              )}
             </div>
 
             {/* No items-center/justify-center here on purpose — CanvasStage's own root div needs

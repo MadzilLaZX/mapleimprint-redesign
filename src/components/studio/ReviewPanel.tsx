@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { ArrowLeft, Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
-import { mockupViewFor, GENERIC_PLACEMENT_MOCKUP } from "@/lib/studio/printAreas";
+import { backgroundUrlFor } from "@/lib/studio/printAreas";
 import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 
@@ -48,8 +48,9 @@ export function ReviewPanel({
   const labelFor = (side: DesignSideType) => profile.find((l) => l.id === side)?.label ?? side;
   const isPlacementPreview = (side: DesignSideType) => profile.find((l) => l.id === side)?.usesPlacementPreview ?? false;
   const mockupFor = (side: DesignSideType) => {
-    const view = mockupViewFor(side);
-    return project.mockupImages[view] ?? (isPlacementPreview(side) ? GENERIC_PLACEMENT_MOCKUP : null);
+    const loc = profile.find((l) => l.id === side);
+    if (!loc) return null;
+    return backgroundUrlFor(loc.viewType, project.mockupImages, project.colourName, loc.usesPlacementPreview);
   };
 
   return (

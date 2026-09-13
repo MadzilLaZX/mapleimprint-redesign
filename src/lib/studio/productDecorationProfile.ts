@@ -21,11 +21,32 @@ export type SupportStatus = "STANDARD" | "REVIEW_REQUIRED" | "UNAVAILABLE";
 
 export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory";
 
+// Section 20: how a location's editing view is constructed, independent of its SupportStatus.
+// Status answers "can the customer design this, and is it confirmed for production"; viewType
+// answers "what does the workspace actually look like" — a location can be STANDARD and still use
+// a *_PLACEMENT viewType (left-chest is a small box on the front photo), and REVIEW_REQUIRED
+// locations aren't all the same shape (a sleeve needs a rotated box, inner neck needs a dedicated
+// schematic, not just "the placement preview version of front"). Keeping these as two separate
+// fields is what let the sleeve/inner-neck work in this pass slot in without touching every
+// existing STANDARD location's rendering path.
+export type LocationViewType =
+  | "PRODUCT_FRONT"
+  | "PRODUCT_BACK"
+  | "PRODUCT_FRONT_PLACEMENT"
+  | "PRODUCT_BACK_PLACEMENT"
+  | "SLEEVE_LEFT_PLACEMENT"
+  | "SLEEVE_RIGHT_PLACEMENT"
+  | "INNER_NECK_SCHEMATIC"
+  | "OUTER_NECK_PLACEMENT"
+  | "HOOD_PLACEMENT"
+  | "PANTS_LEG_PLACEMENT";
+
 export interface DecorationLocation {
   id: DesignSideType;
   label: string;
   group: "core" | "sleeves" | "special";
   status: SupportStatus;
+  viewType: LocationViewType;
   /** True when this location has no real per-location product photo and must render with the
    *  generic placement illustration rather than actual supplier photography. */
   usesPlacementPreview: boolean;
@@ -51,29 +72,43 @@ export function familyFor(categorySlug: string, subcategorySlug: string): Produc
 }
 
 const TEE_LOCATIONS: DecorationLocation[] = [
-  { id: "front", label: "Front", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "back", label: "Back", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "left-chest", label: "Left Chest", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "right-chest", label: "Right Chest", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "left-sleeve", label: "Left Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "right-sleeve", label: "Right Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "upper-back", label: "Upper Back / Nape", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "inside-neck", label: "Inside Neck Label", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Small tag-style print; confirm label stock with Maple." },
-  { id: "outside-neck", label: "Outside Neck Label", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "back", label: "Back", group: "core", status: "STANDARD", viewType: "PRODUCT_BACK", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "left-chest", label: "Left Chest", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "right-chest", label: "Right Chest", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "left-sleeve", label: "Left Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", viewType: "SLEEVE_LEFT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "right-sleeve", label: "Right Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", viewType: "SLEEVE_RIGHT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "upper-back", label: "Upper Back / Nape", group: "special", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  {
+    id: "inside-neck",
+    label: "Inside Neck Label",
+    group: "special",
+    status: "REVIEW_REQUIRED",
+    viewType: "INNER_NECK_SCHEMATIC",
+    usesPlacementPreview: true,
+    requiresManualReview: true,
+    // Known gap, disclosed rather than guessed around: real eligibility (tear-away label stock,
+    // decoration method, Maple's actual capability per garment) isn't in the supplier data this
+    // site has, so this can't yet be conditioned per-product the way Section 18 describes — every
+    // tee gets REVIEW_REQUIRED rather than a fabricated UNAVAILABLE/STANDARD split. REVIEW_REQUIRED
+    // is the honest middle ground: Maple confirms feasibility per order before anything prints.
+    productionNotes: "Small tag-style print; confirm label stock and eligibility with Maple.",
+  },
+  { id: "outside-neck", label: "Outside Neck Label", group: "special", status: "REVIEW_REQUIRED", viewType: "OUTER_NECK_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
 const HOODIE_LOCATIONS: DecorationLocation[] = [
-  { id: "front", label: "Front", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "back", label: "Back", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "left-chest", label: "Left Chest", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "right-chest", label: "Right Chest", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "left-sleeve", label: "Left Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "right-sleeve", label: "Right Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "hood", label: "Hood", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Curved/folded surface — placement and print method confirmed per order." },
-  { id: "upper-back", label: "Upper Back", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "pocket", label: "Pocket", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Only on styles with a kangaroo pocket; confirmed per garment." },
-  { id: "inside-neck", label: "Inside Neck Label", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "outside-neck", label: "Outside Neck Label", group: "special", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "back", label: "Back", group: "core", status: "STANDARD", viewType: "PRODUCT_BACK", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "left-chest", label: "Left Chest", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "right-chest", label: "Right Chest", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "left-sleeve", label: "Left Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", viewType: "SLEEVE_LEFT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "right-sleeve", label: "Right Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", viewType: "SLEEVE_RIGHT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "hood", label: "Hood", group: "special", status: "REVIEW_REQUIRED", viewType: "HOOD_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Curved/folded surface — placement and print method confirmed per order." },
+  { id: "upper-back", label: "Upper Back", group: "special", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "pocket", label: "Pocket", group: "special", status: "REVIEW_REQUIRED", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Only on styles with a kangaroo pocket; confirmed per garment." },
+  { id: "inside-neck", label: "Inside Neck Label", group: "special", status: "REVIEW_REQUIRED", viewType: "INNER_NECK_SCHEMATIC", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Small tag-style print; confirm label stock and eligibility with Maple." },
+  { id: "outside-neck", label: "Outside Neck Label", group: "special", status: "REVIEW_REQUIRED", viewType: "OUTER_NECK_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
 // Joggers deliberately do NOT reuse the tee's chest-centered "front" box — see printAreas.ts's
@@ -81,22 +116,22 @@ const HOODIE_LOCATIONS: DecorationLocation[] = [
 // dual-leg registration; "front" alone (single centered placement, real garment photo) is the only
 // STANDARD location, matching what the site's actual product photography supports.
 const JOGGERS_LOCATIONS: DecorationLocation[] = [
-  { id: "front", label: "Front", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false, productionNotes: "Single centered placement on the front leg area." },
-  { id: "left-leg", label: "Left Leg", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "right-leg", label: "Right Leg", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: false, requiresManualReview: false, productionNotes: "Single centered placement on the front leg area." },
+  { id: "left-leg", label: "Left Leg", group: "core", status: "REVIEW_REQUIRED", viewType: "PANTS_LEG_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "right-leg", label: "Right Leg", group: "core", status: "REVIEW_REQUIRED", viewType: "PANTS_LEG_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
 const HEADWEAR_LOCATIONS: DecorationLocation[] = [
-  { id: "front", label: "Front", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "left-side", label: "Left Side", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "right-side", label: "Right Side", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
-  { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Only on structured/flat-brim styles with a back panel; confirmed per style." },
+  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "left-side", label: "Left Side", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "right-side", label: "Right Side", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Only on structured/flat-brim styles with a back panel; confirmed per style." },
 ];
 
 const ACCESSORY_LOCATIONS: DecorationLocation[] = [
-  { id: "front", label: "Front", group: "core", status: "STANDARD", usesPlacementPreview: false, requiresManualReview: false },
-  { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
 const PROFILES: Record<ProductFamily, DecorationLocation[]> = {

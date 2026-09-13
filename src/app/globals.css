@@ -96,4 +96,16 @@
   .img-brand {
     filter: grayscale(0.88) sepia(0.15) saturate(1.6) contrast(1.08) brightness(0.94);
   }
+
+  /* Scrollable strips (Studio's location selector) that should behave like any other horizontal
+     scroll area — wheel, trackpad, touch swipe all keep working natively — without a visible
+     scrollbar competing for attention in a small control. Content stays fully scrollable via
+     keyboard/mouse/touch; only the browser-drawn bar is hidden. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

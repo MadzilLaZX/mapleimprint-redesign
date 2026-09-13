@@ -258,6 +258,55 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-13 Studio location strip, rotated sleeve print areas, dedicated Inner Neck schematic:**
+removed the "More" dropdown for print locations, gave sleeve locations a real rotated print area
+instead of an axis-aligned box sitting crooked on the sleeve, and gave Inside/Outside Neck Label
+distinct dedicated views instead of both reusing the full-shirt photo with a tiny rectangle.
+
+- **Location strip** (`LocationSelector.tsx`, rewritten): every location the product's family
+  supports is now visible in one horizontally-scrollable row — no dropdown, no hidden locations.
+  Selected = solid pill; REVIEW_REQUIRED gets one small dot, not a repeated "SPECIAL" label; the
+  actual explanation ("our team will confirm this location before production") shows once, next to
+  the canvas, only for whichever location is active. Scroll position auto-centers the active pill;
+  edge fades appear only when there's actually more to scroll to; `.no-scrollbar` (new global
+  utility) hides the browser scrollbar without disabling wheel/touch/trackpad scrolling.
+  `StudioClient.handleSelectLocation` now creates the location's DesignSide on first click
+  transparently — the customer never sees a separate "add this location" step.
+- **Sleeve rotation is real, not cosmetic.** `printAreas.ts`'s geometry table gained `rotationDeg`
+  per location (0 for everything except the two sleeves, which are mirrored opposites — screen-left
+  tilts counter-clockwise, screen-right clockwise, matching how a sleeve actually splays from the
+  shoulder). CanvasStage wraps each location's print-area content in a Konva `<Group>` translated
+  to the mockup position and rotated by that angle; every object inside (image/text/shape) is
+  positioned in the print area's own LOCAL, unrotated coordinates — Konva's own transform does the
+  rotating, nothing manually rotates an individual object because the location changed, and
+  DesignObjectRecord's stored normalizedX/Y/rotation stay identical in shape to a straight front
+  print (production data independent of mockup display rotation, as required). A local clip
+  (rotates with the group) keeps artwork visually inside the actual sleeve surface — applied only
+  to rotated locations, front/back/left-chest keep their existing unclipped "guide, not a wall"
+  behaviour. Verified live: text and a transform-handle selection box both rotate correctly with
+  the sleeve, survive switching away and back, and left vs. right sleeve are genuine mirror images
+  of each other, not copies.
+- **Inner Neck got a real dedicated schematic**, not a zoomed-in crop of the front photo:
+  `innerNeckSchematicSvg()` in `printAreas.ts` — an original Maple illustration (collar seam,
+  interior garment panel, "INSIDE COLLAR VIEW" label), not a copy of the Printify reference image
+  that inspired the request. Two legibility variants (light/dark fabric) picked by a colour-name
+  heuristic (`isDarkGarmentColour`) — a real black shirt renders the dark variant with light seam
+  lines and label text, verified legible, not dark-on-dark. Outside Neck Label deliberately reuses
+  the real back photo instead (Section 19's "these must be distinct" requirement) — confirmed
+  visually different from Inside Neck in the same test pass. New `LocationViewType` enum
+  (`productDecorationProfile.ts`) replaces the old hardcoded front/back special-casing —
+  `backgroundUrlFor(viewType, mockupImages, colourName, usesPlacementPreview)` is now the one place
+  StudioClient/PreviewMode/ReviewPanel all resolve a location's background from, instead of each
+  re-deriving it. Per-location zoom memory (`zoomByLocation`) makes Inner Neck auto-fit on first
+  visit and Front restore its own last zoom on return, rather than inheriting whichever zoom the
+  previous location happened to be at.
+- **Known, disclosed gap:** Inside Neck Label eligibility is still REVIEW_REQUIRED for every tee/
+  hoodie product, not conditioned per-product the way the brief describes (tear-away label stock,
+  decoration method) — no such signal exists anywhere in the current supplier data, and fabricating
+  one would be worse than not gating at all. Headwear/joggers/accessories already exclude neck
+  locations entirely at the family level, which is the one form of eligibility gating the data
+  actually supports honestly today.
+
 **2026-09-13 shop card / product page colour mismatch, and a redundant header CTA:** two
 customer-facing bugs, both confirmed to be real before touching any UI.
 
