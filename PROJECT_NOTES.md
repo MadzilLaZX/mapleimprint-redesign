@@ -258,6 +258,34 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-08-25 pricing-consistency audit (Priority 0 of the size/asset-expansion brief):** found and
+fixed a real bug — the product page's top-of-page headline showed `product.startingPrice` labelled
+"custom printed" (e.g. $31.33), while the customizer panel a few inches below it showed "Blank
+$11.33 · Customize from $51.33" for the exact same product/quantity — two different numbers both
+claiming to be the "customize" price, a $20 gap (exactly the design/setup fee) present in one
+calculation and silently missing from the other. Root cause: `startingPrice`/`priceTiers` (from
+the earlier catalogue pricing fix) represent blank-garment-plus-one-print-location and were never
+meant to represent the *full* customize price once the Studio brief introduced a separate $20
+design fee on top — but the product-page headline and the "Pricing by quantity" table kept reading
+those fields directly and labelling them as if they were the final customized price.
+
+Fixed by making `src/lib/studio/pricing.ts` (`blankUnitPrice()`/`calculateCustomizePrice()`) the
+**only** place any customize-inclusive price is computed anywhere in the app — the product-page
+headline (`ProductDetail.tsx`) and the "Pricing by quantity" table (`page.tsx`) now both call it
+directly instead of reading `priceTiers`/`startingPrice` raw, so they're structurally unable to
+drift from the customizer panel/Studio/Review/cart again (all of which already called this module).
+Verified: headline, panel, and quantity table now show identical numbers at every quantity tier.
+Shop cards and subcategory listing tiles were deliberately left untouched — they only ever claimed
+"From $X / unit" (no "customized"/"printed" wording), so there was no false claim there to fix, and
+their number is still the real, differentiated, wholesale-derived price the client confirmed is
+working correctly; only the product detail page conflated two different definitions of the same
+word.
+
+Checked and confirmed clean elsewhere: no per-product JSON-LD/structured data exists yet to be
+inconsistent (only site-wide `LocalBusiness` schema in `layout.tsx`) — worth adding real
+`Product`/`Offer` schema off this same pricing module once the catalogue stabilizes further, noted
+as a real SEO gap, not an inconsistency.
+
 **2026-08-24 Studio expansion batch — responsive canvas fix, Surprise Me, left-chest location:**
 
 - **Real bug fixed: the Studio/Review canvas clipped on narrower layouts.** Root cause was two

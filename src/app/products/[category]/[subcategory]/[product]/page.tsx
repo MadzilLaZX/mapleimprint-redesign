@@ -8,6 +8,7 @@ import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { PRODUCTS, getProduct } from "@/lib/products";
 import { ProductDetail } from "@/components/products/ProductDetail";
+import { calculateCustomizePrice } from "@/lib/studio/pricing";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({
@@ -60,7 +61,9 @@ export default async function ProductDetailPage({
                 Pricing by quantity
               </h2>
               <p className="mt-2 text-sm text-muted">
-                Price per unit, one print location. Buy more, pay less per piece.
+                Blank garment, one print location and the one-time design/setup fee, blended per
+                unit. Buy more, pay less per piece — the flat design fee matters less as quantity
+                grows.
               </p>
             </Reveal>
             <Reveal delay={0.06} className="mt-6 overflow-hidden rounded-2xl bg-canvas">
@@ -72,14 +75,22 @@ export default async function ProductDetailPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {p.priceTiers.map((tier) => (
-                    <tr key={tier.minQty} className="border-b border-ink-950/5 last:border-0">
-                      <td className="px-5 py-3 text-ink-900">
-                        {tier.maxQty ? `${tier.minQty}–${tier.maxQty}` : `${tier.minQty}+`}
-                      </td>
-                      <td className="px-5 py-3 font-semibold text-ink-900">${tier.pricePerUnit.toFixed(2)}</td>
-                    </tr>
-                  ))}
+                  {p.priceTiers.map((tier) => {
+                    // Same calculateCustomizePrice() the product panel/Studio/Review/cart all
+                    // use — never the raw chart tier alone, which is missing the design fee.
+                    const breakdown = calculateCustomizePrice(p, tier.minQty, 1);
+                    if (!breakdown) return null;
+                    return (
+                      <tr key={tier.minQty} className="border-b border-ink-950/5 last:border-0">
+                        <td className="px-5 py-3 text-ink-900">
+                          {tier.maxQty ? `${tier.minQty}–${tier.maxQty}` : `${tier.minQty}+`}
+                        </td>
+                        <td className="px-5 py-3 font-semibold text-ink-900">
+                          ${(breakdown.total / tier.minQty).toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </Reveal>
