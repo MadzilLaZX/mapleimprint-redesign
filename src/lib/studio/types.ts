@@ -3,15 +3,32 @@
 // Konva type; everything else in the app talks in these normalized, print-area-relative shapes so
 // swapping the rendering engine later doesn't touch the storefront/order model.
 
-// "Location," not strictly "side" — left-chest shares the front garment photo/mockup (a smaller
-// print area within the same view), it isn't a distinct camera angle. Kept as one flat union
-// rather than a separate side/location split so the rest of the app (mockupImages, DesignSide
-// rows, pricing's per-location counting) didn't need a second axis for what's still, for now,
-// three concretely-supported spots. Only ever offer locations here that either have their own
-// real product photography (front, back) or safely reuse an existing one (left-chest reuses
-// front) — see printAreas.ts's comment on why sleeve/collar/shoulder aren't offered yet.
-export type DesignSideType = "front" | "back" | "left-chest";
-export type DesignObjectType = "image" | "text";
+// The full set of print locations across every product family Studio knows about (tees, hoodies,
+// joggers, headwear). NOT every product offers every location — see productDecorationProfile.ts
+// for which locations exist per product family and whether each is STANDARD (real photography,
+// auto-orderable), REVIEW_REQUIRED (Maple confirms before production) or UNAVAILABLE (not shown).
+// "Location," not strictly "side" — left-chest shares the front garment photo (a smaller print
+// area within the same view), it isn't a distinct camera angle.
+export type DesignSideType =
+  | "front"
+  | "back"
+  | "left-chest"
+  | "right-chest"
+  | "left-sleeve"
+  | "right-sleeve"
+  | "upper-back"
+  | "hood"
+  | "pocket"
+  | "inside-neck"
+  | "outside-neck"
+  | "left-leg"
+  | "right-leg"
+  | "left-side"
+  | "right-side";
+
+export type DesignObjectType = "image" | "text" | "shape";
+export type ShapeKind = "rectangle" | "circle" | "line";
+export type TextAlign = "left" | "center" | "right";
 export type DesignProjectStatus = "draft" | "reviewed" | "ordered";
 
 export interface DesignObjectRecord {
@@ -31,7 +48,42 @@ export interface DesignObjectRecord {
   normalizedHeight: number;
   rotation: number;
   opacity: number;
+  /** Source of truth for z-order is each side's `objects` ARRAY INDEX (last = topmost, matching
+   *  the Layers panel's top-of-list-is-front convention) — this field is kept only so a fresh
+   *  read from the DB (which has no inherent order) can be sorted back into that order. Never
+   *  read this to decide render order; always resort by it once on load, then trust array order. */
   zIndex: number;
+  /** Custom layer name shown in the Layers panel; falls back to a generated label (e.g. "Text",
+   *  "Logo.png") when null. */
+  name: string | null;
+  /** Hidden from canvas/preview/production but still part of the design (kept for re-enabling) —
+   *  distinct from deleting. */
+  hidden: boolean;
+  // --- text-only fields (null for image/shape) ---
+  bold: boolean;
+  italic: boolean;
+  align: TextAlign | null;
+  /** Extra spacing between letters, in px at the object's own font size. */
+  letterSpacing: number | null;
+  /** Line-height multiplier (e.g. 1.2). Null = engine default. */
+  lineHeight: number | null;
+  /** 0 = straight text. Positive/negative bends the baseline into an arc; magnitude is the arc's
+   *  strength, not a physical unit. Null/0 both mean "no curve." */
+  curve: number | null;
+  // --- shape-only fields (null for image/text) ---
+  shapeKind: ShapeKind | null;
+  strokeColor: string | null;
+  strokeWidth: number | null;
+  // --- image-only fields (false/null for text/shape) ---
+  flipX: boolean;
+  flipY: boolean;
+  /** Crop window as fractions (0-1) of the image's natural pixel size. All null = uncropped
+   *  (show the full source image) — see Konva's native `crop`/`cropWidth`/`cropHeight` support,
+   *  which this maps onto directly in CanvasStage. */
+  cropX: number | null;
+  cropY: number | null;
+  cropWidth: number | null;
+  cropHeight: number | null;
 }
 
 export interface DesignSideRecord {

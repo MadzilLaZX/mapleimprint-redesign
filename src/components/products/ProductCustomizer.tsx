@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 import { useCart, QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { blankUnitPrice, calculateCustomizePrice } from "@/lib/studio/pricing";
-import { locationsFor } from "@/lib/studio/printAreas";
+import { standardLocationsFor } from "@/lib/studio/productDecorationProfile";
 import { SurpriseMePanel } from "@/components/products/SurpriseMePanel";
 import { SizeGuidePanel } from "@/components/products/SizeGuidePanel";
 import type { CatalogueProduct } from "@/lib/products";
@@ -97,9 +97,12 @@ export function ProductCustomizer({
       const backImage = product.images.find((img) => img.colourName === selectedColour && img.imageType === "back")?.url;
       const hasBackPhoto = product.images.some((img) => img.imageType === "back");
 
-      // locationsFor() only offers left-chest on real apparel (a torso to have a "chest"), and
-      // never offers a location this product has no photography for.
-      const sides = locationsFor(product.categorySlug).filter((loc) => loc !== "back" || hasBackPhoto);
+      // standardLocationsFor() is the product's ProductDecorationProfile filtered to STANDARD-only
+      // locations — the ones with real photography Maple has already confirmed are orderable.
+      // Every other location the product's family supports (right chest, sleeves, hood, etc.) is
+      // still reachable inside Studio via the "More" location menu, added on demand as
+      // REVIEW_REQUIRED (see /api/studio/[id]/locations) rather than created eagerly here.
+      const sides = standardLocationsFor(product.categorySlug, product.subcategorySlug, hasBackPhoto);
       const mockupImages = Object.fromEntries(
         sides.map((loc) => [loc, loc === "back" ? backImage : frontImage]),
       );

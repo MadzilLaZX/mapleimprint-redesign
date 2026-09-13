@@ -258,6 +258,60 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-13 Studio V2 shell rebuild (Steps 1-4, 9-11 of the "Studio V2" brief):** replaced the
+single-panel MVP editor with the full tool-rail/secondary-panel/contextual-inspector shell, kept
+React-Konva (no IMG.LY migration — see below), and made print locations product-family-aware
+instead of hardcoded to a T-shirt. Verified end-to-end with Playwright against real products (tee
+and hoodie families) before committing, including the hood-placement-preview and mobile bottom-
+sheet views — screenshots kept in the session, not committed to the repo.
+
+- **Shell**: `ToolRail` (Designs/Uploads/Text/Graphics/Shapes/My Stuff — fixed bottom tab bar on
+  mobile, left rail on desktop) + `SecondaryPanel` (bottom sheet on mobile, side panel on desktop)
+  + `TopBar` (Undo/Redo/Saved · price · separate Preview/Review buttons, never combined) +
+  `Inspector` (nothing/image/text/shape selected, each contextual) + `LayersPanel` (array order
+  *is* z-order — no Konva/zIndex terminology surfaced) + `ZoomControls` (in/out/%/Fit).
+  `PreviewMode.tsx` is now a real separate destination from `ReviewPanel` (Section 4's explicit
+  requirement) — same read-only `CanvasStage`, but answers "what does this look like," not order
+  approval.
+- **Text tool**: bold/italic/align/letter-spacing/line-height, plus real curved text
+  (`curvedText.ts` — per-glyph arc layout, the standard canvas technique since Konva has no native
+  curved-text node). Four web-safe/already-loaded families; no new font loading pipeline yet.
+- **Shapes**: rectangle/circle/line, new `DesignObjectType` value, own colour/opacity controls.
+- **Product-family-aware print locations** (`productDecorationProfile.ts`) — the brief's core ask:
+  stop assuming APPAREL = T-SHIRT. Five families (tee/hoodie/joggers/headwear/accessory), each with
+  its own location list and `STANDARD`/`REVIEW_REQUIRED`/`UNAVAILABLE` status. Only STANDARD
+  locations (front/back/left-chest for tee & hoodie; a single re-centered "front" for joggers — see
+  `printAreas.ts`'s note on why it does NOT reuse the tee's chest box) are created eagerly at
+  Studio-start, exactly as before. Every REVIEW_REQUIRED location (right chest, sleeves, hood, upper
+  back, neck labels, joggers legs, headwear sides) is reachable from the location selector's "More"
+  menu and added on demand via the new `POST /api/studio/[id]/locations` route, which checks the
+  product's own decoration profile server-side so a request can't fabricate a location a product's
+  family doesn't support. Real front/back product photography is reused wherever the location is
+  actually visible in that shot (a "Placement Preview" badge replaces "Print area" whenever the
+  location's exact box isn't a confirmed spec — see `PRINT_AREAS`'s new `confirmed: boolean`); only
+  when a product has no photo for the needed camera angle at all does a plain, deliberately
+  generic "photo not yet available" card render instead — never a fake product photo.
+- **Templates & Graphics**: `AssetProvider` interface (`assetProviders.ts`) with one implementation,
+  `MapleAssetProvider` — 16 hand-built single-path SVG marks (leaf, shield, laurel, etc.), Maple-
+  owned, recolourable, zero third-party content. `templates.ts` ships 10 internal demo
+  `DesignTemplate`s across 8 categories, built only from those marks plus text/shapes — explicitly
+  a UX proof, not a real library (brief's own instruction). Applying a template deep-copies objects
+  with fresh ids; nothing references the shared template afterward.
+- **Crop & flip**: non-destructive — `cropX/Y/Width/Height` are fractions of the source image
+  (Konva's native `crop` support), so "Reset crop" always recovers the original framing; flip is a
+  render-time `scaleX/Y` flag, not a re-uploaded file. New nullable `DesignObject` columns for all
+  of the above (shapes, richer text, layers, flip/crop) — three additive Supabase migrations this
+  session, no data loss, `get_advisors`-clean.
+- **IMG.LY CreativeEditor SDK spike**: research-only this session (see the separate report) — no
+  code spike was built since the pricing/licensing research alone was decisive enough to not
+  warrant one; still gated behind explicit owner approval per the brief, and Studio stays on
+  React-Konva regardless.
+- **Not done this session** (see the follow-up report for the full list): joggers/headwear
+  end-to-end testing (only tee and hoodie were walked through live), pants-specific leg UI polish,
+  a persistent cross-visit "My Uploads" library (needs real accounts), design-quality DPI feedback
+  is built but only spot-checked, and the mobile Inspector is a static block below the canvas
+  rather than its own bottom sheet.
+
 **2026-09-13 size guide + background removal (Priorities 1-3 and 6 of the size/asset-expansion
 brief):** researched, then built what's honestly buildable today; explicitly deferred what isn't.
 

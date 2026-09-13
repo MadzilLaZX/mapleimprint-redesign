@@ -2,23 +2,29 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUUpLeft,
-  ArrowUUpRight,
-  Check,
-  Copy,
-  SpinnerGap,
-  TextT,
-  Trash,
-  UploadSimple,
-  WarningCircle,
-} from "@phosphor-icons/react/dist/ssr";
-import { cn } from "@/lib/cn";
+import { Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { useCart } from "@/components/cart/CartProvider";
-import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 import { ReviewPanel } from "@/components/studio/ReviewPanel";
+import { PreviewMode } from "@/components/studio/PreviewMode";
+import { CropModal, type CropFraction } from "@/components/studio/CropModal";
+import { ToolRail } from "@/components/studio/shell/ToolRail";
+import { SecondaryPanel } from "@/components/studio/shell/SecondaryPanel";
+import { TopBar } from "@/components/studio/shell/TopBar";
+import { LocationSelector } from "@/components/studio/shell/LocationSelector";
+import { ZoomControls } from "@/components/studio/shell/ZoomControls";
+import { Inspector, type BgRemovalState } from "@/components/studio/shell/Inspector";
+import { UploadsPanel, type RecentUpload } from "@/components/studio/panels/UploadsPanel";
+import { TextPanel, type TextPreset } from "@/components/studio/panels/TextPanel";
+import { ShapesPanel } from "@/components/studio/panels/ShapesPanel";
+import { GraphicsPanel } from "@/components/studio/panels/GraphicsPanel";
+import { DesignsPanel } from "@/components/studio/panels/DesignsPanel";
+import { MyStuffPanel } from "@/components/studio/panels/MyStuffPanel";
+import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
+import { mockupViewFor, GENERIC_PLACEMENT_MOCKUP } from "@/lib/studio/printAreas";
+import { resolveTemplateAssets, type DesignTemplate } from "@/lib/studio/templates";
+import type { DesignAsset } from "@/lib/studio/assetProviders";
+import type { StudioToolId } from "@/lib/studio/tools";
+import type { DesignObjectRecord, DesignProjectRecord, DesignSideType, ShapeKind } from "@/lib/studio/types";
 
 const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then((m) => m.CanvasStage), {
   ssr: false,
@@ -32,10 +38,8 @@ const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then
 type SidesState = Partial<Record<DesignSideType, DesignObjectRecord[]>>;
 
 const AUTOSAVE_DELAY_MS = 900;
-const FONT_CHOICES = ["Manrope, sans-serif", "Bricolage Grotesque, sans-serif", "Georgia, serif", "Courier New, monospace"];
-const LOCATION_LABELS: Record<DesignSideType, string> = { front: "Front", back: "Back", "left-chest": "Left Chest" };
 
-function emptyObject(type: "text" | "image", overrides: Partial<DesignObjectRecord>): DesignObjectRecord {
+function emptyObject(type: "text" | "image" | "shape", overrides: Partial<DesignObjectRecord>): DesignObjectRecord {
   return {
     id: crypto.randomUUID(),
     type,
@@ -51,6 +55,23 @@ function emptyObject(type: "text" | "image", overrides: Partial<DesignObjectReco
     rotation: 0,
     opacity: 1,
     zIndex: 0,
+    name: null,
+    hidden: false,
+    bold: false,
+    italic: false,
+    align: null,
+    letterSpacing: null,
+    lineHeight: null,
+    curve: null,
+    shapeKind: null,
+    strokeColor: null,
+    strokeWidth: null,
+    flipX: false,
+    flipY: false,
+    cropX: null,
+    cropY: null,
+    cropWidth: null,
+    cropHeight: null,
     ...overrides,
   };
 }
@@ -66,15 +87,15 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [recentUploads, setRecentUploads] = useState<RecentUpload[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [mode, setMode] = useState<"edit" | "review">("edit");
+  const [mode, setMode] = useState<"edit" | "preview" | "review">("edit");
   const [addedToCart, setAddedToCart] = useState(false);
-  const [bgRemoval, setBgRemoval] = useState<{
-    forObjectId: string | null;
-    status: "idle" | "processing" | "ready" | "error";
-    resultUrl?: string;
-    error?: string;
-  }>({ forObjectId: null, status: "idle" });
+  const [activeTool, setActiveTool] = useState<StudioToolId | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [addingLocation, setAddingLocation] = useState<DesignSideType | null>(null);
+  const [cropTargetId, setCropTargetId] = useState<string | null>(null);
+  const [bgRemoval, setBgRemoval] = useState<BgRemovalState>({ forObjectId: null, status: "idle" });
 
   const [history, setHistory] = useState<{ past: SidesState[]; future: SidesState[] }>({ past: [], future: [] });
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -106,10 +127,6 @@ export function StudioClient({ projectId }: { projectId: string }) {
     };
   }, [projectId]);
 
-  // Called with the sides state as it was BEFORE the mutation about to happen, from the same
-  // synchronous handler that then calls applySides — snapshotting via a closure argument rather
-  // than a ref, so history stays real React state (readable during render for the undo/redo
-  // buttons' disabled state) instead of a mutable ref the compiler can't safely track.
   const pushHistory = useCallback((before: SidesState) => {
     setHistory((h) => ({ past: [...h.past.slice(-49), JSON.parse(JSON.stringify(before))], future: [] }));
   }, []);
@@ -135,7 +152,6 @@ export function StudioClient({ projectId }: { projectId: string }) {
     dirtySinceLoad.current = true;
   }
 
-  // Autosave: debounce writes, always saving the latest sides state after the pause.
   useEffect(() => {
     if (!project || !dirtySinceLoad.current) return;
     setSaveStatus("saving");
@@ -162,15 +178,25 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
   const activeObjects = sides[activeSide] ?? [];
   const selectedObject = activeObjects.find((o) => o.id === selectedId) ?? null;
-  const availableSides = project?.sides.map((s) => s.sideType) ?? [];
+  const openSides = project?.sides.map((s) => s.sideType) ?? [];
+  const hasBackPhoto = Boolean(project?.mockupImages.back);
+  const profile = project ? decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).locations : [];
+  const activeLocation = profile.find((l) => l.id === activeSide) ?? null;
 
-  function addText() {
+  function closePanelAnd<T>(fn: () => T): T {
+    setActiveTool(null);
+    return fn();
+  }
+
+  function addText(preset: TextPreset) {
     pushHistory(sides);
     const obj = emptyObject("text", {
-      content: "Your text",
-      fontFamily: FONT_CHOICES[0],
-      fontSize: 32,
+      content: preset.label === "Body text" ? "Your text" : preset.label,
+      fontFamily: "Manrope, sans-serif",
+      fontSize: preset.fontSize,
       fill: "#171412",
+      bold: preset.bold,
+      align: "center",
       normalizedWidth: 0.55,
       normalizedHeight: 0.12,
     });
@@ -178,6 +204,47 @@ export function StudioClient({ projectId }: { projectId: string }) {
     setSelectedId(obj.id);
     setEditingTextId(obj.id);
     setShowOnboarding(false);
+    setActiveTool(null);
+  }
+
+  function addShape(kind: ShapeKind) {
+    pushHistory(sides);
+    const obj = emptyObject("shape", {
+      shapeKind: kind,
+      fill: "#D41414",
+      normalizedWidth: kind === "line" ? 0.5 : 0.3,
+      normalizedHeight: kind === "line" ? 0.01 : 0.3,
+    });
+    applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
+    setSelectedId(obj.id);
+    setShowOnboarding(false);
+    setActiveTool(null);
+  }
+
+  function addGraphic(asset: DesignAsset) {
+    pushHistory(sides);
+    const obj = emptyObject("image", {
+      assetUrl: asset.productionSource,
+      name: asset.title,
+      normalizedWidth: 0.35,
+      normalizedHeight: 0.35,
+      normalizedX: 0.325,
+      normalizedY: 0.15,
+    });
+    applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
+    setSelectedId(obj.id);
+    setShowOnboarding(false);
+    setActiveTool(null);
+  }
+
+  async function applyTemplate(template: DesignTemplate) {
+    pushHistory(sides);
+    const resolved = await resolveTemplateAssets(template.objects);
+    const newObjects = resolved.map((seed) => ({ ...seed, id: crypto.randomUUID() }));
+    applySides({ ...sides, [activeSide]: [...activeObjects, ...newObjects] });
+    setSelectedId(null);
+    setShowOnboarding(false);
+    setActiveTool(null);
   }
 
   async function handleUploadFile(file: File) {
@@ -211,6 +278,8 @@ export function StudioClient({ projectId }: { projectId: string }) {
       applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
       setSelectedId(obj.id);
       setShowOnboarding(false);
+      setRecentUploads((prev) => [{ url: data.url, name: file.name }, ...prev].slice(0, 12));
+      setActiveTool(null);
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
@@ -218,16 +287,23 @@ export function StudioClient({ projectId }: { projectId: string }) {
     }
   }
 
-  function commitObjectPatch(id: string, patch: Partial<DesignObjectRecord>) {
+  function useRecentUpload(url: string) {
+    pushHistory(sides);
+    const obj = emptyObject("image", { assetUrl: url, normalizedX: 0.25, normalizedY: 0.3 });
+    applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
+    setSelectedId(obj.id);
+    setShowOnboarding(false);
+    setActiveTool(null);
+  }
+
+  function commitObjectPatch(id: string, patch: Partial<DesignObjectRecord>, side: DesignSideType = activeSide) {
     pushHistory(sides);
     applySides({
       ...sides,
-      [activeSide]: activeObjects.map((o) => (o.id === id ? { ...o, ...patch } : o)),
+      [side]: (sides[side] ?? []).map((o) => (o.id === id ? { ...o, ...patch } : o)),
     });
   }
 
-  // Never overwrites the object's assetUrl until the customer explicitly picks "Use removed
-  // version" below — the original stays live in the canvas throughout processing/preview.
   async function handleRemoveBackground(objectId: string, imageUrl: string) {
     setBgRemoval({ forObjectId: objectId, status: "processing" });
     try {
@@ -287,16 +363,70 @@ export function StudioClient({ projectId }: { projectId: string }) {
     setSelectedId(copy.id);
   }
 
-  const locationsWithArt = availableSides.filter((s) => (sides[s]?.length ?? 0) > 0).length;
+  function moveLayer(id: string, direction: "up" | "down") {
+    const index = activeObjects.findIndex((o) => o.id === id);
+    if (index === -1) return;
+    const swapWith = direction === "up" ? index + 1 : index - 1;
+    if (swapWith < 0 || swapWith >= activeObjects.length) return;
+    pushHistory(sides);
+    const next = [...activeObjects];
+    [next[index], next[swapWith]] = [next[swapWith], next[index]];
+    applySides({ ...sides, [activeSide]: next });
+  }
 
-  // Cheap arithmetic on a handful of numbers — plain computation each render, no memoization
-  // needed (and the object literal in the deps array meant this could never be preserved anyway).
+  function toggleLayerHidden(id: string) {
+    commitObjectPatch(id, { hidden: !activeObjects.find((o) => o.id === id)?.hidden });
+  }
+
+  function duplicateLayer(id: string) {
+    const obj = activeObjects.find((o) => o.id === id);
+    if (!obj) return;
+    pushHistory(sides);
+    const copy = { ...obj, id: crypto.randomUUID(), normalizedX: Math.min(0.9, obj.normalizedX + 0.04), normalizedY: Math.min(0.9, obj.normalizedY + 0.04) };
+    applySides({ ...sides, [activeSide]: [...activeObjects, copy] });
+    setSelectedId(copy.id);
+  }
+
+  function deleteLayer(id: string) {
+    pushHistory(sides);
+    applySides({ ...sides, [activeSide]: activeObjects.filter((o) => o.id !== id) });
+    if (selectedId === id) setSelectedId(null);
+  }
+
+  async function handleSelectLocation(side: DesignSideType) {
+    setActiveSide(side);
+    setSelectedId(null);
+  }
+
+  async function handleAddLocation(side: DesignSideType) {
+    if (!project) return;
+    setAddingLocation(side);
+    try {
+      const res = await fetch(`/api/studio/${projectId}/locations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sideType: side }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setProject((p) => (p ? { ...p, sides: [...p.sides, { id: `pending-${side}`, sideType: side, printAreaWidth: 0, printAreaHeight: 0, objects: [] }] } : p));
+      setSides((s) => ({ ...s, [side]: s[side] ?? [] }));
+      setActiveSide(side);
+      setSelectedId(null);
+    } catch {
+      // Silent no-op — the location simply doesn't appear; the customer can try again from More.
+    } finally {
+      setAddingLocation(null);
+    }
+  }
+
+  const locationsWithArt = openSides.filter((s) => (sides[s]?.length ?? 0) > 0).length;
+
   const priceBreakdown = (() => {
     const snapshot = project?.pricingSnapshot;
     if (!snapshot) return null;
     const locations = Math.max(1, locationsWithArt);
-    const perUnitPrinting =
-      snapshot.chartFirstLocationCost + snapshot.chartAdditionalLocationCost * (locations - 1);
+    const perUnitPrinting = snapshot.chartFirstLocationCost + snapshot.chartAdditionalLocationCost * (locations - 1);
     const blankSubtotal = snapshot.unitBasePrice * snapshot.quantity;
     const printingSubtotal = perUnitPrinting * snapshot.quantity;
     const total = blankSubtotal + snapshot.designFee + printingSubtotal;
@@ -310,7 +440,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
     };
   })();
 
-  const hasAnyDesign = availableSides.some((s) => (sides[s]?.length ?? 0) > 0);
+  const hasAnyDesign = openSides.some((s) => (sides[s]?.length ?? 0) > 0);
 
   function handleApproveAndAddToCart() {
     if (!project || !priceBreakdown) return;
@@ -344,9 +474,6 @@ export function StudioClient({ projectId }: { projectId: string }) {
         <WarningCircle className="size-10 text-crimson" weight="light" />
         <p className="font-display text-lg font-semibold text-ink-900">We couldn&apos;t open this design</p>
         <p className="max-w-sm text-sm text-muted">{loadError}</p>
-        <Link href="/shop" className="rounded-full bg-ink-950 px-5 py-2.5 text-sm font-semibold text-white">
-          Back to shop
-        </Link>
       </div>
     );
   }
@@ -364,6 +491,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
       <ReviewPanel
         project={project}
         sides={sides}
+        profile={profile}
         priceBreakdown={priceBreakdown}
         onBack={() => setMode("edit")}
         onApprove={handleApproveAndAddToCart}
@@ -371,6 +499,26 @@ export function StudioClient({ projectId }: { projectId: string }) {
       />
     );
   }
+
+  if (mode === "preview") {
+    const view = mockupViewFor(activeSide);
+    const mockupUrl = project.mockupImages[view] ?? (activeLocation?.usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);
+    return (
+      <PreviewMode
+        openSides={openSides}
+        activeSide={activeSide}
+        onSelectSide={setActiveSide}
+        mockupUrl={mockupUrl}
+        objects={activeObjects}
+        profile={profile}
+        onBack={() => setMode("edit")}
+      />
+    );
+  }
+
+  const view = mockupViewFor(activeSide);
+  const mockupUrl = project.mockupImages[view] ?? (activeLocation?.usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);
+  const cropTarget = cropTargetId ? activeObjects.find((o) => o.id === cropTargetId) ?? null : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
@@ -386,361 +534,168 @@ export function StudioClient({ projectId }: { projectId: string }) {
         }}
       />
 
-      {/* Top bar */}
-      <header className="flex items-center justify-between gap-3 border-b border-sand bg-white px-4 py-3 lg:px-6">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link
-            href={`/products/${project.categorySlug}/${project.subcategorySlug}/${project.productSlug}`}
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-sand px-3 py-1.5 text-xs font-semibold text-ink-900 transition-colors hover:border-ink-950/25"
-          >
-            <ArrowLeft className="size-3.5" weight="bold" />
-            Product
-          </Link>
-          <div className="min-w-0">
-            <p className="truncate font-display text-sm font-semibold text-ink-900">{project.productName}</p>
-            <p className="text-xs text-muted">{project.colourName}</p>
-          </div>
-        </div>
+      <TopBar
+        productHref={`/products/${project.categorySlug}/${project.subcategorySlug}/${project.productSlug}`}
+        productName={project.productName}
+        colourName={project.colourName}
+        canUndo={history.past.length > 0}
+        canRedo={history.future.length > 0}
+        onUndo={undo}
+        onRedo={redo}
+        saveStatus={saveStatus}
+        priceTotal={priceBreakdown?.total ?? null}
+        canPreview={hasAnyDesign}
+        onPreview={() => setMode("preview")}
+        onReview={() => setMode("review")}
+      />
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Undo"
-            disabled={history.past.length === 0}
-            onClick={undo}
-            className="rounded-full p-2 text-ink-900 transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-30"
+      <div className="flex flex-1 flex-col pb-16 lg:flex-row lg:pb-0">
+        <ToolRail activeTool={activeTool} onSelectTool={(t) => setActiveTool((cur) => (cur === t ? null : t))} />
+        {activeTool && (
+          <SecondaryPanel
+            title={{ designs: "Designs", uploads: "Uploads", text: "Text", graphics: "Graphics", shapes: "Shapes", "my-stuff": "My Stuff" }[activeTool]}
+            onClose={() => setActiveTool(null)}
           >
-            <ArrowUUpLeft className="size-4" weight="bold" />
-          </button>
-          <button
-            type="button"
-            aria-label="Redo"
-            disabled={history.future.length === 0}
-            onClick={redo}
-            className="rounded-full p-2 text-ink-900 transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            <ArrowUUpRight className="size-4" weight="bold" />
-          </button>
-          <span className="hidden text-xs text-muted sm:inline">
-            {saveStatus === "saving" && "Saving…"}
-            {saveStatus === "saved" && "Saved ✓"}
-            {saveStatus === "error" && "Couldn't save — retrying"}
-          </span>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          {priceBreakdown && (
-            <p className="hidden font-display text-sm font-semibold text-ink-900 sm:block">
-              ${priceBreakdown.total.toFixed(2)}
-            </p>
-          )}
-          <button
-            type="button"
-            disabled={!hasAnyDesign}
-            onClick={() => setMode("review")}
-            className="rounded-full bg-maple-gradient px-4 py-2 text-sm font-semibold text-ink-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Review
-          </button>
-        </div>
-      </header>
-
-      <div className="flex flex-1 flex-col lg:flex-row">
-        {/* Left toolbar */}
-        <aside className="flex shrink-0 gap-2 overflow-x-auto border-b border-sand bg-white p-3 lg:w-40 lg:flex-col lg:border-b-0 lg:border-r lg:p-4">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-canvas lg:w-full"
-          >
-            {uploading ? <SpinnerGap className="size-4 animate-spin" weight="bold" /> : <UploadSimple className="size-4" weight="bold" />}
-            Upload
-          </button>
-          <button
-            type="button"
-            onClick={addText}
-            className="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-canvas lg:w-full"
-          >
-            <TextT className="size-4" weight="bold" />
-            Text
-          </button>
-
-          {availableSides.length > 1 && (
-            <div className="ml-auto flex shrink-0 gap-1 rounded-full border border-sand p-1 lg:ml-0 lg:mt-4">
-              {availableSides.map((side) => (
-                <button
-                  key={side}
-                  type="button"
-                  onClick={() => {
-                    setActiveSide(side);
-                    setSelectedId(null);
-                  }}
-                  className={cn(
-                    "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
-                    activeSide === side ? "bg-ink-950 text-white" : "text-ink-900/70 hover:bg-canvas",
-                  )}
-                >
-                  {LOCATION_LABELS[side]}
-                </button>
-              ))}
-            </div>
-          )}
-        </aside>
+            {activeTool === "designs" && <DesignsPanel family={decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).family} onApplyTemplate={applyTemplate} />}
+            {activeTool === "uploads" && (
+              <UploadsPanel
+                onTriggerUpload={() => fileInputRef.current?.click()}
+                uploading={uploading}
+                uploadError={uploadError}
+                recent={recentUploads}
+                onUseRecent={useRecentUpload}
+              />
+            )}
+            {activeTool === "text" && <TextPanel onAddText={addText} />}
+            {activeTool === "graphics" && <GraphicsPanel onAddGraphic={addGraphic} />}
+            {activeTool === "shapes" && <ShapesPanel onAddShape={addShape} />}
+            {activeTool === "my-stuff" && <MyStuffPanel recent={recentUploads} onUseRecent={useRecentUpload} />}
+          </SecondaryPanel>
+        )}
 
         {/* Canvas */}
-        <main className="relative flex flex-1 items-center justify-center p-6">
-          {uploadError && (
-            <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-crimson/10 px-4 py-2 text-xs font-medium text-crimson">
-              <WarningCircle className="size-4" weight="bold" />
-              {uploadError}
-            </div>
-          )}
-          <CanvasStage
-            location={activeSide}
-            mockupUrl={project.mockupImages[activeSide] ?? null}
-            objects={activeObjects}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onCommitObject={commitObjectPatch}
-            editingTextId={editingTextId}
-            onEditRequest={setEditingTextId}
-            onEditCommit={commitTextEdit}
+        <main className="relative flex flex-1 flex-col items-center justify-center gap-4 p-6">
+          <LocationSelector
+            profile={profile}
+            openSides={openSides}
+            activeSide={activeSide}
+            sidesWithArt={new Set(openSides.filter((s) => (sides[s]?.length ?? 0) > 0))}
+            onSelect={handleSelectLocation}
+            onAddLocation={handleAddLocation}
+            addingLocation={addingLocation}
           />
 
-          {showOnboarding && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-ink-950/40 p-6">
-              <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl">
-                <h2 className="font-display text-lg font-semibold text-ink-900">What would you like to add?</h2>
-                <p className="mt-1.5 text-sm text-muted">Start with a logo, or add some text — you can always add more.</p>
-                <div className="mt-5 flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowOnboarding(false);
-                      fileInputRef.current?.click();
-                    }}
-                    className="rounded-full bg-maple-gradient px-4 py-2.5 text-sm font-semibold text-ink-950"
-                  >
-                    Upload a logo or design
-                  </button>
-                  <button
-                    type="button"
-                    onClick={addText}
-                    className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas"
-                  >
-                    Add text
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowOnboarding(false)}
-                    className="mt-1 text-xs font-medium text-muted hover:text-ink-900"
-                  >
-                    I&apos;ll start on my own
-                  </button>
+          <div className="relative flex w-full flex-1 items-center justify-center">
+            {uploadError && (
+              <div className="absolute left-1/2 top-0 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-crimson/10 px-4 py-2 text-xs font-medium text-crimson">
+                <WarningCircle className="size-4" weight="bold" />
+                {uploadError}
+              </div>
+            )}
+            <CanvasStage
+              location={activeSide}
+              mockupUrl={mockupUrl}
+              objects={activeObjects}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onCommitObject={(id, patch) => commitObjectPatch(id, patch)}
+              editingTextId={editingTextId}
+              onEditRequest={setEditingTextId}
+              onEditCommit={commitTextEdit}
+              placementPreview={activeLocation?.usesPlacementPreview ?? false}
+              zoom={zoom}
+            />
+
+            {showOnboarding && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-ink-950/40 p-6">
+                <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl">
+                  <h2 className="font-display text-lg font-semibold text-ink-900">Start your design</h2>
+                  <p className="mt-1.5 text-sm text-muted">Use a template, upload your own, or add text — you can always add more.</p>
+                  <div className="mt-5 flex flex-col gap-2">
+                    <button type="button" onClick={() => closePanelAnd(() => setActiveTool("designs"))} className="rounded-full bg-maple-gradient px-4 py-2.5 text-sm font-semibold text-ink-950">
+                      Use a template
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowOnboarding(false);
+                        fileInputRef.current?.click();
+                      }}
+                      className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas"
+                    >
+                      Upload my design
+                    </button>
+                    <button type="button" onClick={() => addText({ label: "Body text", sampleSize: "text-sm", fontSize: 32, bold: false })} className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas">
+                      Add text
+                    </button>
+                    <button type="button" onClick={() => setShowOnboarding(false)} className="mt-1 text-xs font-medium text-muted hover:text-ink-900">
+                      I&apos;ll start on my own
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          <ZoomControls zoom={zoom} onZoomChange={setZoom} />
         </main>
 
         {/* Right inspector */}
-        <aside className="shrink-0 border-t border-sand bg-white p-4 lg:w-64 lg:border-l lg:border-t-0">
-          {!selectedObject ? (
-            <p className="text-sm text-muted">Select something on the shirt to edit it.</p>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                {selectedObject.type === "text" ? "Text" : "Image"}
-              </p>
-
-              {selectedObject.type === "text" && (
-                <>
-                  <div>
-                    <label className="text-xs font-medium text-ink-900/70">Font</label>
-                    <select
-                      value={selectedObject.fontFamily ?? FONT_CHOICES[0]}
-                      onChange={(e) => commitObjectPatch(selectedObject.id, { fontFamily: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-sand px-2 py-1.5 text-sm"
-                    >
-                      {FONT_CHOICES.map((f) => (
-                        <option key={f} value={f} style={{ fontFamily: f }}>
-                          {f.split(",")[0]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-ink-900/70">Size</label>
-                    <input
-                      type="range"
-                      min={12}
-                      max={80}
-                      value={selectedObject.fontSize ?? 32}
-                      onChange={(e) => commitObjectPatch(selectedObject.id, { fontSize: Number(e.target.value) })}
-                      className="mt-1 w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-ink-900/70">Colour</label>
-                    <input
-                      type="color"
-                      value={selectedObject.fill ?? "#171412"}
-                      onChange={(e) => commitObjectPatch(selectedObject.id, { fill: e.target.value })}
-                      className="mt-1 h-9 w-full rounded-lg border border-sand"
-                    />
-                  </div>
-                </>
-              )}
-
-              {selectedObject.type === "image" && (
-                <div>
-                  <label className="text-xs font-medium text-ink-900/70">Opacity</label>
-                  <input
-                    type="range"
-                    min={0.2}
-                    max={1}
-                    step={0.05}
-                    value={selectedObject.opacity}
-                    onChange={(e) => commitObjectPatch(selectedObject.id, { opacity: Number(e.target.value) })}
-                    className="mt-1 w-full"
-                  />
-
-                  <div className="mt-4 border-t border-sand pt-4" aria-live="polite">
-                    {bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "ready" ? (
-                      <div>
-                        <p className="text-xs font-medium text-ink-900/70">Background removed — preview</p>
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <div className="overflow-hidden rounded-lg border border-sand bg-white">
-                            {/* eslint-disable-next-line @next/next/no-img-element -- small inline before/after preview, not a Next/Image-worthy asset */}
-                            <img src={selectedObject.assetUrl ?? ""} alt="Original" className="aspect-square w-full object-contain" />
-                          </div>
-                          <div className="overflow-hidden rounded-lg border border-sand bg-[repeating-conic-gradient(#e9e4dc_0_25%,white_0_50%)] bg-[length:12px_12px]">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={bgRemoval.resultUrl} alt="Background removed" className="aspect-square w-full object-contain" />
-                          </div>
-                        </div>
-                        <div className="mt-2 flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => acceptRemovedBackground(selectedObject.id)}
-                            className="flex-1 rounded-full bg-ink-950 py-2 text-xs font-semibold text-white"
-                          >
-                            Use removed version
-                          </button>
-                          <button
-                            type="button"
-                            onClick={dismissBackgroundRemoval}
-                            className="flex-1 rounded-full border border-sand py-2 text-xs font-semibold text-ink-900 hover:bg-canvas"
-                          >
-                            Keep original
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => selectedObject.assetUrl && handleRemoveBackground(selectedObject.id, selectedObject.assetUrl)}
-                        disabled={bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "processing"}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-full border border-sand py-2 text-xs font-semibold text-ink-900 transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "processing" ? (
-                          <>
-                            <SpinnerGap className="size-3.5 animate-spin" weight="bold" /> Processing…
-                          </>
-                        ) : (
-                          "Remove Background"
-                        )}
-                      </button>
-                    )}
-                    {bgRemoval.forObjectId === selectedObject.id && bgRemoval.status === "error" && (
-                      <div className="mt-2 rounded-lg bg-crimson/10 px-3 py-2 text-xs text-crimson">
-                        <p>{bgRemoval.error}</p>
-                        <button
-                          type="button"
-                          onClick={() => selectedObject.assetUrl && handleRemoveBackground(selectedObject.id, selectedObject.assetUrl)}
-                          className="mt-1 font-semibold underline underline-offset-2"
-                        >
-                          Try again
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={duplicateSelected}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-sand py-2 text-xs font-semibold text-ink-900 hover:bg-canvas"
-                >
-                  <Copy className="size-3.5" weight="bold" />
-                  Duplicate
-                </button>
-                <button
-                  type="button"
-                  onClick={deleteSelected}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-sand py-2 text-xs font-semibold text-crimson hover:bg-crimson/5"
-                >
-                  <Trash className="size-3.5" weight="bold" />
-                  Delete
-                </button>
-              </div>
-            </div>
-          )}
-
-          {priceBreakdown && (
-            <div className="mt-6 space-y-1.5 border-t border-sand pt-4 text-xs">
-              <div className="flex justify-between text-ink-900/70">
-                <span>Shirts × {priceBreakdown.quantity}</span>
-                <span>${priceBreakdown.blankSubtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-ink-900/70">
-                <span>Design/customization</span>
-                <span>${priceBreakdown.designFee.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-ink-900/70">
-                <span>Printing ({priceBreakdown.locations} {priceBreakdown.locations === 1 ? "location" : "locations"})</span>
-                <span>${priceBreakdown.printingSubtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between border-t border-sand pt-1.5 font-semibold text-ink-900">
-                <span>Total</span>
-                <span>${priceBreakdown.total.toFixed(2)}</span>
-              </div>
-            </div>
-          )}
+        <aside className="shrink-0 border-t border-sand bg-white p-4 lg:w-72 lg:border-l lg:border-t-0">
+          <Inspector
+            selectedObject={selectedObject}
+            onPatch={(id, patch) => commitObjectPatch(id, patch)}
+            onDuplicate={duplicateSelected}
+            onDelete={deleteSelected}
+            onOpenCrop={() => selectedObject && setCropTargetId(selectedObject.id)}
+            bgRemoval={bgRemoval}
+            onRemoveBackground={() => selectedObject?.assetUrl && handleRemoveBackground(selectedObject.id, selectedObject.assetUrl)}
+            onAcceptRemovedBackground={() => selectedObject && acceptRemovedBackground(selectedObject.id)}
+            onDismissBackgroundRemoval={dismissBackgroundRemoval}
+            activeSide={activeSide}
+            layerObjects={activeObjects}
+            selectedId={selectedId}
+            onSelectLayer={setSelectedId}
+            onMoveLayer={moveLayer}
+            onToggleHiddenLayer={toggleLayerHidden}
+            onDuplicateLayer={duplicateLayer}
+            onDeleteLayer={deleteLayer}
+            productName={project.productName}
+            brandName={project.brandName}
+            colourName={project.colourName}
+            sizeBreakdown={project.sizeBreakdown}
+            totalQuantity={project.totalQuantity}
+            priceBreakdown={priceBreakdown}
+          />
         </aside>
       </div>
 
-      {/* Mobile bottom bar */}
-      <div className="flex items-center justify-around border-t border-sand bg-white p-2 lg:hidden">
-        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-1 p-2 text-xs font-medium text-ink-900">
-          <UploadSimple className="size-5" weight="bold" />
-          Upload
-        </button>
-        <button type="button" onClick={addText} className="flex flex-col items-center gap-1 p-2 text-xs font-medium text-ink-900">
-          <TextT className="size-5" weight="bold" />
-          Text
-        </button>
-        {selectedObject && (
-          <>
-            <button type="button" onClick={duplicateSelected} className="flex flex-col items-center gap-1 p-2 text-xs font-medium text-ink-900">
-              <Copy className="size-5" weight="bold" />
-              Duplicate
-            </button>
-            <button type="button" onClick={deleteSelected} className="flex flex-col items-center gap-1 p-2 text-xs font-medium text-crimson">
-              <Trash className="size-5" weight="bold" />
-              Delete
-            </button>
-          </>
-        )}
-      </div>
       {addedToCart && (
-        <div className="fixed bottom-20 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink-950 px-4 py-2.5 text-sm font-semibold text-white shadow-xl lg:bottom-6">
+        <div className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink-950 px-4 py-2.5 text-sm font-semibold text-white shadow-xl">
           <Check className="size-4" weight="bold" />
           Added to cart
         </div>
+      )}
+
+      {cropTarget && cropTarget.assetUrl && (
+        <CropModal
+          imageUrl={cropTarget.assetUrl}
+          initialCrop={
+            cropTarget.cropWidth && cropTarget.cropHeight
+              ? { x: cropTarget.cropX ?? 0, y: cropTarget.cropY ?? 0, width: cropTarget.cropWidth, height: cropTarget.cropHeight }
+              : null
+          }
+          onCancel={() => setCropTargetId(null)}
+          onConfirm={(crop: CropFraction | null) => {
+            commitObjectPatch(cropTarget.id, {
+              cropX: crop?.x ?? null,
+              cropY: crop?.y ?? null,
+              cropWidth: crop?.width ?? null,
+              cropHeight: crop?.height ?? null,
+            });
+            setCropTargetId(null);
+          }}
+        />
       )}
     </div>
   );

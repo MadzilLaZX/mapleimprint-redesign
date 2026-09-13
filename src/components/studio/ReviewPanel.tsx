@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { ArrowLeft, Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
+import { mockupViewFor, GENERIC_PLACEMENT_MOCKUP } from "@/lib/studio/printAreas";
+import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 
 const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then((m) => m.CanvasStage), {
@@ -13,8 +15,6 @@ const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then
     </div>
   ),
 });
-
-const LOCATION_LABELS: Record<DesignSideType, string> = { front: "Front", back: "Back", "left-chest": "Left Chest" };
 
 interface PriceBreakdown {
   blankSubtotal: number;
@@ -28,6 +28,7 @@ interface PriceBreakdown {
 export function ReviewPanel({
   project,
   sides,
+  profile,
   priceBreakdown,
   onBack,
   onApprove,
@@ -35,6 +36,7 @@ export function ReviewPanel({
 }: {
   project: DesignProjectRecord;
   sides: Partial<Record<DesignSideType, DesignObjectRecord[]>>;
+  profile: DecorationLocation[];
   priceBreakdown: PriceBreakdown | null;
   onBack: () => void;
   onApprove: () => void;
@@ -43,6 +45,12 @@ export function ReviewPanel({
   const availableSides = project.sides.map((s) => s.sideType);
   const noop = () => {};
   const hasArt = (side: DesignSideType) => (sides[side]?.length ?? 0) > 0;
+  const labelFor = (side: DesignSideType) => profile.find((l) => l.id === side)?.label ?? side;
+  const isPlacementPreview = (side: DesignSideType) => profile.find((l) => l.id === side)?.usesPlacementPreview ?? false;
+  const mockupFor = (side: DesignSideType) => {
+    const view = mockupViewFor(side);
+    return project.mockupImages[view] ?? (isPlacementPreview(side) ? GENERIC_PLACEMENT_MOCKUP : null);
+  };
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -68,12 +76,12 @@ export function ReviewPanel({
             {availableSides.map((side) => (
               <div key={side}>
                 <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
-                  {LOCATION_LABELS[side]} preview
+                  {labelFor(side)} preview
                   <span className={hasArt(side) ? "text-crimson" : "text-muted/50"}>{hasArt(side) ? "✓" : "—"}</span>
                 </p>
                 <CanvasStage
                   location={side}
-                  mockupUrl={project.mockupImages[side] ?? null}
+                  mockupUrl={mockupFor(side)}
                   objects={sides[side] ?? []}
                   selectedId={null}
                   onSelect={noop}
@@ -82,6 +90,7 @@ export function ReviewPanel({
                   onEditRequest={noop}
                   onEditCommit={noop}
                   readOnly
+                  placementPreview={isPlacementPreview(side)}
                 />
               </div>
             ))}
