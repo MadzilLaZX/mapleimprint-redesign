@@ -258,6 +258,86 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-14 Studio precision editing + GarmentView/PrintArea split + sleeve schematic:** a
+focused Studio V3 pass fixing several real interaction bugs and closing the gap between Studio
+and Canva/Printify-grade editors, without touching autosave/undo/pricing/cart/DesignProject.
+
+- **GarmentView vs PrintArea (the big one)** — `src/lib/studio/garmentViews.ts` (new): groups a
+  product's open print areas by which physical surface they actually share (front photo, back
+  photo, or a dedicated schematic), keyed off `printAreas.ts`'s existing `backgroundKindFor()`
+  rather than a second hand-maintained mapping. Root cause of "designing Left Chest makes Front
+  disappear": `CanvasStage` only ever rendered ONE location's objects at a time. It now accepts a
+  `layers: CanvasLayerSpec[]` array (every open location sharing the active one's view, each
+  tagged `active`) and renders one Konva `Group` per layer on a shared background — only the
+  active layer gets the dashed boundary, Transformer, and drag/select; every other layer's real
+  artwork renders at full opacity, unblurred, so switching print areas never hides prior work.
+  Production data is untouched — `sides` is never merged, pricing still counts real print areas
+  with art (`locationsWithArt`), not garment views. Added a non-blocking overlap hint
+  (`printAreasOverlap`, plain AABB test on `PLACEMENT_GEOMETRY`) when two open, decorated
+  locations in the same view visually collide. `ReviewPanel`/`PreviewMode` now composite by view
+  too — Review no longer shows nine near-identical shirt photos for Front/Left Chest/Right Chest.
+  Verified live: added text to Front, switched to Left Chest (text stayed visible, only Left
+  Chest's boundary active), added a shape there, switched back to Front (both objects visible
+  together, only Front's boundary shown, overlap hint correctly appeared since the two boxes
+  genuinely overlap in the MVP geometry).
+- **Sleeves stopped using a rotated box on the garment photo** — replaced with a dedicated,
+  upright, flattened sleeve illustration per sleeve (`sleeveSchematicSvg()` in `printAreas.ts`,
+  same pattern as the existing Inner Neck schematic), an original Maple drawing (not copied from
+  any reference image). Left and right are genuinely mirrored artwork, not the same shape
+  repositioned. `PLACEMENT_GEOMETRY`'s sleeve entries are now `rotationDeg: 0`; the Konva
+  rotated-Group machinery built for this earlier stays in place (still used for anything that
+  genuinely needs a rotated print area later) but sleeves no longer need it. Verified: Left/Right
+  Sleeve each load their own laid-flat panel, correctly mirrored, print area an ordinary upright
+  rectangle.
+- **Uploaded image selection bug, root cause found and fixed** — an image's Konva node doesn't
+  exist until its `<img>` finishes loading (async), so the Transformer-attach effect ran once
+  right after upload, found nothing, and never reran once the image mounted — dragging happened
+  to fix it only because a drag's `onDragEnd` incidentally changed a dependency the effect was
+  watching. Fixed properly: `DesignImageNode` now has its own effect that notifies the parent once
+  its image resolves, which re-runs the attach effect. (Also fixed, separately: transparent PNGs
+  now hit-test against their full bounding box via an explicit `hitFunc` — Konva's default hit
+  canvas honors alpha, so a logo's transparent margins previously didn't register clicks at all.)
+  Hit two real infinite-render-loop regressions while building this (an inline per-render ref
+  callback that both React detaches/reattaches on every render AND a newer, more precise
+  `react-hooks/refs` lint rule that flags calling a ref-reading function during render, not just
+  reading `.current` directly) — resolved by keeping ref writes as plain per-render closures
+  assigned straight to a `ref` prop (the sanctioned pattern) and moving the "notify on mount" logic
+  into a child-component effect instead of a cached parent-level callback.
+- **Rotation**: a floating `Label`/`Tag` degree readout follows the object live during any canvas
+  transform (Konva's own `onTransform` on the `Transformer`), a numeric Rotation field + ±1° in
+  the Inspector (0 straightens, 90 rotates exactly 90°), and always-on `rotationSnaps`/
+  `rotationSnapTolerance` (was previously wired only for reduced-motion, oddly) for the
+  0/45/90/135/180° catches. Verified: dragged the rotate handle to 78° (readout tracked live),
+  set 27° via the numeric field, +1° button incremented to 28°.
+- **Smart alignment guides** — thin orange (`#ff6a00`) guide lines snap a dragged object against
+  the ACTIVE print area's own center/edges and every other object on that same print area (never
+  a different location's artwork, even when visible in the same composite), threshold divided by
+  the live render scale so it feels the same size at any zoom. Implemented via each node's own
+  `onDragMove` (not `dragBoundFunc`, to stay in the same LOCAL top-left coordinate convention
+  `onDragEnd` already used) computing candidate snap targets and writing the adjusted position
+  straight onto the Konva node. Verified live: dragging back toward center produced both a
+  vertical and horizontal guide, snapped exactly to the print area's crosshair.
+- **Position & Align** (`Inspector.tsx`, new `PositionAlignControl`) — Center Horizontally/
+  Vertically/In Area, Fit to Area (contain), Fill Print Area (cover) — pure fraction math against
+  `normalizedX/Y/Width/Height`, no pixel geometry needed since those are already fractions of the
+  print area. New `RotationControl` sits beside it. Both render for every object type.
+  New-asset auto-fit (`autoFitNormalized()` in `StudioClient.tsx`) now sizes uploads to ~68% of
+  the print area's REAL pixel aspect ratio (`printAreaPixelBox()`, new in `printAreas.ts`),
+  preserving the image's own aspect and centering it, instead of a fixed-fraction box that ignored
+  both shapes; new text/shapes are explicitly centered rather than relying on default offsets.
+- **Text inspector editing** — a `<textarea>` at the top of the Text panel edits content live;
+  double-click-on-canvas direct editing is untouched (both paths work).
+- **Keyboard shortcuts** (global listener in `StudioClient.tsx`, backs off entirely while the
+  inline text editor is open or focus is in any input/textarea/contenteditable): Delete/Backspace,
+  Cmd/Ctrl+D duplicate, Cmd/Ctrl+Z undo, Cmd/Ctrl+Shift+Z or Ctrl+Y redo, arrow keys nudge
+  (Shift = 10x). Verified: selected a template's "EST. 2024" text via the Layers panel, Delete
+  removed only that layer (the rest of the template stayed intact — template pieces were already
+  ordinary independent `DesignObjectRecord`s, confirmed, not a flattened image), Ctrl+Z restored
+  it.
+- **Not done, by explicit brief permission**: "Reset Template," equal-spacing detection between
+  3+ objects, and Shift+15°-increment rotation are all marked optional/secondary in the brief and
+  were skipped in favor of the required items above.
+
 **2026-09-13 post-approval cart transition:** Review's "Approve & add to cart" used to flip
 instantly to a static "✓ Added to cart" with nothing else — no route back into shopping, no
 acknowledgement that the customer had left "design mode." Replaced with a full state machine and

@@ -13,7 +13,12 @@ import type { LocationViewType } from "./productDecorationProfile";
 // DesignSideType is REVIEW_REQUIRED (see productDecorationProfile.ts) — its geometry here is an
 // approximate placement box, `confirmed: false`, used only to draw the generic Placement Preview
 // illustration; it is never shown as, or treated as, a confirmed production spec.
-export const PRINT_AREA_TEMPLATE_VERSION = "v4-rotated-sleeve-inner-neck-schematic";
+export const PRINT_AREA_TEMPLATE_VERSION = "v5-sleeve-schematic-garment-view";
+
+// The fixed "design space" every box/object coordinate is computed against — see CanvasStage's
+// own comment for why this is a virtual pixel buffer, not the container's measured CSS size.
+export const CANVAS_NATURAL_WIDTH = 520;
+export const CANVAS_NATURAL_HEIGHT = 650; // 4:5, matching the site's product-photo aspect convention
 
 export const PRINT_AREAS: Record<DesignSideType, { widthIn: number; heightIn: number; safeMarginIn: number; confirmed: boolean }> = {
   front: { widthIn: 12, heightIn: 16, safeMarginIn: 0.25, confirmed: true },
@@ -56,22 +61,26 @@ export interface PlacementGeometry {
  *  front) are calibrated against S&S's actual front-facing flat-lay photography. Every other box
  *  below is an approximate position, not a calibrated overlay on a real photo.
  *
- *  Sleeve angles: "left-sleeve"/"right-sleeve" name which side of the ON-SCREEN photo the box sits
- *  on (screen-left / screen-right), the same convention the existing xFrac values already used —
- *  not the wearer's anatomical left/right, which would be reversed in a front-facing photo. A
- *  sleeve splays outward from the shoulder toward the cuff, so the two angles are mirrored
- *  opposites (screen-left tilts counter-clockwise, screen-right tilts clockwise), not copies of
- *  the same signed value — this is what Section 10 means by "do not mirror them incorrectly."
+ *  Sleeves no longer sit as a rotated box on the full-shirt photo at all (STUDIO V3 brief, Section
+ *  10: "STOP using this as the main sleeve editing interface") — "left-sleeve"/"right-sleeve" each
+ *  render on their OWN dedicated flattened schematic illustration (see sleeveSchematicSvg below,
+ *  the same pattern innerNeckSchematicSvg already established), so their box here is a plain
+ *  upright (rotationDeg: 0) rectangle positioned within that schematic's own layout — never over
+ *  garment photography, and never rotated. The two schematics are still deliberately mirror images
+ *  of each other (drawn, not just repositioned) so Left/Right stay visually distinct.
  *  These are placement-template data, not something rendered by rotating a border in CSS: the
  *  Konva Group representing each location's local coordinate space is the thing that actually
- *  rotates (see CanvasStage.tsx). */
+ *  rotates when rotationDeg is non-zero (see CanvasStage.tsx) — sleeves just no longer need it. */
 export const PLACEMENT_GEOMETRY: Record<DesignSideType, PlacementGeometry> = {
   front: { xFrac: 0.3, yFrac: 0.22, widthFrac: 0.4, heightFrac: 0.36, rotationDeg: 0 },
   back: { xFrac: 0.3, yFrac: 0.22, widthFrac: 0.4, heightFrac: 0.36, rotationDeg: 0 },
   "left-chest": { xFrac: 0.56, yFrac: 0.22, widthFrac: 0.14, heightFrac: 0.11, rotationDeg: 0 },
   "right-chest": { xFrac: 0.3, yFrac: 0.22, widthFrac: 0.14, heightFrac: 0.11, rotationDeg: 0 },
-  "left-sleeve": { xFrac: 0.11, yFrac: 0.27, widthFrac: 0.15, heightFrac: 0.22, rotationDeg: -22 },
-  "right-sleeve": { xFrac: 0.74, yFrac: 0.27, widthFrac: 0.15, heightFrac: 0.22, rotationDeg: 22 },
+  // Positioned within each sleeve's own schematic illustration (sleeveSchematicSvg) — large enough
+  // ("large enough that design work is easy", Section 11) relative to that illustration's own
+  // 520x650 canvas that ordinary logo/text work doesn't feel cramped, same idea as inside-neck.
+  "left-sleeve": { xFrac: 0.28, yFrac: 0.36, widthFrac: 0.44, heightFrac: 0.32, rotationDeg: 0 },
+  "right-sleeve": { xFrac: 0.28, yFrac: 0.36, widthFrac: 0.44, heightFrac: 0.32, rotationDeg: 0 },
   "upper-back": { xFrac: 0.38, yFrac: 0.18, widthFrac: 0.24, heightFrac: 0.08, rotationDeg: 0 },
   hood: { xFrac: 0.34, yFrac: 0.06, widthFrac: 0.32, heightFrac: 0.14, rotationDeg: 0 },
   pocket: { xFrac: 0.36, yFrac: 0.55, widthFrac: 0.28, heightFrac: 0.12, rotationDeg: 0 },
@@ -95,11 +104,22 @@ export const MOCKUP_PRINT_AREA_BOX = PLACEMENT_GEOMETRY;
  *  chest box — same "front" mockup photo, anatomically different placement. */
 export const JOGGERS_FRONT_BOX = { xFrac: 0.36, yFrac: 0.48, widthFrac: 0.28, heightFrac: 0.2 };
 
-export type BackgroundKind = "front-photo" | "back-photo" | "inner-neck-schematic";
+export type BackgroundKind =
+  | "front-photo"
+  | "back-photo"
+  | "inner-neck-schematic"
+  | "sleeve-left-schematic"
+  | "sleeve-right-schematic";
 
 /** What kind of background a location's viewType calls for — this is what let Section 20's
  *  viewType enum replace the old hardcoded "is this front or back" special-casing. A schematic
- *  never depends on the product's own photography at all. */
+ *  never depends on the product's own photography at all.
+ *
+ *  This doubles as the GARMENT VIEW grouping key (STUDIO V3 brief, Section 8): two locations that
+ *  resolve to the same BackgroundKind are, by definition, looking at the same physical surface —
+ *  the same front photo, the same back photo, or the same dedicated schematic — so compositing
+ *  their artwork together (garmentViews.ts) is exactly "what does the customer see when they look
+ *  at this side of the garment," independent of which print area happens to be active for editing. */
 export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
   switch (viewType) {
     case "PRODUCT_BACK":
@@ -109,9 +129,36 @@ export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
       return "back-photo";
     case "INNER_NECK_SCHEMATIC":
       return "inner-neck-schematic";
+    case "SLEEVE_LEFT_PLACEMENT":
+      return "sleeve-left-schematic";
+    case "SLEEVE_RIGHT_PLACEMENT":
+      return "sleeve-right-schematic";
     default:
       return "front-photo";
   }
+}
+
+/** Pixel size (in the fixed 520x650 design space) of a location's print-area box — the one place
+ *  Inspector's Position/Align controls and StudioClient's new-asset auto-fit sizing get a box's
+ *  real aspect ratio from, so "fit inside 60-75% of the usable area" (Section 5) is measured
+ *  against the box's actual shape rather than assuming it's square. */
+export function printAreaPixelBox(location: DesignSideType): { width: number; height: number } {
+  const g = PLACEMENT_GEOMETRY[location];
+  return { width: g.widthFrac * CANVAS_NATURAL_WIDTH, height: g.heightFrac * CANVAS_NATURAL_HEIGHT };
+}
+
+/** Axis-aligned overlap test between two OPEN locations' print-area boxes, in the shared design
+ *  space — only meaningful (and only ever called) for locations already confirmed to share a
+ *  GarmentView, where both boxes sit over the exact same background and rotationDeg is 0 for
+ *  every current location. Section 8's "gentle warning, never an automatic block": this is a hint,
+ *  not a production constraint, so a simple rectangle test is enough — it doesn't need to reason
+ *  about actual artwork pixels, just whether the two PLACEMENT areas themselves visually collide. */
+export function printAreasOverlap(a: DesignSideType, b: DesignSideType): boolean {
+  const ga = PLACEMENT_GEOMETRY[a];
+  const gb = PLACEMENT_GEOMETRY[b];
+  const aLeft = ga.xFrac, aRight = ga.xFrac + ga.widthFrac, aTop = ga.yFrac, aBottom = ga.yFrac + ga.heightFrac;
+  const bLeft = gb.xFrac, bRight = gb.xFrac + gb.widthFrac, bTop = gb.yFrac, bBottom = gb.yFrac + gb.heightFrac;
+  return aLeft < bRight && aRight > bLeft && aTop < bBottom && aBottom > bTop;
 }
 
 /** Back-compat wrapper for call sites that only know the DesignSideType, not its viewType —
@@ -177,6 +224,39 @@ export function innerNeckSchematicSvg(colourName: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
+/** Dedicated flattened sleeve schematic (Section 11-13) — an original Maple illustration, NOT a
+ *  copy of the owner's Printify reference: a laid-flat sleeve panel (tapered trapezoid, shoulder
+ *  seam at top, cuff at bottom) with the print area sitting as a plain upright rectangle inside it.
+ *  Left and right are two genuinely mirrored drawings (the taper leans the opposite direction),
+ *  not the same artwork repositioned — see PLACEMENT_GEOMETRY's identical box for both, which only
+ *  works because the mirroring lives in the artwork itself. Replaces the old approach of rotating
+ *  a dashed box over the full garment photo: production coordinates for whatever the customer
+ *  places here are still ordinary LOCAL, unrotated print-area coordinates (Section 14), exactly
+ *  like every other location — only the mockup/editing surface changed. */
+export function sleeveSchematicSvg(side: "left" | "right", colourName: string): string {
+  const dark = isDarkGarmentColour(colourName);
+  const fabric = dark ? "#2A2724" : "#F3EEE4";
+  const fabricShade = dark ? "#38342F" : "#E9E2D3";
+  const seam = dark ? "#6B6459" : "#B9AD98";
+  const label = dark ? "#B9AD98" : "#8C816E";
+  // A tapered panel — wide at the shoulder seam (top), narrowing toward the cuff (bottom) — mirrored
+  // by flipping which side leans in. Drawn once as a left-leaning panel, then mirrored via a
+  // horizontal transform for the right sleeve, which is what actually guarantees the two are true
+  // mirror images rather than two independently-eyeballed shapes.
+  const panel = side === "left"
+    ? "M150 60 L400 100 L370 560 Q260 600 150 560 Z"
+    : "M370 60 L120 100 L150 560 Q260 600 370 560 Z";
+  const seamLine = side === "left" ? "M150 60 L400 100" : "M370 60 L120 100";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="520" height="650">
+    <rect width="520" height="650" fill="${dark ? "#171412" : "#F6F1E9"}"/>
+    <path d="${panel}" fill="${fabric}" stroke="${seam}" stroke-width="2"/>
+    <path d="${seamLine}" fill="none" stroke="${seam}" stroke-width="2" stroke-dasharray="5 5"/>
+    <rect x="180" y="180" width="160" height="220" rx="6" fill="${fabricShade}" opacity="0.5"/>
+    <text x="260" y="632" font-family="sans-serif" font-size="13" font-weight="600" letter-spacing="1.5" fill="${label}" text-anchor="middle">${side.toUpperCase()} SLEEVE — LAID FLAT</text>
+  </svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 /** The one place that resolves "what background image does this location actually show" — every
  *  caller (StudioClient, PreviewMode, ReviewPanel) goes through this instead of re-deriving
  *  front/back/schematic logic itself, which is what let three call sites drift in earlier passes.
@@ -190,6 +270,8 @@ export function backgroundUrlFor(
 ): string | null {
   const kind = backgroundKindFor(viewType);
   if (kind === "inner-neck-schematic") return innerNeckSchematicSvg(colourName);
+  if (kind === "sleeve-left-schematic") return sleeveSchematicSvg("left", colourName);
+  if (kind === "sleeve-right-schematic") return sleeveSchematicSvg("right", colourName);
   const key: DesignSideType = kind === "back-photo" ? "back" : "front";
   return mockupImages[key] ?? (usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);
 }

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
   ArrowsHorizontal,
+  ArrowsOut,
   ArrowsVertical,
   CaretDown,
   Copy,
@@ -10,6 +13,7 @@ import {
   Info,
   SpinnerGap,
   Stack,
+  Target,
   Trash,
 } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
@@ -144,6 +148,9 @@ export function Inspector({
             />
           )}
 
+          <PositionAlignControl obj={selectedObject} onPatch={(patch) => onPatch(selectedObject.id, patch)} />
+          <RotationControl obj={selectedObject} onPatch={(patch) => onPatch(selectedObject.id, patch)} />
+
           <div className="flex gap-2 pt-2">
             <button type="button" onClick={onDuplicate} className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-sand py-2 text-xs font-semibold text-ink-900 hover:bg-canvas">
               <Copy className="size-3.5" weight="bold" />
@@ -246,9 +253,113 @@ function ProductInfo({ location }: { location: DesignSideType }) {
   );
 }
 
+/** Compact rotation control shared by every object type (Section "RIGHT INSPECTOR — ROTATION"):
+ *  direct numeric entry (0 straightens, 90 rotates exactly 90°) plus ±1° nudges, so rotating
+ *  doesn't require the canvas handle at all. */
+function RotationControl({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (patch: Partial<DesignObjectRecord>) => void }) {
+  const rotation = Math.round(obj.rotation);
+  return (
+    <div>
+      <label className="text-xs font-medium text-ink-900/70">Rotation</label>
+      <div className="mt-1 flex items-center gap-1.5">
+        <button
+          type="button"
+          aria-label="Rotate −1 degree"
+          onClick={() => onPatch({ rotation: obj.rotation - 1 })}
+          className="rounded-lg border border-sand px-2.5 py-1.5 text-xs font-semibold text-ink-900 hover:bg-canvas"
+        >
+          −1°
+        </button>
+        <input
+          type="number"
+          aria-label="Rotation in degrees"
+          value={rotation}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            if (Number.isFinite(v)) onPatch({ rotation: v });
+          }}
+          className="w-16 rounded-lg border border-sand px-2 py-1.5 text-center text-sm text-ink-900"
+        />
+        <span className="text-xs text-muted">degrees</span>
+        <button
+          type="button"
+          aria-label="Rotate +1 degree"
+          onClick={() => onPatch({ rotation: obj.rotation + 1 })}
+          className="ml-auto rounded-lg border border-sand px-2.5 py-1.5 text-xs font-semibold text-ink-900 hover:bg-canvas"
+        >
+          +1°
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Position & Align (Sections 4/16): centers relative to the CURRENT PHYSICAL PRINT AREA, never
+ *  the viewport/garment image/whole stage — safe to compute in pure normalized-fraction math since
+ *  normalizedX/Y/Width/Height are already fractions of that exact box (see types.ts), no pixel
+ *  geometry needed here. Fit = contain (largest size that stays fully inside, aspect preserved);
+ *  Fill = cover (may extend past the box in one axis, never distorts aspect). */
+function PositionAlignControl({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (patch: Partial<DesignObjectRecord>) => void }) {
+  function centerH() {
+    onPatch({ normalizedX: (1 - obj.normalizedWidth) / 2 });
+  }
+  function centerV() {
+    onPatch({ normalizedY: (1 - obj.normalizedHeight) / 2 });
+  }
+  function centerBoth() {
+    onPatch({ normalizedX: (1 - obj.normalizedWidth) / 2, normalizedY: (1 - obj.normalizedHeight) / 2 });
+  }
+  function scaleTo(factor: number) {
+    const w = obj.normalizedWidth * factor;
+    const h = obj.normalizedHeight * factor;
+    onPatch({ normalizedWidth: w, normalizedHeight: h, normalizedX: (1 - w) / 2, normalizedY: (1 - h) / 2 });
+  }
+  const fit = () => scaleTo(Math.min(1 / obj.normalizedWidth, 1 / obj.normalizedHeight));
+  const fill = () => scaleTo(Math.max(1 / obj.normalizedWidth, 1 / obj.normalizedHeight));
+
+  const btn = "flex items-center justify-center gap-1 rounded-lg border border-sand py-1.5 text-[11px] font-semibold text-ink-900 hover:bg-canvas";
+
+  return (
+    <div>
+      <label className="text-xs font-medium text-ink-900/70">Position</label>
+      <div className="mt-1 grid grid-cols-2 gap-1.5">
+        <button type="button" onClick={centerH} className={btn}>
+          <AlignCenterVertical className="size-3.5" weight="bold" /> Center H
+        </button>
+        <button type="button" onClick={centerV} className={btn}>
+          <AlignCenterHorizontal className="size-3.5" weight="bold" /> Center V
+        </button>
+        <button type="button" onClick={centerBoth} className={btn}>
+          <Target className="size-3.5" weight="bold" /> Center in area
+        </button>
+        <button type="button" onClick={fit} className={btn}>
+          <ArrowsOut className="size-3.5" weight="bold" /> Fit to area
+        </button>
+      </div>
+      <button type="button" onClick={fill} className={cn(btn, "mt-1.5 w-full")}>
+        Fill print area
+      </button>
+    </div>
+  );
+}
+
 function TextInspector({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (patch: Partial<DesignObjectRecord>) => void }) {
   return (
     <>
+      <div>
+        <label className="text-xs font-medium text-ink-900/70">Text</label>
+        {/* Section 7: double-click-on-canvas direct editing still works unchanged — this is the
+            SECOND path, so a customer who never discovers double-click can still edit content.
+            Plain textarea: Enter/newline behave like any normal multiline field, nothing here
+            intercepts Enter or lives inside a <form> that it could accidentally submit. */}
+        <textarea
+          value={obj.content ?? ""}
+          onChange={(e) => onPatch({ content: e.target.value })}
+          rows={2}
+          placeholder="Your text"
+          className="mt-1 w-full resize-none rounded-lg border border-sand px-2 py-1.5 text-sm text-ink-900"
+        />
+      </div>
       <div>
         <label className="text-xs font-medium text-ink-900/70">Font</label>
         <select

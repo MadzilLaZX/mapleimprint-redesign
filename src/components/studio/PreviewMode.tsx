@@ -2,8 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { ArrowLeft, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
+import { backgroundUrlFor } from "@/lib/studio/printAreas";
+import { groupLocationsByView } from "@/lib/studio/garmentViews";
 import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
-import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
+import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 
 const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then((m) => m.CanvasStage), {
   ssr: false,
@@ -14,29 +16,39 @@ const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then
   ),
 });
 
-/** Section 4. Answers "what will this actually look like" — not an order-approval step (that's
+/** Section 4/24. Answers "what will this actually look like" — not an order-approval step (that's
  *  ReviewPanel). Hides every editing affordance (print-area outline, transform handles, guides —
- *  CanvasStage's `readOnly` already strips all of those) and lets the customer flip between every
- *  decorated location. */
+ *  CanvasStage's `readOnly` already strips all of those) and composites every open location back
+ *  into its shared GarmentView (Front preview = Full Front + Left Chest + Right Chest together,
+ *  exactly what the customer is actually buying — Section 24), letting the customer flip between
+ *  VIEWS rather than nine near-identical individual print areas. */
 export function PreviewMode({
   openSides,
+  sides,
   activeSide,
   onSelectSide,
-  mockupUrl,
-  objects,
+  mockupImages,
+  colourName,
   profile,
   onBack,
 }: {
   openSides: DesignSideType[];
+  sides: Partial<Record<DesignSideType, DesignObjectRecord[]>>;
   activeSide: DesignSideType;
   onSelectSide: (side: DesignSideType) => void;
-  mockupUrl: string | null;
-  objects: DesignObjectRecord[];
+  mockupImages: DesignProjectRecord["mockupImages"];
+  colourName: string;
   profile: DecorationLocation[];
   onBack: () => void;
 }) {
   const labelFor = (id: DesignSideType) => profile.find((l) => l.id === id)?.label ?? id;
-  const isPlacementPreview = profile.find((l) => l.id === activeSide)?.usesPlacementPreview ?? false;
+  const viewGroups = groupLocationsByView(openSides, profile);
+  const activeGroup = viewGroups.find((g) => g.locations.includes(activeSide)) ?? viewGroups[0] ?? null;
+  const groupLabel = (locations: DesignSideType[]) =>
+    locations.length === 1 ? labelFor(locations[0]) : `${labelFor(locations[0])} + ${locations.slice(1).map(labelFor).join(", ")}`;
+  const primaryLocation = activeGroup?.locations[0];
+  const primaryProfile = primaryLocation ? profile.find((l) => l.id === primaryLocation) : null;
+  const mockupUrl = primaryProfile ? backgroundUrlFor(primaryProfile.viewType, mockupImages, colourName, primaryProfile.usesPlacementPreview) : null;
 
   return (
     // Same reasoning as ReviewPanel: h-full + overflow-hidden on the shell, overflow-y-auto on
@@ -61,33 +73,33 @@ export function PreviewMode({
             real height to fit — the column's cross axis is horizontal (it's flex-col), so
             centering it there doesn't stretch children vertically the way row-centering would. */}
         <div className="min-h-0 w-full flex-1">
-          <CanvasStage
-            location={activeSide}
-            mockupUrl={mockupUrl}
-            objects={objects}
-            selectedId={null}
-            onSelect={() => {}}
-            onCommitObject={() => {}}
-            editingTextId={null}
-            onEditRequest={() => {}}
-            onEditCommit={() => {}}
-            readOnly
-            placementPreview={isPlacementPreview}
-          />
+          {activeGroup && (
+            <CanvasStage
+              layers={activeGroup.locations.map((loc) => ({ location: loc, objects: sides[loc] ?? [], active: false }))}
+              mockupUrl={mockupUrl}
+              selectedId={null}
+              onSelect={() => {}}
+              onCommitObject={() => {}}
+              editingTextId={null}
+              onEditRequest={() => {}}
+              onEditCommit={() => {}}
+              readOnly
+            />
+          )}
         </div>
 
-        {openSides.length > 1 && (
+        {viewGroups.length > 1 && (
           <div className="flex shrink-0 flex-wrap justify-center gap-2 rounded-full border border-sand bg-white p-1">
-            {openSides.map((side) => (
+            {viewGroups.map((group) => (
               <button
-                key={side}
+                key={group.view}
                 type="button"
-                onClick={() => onSelectSide(side)}
+                onClick={() => onSelectSide(group.locations[0])}
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-                  activeSide === side ? "bg-ink-950 text-white" : "text-ink-900/70 hover:bg-canvas"
+                  activeGroup?.view === group.view ? "bg-ink-950 text-white" : "text-ink-900/70 hover:bg-canvas"
                 }`}
               >
-                {labelFor(side)}
+                {groupLabel(group.locations)}
               </button>
             ))}
           </div>

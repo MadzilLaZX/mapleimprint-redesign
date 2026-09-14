@@ -24,11 +24,13 @@ import { GraphicsPanel } from "@/components/studio/panels/GraphicsPanel";
 import { DesignsPanel } from "@/components/studio/panels/DesignsPanel";
 import { MyStuffPanel } from "@/components/studio/panels/MyStuffPanel";
 import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
-import { backgroundUrlFor } from "@/lib/studio/printAreas";
+import { backgroundUrlFor, printAreaPixelBox, printAreasOverlap } from "@/lib/studio/printAreas";
+import { viewGroupFor } from "@/lib/studio/garmentViews";
 import { resolveTemplateAssets, type DesignTemplate } from "@/lib/studio/templates";
 import type { DesignAsset } from "@/lib/studio/assetProviders";
 import type { StudioToolId } from "@/lib/studio/tools";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType, ShapeKind } from "@/lib/studio/types";
+import type { CanvasLayerSpec } from "@/components/studio/CanvasStage";
 
 const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then((m) => m.CanvasStage), {
   ssr: false,
@@ -77,6 +79,32 @@ function emptyObject(type: "text" | "image" | "shape", overrides: Partial<Design
     cropWidth: null,
     cropHeight: null,
     ...overrides,
+  };
+}
+
+/** Where a freshly-added asset lands (STUDIO V3 brief, Section 5: "do NOT place it arbitrarily or
+ *  make it enormous"). Sizes it to `coverage` (60-75%) of whichever axis the box constrains first,
+ *  preserving the asset's own aspect ratio against the print area's REAL pixel aspect ratio (not
+ *  assuming the box is square), then centers it — the Canva-like "add object, it appears in a
+ *  sensible position" feel instead of a fixed-fraction box that ignores both the asset's shape and
+ *  the print area's. */
+function autoFitNormalized(location: DesignSideType, naturalAspect: number, coverage = 0.68) {
+  const box = printAreaPixelBox(location);
+  const boxAspect = box.width / box.height;
+  let wFrac: number;
+  let hFrac: number;
+  if (naturalAspect > boxAspect) {
+    wFrac = coverage;
+    hFrac = coverage * (boxAspect / naturalAspect);
+  } else {
+    hFrac = coverage;
+    wFrac = coverage * (naturalAspect / boxAspect);
+  }
+  return {
+    normalizedWidth: wFrac,
+    normalizedHeight: hFrac,
+    normalizedX: (1 - wFrac) / 2,
+    normalizedY: (1 - hFrac) / 2,
   };
 }
 
@@ -229,6 +257,53 @@ export function StudioClient({ projectId }: { projectId: string }) {
     router.push(productHref);
   }
 
+  // Keyboard precision (Section 17): Delete/Backspace, Cmd/Ctrl+D duplicate, Cmd/Ctrl+Z undo,
+  // Cmd/Ctrl+Shift+Z or Ctrl+Y redo, arrow keys nudge (Shift = 10x). Every shortcut backs off the
+  // instant the inline text editor is open or focus is anywhere inside an input/textarea/
+  // contenteditable — a customer typing "Delete" as part of their own copy must never delete the
+  // object they're editing.
+  useEffect(() => {
+    function isTypingTarget(el: EventTarget | null): boolean {
+      if (!(el instanceof HTMLElement)) return false;
+      return el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable;
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (mode !== "edit" || editingTextId || isTypingTarget(e.target)) return;
+      const meta = e.metaKey || e.ctrlKey;
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
+        e.preventDefault();
+        deleteSelected();
+        return;
+      }
+      if (meta && e.key.toLowerCase() === "d" && selectedId) {
+        e.preventDefault();
+        duplicateSelected();
+        return;
+      }
+      if (meta && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      if (meta && (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey))) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      if (selectedId && (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        e.preventDefault();
+        const step = e.shiftKey ? 0.02 : 0.002;
+        const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+        const obj = activeObjects.find((o) => o.id === selectedId);
+        if (obj) commitObjectPatch(selectedId, { normalizedX: obj.normalizedX + dx, normalizedY: obj.normalizedY + dy });
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, editingTextId, selectedId, sides, activeSide, history]);
+
   // Mobile has no permanent right-hand panel (there's no room) — selecting something is the
   // customer's clearest signal they want its properties, so the details sheet opens itself rather
   // than requiring an extra tap to discover it. (Desktop ignores this entirely — InspectorDock's
@@ -249,6 +324,24 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const zoom = zoomByLocation[activeSide] ?? 1;
   const setZoom = (next: number) => setZoomByLocation((prev) => ({ ...prev, [activeSide]: next }));
 
+  // GarmentView vs PrintArea (STUDIO V3 brief, Section 8): every OPEN location that shares the
+  // active location's view (front/left-chest/right-chest all sit on the same front photo, etc.)
+  // gets composited into the same canvas so switching to Left Chest never makes Front's artwork
+  // disappear — only the active one is actually editable. Production data stays fully separate:
+  // this is rendering-only, `sides` itself is never merged (Section 17).
+  const compositeLocations = viewGroupFor(activeSide, profile).filter((loc) => openSides.includes(loc));
+  const compositeLayers: CanvasLayerSpec[] = compositeLocations.map((loc) => ({
+    location: loc,
+    objects: sides[loc] ?? [],
+    active: loc === activeSide,
+  }));
+  // Gentle, non-blocking collision hint (Section 8's "overlapping locations") — only surfaced when
+  // two open, ARTWORKED locations in the same view actually occupy overlapping print-area boxes;
+  // never auto-blocks anything.
+  const overlappingWith = compositeLocations.find(
+    (loc) => loc !== activeSide && (sides[loc]?.length ?? 0) > 0 && (activeObjects.length ?? 0) > 0 && printAreasOverlap(activeSide, loc),
+  );
+
   function closePanelAnd<T>(fn: () => T): T {
     setActiveTool(null);
     return fn();
@@ -256,6 +349,8 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
   function addText(preset: TextPreset) {
     pushHistory(sides);
+    const width = 0.55;
+    const height = 0.12;
     const obj = emptyObject("text", {
       content: preset.label === "Body text" ? "Your text" : preset.label,
       fontFamily: "Manrope, sans-serif",
@@ -263,8 +358,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
       fill: "#171412",
       bold: preset.bold,
       align: "center",
-      normalizedWidth: 0.55,
-      normalizedHeight: 0.12,
+      normalizedWidth: width,
+      normalizedHeight: height,
+      // Centered within the current print area, never x=0/y=0 (Section 21) — a fresh text object
+      // should read as "placed for you," not "dropped in the corner."
+      normalizedX: (1 - width) / 2,
+      normalizedY: (1 - height) / 2,
     });
     applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
     setSelectedId(obj.id);
@@ -275,11 +374,15 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
   function addShape(kind: ShapeKind) {
     pushHistory(sides);
+    const width = kind === "line" ? 0.5 : 0.3;
+    const height = kind === "line" ? 0.01 : 0.3;
     const obj = emptyObject("shape", {
       shapeKind: kind,
       fill: "#D41414",
-      normalizedWidth: kind === "line" ? 0.5 : 0.3,
-      normalizedHeight: kind === "line" ? 0.01 : 0.3,
+      normalizedWidth: width,
+      normalizedHeight: height,
+      normalizedX: (1 - width) / 2,
+      normalizedY: (1 - height) / 2,
     });
     applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
     setSelectedId(obj.id);
@@ -330,16 +433,15 @@ export function StudioClient({ projectId }: { projectId: string }) {
         img.onerror = resolve;
       });
       const naturalAspect = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
-      const width = 0.5;
-      const height = Math.min(0.6, width / naturalAspect);
+      const fit = autoFitNormalized(activeSide, naturalAspect);
 
       pushHistory(sides);
       const obj = emptyObject("image", {
         assetUrl: data.url,
-        normalizedWidth: width,
-        normalizedHeight: height,
-        normalizedX: (1 - width) / 2,
-        normalizedY: (1 - height) / 2,
+        normalizedWidth: fit.normalizedWidth,
+        normalizedHeight: fit.normalizedHeight,
+        normalizedX: fit.normalizedX,
+        normalizedY: fit.normalizedY,
       });
       applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
       setSelectedId(obj.id);
@@ -588,16 +690,14 @@ export function StudioClient({ projectId }: { projectId: string }) {
       />
     );
   } else if (mode === "preview") {
-    const mockupUrl = activeLocation
-      ? backgroundUrlFor(activeLocation.viewType, project.mockupImages, project.colourName, activeLocation.usesPlacementPreview)
-      : null;
     content = (
       <PreviewMode
         openSides={openSides}
+        sides={sides}
         activeSide={activeSide}
         onSelectSide={setActiveSide}
-        mockupUrl={mockupUrl}
-        objects={activeObjects}
+        mockupImages={project.mockupImages}
+        colourName={project.colourName}
         profile={profile}
         onBack={() => setMode("edit")}
       />
@@ -692,6 +792,11 @@ export function StudioClient({ projectId }: { projectId: string }) {
                   Special placement — our team will confirm this location before production.
                 </p>
               )}
+              {overlappingWith && (
+                <p className="px-1 text-xs text-orange">
+                  These two print placements overlap. Adjust one design to prevent printing conflicts.
+                </p>
+              )}
             </div>
 
             {/* No items-center/justify-center here on purpose — CanvasStage's own root div needs
@@ -706,15 +811,15 @@ export function StudioClient({ projectId }: { projectId: string }) {
                 </div>
               )}
               <CanvasStage
-                location={activeSide}
+                layers={compositeLayers}
                 mockupUrl={mockupUrl}
-                objects={activeObjects}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
                 onCommitObject={(id, patch) => commitObjectPatch(id, patch)}
                 editingTextId={editingTextId}
                 onEditRequest={setEditingTextId}
                 onEditCommit={commitTextEdit}
+                onSwitchLocation={handleSelectLocation}
                 placementPreview={activeLocation?.usesPlacementPreview ?? false}
                 zoom={zoom}
               />

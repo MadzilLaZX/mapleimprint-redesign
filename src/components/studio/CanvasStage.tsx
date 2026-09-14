@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Image as KonvaImage, Rect, Circle, Line, Text as KonvaText, Group, Transformer } from "react-konva";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Stage, Layer, Image as KonvaImage, Rect, Circle, Line, Text as KonvaText, Group, Transformer, Label, Tag } from "react-konva";
 import useImage from "use-image";
 import type Konva from "konva";
-import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { PLACEMENT_GEOMETRY } from "@/lib/studio/printAreas";
+import { CANVAS_NATURAL_WIDTH, CANVAS_NATURAL_HEIGHT, PLACEMENT_GEOMETRY } from "@/lib/studio/printAreas";
 import { layoutCurvedText } from "@/lib/studio/curvedText";
 import { localPointToStage } from "@/lib/studio/localCoordinates";
 import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
@@ -15,31 +14,34 @@ import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
 // object x/y/width/height are all computed against these constants, never against the container's
 // actual measured size. Responsiveness is handled entirely by Konva's own `scale` prop on <Stage>
 // (see renderScale below), which shrinks the rendered output — and, critically, the canvas's own
-// pixel buffer — to fit the container, rather than a CSS width:100% trick. A canvas's width/height
-// HTML attributes are its native pixel buffer size and are NOT affected by an ancestor's
-// max-width — that mismatch (fixed 520px buffer inside a narrower flex/grid column) is what
-// clipped the mockup at the right edge on narrower layouts. Konva's own `scale` is the standard
-// fix: it keeps pointer-event coordinates correctly mapped too, unlike a pure CSS transform.
-const NATURAL_WIDTH = 520;
-const NATURAL_HEIGHT = 650; // 4:5, matching the site's product-photo aspect convention
+// pixel buffer — to fit the container, rather than a CSS width:100% trick.
+const NATURAL_WIDTH = CANVAS_NATURAL_WIDTH;
+const NATURAL_HEIGHT = CANVAS_NATURAL_HEIGHT;
+
+// Screen-pixel snap catch radius for the smart alignment guides — divided by the live render scale
+// before comparing against LOCAL (box-space) coordinates, which is what keeps the snap feeling the
+// same size on screen whether the canvas is zoomed to 50% or 200% (STUDIO V3 brief, "snap threshold
+// must scale with zoom") rather than a fixed number of design-space units that would feel twice as
+// grabby at 200% as at 100%.
+const SNAP_CATCH_PX = 7;
+const GUIDE_COLOR = "#ff6a00";
+
+/** One location's worth of objects to render into a shared canvas. Multiple layers sharing the
+ *  same GarmentView (see garmentViews.ts) are passed together so, e.g., Left Chest artwork stays
+ *  visible while Front is being edited — STUDIO V3 brief Section 8. Exactly one layer should be
+ *  `active` in an editable (non-readOnly) canvas; Review/Preview canvases pass every layer with
+ *  `active: false` since nothing is ever editable there regardless. */
+export interface CanvasLayerSpec {
+  location: DesignSideType;
+  objects: DesignObjectRecord[];
+  active: boolean;
+}
 
 function useHtmlImage(url: string | null) {
   const [img] = useImage(url ?? "", "anonymous");
   return url ? img : undefined;
 }
 
-/** Measures the wrapping element and fits the stage inside it. Two modes:
- *
- *  - `fitHeight: true` ("contain" — the live Studio editor and Preview): fits inside whichever of
- *    width/height is tighter. The container must stretch to fill a REAL bounded height from its
- *    flex parent (see CanvasStage's root div) — a common laptop resolution like 1366x768 can be
- *    the shorter constraint once Studio is a fixed-height application shell (plenty of width left
- *    over, but the 4:5 canvas plus toolbar/location-selector chrome doesn't fit that viewport's
- *    height). Measuring both and taking the smaller ratio is what makes "Fit" actually mean fit.
- *  - `fitHeight: false` ("width" — ReviewPanel's stacked, scrollable location list): fits width
- *    only and lets height follow the aspect ratio, same as the original single-axis version. Those
- *    previews live in a normal scrollable column with no bounded height to measure against, and
- *    don't want one — the whole point there is a full-size preview per location, not a squeezed one. */
 function useResponsiveScale(fitHeight: boolean) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(1);
@@ -71,22 +73,53 @@ function MockupBackground({ url }: { url: string | null }) {
   return <KonvaImage image={img} width={NATURAL_WIDTH} height={NATURAL_HEIGHT} listening={false} />;
 }
 
+/** Full-bounding-box hit test regardless of pixel alpha — Konva's default image hit detection
+ *  draws the actual image (with transparency) onto its offscreen hit canvas, so a transparent PNG's
+ *  see-through margins silently fail to register clicks/taps. That's a real, separate bug from the
+ *  late-mounting one below: even once selectable, a logo with lots of transparent padding would
+ *  still need a click on an opaque pixel. STUDIO V3 brief, "Transparent images... do not require
+ *  clicking an opaque pixel." */
+function fullRectHitFunc(context: Konva.Context, shape: Konva.Shape) {
+  context.beginPath();
+  context.rect(0, 0, shape.width(), shape.height());
+  context.closePath();
+  context.fillStrokeShape(shape);
+}
+
 function DesignImageNode({
   obj,
   box,
+  interactive,
   onSelect,
   onCommit,
+  onDragMove,
+  onDragEnd,
   nodeRef,
-  readOnly,
+  onClickSwitch,
+  onMounted,
 }: {
   obj: DesignObjectRecord;
   box: { x: number; y: number; width: number; height: number };
+  interactive: boolean;
   onSelect: () => void;
   onCommit: (patch: Partial<DesignObjectRecord>) => void;
+  onDragMove: (topLeftX: number, topLeftY: number, width: number, height: number) => { x: number; y: number };
+  onDragEnd: () => void;
   nodeRef: (node: Konva.Image | null) => void;
-  readOnly: boolean;
+  onClickSwitch?: () => void;
+  /** Fires once this object's underlying <img> finishes loading and its Konva node has actually
+   *  mounted (see the effect below) — CanvasStage uses this to re-run its Transformer-attach
+   *  effect, which is what makes a freshly-uploaded image immediately selectable instead of
+   *  needing a drag first (its Konva node doesn't exist at all until the async image resolves). */
+  onMounted?: () => void;
 }) {
   const img = useHtmlImage(obj.assetUrl);
+  // Effects are the sanctioned place to react to a ref/DOM-adjacent event — by the time this runs,
+  // the `ref` callback above has already fired in this same commit (React commits refs before
+  // effects), so nodeRefs already has this node; this only needs to ask the parent to re-check.
+  useEffect(() => {
+    if (img) onMounted?.();
+  }, [img, onMounted]);
   if (!img) return null;
 
   const width = obj.normalizedWidth * box.width;
@@ -109,6 +142,8 @@ function DesignImageNode({
         }
       : undefined;
 
+  const clickHandler = interactive ? onSelect : onClickSwitch;
+
   return (
     <KonvaImage
       ref={nodeRef}
@@ -122,35 +157,55 @@ function DesignImageNode({
       scaleY={baseScaleY}
       rotation={obj.rotation}
       opacity={obj.opacity}
-      draggable={!readOnly}
-      onClick={readOnly ? undefined : onSelect}
-      onTap={readOnly ? undefined : onSelect}
-      onDragEnd={(e) =>
-        onCommit({
-          normalizedX: (e.target.x() - box.x - (obj.flipX ? width : 0)) / box.width,
-          normalizedY: (e.target.y() - box.y - (obj.flipY ? height : 0)) / box.height,
-        })
+      draggable={interactive}
+      hitFunc={fullRectHitFunc}
+      onClick={clickHandler}
+      onTap={clickHandler}
+      onDragMove={
+        interactive
+          ? (e) => {
+              const node = e.target;
+              const snapped = onDragMove(node.x() - (obj.flipX ? width : 0), node.y() - (obj.flipY ? height : 0), width, height);
+              node.x(snapped.x + (obj.flipX ? width : 0));
+              node.y(snapped.y + (obj.flipY ? height : 0));
+            }
+          : undefined
       }
-      onTransformEnd={(e) => {
-        const node = e.target;
-        // Absolute value: the Transformer multiplies whatever scale was already there (-1 for a
-        // flipped image) by the drag factor, so the raw sign no longer means "flipped" — flip
-        // state is tracked separately in obj.flipX/Y and reapplied as this node's base scale on
-        // the next render, never derived from the Transformer's own scale sign.
-        const scaleX = Math.abs(node.scaleX());
-        const scaleY = Math.abs(node.scaleY());
-        node.scaleX(baseScaleX);
-        node.scaleY(baseScaleY);
-        const newWidth = node.width() * scaleX;
-        const newHeight = node.height() * scaleY;
-        onCommit({
-          normalizedX: (node.x() - box.x - (obj.flipX ? newWidth : 0)) / box.width,
-          normalizedY: (node.y() - box.y - (obj.flipY ? newHeight : 0)) / box.height,
-          normalizedWidth: newWidth / box.width,
-          normalizedHeight: newHeight / box.height,
-          rotation: node.rotation(),
-        });
-      }}
+      onDragEnd={
+        interactive
+          ? (e) => {
+              onDragEnd();
+              onCommit({
+                normalizedX: (e.target.x() - box.x - (obj.flipX ? width : 0)) / box.width,
+                normalizedY: (e.target.y() - box.y - (obj.flipY ? height : 0)) / box.height,
+              });
+            }
+          : undefined
+      }
+      onTransformEnd={
+        interactive
+          ? (e) => {
+              const node = e.target;
+              // Absolute value: the Transformer multiplies whatever scale was already there (-1 for a
+              // flipped image) by the drag factor, so the raw sign no longer means "flipped" — flip
+              // state is tracked separately in obj.flipX/Y and reapplied as this node's base scale on
+              // the next render, never derived from the Transformer's own scale sign.
+              const scaleX = Math.abs(node.scaleX());
+              const scaleY = Math.abs(node.scaleY());
+              node.scaleX(baseScaleX);
+              node.scaleY(baseScaleY);
+              const newWidth = node.width() * scaleX;
+              const newHeight = node.height() * scaleY;
+              onCommit({
+                normalizedX: (node.x() - box.x - (obj.flipX ? newWidth : 0)) / box.width,
+                normalizedY: (node.y() - box.y - (obj.flipY ? newHeight : 0)) / box.height,
+                normalizedWidth: newWidth / box.width,
+                normalizedHeight: newHeight / box.height,
+                rotation: node.rotation(),
+              });
+            }
+          : undefined
+      }
     />
   );
 }
@@ -165,44 +220,62 @@ function fontStyleFor(obj: DesignObjectRecord): string {
 function DesignTextNode({
   obj,
   box,
+  interactive,
   onSelect,
   onCommit,
   onEditRequest,
+  onDragMove,
+  onDragEnd,
   nodeRef,
-  readOnly,
+  onClickSwitch,
 }: {
   obj: DesignObjectRecord;
   box: { x: number; y: number; width: number; height: number };
+  interactive: boolean;
   onSelect: () => void;
   onCommit: (patch: Partial<DesignObjectRecord>) => void;
   onEditRequest: () => void;
+  onDragMove: (topLeftX: number, topLeftY: number, width: number, height: number) => { x: number; y: number };
+  onDragEnd: () => void;
   nodeRef: (node: Konva.Text | Konva.Group | null) => void;
-  readOnly: boolean;
+  onClickSwitch?: () => void;
 }) {
   const x = box.x + obj.normalizedX * box.width;
   const y = box.y + obj.normalizedY * box.height;
   const width = obj.normalizedWidth * box.width;
+  const height = obj.normalizedHeight * box.height;
   const fontSize = obj.fontSize ?? 28;
+  const clickHandler = interactive ? onSelect : onClickSwitch;
 
-  const dragHandlers = readOnly
-    ? {}
+  const dragHandlers = !interactive
+    ? { onClick: clickHandler, onTap: clickHandler }
     : {
         onClick: onSelect,
         onTap: onSelect,
         onDblClick: onEditRequest,
         onDblTap: onEditRequest,
-        onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) =>
+        onDragMove: (e: Konva.KonvaEventObject<DragEvent>) => {
+          const node = e.target;
+          const snapped = onDragMove(node.x(), node.y(), width, height);
+          node.x(snapped.x);
+          node.y(snapped.y);
+        },
+        onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => {
+          onDragEnd();
           onCommit({
             normalizedX: (e.target.x() - box.x) / box.width,
             normalizedY: (e.target.y() - box.y) / box.height,
-          }),
+          });
+        },
       };
 
   if (obj.curve) {
     // Curved text: one Text node per glyph, arced — see curvedText.ts. The invisible bounding Rect
     // is what the Transformer actually grabs (Konva can't usefully resize-handle a multi-child
     // Group of independently-rotated glyphs), so curved text is draggable/rotatable but resized via
-    // the font-size slider in the inspector rather than corner handles.
+    // the font-size slider in the inspector rather than corner handles. (Not wired into the smart
+    // alignment guides — its drag anchor is its visual center rather than a top-left box, and this
+    // is a rare enough object type that the added coordinate-conversion isn't worth it here.)
     const glyphs = layoutCurvedText(obj.content ?? "", fontSize, obj.letterSpacing ?? 0, obj.curve);
     return (
       <Group
@@ -211,8 +284,18 @@ function DesignTextNode({
         y={y + fontSize}
         rotation={obj.rotation}
         opacity={obj.opacity}
-        draggable={!readOnly}
-        {...dragHandlers}
+        draggable={interactive}
+        onClick={clickHandler}
+        onTap={clickHandler}
+        onDragEnd={
+          interactive
+            ? (e) =>
+                onCommit({
+                  normalizedX: (e.target.x() - width / 2 - box.x) / box.width,
+                  normalizedY: (e.target.y() - fontSize - box.y) / box.height,
+                })
+            : undefined
+        }
       >
         <Rect x={-width / 2} y={-fontSize} width={width} height={fontSize * 2.4} fill="transparent" />
         {glyphs.map((g, i) => (
@@ -251,21 +334,25 @@ function DesignTextNode({
       fill={obj.fill ?? "#171412"}
       rotation={obj.rotation}
       opacity={obj.opacity}
-      draggable={!readOnly}
+      draggable={interactive}
       {...dragHandlers}
-      onTransformEnd={(e) => {
-        const node = e.target;
-        const scaleX = node.scaleX();
-        node.scaleX(1);
-        node.scaleY(1);
-        onCommit({
-          normalizedX: (node.x() - box.x) / box.width,
-          normalizedY: (node.y() - box.y) / box.height,
-          normalizedWidth: (node.width() * scaleX) / box.width,
-          fontSize: fontSize * scaleX,
-          rotation: node.rotation(),
-        });
-      }}
+      onTransformEnd={
+        interactive
+          ? (e) => {
+              const node = e.target;
+              const scaleX = node.scaleX();
+              node.scaleX(1);
+              node.scaleY(1);
+              onCommit({
+                normalizedX: (node.x() - box.x) / box.width,
+                normalizedY: (node.y() - box.y) / box.height,
+                normalizedWidth: (node.width() * scaleX) / box.width,
+                fontSize: fontSize * scaleX,
+                rotation: node.rotation(),
+              });
+            }
+          : undefined
+      }
     />
   );
 }
@@ -273,55 +360,67 @@ function DesignTextNode({
 function ShapeNode({
   obj,
   box,
+  interactive,
   onSelect,
   onCommit,
+  onDragMove,
+  onDragEnd,
   nodeRef,
-  readOnly,
+  onClickSwitch,
 }: {
   obj: DesignObjectRecord;
   box: { x: number; y: number; width: number; height: number };
+  interactive: boolean;
   onSelect: () => void;
   onCommit: (patch: Partial<DesignObjectRecord>) => void;
+  onDragMove: (topLeftX: number, topLeftY: number, width: number, height: number) => { x: number; y: number };
+  onDragEnd: () => void;
   nodeRef: (node: Konva.Shape | Konva.Group | null) => void;
-  readOnly: boolean;
+  onClickSwitch?: () => void;
 }) {
   const x = box.x + obj.normalizedX * box.width;
   const y = box.y + obj.normalizedY * box.height;
   const width = obj.normalizedWidth * box.width;
   const height = obj.normalizedHeight * box.height;
+  const clickHandler = interactive ? onSelect : onClickSwitch;
 
-  const shared = {
+  const style = {
     rotation: obj.rotation,
     opacity: obj.opacity,
     fill: obj.fill ?? "#D41414",
     stroke: obj.strokeColor ?? undefined,
     strokeWidth: obj.strokeWidth ?? 0,
-    draggable: !readOnly,
-    onClick: readOnly ? undefined : onSelect,
-    onTap: readOnly ? undefined : onSelect,
-    onDragEnd: readOnly
-      ? undefined
-      : (e: Konva.KonvaEventObject<DragEvent>) =>
-          onCommit({
-            normalizedX: (e.target.x() - box.x) / box.width,
-            normalizedY: (e.target.y() - box.y) / box.height,
-          }),
-    onTransformEnd: readOnly
-      ? undefined
-      : (e: Konva.KonvaEventObject<Event>) => {
+    draggable: interactive,
+    onClick: clickHandler,
+    onTap: clickHandler,
+    onTransformEnd: interactive
+      ? (e: Konva.KonvaEventObject<Event>) => {
           const node = e.target;
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
           node.scaleX(1);
           node.scaleY(1);
-          onCommit({
-            normalizedX: (node.x() - box.x) / box.width,
-            normalizedY: (node.y() - box.y) / box.height,
-            normalizedWidth: (node.width() * scaleX) / box.width,
-            normalizedHeight: (node.height() * scaleY) / box.height,
-            rotation: node.rotation(),
-          });
-        },
+          const newWidth = node.width() * scaleX;
+          const newHeight = node.height() * scaleY;
+          if (obj.shapeKind === "circle") {
+            onCommit({
+              normalizedX: (node.x() - newWidth / 2 - box.x) / box.width,
+              normalizedY: (node.y() - newHeight / 2 - box.y) / box.height,
+              normalizedWidth: newWidth / box.width,
+              normalizedHeight: newHeight / box.height,
+              rotation: node.rotation(),
+            });
+          } else {
+            onCommit({
+              normalizedX: (node.x() - box.x) / box.width,
+              normalizedY: (node.y() - box.y) / box.height,
+              normalizedWidth: newWidth / box.width,
+              normalizedHeight: newHeight / box.height,
+              rotation: node.rotation(),
+            });
+          }
+        }
+      : undefined,
   };
 
   if (obj.shapeKind === "circle") {
@@ -331,7 +430,28 @@ function ShapeNode({
         x={x + width / 2}
         y={y + height / 2}
         radius={Math.min(width, height) / 2}
-        {...shared}
+        {...style}
+        onDragMove={
+          interactive
+            ? (e) => {
+                const node = e.target;
+                const snapped = onDragMove(node.x() - width / 2, node.y() - height / 2, width, height);
+                node.x(snapped.x + width / 2);
+                node.y(snapped.y + height / 2);
+              }
+            : undefined
+        }
+        onDragEnd={
+          interactive
+            ? (e) => {
+                onDragEnd();
+                onCommit({
+                  normalizedX: (e.target.x() - width / 2 - box.x) / box.width,
+                  normalizedY: (e.target.y() - height / 2 - box.y) / box.height,
+                });
+              }
+            : undefined
+        }
       />
     );
   }
@@ -343,10 +463,31 @@ function ShapeNode({
         y={y + height / 2}
         points={[0, 0, width, 0]}
         lineCap="round"
-        {...shared}
+        {...style}
         fill={undefined}
         stroke={obj.fill ?? "#171412"}
         strokeWidth={Math.max(2, obj.strokeWidth ?? 4)}
+        onDragMove={
+          interactive
+            ? (e) => {
+                const node = e.target;
+                const snapped = onDragMove(node.x(), node.y() - height / 2, width, height);
+                node.x(snapped.x);
+                node.y(snapped.y + height / 2);
+              }
+            : undefined
+        }
+        onDragEnd={
+          interactive
+            ? (e) => {
+                onDragEnd();
+                onCommit({
+                  normalizedX: (e.target.x() - box.x) / box.width,
+                  normalizedY: (e.target.y() - height / 2 - box.y) / box.height,
+                });
+              }
+            : undefined
+        }
       />
     );
   }
@@ -358,7 +499,28 @@ function ShapeNode({
       width={width}
       height={height}
       cornerRadius={4}
-      {...shared}
+      {...style}
+      onDragMove={
+        interactive
+          ? (e) => {
+              const node = e.target;
+              const snapped = onDragMove(node.x(), node.y(), width, height);
+              node.x(snapped.x);
+              node.y(snapped.y);
+            }
+          : undefined
+      }
+      onDragEnd={
+        interactive
+          ? (e) => {
+              onDragEnd();
+              onCommit({
+                normalizedX: (e.target.x() - box.x) / box.width,
+                normalizedY: (e.target.y() - box.y) / box.height,
+              });
+            }
+          : undefined
+      }
     />
   );
 }
@@ -367,12 +529,7 @@ function ShapeNode({
  *  scaled, possibly rotated) canvas, not a Konva node. Its own component so the textarea ref is
  *  declared, assigned and read in one clearly-scoped place (React's ref-usage lint rule flags ref
  *  reads that appear far from where the ref is declared much more readily when they're buried
- *  inside a large parent's render body). localPointToStage carries the object's LOCAL top-left
- *  corner through the same rotation+translation Konva applies to its print-area Group, so the edit
- *  box lands in the right spot on a rotated sleeve instead of where it would sit unrotated; the
- *  wrapper's own CSS rotation matches the Group's tilt for the same reason. (An object manually
- *  rotated further on top of that isn't additionally accounted for here — a cosmetic gap in this
- *  edit affordance only, never in the stored artwork, which always keeps its own exact rotation.) */
+ *  inside a large parent's render body). */
 function EditingTextOverlay({
   editingObj,
   box,
@@ -443,75 +600,79 @@ function EditingTextOverlay({
   );
 }
 
+function normalizeDeg(deg: number): number {
+  return Math.round(((deg % 360) + 540) % 360 - 180);
+}
+
+function boxFor(location: DesignSideType) {
+  const geometry = PLACEMENT_GEOMETRY[location];
+  return {
+    box: { x: 0, y: 0, width: geometry.widthFrac * NATURAL_WIDTH, height: geometry.heightFrac * NATURAL_HEIGHT },
+    groupCenterX: (geometry.xFrac + geometry.widthFrac / 2) * NATURAL_WIDTH,
+    groupCenterY: (geometry.yFrac + geometry.heightFrac / 2) * NATURAL_HEIGHT,
+    rotationDeg: geometry.rotationDeg,
+  };
+}
+
 export function CanvasStage({
-  location,
+  layers,
   mockupUrl,
-  objects,
   selectedId,
   onSelect,
   onCommitObject,
   editingTextId,
   onEditRequest,
   onEditCommit,
+  onSwitchLocation,
   readOnly = false,
   placementPreview = false,
   zoom = 1,
   fitMode = "contain",
 }: {
-  location: DesignSideType;
+  /** Every location visible in this canvas right now — see CanvasLayerSpec. Exactly one should be
+   *  `active` in an editable canvas; pass a single-entry array with `active: false` for a plain
+   *  read-only single-location view (ReviewPanel's per-location cell, a schematic view, etc). */
+  layers: CanvasLayerSpec[];
   mockupUrl: string | null;
-  objects: DesignObjectRecord[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onCommitObject: (id: string, patch: Partial<DesignObjectRecord>) => void;
   editingTextId: string | null;
   onEditRequest: (id: string) => void;
   onEditCommit: (id: string, content: string) => void;
+  /** Clicking artwork that belongs to a non-active layer switches editing to that layer's location
+   *  — optional; omit to leave other layers' artwork visible but inert (still satisfies "artwork
+   *  must remain visible" on its own). */
+  onSwitchLocation?: (location: DesignSideType) => void;
   readOnly?: boolean;
   /** True when this location has no real per-location product photo and is rendering the generic
    *  garment silhouette instead — see productDecorationProfile.ts. Swaps the "Print area" badge
    *  for an explicit "Placement Preview" one so a customer never mistakes it for exact photography. */
   placementPreview?: boolean;
-  /** Extra zoom multiplier on top of the responsive fit-to-container scale; 1 = fit. Panning past
-   *  the viewport at zoom > 1 is handled by the wrapping container's native scroll, not custom
-   *  drag logic — see ZoomControls/CanvasWorkspace. */
   zoom?: number;
-  /** "contain" (default) fits inside both width and height of a real bounded container — use for
-   *  anything living in Studio's fixed-height shell. "width" fits width only, height follows the
-   *  aspect ratio — use for a normal scrollable list of full-size previews (ReviewPanel). */
   fitMode?: "contain" | "width";
 }) {
-  const reduce = useReducedMotion();
   const { containerRef, scale: fitScale } = useResponsiveScale(fitMode === "contain");
   const scale = fitScale * zoom;
   const stageRef = useRef<Konva.Stage | null>(null);
   const transformerRef = useRef<Konva.Transformer | null>(null);
   const nodeRefs = useRef<Map<string, Konva.Node>>(new Map());
+  // Bumped once an image object's Konva node actually mounts — see DesignImageNode's own effect
+  // and the comment there. The Transformer-attach effect below depends on this in addition to
+  // selectedId, which is what fixes the "uploaded image isn't selectable until you move it" bug:
+  // an image's Konva node doesn't exist until its (async) <img> has loaded, so the very first
+  // render right after upload has no node in nodeRefs yet — without this, the attach effect runs
+  // once, finds nothing, and never runs again once the image finishes loading and registers its
+  // ref. useCallback (stable, empty deps — setState setters are always stable) rather than a
+  // fresh closure every render: DesignImageNode's effect depends on this function's identity, and
+  // a fresh one each render would re-fire that effect every render forever.
+  const [nodeVersion, setNodeVersion] = useState(0);
+  const bumpNodeVersion = useCallback(() => setNodeVersion((v) => v + 1), []);
+  const [guides, setGuides] = useState<{ v: number | null; h: number | null }>({ v: null, h: null });
+  const [rotateReadout, setRotateReadout] = useState<{ x: number; y: number; deg: number } | null>(null);
 
-  const geometry = PLACEMENT_GEOMETRY[location];
-  // Every object's normalizedX/Y/Width/Height is measured in this LOCAL, top-left-origin,
-  // UNROTATED frame — box.x/y are always 0 now (they used to be the print area's absolute
-  // stage position back when nothing rotated). The actual stage position/rotation lives on the
-  // <Group> wrapping these objects below, not on the objects themselves, which is what keeps a
-  // sleeve's stored artwork coordinates identical in shape to a straight front print's (Section 9:
-  // production data must stay independent of mockup display rotation).
-  const box = {
-    x: 0,
-    y: 0,
-    width: geometry.widthFrac * NATURAL_WIDTH,
-    height: geometry.heightFrac * NATURAL_HEIGHT,
-  };
-  // Stage-space pivot the print-area Group rotates around — the center of its mockup position,
-  // not its top-left corner, so rotation reads as "tilting in place" rather than swinging the box
-  // off to one side.
-  const groupCenterX = (geometry.xFrac + geometry.widthFrac / 2) * NATURAL_WIDTH;
-  const groupCenterY = (geometry.yFrac + geometry.heightFrac / 2) * NATURAL_HEIGHT;
-  const rotationDeg = geometry.rotationDeg;
-  // Only rotated locations (currently: the two sleeves) get a hard clip — front/back/left-chest
-  // keep their existing "the dashed line is a guide, not a wall" behaviour unchanged. A rotated
-  // print area is the one case Section 11 specifically asks to constrain, since an unclipped
-  // rotated box makes it easy to drag artwork visibly outside the actual sleeve surface.
-  const shouldClip = rotationDeg !== 0;
+  const activeLayer = layers.find((l) => l.active) ?? null;
+  const activeGeometry = activeLayer ? boxFor(activeLayer.location) : null;
 
   useEffect(() => {
     const transformer = transformerRef.current;
@@ -519,19 +680,72 @@ export function CanvasStage({
     const node = selectedId ? nodeRefs.current.get(selectedId) : null;
     transformer.nodes(node ? [node] : []);
     transformer.getLayer()?.batchDraw();
-  }, [selectedId, objects]);
+  }, [selectedId, layers, nodeVersion]);
 
-  const editingObj = editingTextId ? objects.find((o) => o.id === editingTextId) : null;
-  const visibleObjects = objects.filter((o) => !o.hidden);
+  const editingObj = editingTextId ? layers.flatMap((l) => l.objects).find((o) => o.id === editingTextId) : null;
+
+  /** Smart alignment guides (STUDIO V3 brief, Section 3): snaps a dragged object's TOP-LEFT corner
+   *  against the active print area's own center/edges and every other visible object's edges/center
+   *  on that SAME print area — never against a different location's artwork, even when it's visible
+   *  in the same composite view (the brief is explicit: "do not snap to objects belonging to
+   *  unrelated garment surfaces"). Returns the (possibly adjusted) top-left position; callers pass
+   *  their own node's current position/size and apply the result straight back onto the Konva node. */
+  function snapDrag(objId: string, x: number, y: number, width: number, height: number): { x: number; y: number } {
+    if (!activeLayer || !activeGeometry) return { x, y };
+    const threshold = SNAP_CATCH_PX / (scale || 1);
+    const box = activeGeometry.box;
+    const vTargets = [0, box.width / 2, box.width];
+    const hTargets = [0, box.height / 2, box.height];
+    for (const o of activeLayer.objects) {
+      if (o.id === objId || o.hidden) continue;
+      const ow = o.normalizedWidth * box.width;
+      const oh = o.normalizedHeight * box.height;
+      const ox = o.normalizedX * box.width;
+      const oy = o.normalizedY * box.height;
+      vTargets.push(ox, ox + ow / 2, ox + ow);
+      hTargets.push(oy, oy + oh / 2, oy + oh);
+    }
+    let snapX = x;
+    let vGuide: number | null = null;
+    for (const cx of [x, x + width / 2, x + width]) {
+      for (const t of vTargets) {
+        if (Math.abs(cx - t) < threshold) {
+          snapX = x + (t - cx);
+          vGuide = t;
+        }
+      }
+    }
+    let snapY = y;
+    let hGuide: number | null = null;
+    for (const cy of [y, y + height / 2, y + height]) {
+      for (const t of hTargets) {
+        if (Math.abs(cy - t) < threshold) {
+          snapY = y + (t - cy);
+          hGuide = t;
+        }
+      }
+    }
+    setGuides({ v: vGuide, h: hGuide });
+    return { x: snapX, y: snapY };
+  }
+
+  function clearGuides() {
+    setGuides({ v: null, h: null });
+  }
+
+  const preparedLayers = layers.map((layer) => {
+    const { box, groupCenterX, groupCenterY, rotationDeg } = boxFor(layer.location);
+    const interactive = !readOnly && layer.active;
+    const renderObjects = layer.objects
+      .filter((o) => !o.hidden)
+      .map((obj) => ({
+        obj,
+        onClickSwitch: !interactive && !readOnly && onSwitchLocation ? () => onSwitchLocation(layer.location) : undefined,
+      }));
+    return { layer, box, groupCenterX, groupCenterY, rotationDeg, shouldClip: rotationDeg !== 0, interactive, renderObjects };
+  });
 
   return (
-    // Outer div is what ResizeObserver measures (see useResponsiveScale) and must have a REAL
-    // CSS-computed width/height of its own — h-full/w-full stretching to fill whatever flex/grid
-    // space the caller gives it, not sized to its own content, or width/height-based fitting would
-    // be circular. It centers a fixed-size inner box (exactly the stage's rendered pixel size) so
-    // that every absolutely-positioned overlay below (badge, text-edit textarea) can keep
-    // positioning itself relative to THAT inner box's 0,0 — i.e. the stage's own top-left corner —
-    // regardless of how much extra space the outer box centers around it.
     <div
       ref={containerRef}
       className={cn(
@@ -542,134 +756,181 @@ export function CanvasStage({
       style={fitMode === "width" ? { maxWidth: NATURAL_WIDTH } : undefined}
     >
       <div className="relative" style={{ width: NATURAL_WIDTH * scale, height: NATURAL_HEIGHT * scale }}>
-      <Stage
-        ref={stageRef}
-        width={NATURAL_WIDTH * scale}
-        height={NATURAL_HEIGHT * scale}
-        scaleX={scale}
-        scaleY={scale}
-        onMouseDown={(e) => {
-          if (!readOnly && e.target === e.target.getStage()) onSelect(null);
-        }}
-        className="overflow-hidden rounded-3xl bg-white"
-      >
-        <Layer>
-          <MockupBackground url={mockupUrl} />
-          {/* This Group IS the print area's local coordinate space (Section 8) — positioned at
-              the mockup location's center and rotated by rotationDeg, with offsetX/Y set to its
-              own half-size so that rotation pivots around its center rather than its corner.
-              Every child below is drawn in LOCAL, unrotated coordinates (box.x/y are always 0);
-              Konva's own transform is what makes them appear rotated on the sleeve — nothing here
-              manually rotates an individual object because the location changed. Clipping (sleeve
-              locations only, see shouldClip) is applied in this same local frame, so it rotates
-              together with the content instead of clipping to an axis-aligned stage rectangle. */}
-          <Group
-            x={groupCenterX}
-            y={groupCenterY}
-            offsetX={box.width / 2}
-            offsetY={box.height / 2}
-            rotation={rotationDeg}
-            clipX={shouldClip ? 0 : undefined}
-            clipY={shouldClip ? 0 : undefined}
-            clipWidth={shouldClip ? box.width : undefined}
-            clipHeight={shouldClip ? box.height : undefined}
-          >
-            {!readOnly && (
-              <Rect
-                x={box.x}
-                y={box.y}
-                width={box.width}
-                height={box.height}
-                stroke="#D41414"
-                strokeWidth={1}
-                dash={[6, 6]}
-                listening={false}
-                opacity={0.55}
-              />
-            )}
-            {visibleObjects.map((obj) => {
-              const nodeRef = (node: Konva.Node | null) => {
-                if (node) nodeRefs.current.set(obj.id, node);
-                else nodeRefs.current.delete(obj.id);
-              };
-              if (obj.type === "image") {
-                return (
-                  <DesignImageNode
-                    key={obj.id}
-                    obj={obj}
-                    box={box}
-                    onSelect={() => onSelect(obj.id)}
-                    onCommit={(patch) => onCommitObject(obj.id, patch)}
-                    readOnly={readOnly}
-                    nodeRef={nodeRef as (node: Konva.Image | null) => void}
-                  />
-                );
-              }
-              if (obj.type === "shape") {
-                return (
-                  <ShapeNode
-                    key={obj.id}
-                    obj={obj}
-                    box={box}
-                    onSelect={() => onSelect(obj.id)}
-                    onCommit={(patch) => onCommitObject(obj.id, patch)}
-                    readOnly={readOnly}
-                    nodeRef={nodeRef}
-                  />
-                );
-              }
+        <Stage
+          ref={stageRef}
+          width={NATURAL_WIDTH * scale}
+          height={NATURAL_HEIGHT * scale}
+          scaleX={scale}
+          scaleY={scale}
+          onMouseDown={(e) => {
+            if (!readOnly && e.target === e.target.getStage()) onSelect(null);
+          }}
+          className="overflow-hidden rounded-3xl bg-white"
+        >
+          <Layer>
+            <MockupBackground url={mockupUrl} />
+            {preparedLayers.map(({ layer, box, groupCenterX, groupCenterY, rotationDeg, shouldClip, interactive, renderObjects }) => {
               return (
-                <DesignTextNode
-                  key={obj.id}
-                  obj={obj}
-                  box={box}
-                  onSelect={() => onSelect(obj.id)}
-                  onCommit={(patch) => onCommitObject(obj.id, patch)}
-                  onEditRequest={() => onEditRequest(obj.id)}
-                  readOnly={readOnly}
-                  nodeRef={nodeRef}
-                />
+                // This Group IS the print area's local coordinate space (Section 8/9 of the earlier
+                // brief) — positioned at the mockup location's center and rotated by rotationDeg,
+                // with offsetX/Y set to its own half-size so rotation pivots around its center.
+                // Every child below is drawn in LOCAL, unrotated coordinates; Konva's own transform
+                // is what makes them appear correctly on the mockup. One Group per open location
+                // sharing this view (STUDIO V3): only the active one gets the dashed boundary and
+                // Transformer/drag/select — the rest render their real artwork at full opacity so
+                // the composite reads as "what the finished garment actually looks like."
+                <Group
+                  key={layer.location}
+                  x={groupCenterX}
+                  y={groupCenterY}
+                  offsetX={box.width / 2}
+                  offsetY={box.height / 2}
+                  rotation={rotationDeg}
+                  clipX={shouldClip ? 0 : undefined}
+                  clipY={shouldClip ? 0 : undefined}
+                  clipWidth={shouldClip ? box.width : undefined}
+                  clipHeight={shouldClip ? box.height : undefined}
+                >
+                  {interactive && !readOnly && (
+                    <Rect
+                      x={box.x}
+                      y={box.y}
+                      width={box.width}
+                      height={box.height}
+                      stroke="#D41414"
+                      strokeWidth={1}
+                      dash={[6, 6]}
+                      listening={false}
+                      opacity={0.55}
+                    />
+                  )}
+                  {interactive && guides.v !== null && (
+                    <Line points={[guides.v, -40, guides.v, box.height + 40]} stroke={GUIDE_COLOR} strokeWidth={1} listening={false} />
+                  )}
+                  {interactive && guides.h !== null && (
+                    <Line points={[-40, guides.h, box.width + 40, guides.h]} stroke={GUIDE_COLOR} strokeWidth={1} listening={false} />
+                  )}
+                  {renderObjects.map(({ obj, onClickSwitch }) => {
+                    // Plain per-render closures, assigned directly to the `ref` prop each node
+                    // type forwards onto its Konva node — this is the sanctioned place refs get
+                    // written (React calls it during commit, never during render itself), so it
+                    // does NOT trip react-hooks/refs the way reading nodeRefs.current inside the
+                    // render body to build/cache a callback would.
+                    const nodeRef = (node: Konva.Node | null) => {
+                      if (node) nodeRefs.current.set(obj.id, node);
+                      else nodeRefs.current.delete(obj.id);
+                    };
+                    if (obj.type === "image") {
+                      return (
+                        <DesignImageNode
+                          key={obj.id}
+                          obj={obj}
+                          box={box}
+                          interactive={interactive}
+                          onSelect={() => onSelect(obj.id)}
+                          onCommit={(patch) => onCommitObject(obj.id, patch)}
+                          onDragMove={(x, y, w, h) => snapDrag(obj.id, x, y, w, h)}
+                          onDragEnd={clearGuides}
+                          nodeRef={nodeRef as (node: Konva.Image | null) => void}
+                          onClickSwitch={onClickSwitch}
+                          onMounted={bumpNodeVersion}
+                        />
+                      );
+                    }
+                    if (obj.type === "shape") {
+                      return (
+                        <ShapeNode
+                          key={obj.id}
+                          obj={obj}
+                          box={box}
+                          interactive={interactive}
+                          onSelect={() => onSelect(obj.id)}
+                          onCommit={(patch) => onCommitObject(obj.id, patch)}
+                          onDragMove={(x, y, w, h) => snapDrag(obj.id, x, y, w, h)}
+                          onDragEnd={clearGuides}
+                          nodeRef={nodeRef}
+                          onClickSwitch={onClickSwitch}
+                        />
+                      );
+                    }
+                    return (
+                      <DesignTextNode
+                        key={obj.id}
+                        obj={obj}
+                        box={box}
+                        interactive={interactive}
+                        onSelect={() => onSelect(obj.id)}
+                        onCommit={(patch) => onCommitObject(obj.id, patch)}
+                        onEditRequest={() => onEditRequest(obj.id)}
+                        onDragMove={(x, y, w, h) => snapDrag(obj.id, x, y, w, h)}
+                        onDragEnd={clearGuides}
+                        nodeRef={nodeRef}
+                        onClickSwitch={onClickSwitch}
+                      />
+                    );
+                  })}
+                </Group>
               );
             })}
-          </Group>
-          {!readOnly && (
-            <Transformer
-              ref={transformerRef}
-              rotateEnabled
-              anchorSize={12}
-              anchorCornerRadius={6}
-              borderStroke="#D41414"
-              anchorStroke="#D41414"
-              anchorFill="#ffffff"
-              rotationSnaps={reduce ? [0, 90, 180, 270] : undefined}
-              flipEnabled={false}
-            />
-          )}
-        </Layer>
-      </Stage>
+            {!readOnly && (
+              <Transformer
+                ref={transformerRef}
+                rotateEnabled
+                anchorSize={12}
+                anchorCornerRadius={6}
+                borderStroke="#D41414"
+                anchorStroke="#D41414"
+                anchorFill="#ffffff"
+                // Subtle rotation snapping (Section 2): catches near the 8 common angles within a
+                // few degrees rather than fighting every small manual adjustment — Konva's own
+                // rotationSnapTolerance is exactly this "small threshold" behaviour built in.
+                rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
+                rotationSnapTolerance={3}
+                flipEnabled={false}
+                onTransformStart={(e) => {
+                  const node = e.target;
+                  const pos = node.getAbsolutePosition();
+                  setRotateReadout({ x: pos.x, y: pos.y, deg: normalizeDeg(node.rotation()) });
+                }}
+                onTransform={(e) => {
+                  const node = e.target;
+                  const pos = node.getAbsolutePosition();
+                  setRotateReadout({ x: pos.x, y: pos.y, deg: normalizeDeg(node.rotation()) });
+                }}
+                onTransformEnd={() => setRotateReadout(null)}
+              />
+            )}
+            {rotateReadout && (
+              <Label x={rotateReadout.x} y={rotateReadout.y - 32} listening={false}>
+                <Tag fill="#171412" cornerRadius={5} />
+                <KonvaText text={`${rotateReadout.deg}°`} fontSize={12} fontStyle="700" fill="#ffffff" padding={5} />
+              </Label>
+            )}
+          </Layer>
+        </Stage>
 
-      {!readOnly && (
-        <p
-          className={cn(
-            "pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white",
-            placementPreview ? "bg-orange/90" : "bg-ink-950/80",
-          )}
-        >
-          {placementPreview ? "Placement Preview" : "Print area"}
-        </p>
-      )}
+        {!readOnly && (
+          <p
+            className={cn(
+              "pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white",
+              placementPreview ? "bg-orange/90" : "bg-ink-950/80",
+            )}
+          >
+            {placementPreview ? "Placement Preview" : "Print area"}
+          </p>
+        )}
 
-      {!readOnly && editingObj && (
-        <EditingTextOverlay
-          editingObj={editingObj}
-          box={box}
-          groupCenterX={groupCenterX}
-          groupCenterY={groupCenterY}
-          rotationDeg={rotationDeg}
-          scale={scale}
-          onEditCommit={onEditCommit}
-        />
-      )}
+        {!readOnly && editingObj && activeGeometry && (
+          <EditingTextOverlay
+            editingObj={editingObj}
+            box={activeGeometry.box}
+            groupCenterX={activeGeometry.groupCenterX}
+            groupCenterY={activeGeometry.groupCenterY}
+            rotationDeg={activeGeometry.rotationDeg}
+            scale={scale}
+            onEditCommit={onEditCommit}
+          />
+        )}
       </div>
     </div>
   );

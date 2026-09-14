@@ -6,6 +6,7 @@ import { ArrowLeft, Check, SpinnerGap, WarningCircle } from "@phosphor-icons/rea
 import { cn } from "@/lib/cn";
 import { EASE_PREMIUM } from "@/lib/motion";
 import { backgroundUrlFor } from "@/lib/studio/printAreas";
+import { groupLocationsByView } from "@/lib/studio/garmentViews";
 import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 
@@ -45,15 +46,22 @@ export function ReviewPanel({
   approveState: "idle" | "adding" | "success" | "error";
 }) {
   const availableSides = project.sides.map((s) => s.sideType);
-  const noop = () => {};
   const hasArt = (side: DesignSideType) => (sides[side]?.length ?? 0) > 0;
   const labelFor = (side: DesignSideType) => profile.find((l) => l.id === side)?.label ?? side;
-  const isPlacementPreview = (side: DesignSideType) => profile.find((l) => l.id === side)?.usesPlacementPreview ?? false;
   const mockupFor = (side: DesignSideType) => {
     const loc = profile.find((l) => l.id === side);
     if (!loc) return null;
     return backgroundUrlFor(loc.viewType, project.mockupImages, project.colourName, loc.usesPlacementPreview);
   };
+
+  // Section 25: "do not show Left Chest as if it were an entirely different shirt" — group every
+  // decorated location back into the GarmentView it actually shares (front/left-chest/right-chest
+  // are one composite picture, not three), so Review reads as a handful of real views rather than
+  // nine nearly-identical shirt photos. Pricing/production below is completely unaffected — it
+  // still reads per-location `sides`/`priceBreakdown`, never this grouping.
+  const viewGroups = groupLocationsByView(availableSides, profile);
+  const groupLabel = (locations: DesignSideType[]) =>
+    locations.length === 1 ? labelFor(locations[0]) : `${labelFor(locations[0])} + ${locations.slice(1).map(labelFor).join(", ")}`;
 
   return (
     // h-full + overflow-y-auto, not min-h-screen: Review lives inside Studio's fixed h-dvh shell
@@ -80,28 +88,30 @@ export function ReviewPanel({
 
         <div className="mt-8 grid gap-8 md:grid-cols-2">
           <div className="min-w-0 space-y-6">
-            {availableSides.map((side) => (
-              <div key={side}>
-                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
-                  {labelFor(side)} preview
-                  <span className={hasArt(side) ? "text-crimson" : "text-muted/50"}>{hasArt(side) ? "✓" : "—"}</span>
-                </p>
-                <CanvasStage
-                  location={side}
-                  mockupUrl={mockupFor(side)}
-                  objects={sides[side] ?? []}
-                  selectedId={null}
-                  onSelect={noop}
-                  onCommitObject={noop}
-                  editingTextId={null}
-                  onEditRequest={noop}
-                  onEditCommit={noop}
-                  readOnly
-                  placementPreview={isPlacementPreview(side)}
-                  fitMode="width"
-                />
-              </div>
-            ))}
+            {viewGroups.map((group) => {
+              const primary = group.locations[0];
+              const groupHasArt = group.locations.some(hasArt);
+              return (
+                <div key={group.view}>
+                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+                    {groupLabel(group.locations)} preview
+                    <span className={groupHasArt ? "text-crimson" : "text-muted/50"}>{groupHasArt ? "✓" : "—"}</span>
+                  </p>
+                  <CanvasStage
+                    layers={group.locations.map((loc) => ({ location: loc, objects: sides[loc] ?? [], active: false }))}
+                    mockupUrl={mockupFor(primary)}
+                    selectedId={null}
+                    onSelect={() => {}}
+                    onCommitObject={() => {}}
+                    editingTextId={null}
+                    onEditRequest={() => {}}
+                    onEditCommit={() => {}}
+                    readOnly
+                    fitMode="width"
+                  />
+                </div>
+              );
+            })}
           </div>
 
           <div className="min-w-0 space-y-6">
