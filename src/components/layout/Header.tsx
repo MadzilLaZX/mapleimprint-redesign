@@ -102,12 +102,16 @@ export function Header() {
               <ShoppingBag className="size-5" />
               <AnimatePresence>
                 {totalCount > 0 && (
+                  // Keyed by the count itself, not a static string — one subtle acknowledgement
+                  // per change (badge fades/scales in from ~0.95, Section 29), not a continuous or
+                  // shaking animation. Only fires on genuine appear (0→1) or count change; simply
+                  // re-rendering with the same totalCount never remounts this node.
                   <motion.span
-                    key="cart-count"
-                    initial={{ opacity: 0, scale: 0.5 }}
+                    key={totalCount}
+                    initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
                     className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-maple-gradient text-[10px] font-bold text-ink-950"
                   >
                     {totalCount > 9 ? "9+" : totalCount}

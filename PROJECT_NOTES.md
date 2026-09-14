@@ -258,6 +258,59 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-13 post-approval cart transition:** Review's "Approve & add to cart" used to flip
+instantly to a static "✓ Added to cart" with nothing else — no route back into shopping, no
+acknowledgement that the customer had left "design mode." Replaced with a full state machine and
+one new transition component, reusing the real Header rather than a second hand-built one.
+
+- **`src/lib/motion.ts`** — one shared duration/ease vocabulary (durations per the brief's
+  micro/control/panel/route/mode tiers; ease is the *same* `[0.16,1,0.3,1]` curve already used by
+  `PageTransition.tsx`/`ProductCard`/`ProductGallery`, not a second near-identical one).
+- **`StudioClient.tsx`** — `approveState: "idle"|"adding"|"success"|"error"` replaces the old plain
+  `addedToCart` boolean. The status PATCH is now *awaited* and happens before the local cart
+  mutation (a failed PATCH must never leave a cart line pointing at a project the server still
+  considers a draft), guarded against double-firing while `"adding"` or already `"success"`.
+  Seeded from `project.status === "ordered"` on load — reopening an already-approved design (fresh
+  load, or browser Back after approving) starts in `"success"`, so there's no path back to a fresh,
+  clickable Approve button that would add a second cart line. Verified live: approved once, viewed
+  cart, hit browser Back, clicked Review again — disabled "Added to Cart" shown, not a fresh
+  Approve. New `mode: "post-cart"` renders `PostCartConfirmation` ~400ms after the button's own
+  "✓ Added to Cart" state appears (the brief's "success moment" beat).
+- **`PostCartConfirmation.tsx`** (new) — mounts the real `Header` component (never a cloned one),
+  animated in with a coordinated height+translateY reveal so it doesn't shove content down with no
+  transition, then a confirmation tray (checkmark, reused mockup thumbnail, product/colour/size
+  summary, View Cart primary / Continue Shopping secondary / a close ×) sliding in beneath it. A
+  short fade-out plays before either button's navigation actually fires, rather than an instant
+  unmount. `useReducedMotion()` swaps every translate for an instant/fade-only state change.
+  `headerVariant.ts` gained `/studio` in its commerce-path list specifically so this transient,
+  still-on-`/studio/[id]` header shows the commerce variant (no "Start Designing") instead of
+  defaulting to marketing purely because of the URL.
+- **`Header.tsx`** — the cart badge is now keyed by `totalCount` itself (was a static key), so
+  incrementing it replays a small fade/scale-in (Section 29) instead of only animating on the
+  0→1/1→0 edges. Confirmed the badge already used the same unit-based `totalCount` CartProvider
+  exposes everywhere else — no second counting convention to reconcile.
+- **`ShopUrlMemory.tsx`** (new, mounted on `/shop`) + reading it back in `PostCartConfirmation` —
+  the shop's entire browsable state (category/subcategory/sort/search/page) already lives in the
+  URL, so "Continue Shopping restores where the customer came from" only needed remembering the
+  last full `/shop` URL in sessionStorage, not a new state-restoration system. Deliberately does
+  NOT also restore scroll position (explicitly optional in the brief, and scroll depends on
+  variable content height — the honest, robust version of this feature is landing on the right
+  page/filter/sort, not a remembered pixel offset). Verified: shop visited with
+  `sort=price-desc` → design → approve → Continue Shopping → back on `/shop?...sort=price-desc`.
+- **Verified**: full approve → header-enters → tray → View Cart / Continue Shopping cycle at
+  1366×768, 1920×1080, 375×667, 390×844 (zero page-level scroll at all four — consistent with the
+  existing full-screen Studio shell architecture); two separate designs added back-to-back produce
+  two distinct cart lines, never merged/overwritten; a forced-failure PATCH shows the error state
+  (message + Try again + Back to Studio) without touching the cart, and the design itself is
+  untouched — confirmed by simply retrying successfully afterward.
+- **Found, not fixed (pre-existing, unrelated to this task):** an SSR/`useReducedMotion()` hydration
+  warning appears on **product pages** (`PageHeader`/`Reveal`) when the browser's
+  `prefers-reduced-motion` is on — `useReducedMotion()` can only resolve client-side, so the server
+  render (no window) and the reduced-motion client render disagree on first paint. React recovers
+  by regenerating that subtree client-side, so nothing is broken, but it's a real console warning
+  on a code path this task didn't touch (`Reveal`, used site-wide) and didn't fix — flagged for a
+  dedicated pass rather than papered over here.
+
 **2026-09-13 Studio location strip, rotated sleeve print areas, dedicated Inner Neck schematic:**
 removed the "More" dropdown for print locations, gave sleeve locations a real rotated print area
 instead of an axis-aligned box sitting crooked on the sleeve, and gave Inside/Outside Neck Label

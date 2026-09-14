@@ -1,8 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
+import { EASE_PREMIUM } from "@/lib/motion";
 import { backgroundUrlFor } from "@/lib/studio/printAreas";
 import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
@@ -32,7 +34,7 @@ export function ReviewPanel({
   priceBreakdown,
   onBack,
   onApprove,
-  addedToCart,
+  approveState,
 }: {
   project: DesignProjectRecord;
   sides: Partial<Record<DesignSideType, DesignObjectRecord[]>>;
@@ -40,7 +42,7 @@ export function ReviewPanel({
   priceBreakdown: PriceBreakdown | null;
   onBack: () => void;
   onApprove: () => void;
-  addedToCart: boolean;
+  approveState: "idle" | "adding" | "success" | "error";
 }) {
   const availableSides = project.sides.map((s) => s.sideType);
   const noop = () => {};
@@ -151,21 +153,78 @@ export function ReviewPanel({
 
             <button
               type="button"
-              disabled={addedToCart}
+              disabled={approveState === "adding" || approveState === "success"}
               onClick={onApprove}
               className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-opacity",
-                addedToCart ? "bg-ink-950 text-white" : "bg-maple-gradient text-ink-950 hover:opacity-95",
+                "flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-6 py-3.5 text-sm font-semibold transition-colors",
+                approveState === "success" ? "bg-ink-950 text-white" : "bg-maple-gradient text-ink-950 hover:opacity-95",
+                approveState === "adding" && "cursor-wait opacity-80",
               )}
             >
-              {addedToCart ? (
-                <>
-                  <Check className="size-4" weight="bold" /> Added to cart
-                </>
-              ) : (
-                "Approve & add to cart"
-              )}
+              {/* Crossfade the label rather than swap it instantly — Section 1's "150-250ms
+                  ordinary button-state transitions," no scale/bounce. */}
+              <AnimatePresence mode="wait" initial={false}>
+                {approveState === "adding" ? (
+                  <motion.span
+                    key="adding"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18, ease: EASE_PREMIUM }}
+                    className="flex items-center gap-2"
+                  >
+                    <SpinnerGap className="size-4 animate-spin" weight="bold" />
+                    Adding…
+                  </motion.span>
+                ) : approveState === "success" ? (
+                  <motion.span
+                    key="success"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18, ease: EASE_PREMIUM }}
+                    className="flex items-center gap-2"
+                  >
+                    <Check className="size-4" weight="bold" /> Added to Cart
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18, ease: EASE_PREMIUM }}
+                  >
+                    Approve &amp; add to cart
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
+
+            {approveState === "error" && (
+              <div className="rounded-2xl bg-crimson/10 p-4 text-sm text-crimson">
+                <p className="font-semibold">We couldn&apos;t add your design to the cart.</p>
+                <p className="mt-1 text-xs text-crimson/80">
+                  Your design is safe — nothing was lost. Please try again.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={onApprove}
+                    className="rounded-full bg-crimson px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                  >
+                    Try again
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="rounded-full border border-crimson/30 px-4 py-2 text-xs font-semibold text-crimson transition-colors hover:bg-crimson/5"
+                  >
+                    Back to Studio
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

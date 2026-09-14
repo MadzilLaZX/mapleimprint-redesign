@@ -8,6 +8,7 @@ import { Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr
 import { useCart } from "@/components/cart/CartProvider";
 import { ReviewPanel } from "@/components/studio/ReviewPanel";
 import { PreviewMode } from "@/components/studio/PreviewMode";
+import { PostCartConfirmation } from "@/components/studio/PostCartConfirmation";
 import { CropModal, type CropFraction } from "@/components/studio/CropModal";
 import { ToolRail } from "@/components/studio/shell/ToolRail";
 import { SecondaryPanel } from "@/components/studio/shell/SecondaryPanel";
@@ -94,8 +95,14 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [recentUploads, setRecentUploads] = useState<RecentUpload[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [mode, setMode] = useState<"edit" | "preview" | "review">("edit");
-  const [addedToCart, setAddedToCart] = useState(false);
+  const [mode, setMode] = useState<"edit" | "preview" | "review" | "post-cart">("edit");
+  // "adding" while the status PATCH is in flight, "success" once it lands (the button itself shows
+  // "✓ Added to Cart" for a beat before `mode` advances to "post-cart" — see handleApproveAndAddToCart),
+  // "error" if it failed (never silently treated as success). Initialized from the loaded project's
+  // own status, not just local interaction — reopening an already-ordered design (fresh load, or
+  // browser Back after approving) must never present a fresh, clickable Approve button that would
+  // add a second cart line for the same design (Section 18/34).
+  const [approveState, setApproveState] = useState<"idle" | "adding" | "success" | "error">("idle");
   const [activeTool, setActiveTool] = useState<StudioToolId | null>(null);
   // Per-location, not a single shared value — Section 22 wants Inner Neck to auto-fit rather than
   // inherit whatever zoom level Front happened to be at, and Front to come back the way the
@@ -131,6 +138,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
         setActiveSide(data.sides[0]?.sideType ?? "front");
         const hasAnyObject = data.sides.some((s) => s.objects.length > 0);
         setShowOnboarding(!hasAnyObject);
+        if (data.status === "ordered") setApproveState("success");
       })
       .catch((err: Error) => {
         if (!cancelled) setLoadError(err.message);
@@ -504,30 +512,47 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
   const hasAnyDesign = openSides.some((s) => (sides[s]?.length ?? 0) > 0);
 
-  function handleApproveAndAddToCart() {
+  // The PATCH (marking this DesignProject revision as ordered/frozen) is awaited and happens
+  // BEFORE the local cart mutation, deliberately — a failed PATCH must never leave a cart line
+  // pointing at a project the server still considers a draft. `approveState` guards against a
+  // double-click or a stray extra call re-running this mid-flight or after it already succeeded
+  // (Section 18); reopening an already-"ordered" project starts in "success" already (see the load
+  // effect above), so browser Back after approving can't reach a fresh, clickable button either.
+  async function handleApproveAndAddToCart() {
     if (!project || !priceBreakdown) return;
-    addItem(
-      {
-        id: `studio-${project.id}`,
-        name: project.productName,
-        image: project.mockupImages.front ?? project.mockupImages.back ?? "",
-        categorySlug: project.categorySlug,
-        categoryName: project.categorySlug,
-        colourName: project.colourName,
-        sizeBreakdown: project.sizeBreakdown,
-        startingPrice: priceBreakdown.total / project.totalQuantity,
-        customizationType: "CUSTOM",
-        designProjectId: project.id,
-        designRevision: project.revision,
-      },
-      project.totalQuantity,
-    );
-    fetch(`/api/studio/${projectId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "ordered" }),
-    }).catch(() => {});
-    setAddedToCart(true);
+    if (approveState === "adding" || approveState === "success") return;
+    setApproveState("adding");
+    try {
+      const res = await fetch(`/api/studio/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ordered" }),
+      });
+      if (!res.ok) throw new Error("Couldn't save your approval.");
+      addItem(
+        {
+          id: `studio-${project.id}`,
+          name: project.productName,
+          image: project.mockupImages.front ?? project.mockupImages.back ?? "",
+          categorySlug: project.categorySlug,
+          categoryName: project.categorySlug,
+          colourName: project.colourName,
+          sizeBreakdown: project.sizeBreakdown,
+          startingPrice: priceBreakdown.total / project.totalQuantity,
+          customizationType: "CUSTOM",
+          designProjectId: project.id,
+          designRevision: project.revision,
+        },
+        project.totalQuantity,
+      );
+      setApproveState("success");
+      // A short beat showing the button's own "✓ Added to Cart" state (Section 2's "success
+      // moment") before advancing to the full post-cart header+tray view — long enough to
+      // register, short enough not to feel like a delay.
+      window.setTimeout(() => setMode("post-cart"), 400);
+    } catch {
+      setApproveState("error");
+    }
   }
 
   const productHref = project ? `/products/${project.categorySlug}/${project.subcategorySlug}/${project.productSlug}` : "/shop";
@@ -548,6 +573,8 @@ export function StudioClient({ projectId }: { projectId: string }) {
         <SpinnerGap className="size-8 animate-spin text-muted" weight="bold" />
       </div>
     );
+  } else if (mode === "post-cart") {
+    content = <PostCartConfirmation project={project} onClose={() => setMode("review")} />;
   } else if (mode === "review") {
     content = (
       <ReviewPanel
@@ -557,7 +584,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
         priceBreakdown={priceBreakdown}
         onBack={() => setMode("edit")}
         onApprove={handleApproveAndAddToCart}
-        addedToCart={addedToCart}
+        approveState={approveState}
       />
     );
   } else if (mode === "preview") {
@@ -774,7 +801,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
           </InspectorDock>
         </div>
 
-        {addedToCart && (
+        {approveState === "success" && (
           <div className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink-950 px-4 py-2.5 text-sm font-semibold text-white shadow-xl">
             <Check className="size-4" weight="bold" />
             Added to cart

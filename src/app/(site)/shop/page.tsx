@@ -6,6 +6,7 @@ import { ShopGrid } from "@/components/shop/ShopGrid";
 import { ShopFilters } from "@/components/shop/ShopFilters";
 import { ShopSearchInput } from "@/components/shop/ShopSearchInput";
 import { ShopPagination } from "@/components/shop/ShopPagination";
+import { ShopUrlMemory } from "@/components/shop/ShopUrlMemory";
 import { SHOP_PRODUCTS } from "@/lib/shopProducts";
 import { PRODUCT_CATEGORIES, SITE_URL } from "@/lib/constants";
 import { slugify } from "@/lib/slugify";
@@ -80,6 +81,7 @@ export default async function ShopPage({
 
   return (
     <>
+      <ShopUrlMemory url={buildShopUrl(params, {})} />
       <PageHeader eyebrow="Shop" title={title} description={description} />
       <Section tone="canvas">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
