@@ -16,16 +16,48 @@ export interface CurvedGlyph {
 // clearly-curved band without letters overlapping; at curve=10 it's barely perceptible.
 const RADIUS_CONSTANT = 14000;
 
-export function layoutCurvedText(text: string, fontSize: number, letterSpacing: number, curve: number): CurvedGlyph[] {
+// QA pass root cause: curved text lays out each character as its own independent Konva.Text node
+// (CanvasStage's DesignTextNode), positioned along the arc by this file — unlike a normal single
+// Konva.Text string, nothing here previously measured each glyph's REAL rendered width; every
+// character (bar space) was given the exact same fixed advance (fontSize*0.58), regardless of the
+// font's actual glyph metrics. A narrow letter like "I" (≈3.8px at 13px Bricolage Grotesque Bold)
+// was allocated the same slot as a wide one like "N" (≈10px) — visually reading as an uneven gap
+// mid-word ("CELEBRATI ON") even though the layout math itself was perfectly smooth. Fixed by
+// measuring each glyph with the SAME 2D canvas text-measurement API the browser already uses to
+// actually draw it, using a font string that matches the real rendered font (family/weight/style)
+// instead of a uniform guess. Browser-only (curved text only ever renders client-side, inside the
+// dynamically-imported, ssr:false CanvasStage) — safe to use `document` directly here.
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+function getMeasureContext(): CanvasRenderingContext2D | null {
+  if (measureCtx !== undefined) return measureCtx;
+  measureCtx = typeof document === "undefined" ? null : (document.createElement("canvas").getContext("2d") ?? null);
+  return measureCtx;
+}
+
+function glyphAdvance(char: string, fontSize: number, fontFamily: string, bold: boolean, italic: boolean): number {
+  if (char === " ") return fontSize * 0.28;
+  const ctx = getMeasureContext();
+  if (!ctx) return fontSize * 0.58; // SSR/no-canvas fallback — never hit in practice, see comment above
+  const style = `${italic ? "italic " : ""}${bold ? "700" : "400"} ${fontSize}px ${fontFamily}`;
+  ctx.font = style;
+  return ctx.measureText(char).width;
+}
+
+export function layoutCurvedText(
+  text: string,
+  fontSize: number,
+  letterSpacing: number,
+  curve: number,
+  fontFamily = "Manrope, sans-serif",
+  bold = false,
+  italic = false,
+): CurvedGlyph[] {
   if (!curve) return [];
   const radius = RADIUS_CONSTANT / Math.abs(curve);
   const direction = curve > 0 ? 1 : -1;
 
-  // Rough monospace-ish advance estimate per character (avoids needing a canvas text-measure pass
-  // just to lay out the arc) — good enough for the visual curve; actual glyph widths still render
-  // correctly via Konva, only the arc spacing is approximate.
   const glyphs = [...text];
-  const advances = glyphs.map((c) => (c === " " ? fontSize * 0.28 : fontSize * 0.58) + letterSpacing);
+  const advances = glyphs.map((c) => glyphAdvance(c, fontSize, fontFamily, bold, italic) + letterSpacing);
   const totalWidth = advances.reduce((a, b) => a + b, 0);
   const totalAngle = totalWidth / radius;
 
@@ -33,10 +65,16 @@ export function layoutCurvedText(text: string, fontSize: number, letterSpacing: 
   const out: CurvedGlyph[] = [];
   for (let i = 0; i < glyphs.length; i++) {
     angle += advances[i] / radius / 2;
+    // QA fix: `angle` alone already walks monotonically left-to-right as i increases (glyphs[0]
+    // gets the most-negative angle, glyphs[last] the most-positive) — that ordering must stay
+    // direction-independent, or a negative (downward) curve reverses the whole word's reading
+    // order ("MAPLE IMPRINT" rendering as "TN RPM ELPAM"). Only the vertical bulge and each
+    // glyph's own tilt should flip for a downward curve, via `theta` — x is deliberately computed
+    // from the un-flipped `angle`, never from `theta`.
     const theta = angle * direction;
     out.push({
       char: glyphs[i],
-      x: radius * Math.sin(theta),
+      x: radius * Math.sin(angle),
       y: direction * (radius - radius * Math.cos(theta)) * -1,
       rotationDeg: theta * (180 / Math.PI),
     });

@@ -14,14 +14,16 @@ import {
   SpinnerGap,
   Stack,
   Target,
+  TextStrikethrough,
+  TextUnderline,
   Trash,
 } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import { LayersPanel } from "@/components/studio/shell/LayersPanel";
 import type { DesignObjectRecord, DesignSideType, SizeQty } from "@/lib/studio/types";
 import { PRINT_AREAS } from "@/lib/studio/printAreas";
+import { FontPicker } from "./FontPicker";
 
-const FONT_CHOICES = ["Manrope, sans-serif", "Bricolage Grotesque, sans-serif", "Georgia, serif", "Courier New, monospace"];
 const MIN_PRINT_PPI = 150;
 
 export interface BgRemovalState {
@@ -76,6 +78,8 @@ function QualityFeedback({ obj, location }: { obj: DesignObjectRecord; location:
 export function Inspector({
   selectedObject,
   onPatch,
+  onLivePatch,
+  onLivePatchEnd,
   onDuplicate,
   onDelete,
   onOpenCrop,
@@ -100,6 +104,11 @@ export function Inspector({
 }: {
   selectedObject: DesignObjectRecord | null;
   onPatch: (id: string, patch: Partial<DesignObjectRecord>) => void;
+  /** Live drag-preview updates (e.g. the Curve slider) — coalesced into a single history entry per
+   *  gesture by StudioClient's livePatchObject, rather than one entry per tick. Call onLivePatchEnd
+   *  when the gesture ends (pointer up / blur) so the NEXT drag starts its own history entry. */
+  onLivePatch: (id: string, patch: Partial<DesignObjectRecord>) => void;
+  onLivePatchEnd: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
   onOpenCrop: () => void;
@@ -133,7 +142,14 @@ export function Inspector({
             {selectedObject.type === "text" ? "Text" : selectedObject.type === "shape" ? "Shape" : "Image"}
           </p>
 
-          {selectedObject.type === "text" && <TextInspector obj={selectedObject} onPatch={(patch) => onPatch(selectedObject.id, patch)} />}
+          {selectedObject.type === "text" && (
+            <TextInspector
+              obj={selectedObject}
+              onPatch={(patch) => onPatch(selectedObject.id, patch)}
+              onLivePatch={(patch) => onLivePatch(selectedObject.id, patch)}
+              onLivePatchEnd={onLivePatchEnd}
+            />
+          )}
           {selectedObject.type === "shape" && <ShapeInspector obj={selectedObject} onPatch={(patch) => onPatch(selectedObject.id, patch)} />}
           {selectedObject.type === "image" && (
             <ImageInspector
@@ -343,7 +359,18 @@ function PositionAlignControl({ obj, onPatch }: { obj: DesignObjectRecord; onPat
   );
 }
 
-function TextInspector({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (patch: Partial<DesignObjectRecord>) => void }) {
+function TextInspector({
+  obj,
+  onPatch,
+  onLivePatch,
+  onLivePatchEnd,
+}: {
+  obj: DesignObjectRecord;
+  onPatch: (patch: Partial<DesignObjectRecord>) => void;
+  onLivePatch: (patch: Partial<DesignObjectRecord>) => void;
+  onLivePatchEnd: () => void;
+}) {
+  const curve = obj.curve ?? 0;
   return (
     <>
       <div>
@@ -362,17 +389,7 @@ function TextInspector({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (pa
       </div>
       <div>
         <label className="text-xs font-medium text-ink-900/70">Font</label>
-        <select
-          value={obj.fontFamily ?? FONT_CHOICES[0]}
-          onChange={(e) => onPatch({ fontFamily: e.target.value })}
-          className="mt-1 w-full rounded-lg border border-sand px-2 py-1.5 text-sm"
-        >
-          {FONT_CHOICES.map((f) => (
-            <option key={f} value={f} style={{ fontFamily: f }}>
-              {f.split(",")[0]}
-            </option>
-          ))}
-        </select>
+        <FontPicker value={obj.fontFamily} onChange={(family) => onPatch({ fontFamily: family })} className="mt-1 w-full" />
       </div>
       <div>
         <label className="text-xs font-medium text-ink-900/70">Size</label>
@@ -382,10 +399,11 @@ function TextInspector({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (pa
         <label className="text-xs font-medium text-ink-900/70">Colour</label>
         <input type="color" value={obj.fill ?? "#171412"} onChange={(e) => onPatch({ fill: e.target.value })} className="mt-1 h-9 w-full rounded-lg border border-sand" />
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <button
           type="button"
           onClick={() => onPatch({ bold: !obj.bold })}
+          title="Bold"
           className={cn("flex-1 rounded-lg border py-1.5 text-sm font-bold", obj.bold ? "border-ink-950 bg-ink-950 text-white" : "border-sand text-ink-900")}
         >
           B
@@ -393,10 +411,31 @@ function TextInspector({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (pa
         <button
           type="button"
           onClick={() => onPatch({ italic: !obj.italic })}
+          title="Italic"
           className={cn("flex-1 rounded-lg border py-1.5 text-sm italic", obj.italic ? "border-ink-950 bg-ink-950 text-white" : "border-sand text-ink-900")}
         >
           I
         </button>
+        <button
+          type="button"
+          onClick={() => onPatch({ underline: !obj.underline })}
+          title="Underline"
+          aria-pressed={obj.underline}
+          className={cn("flex flex-1 items-center justify-center rounded-lg border py-1.5", obj.underline ? "border-ink-950 bg-ink-950 text-white" : "border-sand text-ink-900")}
+        >
+          <TextUnderline className="size-4" weight="bold" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onPatch({ strikethrough: !obj.strikethrough })}
+          title="Strikethrough"
+          aria-pressed={obj.strikethrough}
+          className={cn("flex flex-1 items-center justify-center rounded-lg border py-1.5", obj.strikethrough ? "border-ink-950 bg-ink-950 text-white" : "border-sand text-ink-900")}
+        >
+          <TextStrikethrough className="size-4" weight="bold" />
+        </button>
+      </div>
+      <div className="flex gap-2">
         {(["left", "center", "right"] as const).map((a) => (
           <button
             key={a}
@@ -417,8 +456,54 @@ function TextInspector({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (pa
         <input type="range" min={0.8} max={2} step={0.05} value={obj.lineHeight ?? 1.15} onChange={(e) => onPatch({ lineHeight: Number(e.target.value) })} className="mt-1 w-full" />
       </div>
       <div>
-        <label className="text-xs font-medium text-ink-900/70">Curve</label>
-        <input type="range" min={-100} max={100} value={obj.curve ?? 0} onChange={(e) => onPatch({ curve: Number(e.target.value) || null })} className="mt-1 w-full" />
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-medium text-ink-900/70">Transparency</label>
+          <span className="text-xs font-semibold text-ink-900">{Math.round((obj.opacity ?? 1) * 100)}%</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={Math.round((obj.opacity ?? 1) * 100)}
+          onChange={(e) => onLivePatch({ opacity: Number(e.target.value) / 100 })}
+          onMouseUp={onLivePatchEnd}
+          onTouchEnd={onLivePatchEnd}
+          className="mt-1 w-full"
+        />
+      </div>
+      <div className="border-t border-sand pt-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Curve Text</p>
+        <div className="mt-2 flex items-center justify-between">
+          <label className="text-xs font-medium text-ink-900/70">Curve</label>
+          <span className="text-xs font-semibold text-ink-900">{curve}</span>
+        </div>
+        <input
+          type="range"
+          min={-100}
+          max={100}
+          value={curve}
+          // Live preview on every tick (coalesced into one history entry per drag — see
+          // livePatchObject); committing here too would spam undo with every pixel of drag.
+          onChange={(e) => onLivePatch({ curve: Number(e.target.value) || null })}
+          onMouseUp={onLivePatchEnd}
+          onTouchEnd={onLivePatchEnd}
+          onKeyUp={onLivePatchEnd}
+          aria-label="Curve amount, -100 to 100"
+          className="mt-1 w-full"
+        />
+        <div className="mt-0.5 flex justify-between text-[10px] text-muted">
+          <span>-100</span>
+          <span>0</span>
+          <span>+100</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onPatch({ curve: null })}
+          disabled={!curve}
+          className="mt-2 text-xs font-semibold text-ink-900/70 underline underline-offset-2 disabled:cursor-not-allowed disabled:text-muted disabled:no-underline"
+        >
+          Straight / Reset to 0
+        </button>
       </div>
     </>
   );
@@ -474,17 +559,19 @@ function ImageInspector({
           type="button"
           onClick={() => onPatch({ flipX: !obj.flipX })}
           aria-pressed={obj.flipX}
+          title="Mirror image horizontally"
           className={cn("flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold", obj.flipX ? "border-ink-950 bg-ink-950 text-white" : "border-sand text-ink-900 hover:bg-canvas")}
         >
-          <ArrowsHorizontal className="size-3.5" weight="bold" /> Flip
+          <ArrowsHorizontal className="size-3.5" weight="bold" /> Flip H
         </button>
         <button
           type="button"
           onClick={() => onPatch({ flipY: !obj.flipY })}
           aria-pressed={obj.flipY}
+          title="Mirror image vertically"
           className={cn("flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold", obj.flipY ? "border-ink-950 bg-ink-950 text-white" : "border-sand text-ink-900 hover:bg-canvas")}
         >
-          <ArrowsVertical className="size-3.5" weight="bold" /> Flip
+          <ArrowsVertical className="size-3.5" weight="bold" /> Flip V
         </button>
       </div>
 
