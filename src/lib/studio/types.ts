@@ -24,10 +24,36 @@ export type DesignSideType =
   | "left-leg"
   | "right-leg"
   | "left-side"
-  | "right-side";
+  | "right-side"
+  // Flat print pieces (STUDIO V4 brief: business cards, flyers, posters, mug wraps) — no
+  // photography involved at all, each renders on its own dedicated flat schematic (see
+  // printAreas.ts's printPieceSchematicSvg) rather than a garment mockup.
+  | "card-front"
+  | "card-back"
+  | "flyer-front"
+  | "flyer-back"
+  | "poster-front"
+  | "mug-wrap";
 
-export type DesignObjectType = "image" | "text" | "shape";
-export type ShapeKind = "rectangle" | "circle" | "line";
+export type DesignObjectType = "image" | "text" | "shape" | "qr";
+// Native, Maple-owned shape primitives (STUDIO V4 brief, "do not depend on external libraries for
+// basic shapes") — every one is a real editable Konva object (fill/stroke/opacity/rotation/resize),
+// not a bitmap. "rectangle"/"circle"/"line" are the original three; the rest were added in the same
+// pass. See CanvasStage.tsx's ShapeNode for how each maps onto a Konva primitive or Path.
+export type ShapeKind =
+  | "rectangle"
+  | "rounded-rectangle"
+  | "circle"
+  | "ellipse"
+  | "triangle"
+  | "line"
+  | "arrow"
+  | "star"
+  | "polygon"
+  | "speech-bubble"
+  | "banner"
+  | "heart"
+  | "diamond";
 export type TextAlign = "left" | "center" | "right";
 export type DesignProjectStatus = "draft" | "reviewed" | "ordered";
 
@@ -84,6 +110,21 @@ export interface DesignObjectRecord {
   cropY: number | null;
   cropWidth: number | null;
   cropHeight: number | null;
+  // --- qr-only fields (null for image/text/shape) — see src/lib/studio/qr.ts's file-level
+  // comment for why a "qr" object is written to the wire as an ordinary "image" with these
+  // collapsed into `content`, rather than as new database columns. ---
+  qrDestination: string | null;
+  qrErrorCorrection: "L" | "M" | "Q" | "H" | null;
+  qrForegroundColor: string | null;
+  qrBackgroundColor: string | null;
+  qrDotStyle: "square" | "dots" | "rounded" | "classy" | "classy-rounded" | "extra-rounded" | null;
+  qrCornerStyle: "square" | "dot" | "extra-rounded" | null;
+  qrLogoUrl: string | null;
+  qrStylePreset: "classic" | "rounded" | "soft" | "bold" | "minimal" | null;
+  qrFrameStyle: "none" | "border" | null;
+  qrLabelText: string | null;
+  /** Last-known result of validating this QR against its own destination — see qr.ts. */
+  qrValidated: boolean | null;
 }
 
 export interface DesignSideRecord {

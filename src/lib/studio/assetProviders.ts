@@ -1,12 +1,25 @@
-// Normalized graphics-asset model (Section 11, "Asset Provider Abstraction"). Studio's Graphics
-// panel talks only to this interface, never to a vendor SDK/response shape directly — the same
-// principle as SupplierConnector in catalogue-engine. Today exactly one provider is registered:
-// MapleAssetProvider, a small set of Maple-owned, hand-built SVG marks (simple geometric icons —
-// no photography, no third-party stock). Vexels/Noun Project were researched as candidates and
-// deliberately NOT integrated (see PROJECT_NOTES.md's "Studio V2" entry): Vexels has no self-serve
-// API and its license doesn't clearly authorize this exact use, Noun Project was scoped as a later
-// secondary option. Adding either later means writing one more class implementing AssetProvider —
-// nothing in the Studio UI or DesignTemplate model changes.
+// Normalized graphics-asset model (Section 11 of an earlier brief, "Asset Provider Abstraction";
+// extended by the STUDIO V4 brief's free/open-source asset licensing architecture). Studio's
+// Graphics panel talks only to this interface, never to a vendor SDK/response shape directly — the
+// same principle as SupplierConnector in catalogue-engine.
+//
+// CORE BUSINESS DECISION (STUDIO V4 brief): no paid asset subscription (Vexels/Freepik/Flaticon/
+// Vecteezy/Shutterstock/Canva/Customily) during this phase. Every asset below is either a
+// Maple-original mark or comes from a real, verifiable MIT-licensed open-source icon package
+// (@tabler/icons, heroicons, bootstrap-icons — all installed as ordinary npm devDependencies with
+// their own LICENSE files, not scraped). The brief's PRIMARY sources (Openclipart, Public Domain
+// Vectors, Open Peeps, Humaaans) are NOT included here: pulling individually-verified assets from
+// those requires manual per-asset browsing/download that isn't something this session can safely
+// automate at scale without either fabricating source URLs or importing content whose license
+// wasn't actually checked — see PROJECT_NOTES.md and the report delivered this session for that
+// as an explicit, honest gap rather than a silent substitution.
+//
+// Every asset carries real licensing metadata (licenseType/licenseUrl/sourceUrl/
+// attributionRequired/approvedForCustomerUse/approvedForPhysicalPrint/reviewedAt) — GraphicsPanel
+// only ever sees the combined, already-reviewed set; nothing with an unknown license is reachable
+// from it.
+
+import { OPEN_SOURCE_ICONS } from "./openSourceIcons.generated";
 
 export interface DesignAsset {
   id: string;
@@ -18,10 +31,24 @@ export interface DesignAsset {
   tags: string[];
   previewUrl: string;
   vectorAvailable: boolean;
-  /** Whether the customer can recolor this asset in Studio (true for our flat single-path marks). */
+  /** Whether the customer can recolor this asset in Studio (true for every asset here — all are
+   *  flat single/dual-tone marks, not photography). */
   editableColors: boolean;
+  /** Human-readable summary — kept for anywhere that just wants one line of text; the structured
+   *  fields below are the actual source of truth for what's actually enforced. */
   licenseMetadata: string;
-  /** What actually gets embedded into the DesignObject when placed — for the Maple provider this
+  licenseType: "maple-original" | "MIT" | "CC0" | "public-domain";
+  licenseUrl: string | null;
+  sourceUrl: string | null;
+  attributionRequired: boolean;
+  /** Non-null only when a mark has a real trademark/brand restriction attached (e.g. a
+   *  recognizable brand's own icon) — none of the current curated set does, but the field exists
+   *  so a future branded/social-logo asset can't silently skip this check. */
+  trademarkRestrictions: string | null;
+  approvedForCustomerUse: boolean;
+  approvedForPhysicalPrint: boolean;
+  reviewedAt: string;
+  /** What actually gets embedded into the DesignObject when placed — for every provider here this
    *  is the same as previewUrl (a plain SVG), but a future vendor's production asset might differ
    *  from its lightweight search-preview image (e.g. a low-res JPEG preview vs. a vector master). */
   productionSource: string;
@@ -35,11 +62,45 @@ export interface AssetProvider {
   getAsset(id: string): Promise<DesignAsset | null>;
 }
 
+/** Shape of one row in the generated openSourceIcons.generated.ts — see
+ *  scripts/extract-open-source-icons.mjs, which is what actually produces that file from the real
+ *  installed icon packages. */
+export interface OpenSourceIconRecord {
+  id: string;
+  provider: "tabler" | "heroicons" | "bootstrap-icons";
+  providerLabel: string;
+  providerAssetId: string;
+  title: string;
+  category: string;
+  tags: string[];
+  viewBox: string;
+  inner: string;
+  licenseType: "MIT";
+  licenseUrl: string;
+  sourceUrl: string;
+}
+
+const REVIEWED_AT = "2026-09-17T00:00:00.000Z";
+
 function svgDataUrl(inner: string, fill = "#171412"): string {
   // A few marks (laurel, compass, snowflake, banner) hardcode their stroke colour rather than
   // inheriting the root `fill` — swap those too so "Colour" recolors the whole mark consistently.
   const recoloured = fill === "#171412" ? inner : inner.replaceAll("#171412", fill);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="${fill}">${recoloured}</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+// Each open-source provider puts its default fill/stroke on the SVG's own root element rather
+// than on individual paths (standard for these three packages) — the extraction script strips
+// that root element, so it has to be reapplied here to recolor correctly. Tabler ships outline
+// icons (stroke-based, fill:none); Heroicons/Bootstrap Icons ship solid icons (fill-based).
+function openSourceStyleAttrs(provider: OpenSourceIconRecord["provider"], color: string): string {
+  if (provider === "tabler") return `fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  return `fill="${color}"`;
+}
+
+function openSourceIconDataUrl(icon: OpenSourceIconRecord, fill: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" ${openSourceStyleAttrs(icon.provider, fill)}>${icon.inner}</svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
@@ -66,7 +127,7 @@ const MAPLE_GRAPHICS: { id: string; title: string; category: string; tags: strin
   { id: "banner-ribbon", title: "Ribbon Banner", category: "business", tags: ["ribbon", "label", "business"], path: '<path d="M6 30 H94 L84 50 L94 70 H6 L16 50 Z" fill="none" stroke-width="5" stroke="#171412"/>' },
 ];
 
-export const MAPLE_ASSETS: DesignAsset[] = MAPLE_GRAPHICS.map((g) => ({
+const MAPLE_DESIGN_ASSETS: DesignAsset[] = MAPLE_GRAPHICS.map((g) => ({
   id: `maple-${g.id}`,
   provider: "maple",
   providerAssetId: g.id,
@@ -78,14 +139,53 @@ export const MAPLE_ASSETS: DesignAsset[] = MAPLE_GRAPHICS.map((g) => ({
   vectorAvailable: true,
   editableColors: true,
   licenseMetadata: "Maple Imprint — original mark, free to use on Maple Imprint orders.",
+  licenseType: "maple-original",
+  licenseUrl: null,
+  sourceUrl: null,
+  attributionRequired: false,
+  trademarkRestrictions: null,
+  approvedForCustomerUse: true,
+  approvedForPhysicalPrint: true,
+  reviewedAt: REVIEWED_AT,
   productionSource: svgDataUrl(g.path),
 }));
 
+const OPEN_SOURCE_DESIGN_ASSETS: DesignAsset[] = OPEN_SOURCE_ICONS.map((icon) => ({
+  id: icon.id,
+  provider: icon.provider,
+  providerAssetId: icon.providerAssetId,
+  title: icon.title,
+  type: "icon",
+  category: icon.category,
+  tags: icon.tags,
+  previewUrl: openSourceIconDataUrl(icon, "#171412"),
+  vectorAvailable: true,
+  editableColors: true,
+  licenseMetadata: `${icon.providerLabel} — MIT license, no attribution required.`,
+  licenseType: icon.licenseType,
+  licenseUrl: icon.licenseUrl,
+  sourceUrl: icon.sourceUrl,
+  attributionRequired: false,
+  trademarkRestrictions: null,
+  approvedForCustomerUse: true,
+  approvedForPhysicalPrint: true,
+  reviewedAt: REVIEWED_AT,
+  productionSource: openSourceIconDataUrl(icon, "#171412"),
+}));
+
+/** The full curated library every Studio surface (GraphicsPanel, templates.ts's
+ *  resolveTemplateAssets) reads from — Maple-original marks plus the verified open-source icon
+ *  set, every entry already `approvedForCustomerUse && approvedForPhysicalPrint`. Kept under the
+ *  pre-existing `MAPLE_ASSETS`/`MapleAssetProvider` export names (call sites elsewhere in Studio
+ *  already import these) even though the content is no longer Maple-only — renaming would touch
+ *  several files for no behavioural benefit. */
+export const MAPLE_ASSETS: DesignAsset[] = [...MAPLE_DESIGN_ASSETS, ...OPEN_SOURCE_DESIGN_ASSETS];
+
 export const MapleAssetProvider: AssetProvider = {
-  id: "maple",
-  name: "Maple",
+  id: "maple-studio-library",
+  name: "Maple Studio Library",
   async categories() {
-    return [...new Set(MAPLE_GRAPHICS.map((g) => g.category))];
+    return [...new Set(MAPLE_ASSETS.map((a) => a.category))];
   },
   async search(query: string, category?: string) {
     const q = query.trim().toLowerCase();
@@ -100,11 +200,19 @@ export const MapleAssetProvider: AssetProvider = {
   },
 };
 
-/** Recolors a Maple graphic's SVG data URL — used by GraphicsPanel/inspector "Colour" control
- *  since the flat single-path marks above are otherwise fixed at their #171412 default fill. */
-export function recolorMapleAsset(providerAssetId: string, fill: string): string | null {
-  const g = MAPLE_GRAPHICS.find((x) => x.id === providerAssetId);
-  return g ? svgDataUrl(g.path, fill) : null;
+/** Recolors any asset in the curated library (Maple-original or open-source) — used by
+ *  GraphicsPanel/Inspector's "Colour" control, since every mark here is otherwise fixed at its
+ *  default #171412 fill. Keyed by the asset's globally-unique `id` (e.g. "tabler-briefcase"), not
+ *  the bare providerAssetId — several packages share a providerAssetId like "briefcase", so only
+ *  `id` (which already namespaces by provider) can look up the right one. */
+export function recolorMapleAsset(id: string, fill: string): string | null {
+  const maple = MAPLE_DESIGN_ASSETS.find((x) => x.id === id);
+  if (maple) {
+    const source = MAPLE_GRAPHICS.find((x) => `maple-${x.id}` === id);
+    return source ? svgDataUrl(source.path, fill) : null;
+  }
+  const icon = OPEN_SOURCE_ICONS.find((x) => x.id === id);
+  return icon ? openSourceIconDataUrl(icon, fill) : null;
 }
 
 export const ASSET_PROVIDERS: AssetProvider[] = [MapleAssetProvider];

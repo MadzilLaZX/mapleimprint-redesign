@@ -20,6 +20,8 @@ import { cn } from "@/lib/cn";
 import { LayersPanel } from "@/components/studio/shell/LayersPanel";
 import type { DesignObjectRecord, DesignSideType, SizeQty } from "@/lib/studio/types";
 import { PRINT_AREAS } from "@/lib/studio/printAreas";
+import { QRInspector, type QrPatchChanges } from "@/components/studio/shell/QRInspector";
+import type { QrStylePresetId } from "@/lib/studio/qr";
 
 const FONT_CHOICES = ["Manrope, sans-serif", "Bricolage Grotesque, sans-serif", "Georgia, serif", "Courier New, monospace"];
 const MIN_PRINT_PPI = 150;
@@ -83,6 +85,12 @@ export function Inspector({
   onRemoveBackground,
   onAcceptRemovedBackground,
   onDismissBackgroundRemoval,
+  onQrPatch,
+  onQrApplyPreset,
+  onQrFix,
+  onQrTriggerLogoUpload,
+  onQrRemoveLogo,
+  qrRegenerating,
   activeSide,
   layerObjects,
   selectedId,
@@ -107,6 +115,12 @@ export function Inspector({
   onRemoveBackground: () => void;
   onAcceptRemovedBackground: () => void;
   onDismissBackgroundRemoval: () => void;
+  onQrPatch: (id: string, changes: QrPatchChanges) => void;
+  onQrApplyPreset: (id: string, presetId: QrStylePresetId) => void;
+  onQrFix: (id: string) => void;
+  onQrTriggerLogoUpload: (id: string) => void;
+  onQrRemoveLogo: (id: string) => void;
+  qrRegenerating: boolean;
   activeSide: DesignSideType;
   layerObjects: DesignObjectRecord[];
   selectedId: string | null;
@@ -130,7 +144,7 @@ export function Inspector({
       {selectedObject ? (
         <div className="space-y-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {selectedObject.type === "text" ? "Text" : selectedObject.type === "shape" ? "Shape" : "Image"}
+            {selectedObject.type === "text" ? "Text" : selectedObject.type === "shape" ? "Shape" : selectedObject.type === "qr" ? "QR Code" : "Image"}
           </p>
 
           {selectedObject.type === "text" && <TextInspector obj={selectedObject} onPatch={(patch) => onPatch(selectedObject.id, patch)} />}
@@ -145,6 +159,17 @@ export function Inspector({
               onRemoveBackground={onRemoveBackground}
               onAcceptRemovedBackground={onAcceptRemovedBackground}
               onDismissBackgroundRemoval={onDismissBackgroundRemoval}
+            />
+          )}
+          {selectedObject.type === "qr" && (
+            <QRInspector
+              obj={selectedObject}
+              regenerating={qrRegenerating}
+              onPatch={(changes) => onQrPatch(selectedObject.id, changes)}
+              onApplyPreset={(presetId) => onQrApplyPreset(selectedObject.id, presetId)}
+              onFix={() => onQrFix(selectedObject.id)}
+              onTriggerLogoUpload={() => onQrTriggerLogoUpload(selectedObject.id)}
+              onRemoveLogo={() => onQrRemoveLogo(selectedObject.id)}
             />
           )}
 

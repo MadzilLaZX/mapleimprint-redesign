@@ -27,6 +27,19 @@ import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
 import { backgroundUrlFor, printAreaPixelBox, printAreasOverlap } from "@/lib/studio/printAreas";
 import { viewGroupFor } from "@/lib/studio/garmentViews";
 import { resolveTemplateAssets, type DesignTemplate } from "@/lib/studio/templates";
+import {
+  generateQr,
+  isLikelyUrl,
+  normalizeDestination,
+  qrObjectToWire,
+  qrPresetFor,
+  safestQrConfig,
+  validateQrScans,
+  wireObjectToAppObject,
+  type QrGenerateInput,
+  type QrStylePresetId,
+} from "@/lib/studio/qr";
+import { QRPanel } from "@/components/studio/panels/QRPanel";
 import type { DesignAsset } from "@/lib/studio/assetProviders";
 import type { StudioToolId } from "@/lib/studio/tools";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType, ShapeKind } from "@/lib/studio/types";
@@ -45,7 +58,7 @@ type SidesState = Partial<Record<DesignSideType, DesignObjectRecord[]>>;
 
 const AUTOSAVE_DELAY_MS = 900;
 
-function emptyObject(type: "text" | "image" | "shape", overrides: Partial<DesignObjectRecord>): DesignObjectRecord {
+function emptyObject(type: "text" | "image" | "shape" | "qr", overrides: Partial<DesignObjectRecord>): DesignObjectRecord {
   return {
     id: crypto.randomUUID(),
     type,
@@ -78,6 +91,17 @@ function emptyObject(type: "text" | "image" | "shape", overrides: Partial<Design
     cropY: null,
     cropWidth: null,
     cropHeight: null,
+    qrDestination: null,
+    qrErrorCorrection: null,
+    qrForegroundColor: null,
+    qrBackgroundColor: null,
+    qrDotStyle: null,
+    qrCornerStyle: null,
+    qrLogoUrl: null,
+    qrStylePreset: null,
+    qrFrameStyle: null,
+    qrLabelText: null,
+    qrValidated: null,
     ...overrides,
   };
 }
@@ -144,11 +168,23 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [backNavigating, setBackNavigating] = useState(false);
+  const [qrCreating, setQrCreating] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
+  // Object ids currently mid-regeneration (style/destination/logo just changed and a fresh
+  // render+scan check is in flight) — Inspector shows a small pending state per id rather than one
+  // global spinner, since "fix all" (below) can have several regenerating at once.
+  const [qrRegeneratingIds, setQrRegeneratingIds] = useState<string[]>([]);
+  // Object ids that failed the pre-Review scan check (Section "QR REVIEW VALIDATION") — non-null
+  // means the gate modal is showing instead of switching to Review.
+  const [qrReviewGate, setQrReviewGate] = useState<string[] | null>(null);
+  const [fixingAllQr, setFixingAllQr] = useState(false);
 
   const [history, setHistory] = useState<{ past: SidesState[]; future: SidesState[] }>({ past: [], future: [] });
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const dirtySinceLoad = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const qrLogoInputRef = useRef<HTMLInputElement | null>(null);
+  const [qrLogoTargetId, setQrLogoTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -161,7 +197,10 @@ export function StudioClient({ projectId }: { projectId: string }) {
         if (cancelled) return;
         setProject(data);
         const nextSides: SidesState = {};
-        for (const side of data.sides) nextSides[side.sideType] = side.objects;
+        // Every object loaded from the API is written on the wire as "image"/"text"/"shape" only
+        // (see qr.ts) — this is the one place a QR object still secretly stored as an image gets
+        // turned back into its rich, first-class `type: "qr"` in-app shape.
+        for (const side of data.sides) nextSides[side.sideType] = side.objects.map(wireObjectToAppObject);
         setSides(nextSides);
         setActiveSide(data.sides[0]?.sideType ?? "front");
         const hasAnyObject = data.sides.some((s) => s.objects.length > 0);
@@ -209,7 +248,10 @@ export function StudioClient({ projectId }: { projectId: string }) {
       const payload = {
         sides: (Object.entries(sidesToSave) as [DesignSideType, DesignObjectRecord[]][]).map(([sideType, objects]) => ({
           sideType,
-          objects: objects.map(({ id: _id, ...rest }) => rest),
+          objects: objects.map((o) => {
+            const { id: _id, ...rest } = qrObjectToWire(o);
+            return rest;
+          }),
         })),
       };
       try {
@@ -374,8 +416,17 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
   function addShape(kind: ShapeKind) {
     pushHistory(sides);
-    const width = kind === "line" ? 0.5 : 0.3;
-    const height = kind === "line" ? 0.01 : 0.3;
+    // Sensible per-kind defaults (Section 22 of the earlier brief, "auto-fit to a sensible
+    // fraction, center, select") — a line/arrow reads as a thin horizontal stroke, a banner/
+    // speech-bubble as a wide badge, everything else as a moderate square-ish mark.
+    const [width, height] =
+      kind === "line" || kind === "arrow"
+        ? [0.5, 0.01]
+        : kind === "banner"
+          ? [0.5, 0.18]
+          : kind === "speech-bubble"
+            ? [0.4, 0.32]
+            : [0.3, 0.3];
     const obj = emptyObject("shape", {
       shapeKind: kind,
       fill: "#D41414",
@@ -470,6 +521,213 @@ export function StudioClient({ projectId }: { projectId: string }) {
       ...sides,
       [side]: (sides[side] ?? []).map((o) => (o.id === id ? { ...o, ...patch } : o)),
     });
+  }
+
+  function findQrObject(id: string): { obj: DesignObjectRecord; side: DesignSideType } | null {
+    for (const side of openSides) {
+      const obj = (sides[side] ?? []).find((o) => o.id === id && o.type === "qr");
+      if (obj) return { obj, side };
+    }
+    return null;
+  }
+
+  /** Section "NEW LEFT TOOL — QR CODE": create a QR from a validated destination, using the
+   *  Classic preset as the default style (everything else is adjustable afterward in the
+   *  Inspector). Generates locally (qr-code-styling), then immediately checks it actually scans
+   *  (jsQR) before the object is even placed — "appears centered and selected... decode
+   *  validation passes" (QR TEST 1). */
+  async function addQrCode(destinationRaw: string) {
+    const destination = normalizeDestination(destinationRaw);
+    if (!isLikelyUrl(destination)) return;
+    setQrCreating(true);
+    setQrError(null);
+    try {
+      const preset = qrPresetFor("classic");
+      const input: QrGenerateInput = {
+        destination,
+        errorCorrection: "M",
+        foregroundColor: preset.foregroundColor,
+        backgroundColor: preset.backgroundColor,
+        dotStyle: preset.dotStyle,
+        cornerStyle: preset.cornerStyle,
+        logoUrl: null,
+        frameStyle: "none",
+        labelText: null,
+      };
+      const { displayDataUrl, bareDataUrl } = await generateQr(input);
+      const validation = await validateQrScans(bareDataUrl, destination);
+
+      pushHistory(sides);
+      // Square (naturalAspect 1) sized against the real box aspect ratio — Section "QR ASPECT
+      // RATIO" ("resize maintains 1:1") starts true from the moment it's placed, not just once
+      // the customer first resizes it.
+      const fit = autoFitNormalized(activeSide, 1, 0.55);
+      const obj = emptyObject("qr", {
+        assetUrl: displayDataUrl,
+        normalizedWidth: fit.normalizedWidth,
+        normalizedHeight: fit.normalizedHeight,
+        normalizedX: fit.normalizedX,
+        normalizedY: fit.normalizedY,
+        qrDestination: destination,
+        qrErrorCorrection: input.errorCorrection,
+        qrForegroundColor: input.foregroundColor,
+        qrBackgroundColor: input.backgroundColor,
+        qrDotStyle: input.dotStyle,
+        qrCornerStyle: input.cornerStyle,
+        qrLogoUrl: null,
+        qrStylePreset: "classic",
+        qrFrameStyle: "none",
+        qrLabelText: null,
+        qrValidated: validation.scans,
+      });
+      applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
+      setSelectedId(obj.id);
+      setShowOnboarding(false);
+      setActiveTool(null);
+    } catch (err) {
+      setQrError(err instanceof Error ? err.message : "We couldn't create this QR code.");
+    } finally {
+      setQrCreating(false);
+    }
+  }
+
+  /** Regenerates a QR object's rendered image + re-validates against its own destination whenever
+   *  any style/colour/logo/frame/label field changes (Section "QR LIVE EDITING") — `assetUrl` is
+   *  always a fresh render derived from the individually-stored qr* fields, never edited directly,
+   *  so those fields stay the real source of truth (Section "QR OBJECT MODEL": "store the DATA and
+   *  STYLE," not just a flattened PNG). Returns whether the new render scans correctly. */
+  async function patchQrObject(
+    id: string,
+    changes: Partial<QrGenerateInput> & { stylePreset?: QrStylePresetId | null },
+  ): Promise<boolean> {
+    const found = findQrObject(id);
+    if (!found) return false;
+    const { obj, side } = found;
+    const input: QrGenerateInput = {
+      destination: changes.destination ?? obj.qrDestination ?? "",
+      errorCorrection: changes.errorCorrection ?? obj.qrErrorCorrection ?? "M",
+      foregroundColor: changes.foregroundColor ?? obj.qrForegroundColor ?? "#171412",
+      backgroundColor: changes.backgroundColor ?? obj.qrBackgroundColor ?? "#FFFFFF",
+      dotStyle: changes.dotStyle ?? obj.qrDotStyle ?? "square",
+      cornerStyle: changes.cornerStyle ?? obj.qrCornerStyle ?? "square",
+      logoUrl: changes.logoUrl !== undefined ? changes.logoUrl : obj.qrLogoUrl,
+      frameStyle: changes.frameStyle ?? obj.qrFrameStyle ?? "none",
+      labelText: changes.labelText !== undefined ? changes.labelText : obj.qrLabelText,
+    };
+    setQrRegeneratingIds((prev) => [...prev, id]);
+    try {
+      const { displayDataUrl, bareDataUrl } = await generateQr(input);
+      const validation = await validateQrScans(bareDataUrl, input.destination);
+      commitObjectPatch(
+        id,
+        {
+          assetUrl: displayDataUrl,
+          qrDestination: input.destination,
+          qrErrorCorrection: input.errorCorrection,
+          qrForegroundColor: input.foregroundColor,
+          qrBackgroundColor: input.backgroundColor,
+          qrDotStyle: input.dotStyle,
+          qrCornerStyle: input.cornerStyle,
+          qrLogoUrl: input.logoUrl,
+          qrStylePreset: changes.stylePreset !== undefined ? changes.stylePreset : obj.qrStylePreset,
+          qrFrameStyle: input.frameStyle,
+          qrLabelText: input.labelText,
+          qrValidated: validation.scans,
+        },
+        side,
+      );
+      return validation.scans;
+    } catch {
+      commitObjectPatch(id, { qrValidated: false }, side);
+      return false;
+    } finally {
+      setQrRegeneratingIds((prev) => prev.filter((x) => x !== id));
+    }
+  }
+
+  async function uploadQrLogo(id: string, file: File) {
+    setQrRegeneratingIds((prev) => [...prev, id]);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/studio/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed.");
+      await patchQrObject(id, { logoUrl: data.url });
+    } catch (err) {
+      setQrError(err instanceof Error ? err.message : "We couldn't add that logo.");
+    } finally {
+      setQrRegeneratingIds((prev) => prev.filter((x) => x !== id));
+    }
+  }
+
+  function triggerQrLogoUpload(id: string) {
+    setQrLogoTargetId(id);
+    qrLogoInputRef.current?.click();
+  }
+
+  function applyQrPreset(id: string, presetId: QrStylePresetId) {
+    const preset = qrPresetFor(presetId);
+    void patchQrObject(id, {
+      dotStyle: preset.dotStyle,
+      cornerStyle: preset.cornerStyle,
+      foregroundColor: preset.foregroundColor,
+      backgroundColor: preset.backgroundColor,
+      stylePreset: presetId,
+    });
+  }
+
+  /** "Fix QR" (Section "QR QUALITY STATES") — reverts to the one maximally-safe configuration
+   *  rather than asking the customer to reason about contrast/error-correction tradeoffs. */
+  async function fixQr(id: string): Promise<boolean> {
+    const found = findQrObject(id);
+    if (!found) return false;
+    const { obj } = found;
+    const safe = safestQrConfig({
+      destination: obj.qrDestination ?? "",
+      errorCorrection: obj.qrErrorCorrection ?? "M",
+      foregroundColor: obj.qrForegroundColor ?? "#171412",
+      backgroundColor: obj.qrBackgroundColor ?? "#FFFFFF",
+      dotStyle: obj.qrDotStyle ?? "square",
+      cornerStyle: obj.qrCornerStyle ?? "square",
+      logoUrl: obj.qrLogoUrl,
+      frameStyle: obj.qrFrameStyle ?? "none",
+      labelText: obj.qrLabelText,
+    });
+    return patchQrObject(id, { ...safe, stylePreset: null });
+  }
+
+  // Section "QR REVIEW VALIDATION": "Before Review/approval... if one cannot be decoded, show a
+  // clear warning. Do NOT silently print an unreadable QR." Gates the Review transition itself
+  // (TopBar's Review button) rather than only the final Approve click, so the customer sees the
+  // problem at the same moment they're asking "is this ready" rather than one step later.
+  function handleReviewClick() {
+    const failing = openSides
+      .flatMap((s) => sides[s] ?? [])
+      .filter((o) => o.type === "qr" && o.qrValidated !== true)
+      .map((o) => o.id);
+    if (failing.length > 0) {
+      setQrReviewGate(failing);
+      return;
+    }
+    setMode("review");
+  }
+
+  async function fixAllQrAndProceed() {
+    if (!qrReviewGate) return;
+    setFixingAllQr(true);
+    // Use fixQr's own return value, not a re-read of `sides` afterward — `sides` here is a stale
+    // closure captured when this handler started, and React doesn't refresh it mid-async-function
+    // just because commitObjectPatch ran a state update in the meantime. Reading it after the
+    // await reliably reported the PRE-fix validation state, so the gate never actually cleared
+    // even after a successful fix (found live: Inspector showed "scans correctly" underneath a
+    // modal that stayed open regardless).
+    const ids = qrReviewGate;
+    const results = await Promise.all(ids.map((id) => fixQr(id)));
+    setFixingAllQr(false);
+    const stillFailingIds = ids.filter((_, i) => !results[i]);
+    setQrReviewGate(stillFailingIds.length > 0 ? stillFailingIds : null);
+    if (stillFailingIds.length === 0) setMode("review");
   }
 
   async function handleRemoveBackground(objectId: string, imageUrl: string) {
@@ -725,6 +983,17 @@ export function StudioClient({ projectId }: { projectId: string }) {
             e.target.value = "";
           }}
         />
+        <input
+          ref={qrLogoInputRef}
+          type="file"
+          accept="image/png,image/jpeg"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && qrLogoTargetId) uploadQrLogo(qrLogoTargetId, file);
+            e.target.value = "";
+          }}
+        />
 
         <div className="shrink-0">
           <TopBar
@@ -740,7 +1009,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
             priceTotal={priceBreakdown?.total ?? null}
             canPreview={hasAnyDesign}
             onPreview={() => setMode("preview")}
-            onReview={() => setMode("review")}
+            onReview={handleReviewClick}
           />
         </div>
 
@@ -752,7 +1021,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
           <ToolRail activeTool={activeTool} onSelectTool={(t) => setActiveTool((cur) => (cur === t ? null : t))} />
           {activeTool && (
             <SecondaryPanel
-              title={{ designs: "Designs", uploads: "Uploads", text: "Text", graphics: "Graphics", shapes: "Shapes", "my-stuff": "My Stuff" }[activeTool]}
+              title={{ designs: "Designs", uploads: "Uploads", text: "Text", graphics: "Graphics", shapes: "Shapes", qr: "QR Code", "my-stuff": "My Stuff" }[activeTool]}
               onClose={() => setActiveTool(null)}
             >
               {activeTool === "designs" && <DesignsPanel family={decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).family} onApplyTemplate={applyTemplate} />}
@@ -768,6 +1037,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
               {activeTool === "text" && <TextPanel onAddText={addText} />}
               {activeTool === "graphics" && <GraphicsPanel onAddGraphic={addGraphic} />}
               {activeTool === "shapes" && <ShapesPanel onAddShape={addShape} />}
+              {activeTool === "qr" && <QRPanel onCreate={addQrCode} creating={qrCreating} />}
               {activeTool === "my-stuff" && <MyStuffPanel recent={recentUploads} onUseRecent={useRecentUpload} />}
             </SecondaryPanel>
           )}
@@ -804,10 +1074,10 @@ export function StudioClient({ projectId }: { projectId: string }) {
                 align-items: stretch) so its ResizeObserver has real dimensions to fit against;
                 it centers the rendered stage inside itself once it knows how much space it has. */}
             <div className="relative flex min-h-0 min-w-0 w-full flex-1">
-              {uploadError && (
+              {(uploadError || qrError) && (
                 <div className="absolute left-1/2 top-0 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-crimson/10 px-4 py-2 text-xs font-medium text-crimson">
                   <WarningCircle className="size-4" weight="bold" />
-                  {uploadError}
+                  {uploadError || qrError}
                 </div>
               )}
               <CanvasStage
@@ -888,6 +1158,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
               onRemoveBackground={() => selectedObject?.assetUrl && handleRemoveBackground(selectedObject.id, selectedObject.assetUrl)}
               onAcceptRemovedBackground={() => selectedObject && acceptRemovedBackground(selectedObject.id)}
               onDismissBackgroundRemoval={dismissBackgroundRemoval}
+              onQrPatch={(id, changes) => void patchQrObject(id, changes)}
+              onQrApplyPreset={applyQrPreset}
+              onQrFix={(id) => void fixQr(id)}
+              onQrTriggerLogoUpload={triggerQrLogoUpload}
+              onQrRemoveLogo={(id) => void patchQrObject(id, { logoUrl: null })}
+              qrRegenerating={selectedObject ? qrRegeneratingIds.includes(selectedObject.id) : false}
               activeSide={activeSide}
               layerObjects={activeObjects}
               selectedId={selectedId}
@@ -932,6 +1208,38 @@ export function StudioClient({ projectId }: { projectId: string }) {
               setCropTargetId(null);
             }}
           />
+        )}
+
+        {qrReviewGate && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-950/50 p-6">
+            <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl">
+              <WarningCircle className="mx-auto size-8 text-orange" weight="bold" />
+              <h2 className="mt-3 font-display text-lg font-semibold text-ink-900">
+                {qrReviewGate.length === 1 ? "One QR code may not scan" : `${qrReviewGate.length} QR codes may not scan`}
+              </h2>
+              <p className="mt-1.5 text-sm text-muted">
+                We couldn&apos;t confirm {qrReviewGate.length === 1 ? "it decodes" : "they decode"} correctly. Fix
+                automatically for a guaranteed-readable style, or go back and adjust it yourself.
+              </p>
+              <div className="mt-5 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={fixAllQrAndProceed}
+                  disabled={fixingAllQr}
+                  className="rounded-full bg-maple-gradient px-4 py-2.5 text-sm font-semibold text-ink-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {fixingAllQr ? "Fixing…" : "Fix Automatically"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrReviewGate(null)}
+                  className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas"
+                >
+                  Back to Edit
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );

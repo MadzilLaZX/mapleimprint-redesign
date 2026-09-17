@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Stage, Layer, Image as KonvaImage, Rect, Circle, Line, Text as KonvaText, Group, Transformer, Label, Tag } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Rect, Circle, Ellipse, Line, Arrow, Star, RegularPolygon, Path, Text as KonvaText, Group, Transformer, Label, Tag } from "react-konva";
 import useImage from "use-image";
 import type Konva from "konva";
 import { cn } from "@/lib/cn";
@@ -357,6 +357,18 @@ function DesignTextNode({
   );
 }
 
+// Original Maple line art (0-100 viewBox) for the three shapes with no clean Konva primitive —
+// everything else below maps onto a native Konva component (Rect/Circle/Ellipse/RegularPolygon/
+// Star/Arrow), per the brief's "do not depend on external libraries for basic shapes." Heart
+// reuses the exact path already hand-drawn for the Heart graphic in assetProviders.ts (same mark,
+// now also available as a native fill/stroke/resizable shape rather than only a fixed asset).
+const SHAPE_PATHS: Record<string, string> = {
+  heart: "M50 88 C10 62 6 34 26 20 C38 12 48 20 50 30 C52 20 62 12 74 20 C94 34 90 62 50 88 Z",
+  banner: "M2 30 H98 L88 50 L98 70 H2 L12 50 Z",
+  "speech-bubble": "M18 10 H82 Q90 10 90 18 V65 Q90 73 82 73 H40 L25 92 L30 73 H18 Q10 73 10 65 V18 Q10 10 18 10 Z",
+};
+const SHAPE_PATH_VIEWBOX = 100;
+
 function ShapeNode({
   obj,
   box,
@@ -383,8 +395,10 @@ function ShapeNode({
   const width = obj.normalizedWidth * box.width;
   const height = obj.normalizedHeight * box.height;
   const clickHandler = interactive ? onSelect : onClickSwitch;
+  const kind = obj.shapeKind ?? "rectangle";
+  const centerAnchored = kind === "circle" || kind === "ellipse" || kind === "triangle" || kind === "polygon" || kind === "star" || kind === "diamond";
 
-  const style = {
+  const shared = {
     rotation: obj.rotation,
     opacity: obj.opacity,
     fill: obj.fill ?? "#D41414",
@@ -393,78 +407,160 @@ function ShapeNode({
     draggable: interactive,
     onClick: clickHandler,
     onTap: clickHandler,
-    onTransformEnd: interactive
-      ? (e: Konva.KonvaEventObject<Event>) => {
-          const node = e.target;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-          node.scaleX(1);
-          node.scaleY(1);
-          const newWidth = node.width() * scaleX;
-          const newHeight = node.height() * scaleY;
-          if (obj.shapeKind === "circle") {
-            onCommit({
-              normalizedX: (node.x() - newWidth / 2 - box.x) / box.width,
-              normalizedY: (node.y() - newHeight / 2 - box.y) / box.height,
-              normalizedWidth: newWidth / box.width,
-              normalizedHeight: newHeight / box.height,
-              rotation: node.rotation(),
-            });
-          } else {
-            onCommit({
-              normalizedX: (node.x() - box.x) / box.width,
-              normalizedY: (node.y() - box.y) / box.height,
-              normalizedWidth: newWidth / box.width,
-              normalizedHeight: newHeight / box.height,
-              rotation: node.rotation(),
-            });
-          }
-        }
-      : undefined,
   };
 
-  if (obj.shapeKind === "circle") {
+  // Center-anchored shapes (Circle/Ellipse/RegularPolygon/Star): the node's own x/y IS its
+  // center, so drag/transform math converts to/from the top-left convention every other object
+  // type (and the smart-guide snapper) uses — this is the same conversion Circle already used
+  // before the other center-anchored kinds existed here, just generalized.
+  const centerHandlers = centerAnchored
+    ? {
+        onDragMove: interactive
+          ? (e: Konva.KonvaEventObject<DragEvent>) => {
+              const node = e.target;
+              const snapped = onDragMove(node.x() - width / 2, node.y() - height / 2, width, height);
+              node.x(snapped.x + width / 2);
+              node.y(snapped.y + height / 2);
+            }
+          : undefined,
+        onDragEnd: interactive
+          ? (e: Konva.KonvaEventObject<DragEvent>) => {
+              onDragEnd();
+              onCommit({
+                normalizedX: (e.target.x() - width / 2 - box.x) / box.width,
+                normalizedY: (e.target.y() - height / 2 - box.y) / box.height,
+              });
+            }
+          : undefined,
+        onTransformEnd: interactive
+          ? (e: Konva.KonvaEventObject<Event>) => {
+              const node = e.target;
+              const scaleX = node.scaleX();
+              const scaleY = node.scaleY();
+              node.scaleX(1);
+              node.scaleY(1);
+              const newWidth = width * scaleX;
+              const newHeight = height * scaleY;
+              onCommit({
+                normalizedX: (node.x() - newWidth / 2 - box.x) / box.width,
+                normalizedY: (node.y() - newHeight / 2 - box.y) / box.height,
+                normalizedWidth: newWidth / box.width,
+                normalizedHeight: newHeight / box.height,
+                rotation: node.rotation(),
+              });
+            }
+          : undefined,
+      }
+    : {
+        onDragMove: interactive
+          ? (e: Konva.KonvaEventObject<DragEvent>) => {
+              const node = e.target;
+              const snapped = onDragMove(node.x(), node.y(), width, height);
+              node.x(snapped.x);
+              node.y(snapped.y);
+            }
+          : undefined,
+        onDragEnd: interactive
+          ? (e: Konva.KonvaEventObject<DragEvent>) => {
+              onDragEnd();
+              onCommit({
+                normalizedX: (e.target.x() - box.x) / box.width,
+                normalizedY: (e.target.y() - box.y) / box.height,
+              });
+            }
+          : undefined,
+        onTransformEnd: interactive
+          ? (e: Konva.KonvaEventObject<Event>) => {
+              const node = e.target;
+              const scaleX = node.scaleX();
+              const scaleY = node.scaleY();
+              node.scaleX(1);
+              node.scaleY(1);
+              const newWidth = width * scaleX;
+              const newHeight = height * scaleY;
+              onCommit({
+                normalizedX: (node.x() - box.x) / box.width,
+                normalizedY: (node.y() - box.y) / box.height,
+                normalizedWidth: newWidth / box.width,
+                normalizedHeight: newHeight / box.height,
+                rotation: node.rotation(),
+              });
+            }
+          : undefined,
+      };
+
+  if (kind === "circle") {
     return (
       <Circle
         ref={nodeRef as unknown as (node: Konva.Circle | null) => void}
         x={x + width / 2}
         y={y + height / 2}
         radius={Math.min(width, height) / 2}
-        {...style}
-        onDragMove={
-          interactive
-            ? (e) => {
-                const node = e.target;
-                const snapped = onDragMove(node.x() - width / 2, node.y() - height / 2, width, height);
-                node.x(snapped.x + width / 2);
-                node.y(snapped.y + height / 2);
-              }
-            : undefined
-        }
-        onDragEnd={
-          interactive
-            ? (e) => {
-                onDragEnd();
-                onCommit({
-                  normalizedX: (e.target.x() - width / 2 - box.x) / box.width,
-                  normalizedY: (e.target.y() - height / 2 - box.y) / box.height,
-                });
-              }
-            : undefined
-        }
+        {...shared}
+        {...centerHandlers}
       />
     );
   }
-  if (obj.shapeKind === "line") {
+  if (kind === "ellipse") {
     return (
-      <Line
-        ref={nodeRef as unknown as (node: Konva.Line | null) => void}
+      <Ellipse
+        ref={nodeRef as unknown as (node: Konva.Ellipse | null) => void}
+        x={x + width / 2}
+        y={y + height / 2}
+        radiusX={width / 2}
+        radiusY={height / 2}
+        {...shared}
+        {...centerHandlers}
+      />
+    );
+  }
+  if (kind === "triangle" || kind === "polygon" || kind === "diamond") {
+    // Konva draws a RegularPolygon with its first vertex at the top (12 o'clock) for any side
+    // count — sides:4 already reads as a diamond/rhombus with no extra rotation offset needed.
+    const sides = kind === "triangle" ? 3 : kind === "diamond" ? 4 : 6;
+    return (
+      <RegularPolygon
+        ref={nodeRef as unknown as (node: Konva.RegularPolygon | null) => void}
+        x={x + width / 2}
+        y={y + height / 2}
+        sides={sides}
+        radius={Math.min(width, height) / 2}
+        {...shared}
+        {...centerHandlers}
+      />
+    );
+  }
+  if (kind === "star") {
+    const radius = Math.min(width, height) / 2;
+    return (
+      <Star
+        ref={nodeRef as unknown as (node: Konva.Star | null) => void}
+        x={x + width / 2}
+        y={y + height / 2}
+        numPoints={5}
+        innerRadius={radius * 0.5}
+        outerRadius={radius}
+        {...shared}
+        {...centerHandlers}
+      />
+    );
+  }
+  if (kind === "line" || kind === "arrow") {
+    const LineOrArrow = kind === "arrow" ? Arrow : Line;
+    // Neither fully top-left nor fully center anchored: x is the left edge, y is vertically
+    // centered (points run horizontally from the node's own origin) — its own dedicated
+    // conversion, distinct from both centerHandlers branches above.
+    return (
+      <LineOrArrow
+        ref={nodeRef as unknown as (node: Konva.Line | Konva.Arrow | null) => void}
         x={x}
         y={y + height / 2}
         points={[0, 0, width, 0]}
         lineCap="round"
-        {...style}
-        fill={undefined}
+        pointerLength={kind === "arrow" ? Math.max(8, height * 4) : undefined}
+        pointerWidth={kind === "arrow" ? Math.max(8, height * 4) : undefined}
+        {...shared}
+        fill={kind === "arrow" ? (obj.fill ?? "#171412") : undefined}
         stroke={obj.fill ?? "#171412"}
         strokeWidth={Math.max(2, obj.strokeWidth ?? 4)}
         onDragMove={
@@ -488,9 +584,83 @@ function ShapeNode({
               }
             : undefined
         }
+        onTransformEnd={
+          interactive
+            ? (e) => {
+                const node = e.target;
+                const scaleX = node.scaleX();
+                const scaleY = node.scaleY();
+                node.scaleX(1);
+                node.scaleY(1);
+                const newWidth = width * scaleX;
+                const newHeight = height * scaleY;
+                onCommit({
+                  normalizedX: (node.x() - box.x) / box.width,
+                  normalizedY: (node.y() - newHeight / 2 - box.y) / box.height,
+                  normalizedWidth: newWidth / box.width,
+                  normalizedHeight: newHeight / box.height,
+                  rotation: node.rotation(),
+                });
+              }
+            : undefined
+        }
       />
     );
   }
+  if (kind === "speech-bubble" || kind === "banner" || kind === "heart") {
+    return (
+      <Path
+        ref={nodeRef as unknown as (node: Konva.Path | null) => void}
+        x={x}
+        y={y}
+        data={SHAPE_PATHS[kind]}
+        scaleX={width / SHAPE_PATH_VIEWBOX}
+        scaleY={height / SHAPE_PATH_VIEWBOX}
+        {...shared}
+        onDragMove={
+          interactive
+            ? (e) => {
+                const node = e.target;
+                const snapped = onDragMove(node.x(), node.y(), width, height);
+                node.x(snapped.x);
+                node.y(snapped.y);
+              }
+            : undefined
+        }
+        onDragEnd={
+          interactive
+            ? (e) => {
+                onDragEnd();
+                onCommit({
+                  normalizedX: (e.target.x() - box.x) / box.width,
+                  normalizedY: (e.target.y() - box.y) / box.height,
+                });
+              }
+            : undefined
+        }
+        onTransformEnd={
+          interactive
+            ? (e) => {
+                const node = e.target;
+                // Path has no native width/height to reset — its scaleX/scaleY already directly
+                // encode "how big" (see the render props above), so the post-drag scale IS the
+                // new size fraction of the fixed 0-100 path box; nothing needs resetting to 1.
+                const newWidth = node.scaleX() * SHAPE_PATH_VIEWBOX;
+                const newHeight = node.scaleY() * SHAPE_PATH_VIEWBOX;
+                onCommit({
+                  normalizedX: (node.x() - box.x) / box.width,
+                  normalizedY: (node.y() - box.y) / box.height,
+                  normalizedWidth: newWidth / box.width,
+                  normalizedHeight: newHeight / box.height,
+                  rotation: node.rotation(),
+                });
+              }
+            : undefined
+        }
+      />
+    );
+  }
+  // "rectangle" / "rounded-rectangle" default
   return (
     <Rect
       ref={nodeRef as unknown as (node: Konva.Rect | null) => void}
@@ -498,29 +668,9 @@ function ShapeNode({
       y={y}
       width={width}
       height={height}
-      cornerRadius={4}
-      {...style}
-      onDragMove={
-        interactive
-          ? (e) => {
-              const node = e.target;
-              const snapped = onDragMove(node.x(), node.y(), width, height);
-              node.x(snapped.x);
-              node.y(snapped.y);
-            }
-          : undefined
-      }
-      onDragEnd={
-        interactive
-          ? (e) => {
-              onDragEnd();
-              onCommit({
-                normalizedX: (e.target.x() - box.x) / box.width,
-                normalizedY: (e.target.y() - box.y) / box.height,
-              });
-            }
-          : undefined
-      }
+      cornerRadius={kind === "rounded-rectangle" ? Math.min(width, height) * 0.22 : 4}
+      {...shared}
+      {...centerHandlers}
     />
   );
 }
@@ -733,6 +883,12 @@ export function CanvasStage({
     setGuides({ v: null, h: null });
   }
 
+  // QR codes must resize as squares (Section "QR ASPECT RATIO": "Do not allow free distortion") —
+  // Konva's Transformer takes keepRatio/enabledAnchors as stage-level props, not per-node, so this
+  // looks up whichever object is currently selected (across every layer, active or not) to decide.
+  const selectedObj = selectedId ? layers.flatMap((l) => l.objects).find((o) => o.id === selectedId) : null;
+  const selectedIsQr = selectedObj?.type === "qr";
+
   const preparedLayers = layers.map((layer) => {
     const { box, groupCenterX, groupCenterY, rotationDeg } = boxFor(layer.location);
     const interactive = !readOnly && layer.active;
@@ -820,7 +976,7 @@ export function CanvasStage({
                       if (node) nodeRefs.current.set(obj.id, node);
                       else nodeRefs.current.delete(obj.id);
                     };
-                    if (obj.type === "image") {
+                    if (obj.type === "image" || obj.type === "qr") {
                       return (
                         <DesignImageNode
                           key={obj.id}
@@ -887,6 +1043,8 @@ export function CanvasStage({
                 rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
                 rotationSnapTolerance={3}
                 flipEnabled={false}
+                keepRatio={selectedIsQr}
+                enabledAnchors={selectedIsQr ? ["top-left", "top-right", "bottom-left", "bottom-right"] : undefined}
                 onTransformStart={(e) => {
                   const node = e.target;
                   const pos = node.getAbsolutePosition();

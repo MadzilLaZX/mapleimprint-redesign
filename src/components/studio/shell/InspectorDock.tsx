@@ -22,10 +22,19 @@ export function InspectorDock({
   children: React.ReactNode;
 }) {
   return (
+    // The mobile bottom-sheet look (fixed position, 55vh cap, rounded top, shadow) must never
+    // survive past the lg breakpoint — it previously had no `max-lg:` scoping at all, so the
+    // instant something got selected (which sets `mobileOpen` unconditionally, at every viewport
+    // width — see StudioClient's derived-state effect), `max-h-[55vh]` capped the DESKTOP panel's
+    // height too. `lg:h-full` sets `height`, not `max-height`, so it never overrode that cap —
+    // two different properties don't compete in the cascade, the tighter constraint just wins.
+    // Root cause of the "right inspector only fills the top half of the screen" bug.
     <aside
       className={cn(
         "z-20 flex-col border-sand bg-white lg:static lg:z-auto lg:flex lg:h-full lg:w-72 lg:border-l lg:shadow-none",
-        mobileOpen ? "fixed inset-x-0 bottom-14 flex max-h-[55vh] rounded-t-3xl border shadow-2xl" : "hidden",
+        mobileOpen
+          ? "flex max-lg:fixed max-lg:inset-x-0 max-lg:bottom-14 max-lg:max-h-[55vh] max-lg:rounded-t-3xl max-lg:border max-lg:shadow-2xl"
+          : "hidden lg:flex",
       )}
     >
       <div className="flex shrink-0 items-center justify-between border-b border-sand px-4 py-3 lg:hidden">

@@ -258,6 +258,98 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-17 Studio free-asset system, product-family templates, QR Code tool, right-inspector
+fix:** the "Studio V4" pass — a real native-shape library, a curated free/open-source graphics
+catalogue with full licensing metadata, a product-family-aware template compatibility model
+(including forward architecture for business cards/flyers/posters/mugs — see below), a complete
+native QR Code tool (generate, style, validate, fix), and a genuine layout bug fix.
+
+- **Right Inspector half-height bug, root cause + fix** — `InspectorDock.tsx`'s mobile bottom-sheet
+  classes (`fixed`, `max-h-[55vh]`, rounded top, shadow) had no `max-lg:` scoping, so the instant
+  anything got selected (which sets `mobileOpen` unconditionally at every viewport width — see
+  StudioClient's derived-state effect), `max-h-[55vh]` silently capped the DESKTOP panel too:
+  `lg:h-full` sets `height`, a different CSS property that never overrides a `max-height`
+  constraint on the same element. Fixed by scoping every mobile-sheet class to `max-lg:`. Verified:
+  measured the actual `<aside>` bounding box before/after — was 495px (55% of a 900px viewport)
+  with an object selected, now correctly 837px (full available height) at 1440×900 and 705px at
+  1366×768; mobile (390×844) still correctly shows the 464px bottom sheet, unchanged.
+- **Native shapes** (`ShapeKind` in `types.ts`, `ShapeNode` in `CanvasStage.tsx`, rewritten) — grew
+  from 3 kinds (rectangle/circle/line) to 13: + rounded-rectangle, ellipse, triangle, diamond,
+  polygon (hexagon), star, arrow, speech-bubble, banner, heart — every one fill/stroke/opacity/
+  rotation/resize-editable, mapped onto real Konva primitives (Circle/Ellipse/RegularPolygon/Star/
+  Arrow) or an original Maple SVG path (the three that have no clean Konva equivalent), no external
+  shape library. Fixed a real pre-existing math bug while generalizing circle's center-anchored
+  drag/transform handling to the other center-anchored kinds.
+- **Free/open-source asset library** (`assetProviders.ts`, extended `DesignAsset` with
+  licenseType/licenseUrl/sourceUrl/attributionRequired/trademarkRestrictions/
+  approvedForCustomerUse/approvedForPhysicalPrint/reviewedAt) — 135 curated assets total: the
+  existing 16 Maple-original marks plus 119 real, individually-curated icons pulled from
+  `@tabler/icons`, `heroicons`, and `bootstrap-icons` (all genuinely MIT-licensed npm packages,
+  installed as devDependencies and extracted once by `scripts/extract-open-source-icons.mjs` into
+  `openSourceIcons.generated.ts` — the three source packages can be removed without touching the
+  app, since only the generated output is ever imported at runtime). **Not done**: Openclipart,
+  Public Domain Vectors, Open Peeps, and Humaaans (the brief's own PRIMARY sources) are not
+  included — pulling individually-verified assets from those requires manual per-asset browsing
+  this session can't safely automate without either fabricating source URLs or importing content
+  whose license wasn't actually checked. Flagged as an honest gap, not a silent substitution.
+- **Template compatibility model + new product families** (`templates.ts`, `productDecorationProfile.ts`,
+  `printAreas.ts`) — `ProductFamily` gained `business-card`/`flyer`/`poster`/`mug`; `DesignTemplate`
+  gained `productSubtypes`/`orientation` alongside the existing `productFamilies`/
+  `compatiblePrintAreas` (now typed as real `DesignSideType`, not just "front"|"back" — this typing
+  alone is what makes a 3.5x2in card template structurally unable to target a 12x16in tee print
+  area). New flat-print `DesignSideType`s (card-front/back, flyer-front/back, poster-front,
+  mug-wrap) each get real industry-standard dimensions (3.5×2in card, 8.5×11in flyer, 18×24in
+  poster, 8×3.3in mug wrap) and their own dedicated flat schematic background (no garment photo
+  involved at all — `printPieceSchematicSvg`, same pattern as the sleeve/inner-neck schematics).
+  Added 25 new demo templates: 10 business card, 10 flyer, 5 poster (`templatesFor()` verified to
+  correctly isolate each family — zero cross-contamination). **Known, disclosed gap**: the
+  marketing taxonomy already has real `business-printing`/`drinkware` subcategories, but the live
+  catalogue has zero actual products in them (S&S Activewear, the only connected supplier, doesn't
+  carry business printing or drinkware) — so this is real, tested architecture (family resolution,
+  print-area geometry, template filtering all verified directly) that currently has no live
+  product to enter Studio through end-to-end. Mug templates were not built (not explicitly
+  requested with a count, unlike the other three).
+- **QR Code tool** (`qr.ts`, `QRPanel.tsx`, `QRInspector.tsx`, new `ToolRail` entry) — generates
+  entirely client-side via `qr-code-styling` (MIT), never sending a destination to a third-party
+  QR API. Every generated code is immediately decoded with `jsQR` (Apache-2.0, not MIT as
+  originally assumed — corrected after checking its actual LICENSE file) and compared against its
+  own destination; a QR that doesn't decode shows "QR may be difficult to scan" + a one-click "Fix
+  QR" that reverts to the single safest configuration (true black/white, square modules, no logo,
+  highest error correction) rather than asking the customer to reason about contrast or
+  error-correction math. Same gate runs before Review (`handleReviewClick`): any QR not confirmed
+  scannable blocks entry with a "Fix Automatically" / "Back to Edit" modal. QR objects resize
+  square-only (Konva Transformer `keepRatio` + corner-only anchors, applied only when the selected
+  object is a QR). 5 style presets (Classic/Rounded/Soft/Bold/Minimal), optional logo (forces
+  error-correction to "H"), optional frame border and "SCAN ME"-style label composited into the
+  same flattened SVG so the whole thing drags/resizes/rotates as one object. Social-platform
+  helper (Website/Instagram/TikTok/YouTube/LinkedIn/Facebook) only changes placeholder/help copy —
+  never the QR standard itself, which is always just a URL. Static QR only, no tracking, as
+  specified.
+  - **Persistence without a database migration**: `DesignObject` is a real Postgres table with a
+    fixed column set, and this session had no Supabase schema-migration access (MCP disconnected)
+    — so a QR object's rich config is NOT new columns; it's JSON-encoded into the existing,
+    already-nullable `content` string column, written to the wire as an ordinary `type: "image"`
+    (`qr.ts`'s `qrObjectToWire`/`wireObjectToAppObject`). Everywhere else in the app works with a
+    first-class `type: "qr"` object with real `qrDestination`/`qrForegroundColor`/etc. fields.
+  - **Two real bugs found and fixed while building this**: (1) `qr-code-styling` reads
+    `imageOptions.hideBackgroundDots` unconditionally even with no logo/image set at all — passing
+    `imageOptions: undefined` (the natural way to say "no logo options") threw "Cannot read
+    properties of undefined" on every QR with no logo, i.e. the common case. Fixed by always
+    supplying a real `imageOptions` object. (2) The qr* fields defaulted to `null` on every object
+    by `emptyObject()`/template seeds — including plain text/image/shape objects — and
+    `qrObjectToWire` was only stripping them for actual QR objects, so autosaving ANY ordinary
+    object 502'd against Supabase (extra unrecognized keys on the insert). Fixed by stripping qr*
+    keys from every object unconditionally, regardless of type. (3) `fixAllQrAndProceed` (the
+    Review-gate's "Fix Automatically") re-read `sides` from a stale closure after its `await`
+    instead of using `fixQr`'s own return value, so the gate modal never actually closed even
+    after a successful fix — found live (Inspector correctly showed "scans correctly" underneath a
+    modal that stayed open regardless) and fixed to use the await's real result.
+  - **Verified live end-to-end**: created a QR, immediately selected with "✓ QR code scans
+    correctly"; changed style presets (regenerates + re-validates each time); forced a
+    same-color-as-background QR → correctly flagged unscannable → blocked Review with the gate
+    modal → "Fix Automatically" → correctly proceeded into Review; reloaded the page and confirmed
+    the QR (destination, style, validation state) survived the full wire round-trip.
+
 **2026-09-14 Studio precision editing + GarmentView/PrintArea split + sleeve schematic:** a
 focused Studio V3 pass fixing several real interaction bugs and closing the gap between Studio
 and Canva/Printify-grade editors, without touching autosave/undo/pricing/cart/DesignProject.

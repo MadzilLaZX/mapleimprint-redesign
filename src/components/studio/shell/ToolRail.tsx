@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderSimple, Hexagon, ImageSquare, SquaresFour, TextT, UploadSimple } from "@phosphor-icons/react/dist/ssr";
+import { FolderSimple, Hexagon, ImageSquare, QrCode, SquaresFour, TextT, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import type { StudioToolId } from "@/lib/studio/tools";
 import { STUDIO_TOOLS } from "@/lib/studio/tools";
@@ -11,6 +11,7 @@ const ICONS: Record<StudioToolId, typeof TextT> = {
   text: TextT,
   graphics: ImageSquare,
   shapes: Hexagon,
+  qr: QrCode,
   "my-stuff": FolderSimple,
 };
 

@@ -40,6 +40,17 @@ export const PRINT_AREAS: Record<DesignSideType, { widthIn: number; heightIn: nu
   "right-leg": { widthIn: 4, heightIn: 5, safeMarginIn: 0.2, confirmed: false },
   "left-side": { widthIn: 3, heightIn: 1.5, safeMarginIn: 0.1, confirmed: false },
   "right-side": { widthIn: 3, heightIn: 1.5, safeMarginIn: 0.1, confirmed: false },
+  // Flat print pieces (STUDIO V4 brief) — real industry-standard dimensions (US business card,
+  // US Letter flyer, a common small poster size, an 11oz mug's sublimation wrap), not apparel
+  // measurements repurposed. `confirmed: false` on every one, honestly: no live product exists in
+  // these subcategories yet (see productDecorationProfile.ts's familyFor comment), so nothing here
+  // has been checked against an actual Maple production run.
+  "card-front": { widthIn: 3.5, heightIn: 2, safeMarginIn: 0.125, confirmed: false },
+  "card-back": { widthIn: 3.5, heightIn: 2, safeMarginIn: 0.125, confirmed: false },
+  "flyer-front": { widthIn: 8.5, heightIn: 11, safeMarginIn: 0.25, confirmed: false },
+  "flyer-back": { widthIn: 8.5, heightIn: 11, safeMarginIn: 0.25, confirmed: false },
+  "poster-front": { widthIn: 18, heightIn: 24, safeMarginIn: 0.5, confirmed: false },
+  "mug-wrap": { widthIn: 8, heightIn: 3.3, safeMarginIn: 0.25, confirmed: false },
 };
 
 export interface PlacementGeometry {
@@ -94,6 +105,16 @@ export const PLACEMENT_GEOMETRY: Record<DesignSideType, PlacementGeometry> = {
   "right-leg": { xFrac: 0.54, yFrac: 0.42, widthFrac: 0.18, heightFrac: 0.22, rotationDeg: 0 },
   "left-side": { xFrac: 0.16, yFrac: 0.3, widthFrac: 0.18, heightFrac: 0.12, rotationDeg: 0 },
   "right-side": { xFrac: 0.66, yFrac: 0.3, widthFrac: 0.18, heightFrac: 0.12, rotationDeg: 0 },
+  // Flat print pieces render on their own dedicated schematic (printPieceSchematicSvg), not a
+  // garment photo — each box below is sized at the piece's REAL aspect ratio (from PRINT_AREAS
+  // above) and centered generously within the 520x650 canvas, same "large enough that design work
+  // is easy" principle the sleeve/inner-neck schematics already established.
+  "card-front": { xFrac: 0.075, yFrac: 0.306, widthFrac: 0.85, heightFrac: 0.389, rotationDeg: 0 },
+  "card-back": { xFrac: 0.075, yFrac: 0.306, widthFrac: 0.85, heightFrac: 0.389, rotationDeg: 0 },
+  "flyer-front": { xFrac: 0.075, yFrac: 0.06, widthFrac: 0.85, heightFrac: 0.88, rotationDeg: 0 },
+  "flyer-back": { xFrac: 0.075, yFrac: 0.06, widthFrac: 0.85, heightFrac: 0.88, rotationDeg: 0 },
+  "poster-front": { xFrac: 0.075, yFrac: 0.047, widthFrac: 0.85, heightFrac: 0.907, rotationDeg: 0 },
+  "mug-wrap": { xFrac: 0.075, yFrac: 0.36, widthFrac: 0.85, heightFrac: 0.28, rotationDeg: 0 },
 };
 
 /** @deprecated kept only as a type-compatible alias while any stale import lingers — use
@@ -109,7 +130,13 @@ export type BackgroundKind =
   | "back-photo"
   | "inner-neck-schematic"
   | "sleeve-left-schematic"
-  | "sleeve-right-schematic";
+  | "sleeve-right-schematic"
+  | "card-front-flat"
+  | "card-back-flat"
+  | "flyer-front-flat"
+  | "flyer-back-flat"
+  | "poster-flat"
+  | "mug-wrap-flat";
 
 /** What kind of background a location's viewType calls for — this is what let Section 20's
  *  viewType enum replace the old hardcoded "is this front or back" special-casing. A schematic
@@ -133,6 +160,18 @@ export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
       return "sleeve-left-schematic";
     case "SLEEVE_RIGHT_PLACEMENT":
       return "sleeve-right-schematic";
+    case "CARD_FRONT_FLAT":
+      return "card-front-flat";
+    case "CARD_BACK_FLAT":
+      return "card-back-flat";
+    case "FLYER_FRONT_FLAT":
+      return "flyer-front-flat";
+    case "FLYER_BACK_FLAT":
+      return "flyer-back-flat";
+    case "POSTER_FLAT":
+      return "poster-flat";
+    case "MUG_WRAP_FLAT":
+      return "mug-wrap-flat";
     default:
       return "front-photo";
   }
@@ -257,6 +296,20 @@ export function sleeveSchematicSvg(side: "left" | "right", colourName: string): 
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
+/** Dedicated flat-print schematic (STUDIO V4 brief) for business cards/flyers/posters/mug wraps —
+ *  deliberately NOT a garment photo or garment-shaped illustration: a plain neutral card/sheet
+ *  surface with a soft drop shadow so its own edges read clearly against the canvas background,
+ *  labeled with which piece it is. The actual print-area box (PLACEMENT_GEOMETRY) sits exactly on
+ *  top of this at the piece's real aspect ratio — this schematic is just ambience, same division
+ *  of responsibility as the sleeve/inner-neck schematics. */
+export function printPieceSchematicSvg(label: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="520" height="650">
+    <rect width="520" height="650" fill="#F6F1E9"/>
+    <text x="260" y="628" font-family="sans-serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="#9C9284" text-anchor="middle">${label.toUpperCase()}</text>
+  </svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 /** The one place that resolves "what background image does this location actually show" — every
  *  caller (StudioClient, PreviewMode, ReviewPanel) goes through this instead of re-deriving
  *  front/back/schematic logic itself, which is what let three call sites drift in earlier passes.
@@ -272,6 +325,20 @@ export function backgroundUrlFor(
   if (kind === "inner-neck-schematic") return innerNeckSchematicSvg(colourName);
   if (kind === "sleeve-left-schematic") return sleeveSchematicSvg("left", colourName);
   if (kind === "sleeve-right-schematic") return sleeveSchematicSvg("right", colourName);
+  switch (kind) {
+    case "card-front-flat":
+      return printPieceSchematicSvg("Business Card — Front");
+    case "card-back-flat":
+      return printPieceSchematicSvg("Business Card — Back");
+    case "flyer-front-flat":
+      return printPieceSchematicSvg("Flyer — Front");
+    case "flyer-back-flat":
+      return printPieceSchematicSvg("Flyer — Back");
+    case "poster-flat":
+      return printPieceSchematicSvg("Poster");
+    case "mug-wrap-flat":
+      return printPieceSchematicSvg("Mug Wrap");
+  }
   const key: DesignSideType = kind === "back-photo" ? "back" : "front";
   return mockupImages[key] ?? (usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);
 }

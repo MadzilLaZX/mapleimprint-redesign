@@ -19,7 +19,7 @@ import type { DesignSideType } from "./types";
 
 export type SupportStatus = "STANDARD" | "REVIEW_REQUIRED" | "UNAVAILABLE";
 
-export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory";
+export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "flyer" | "poster" | "mug";
 
 // Section 20: how a location's editing view is constructed, independent of its SupportStatus.
 // Status answers "can the customer design this, and is it confirmed for production"; viewType
@@ -39,7 +39,13 @@ export type LocationViewType =
   | "INNER_NECK_SCHEMATIC"
   | "OUTER_NECK_PLACEMENT"
   | "HOOD_PLACEMENT"
-  | "PANTS_LEG_PLACEMENT";
+  | "PANTS_LEG_PLACEMENT"
+  | "CARD_FRONT_FLAT"
+  | "CARD_BACK_FLAT"
+  | "FLYER_FRONT_FLAT"
+  | "FLYER_BACK_FLAT"
+  | "POSTER_FLAT"
+  | "MUG_WRAP_FLAT";
 
 export interface DecorationLocation {
   id: DesignSideType;
@@ -67,6 +73,18 @@ export function familyFor(categorySlug: string, subcategorySlug: string): Produc
   if (subcategorySlug === "hoodies-sweatshirts" || subcategorySlug === "jackets-outerwear") return "hoodie";
   if (subcategorySlug === "joggers-bottoms") return "joggers";
   if (subcategorySlug === "caps" || subcategorySlug === "beanies-toques") return "headwear";
+  // STUDIO V4 brief's forward-looking flat-print/mug families — real marketing subcategories
+  // already exist for these (business-printing/business cards, brochures & flyers, postcards,
+  // posters; drinkware/mugs) but the live catalogue currently has zero actual products in them
+  // (S&S Activewear, the only connected supplier, doesn't carry business printing or drinkware —
+  // confirmed by checking generated/products.json directly). Mapped now so the moment real
+  // products land in these subcategories, family/template/print-area resolution already works —
+  // see PROJECT_NOTES.md for this being an explicit, honest "architecture ready, no live product
+  // to test end-to-end yet" gap rather than a claim these are orderable today.
+  if (subcategorySlug === "business-cards") return "business-card";
+  if (subcategorySlug === "brochures-flyers" || subcategorySlug === "postcards") return "flyer";
+  if (subcategorySlug === "posters") return "poster";
+  if (subcategorySlug === "mugs") return "mug";
   if (categorySlug === "hats-accessories") return "accessory"; // aprons, bags, general accessories
   return "tee";
 }
@@ -134,12 +152,40 @@ const ACCESSORY_LOCATIONS: DecorationLocation[] = [
   { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
+// Flat print pieces (STUDIO V4 brief) — no garment photography exists or is even applicable, so
+// every location here is honestly REVIEW_REQUIRED with usesPlacementPreview true, same as any
+// other location this site can't yet show real confirmed production photography for. Respect
+// bleed/safe area at the PRINT_AREAS level (printAreas.ts), never reusing apparel print-area
+// assumptions (Section "BUSINESS CARD TEMPLATE CATEGORIES": "Do not reuse T-shirt print-area
+// assumptions").
+const BUSINESS_CARD_LOCATIONS: DecorationLocation[] = [
+  { id: "card-front", label: "Front", group: "core", status: "REVIEW_REQUIRED", viewType: "CARD_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Standard 3.5 × 2 in card. Bleed/safe/trim area confirmed by Maple before production." },
+  { id: "card-back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "CARD_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: true },
+];
+
+const FLYER_LOCATIONS: DecorationLocation[] = [
+  { id: "flyer-front", label: "Front", group: "core", status: "REVIEW_REQUIRED", viewType: "FLYER_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Standard 8.5 × 11 in flyer. Bleed/safe area confirmed by Maple before production." },
+  { id: "flyer-back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "FLYER_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: true },
+];
+
+const POSTER_LOCATIONS: DecorationLocation[] = [
+  { id: "poster-front", label: "Front", group: "core", status: "REVIEW_REQUIRED", viewType: "POSTER_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Standard 18 × 24 in poster. Bleed/safe area confirmed by Maple before production." },
+];
+
+const MUG_LOCATIONS: DecorationLocation[] = [
+  { id: "mug-wrap", label: "Wrap", group: "core", status: "REVIEW_REQUIRED", viewType: "MUG_WRAP_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Full sublimation wrap. Exact print-safe curvature confirmed by Maple before production." },
+];
+
 const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   tee: TEE_LOCATIONS,
   hoodie: HOODIE_LOCATIONS,
   joggers: JOGGERS_LOCATIONS,
   headwear: HEADWEAR_LOCATIONS,
   accessory: ACCESSORY_LOCATIONS,
+  "business-card": BUSINESS_CARD_LOCATIONS,
+  flyer: FLYER_LOCATIONS,
+  poster: POSTER_LOCATIONS,
+  mug: MUG_LOCATIONS,
 };
 
 /** hasBackPhoto lets a specific product drop "back" from STANDARD even where the family default
