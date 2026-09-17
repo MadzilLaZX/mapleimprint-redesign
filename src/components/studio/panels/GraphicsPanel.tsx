@@ -3,14 +3,22 @@
 import { useEffect, useState } from "react";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
-import { MapleAssetProvider, type DesignAsset } from "@/lib/studio/assetProviders";
+import { MapleAssetProvider, type AssetProvider, type DesignAsset } from "@/lib/studio/assetProviders";
+import { OpenIconProvider } from "@/lib/studio/openIconProvider";
+import { IllustrationProvider } from "@/lib/studio/illustrationProvider";
 
 const DEBOUNCE_MS = 250;
 
-/** Section 12. Intentionally shows a small, curated grid (Maple's internal demo set is ~16 items
- *  total, well under the "12-24, not hundreds" guidance) with debounced search and category chips
- *  — the same pattern DesignsPanel uses for templates, since both talk to the same kind of
- *  provider abstraction underneath. */
+// Every provider the Graphics panel searches. Adding a provider is exactly the one-line change the
+// abstraction promises (assetProviders.ts's top comment) — nothing below needs to know which
+// provider an asset came from beyond what's already on DesignAsset (provider/licenseMetadata).
+const PROVIDERS: AssetProvider[] = [MapleAssetProvider, OpenIconProvider, IllustrationProvider];
+
+/** Section 12. Originally showed a small, curated grid (Maple's internal demo set is ~16 items
+ *  total) with debounced search and category chips — the same pattern DesignsPanel uses for
+ *  templates, since both talk to the same kind of provider abstraction underneath. Now aggregates
+ *  every registered AssetProvider (Maple's own marks plus the curated open-icon set) into one
+ *  unified search grid; categories are merged/deduped across providers too. */
 export function GraphicsPanel({ onAddGraphic }: { onAddGraphic: (asset: DesignAsset) => void }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("all");
@@ -18,12 +26,15 @@ export function GraphicsPanel({ onAddGraphic }: { onAddGraphic: (asset: DesignAs
   const [results, setResults] = useState<DesignAsset[]>([]);
 
   useEffect(() => {
-    MapleAssetProvider.categories().then(setCategories);
+    Promise.all(PROVIDERS.map((p) => p.categories())).then((lists) => {
+      setCategories([...new Set(lists.flat())]);
+    });
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      MapleAssetProvider.search(query, category === "all" ? undefined : category).then(setResults);
+      const q = category === "all" ? undefined : category;
+      Promise.all(PROVIDERS.map((p) => p.search(query, q))).then((lists) => setResults(lists.flat()));
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [query, category]);
@@ -76,7 +87,7 @@ export function GraphicsPanel({ onAddGraphic }: { onAddGraphic: (asset: DesignAs
               key={asset.id}
               type="button"
               onClick={() => onAddGraphic(asset)}
-              title={asset.title}
+              title={`${asset.title} — ${asset.licenseMetadata}`}
               className="flex aspect-square items-center justify-center rounded-xl border border-sand bg-white p-3 transition-colors hover:border-ink-950/30 hover:bg-canvas"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- inline SVG data-url icon */}

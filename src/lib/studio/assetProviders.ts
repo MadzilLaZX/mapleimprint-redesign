@@ -153,4 +153,9 @@ export function recolorMapleAsset(providerAssetId: string, fill: string): string
   return g ? svgDataUrl(g.path, fill) : null;
 }
 
+// A second provider now exists — OpenIconProvider (Tabler Icons / Heroicons / Bootstrap Icons, all
+// MIT-licensed; see openIconProvider.ts) — kept in its own sibling file rather than imported here,
+// so this file's only responsibility stays "the Maple provider + the shared AssetProvider model"
+// per its top comment. GraphicsPanel.tsx queries both providers directly and merges their results;
+// this array is left as the single-provider list it always was (nothing currently reads it).
 export const ASSET_PROVIDERS: AssetProvider[] = [MapleAssetProvider];
