@@ -258,6 +258,18 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-18 merged a parallel session's Studio work:** right after the Studio V4 push below,
+`origin/master` had moved 2 commits ahead from another session working on the *same* files at the
+same time — curved text, image mirroring, a professional text toolbar, an expanded font system,
+100 new "Pro" templates, and its own independent open-icon-library + CC0-illustration providers
+(genuinely fetching real assets from Openclipart/PublicDomainVectors/Open Peeps, which this
+session's own report had flagged as a gap it couldn't responsibly fill). Merged rather than
+force-pushing over it — see commit `870dc67` for the full resolution writeup. Both feature sets are
+live together and verified: templates.ts now has ~330+ templates across all its collections
+(original/Creative/Pro/flat-print), the Graphics panel searches Maple's own marks + this session's
+119 curated icons + the other session's open-icon and CC0-illustration sets in one aggregated grid,
+and the QR tool/native shapes/right-inspector fix all still work unchanged.
+
 **2026-09-17 Studio free-asset system, product-family templates, QR Code tool, right-inspector
 fix:** the "Studio V4" pass — a real native-shape library, a curated free/open-source graphics
 catalogue with full licensing metadata, a product-family-aware template compatibility model
