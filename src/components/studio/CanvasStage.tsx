@@ -9,6 +9,8 @@ import { CANVAS_NATURAL_WIDTH, CANVAS_NATURAL_HEIGHT, PLACEMENT_GEOMETRY } from 
 import { layoutCurvedText } from "@/lib/studio/curvedText";
 import { localPointToStage } from "@/lib/studio/localCoordinates";
 import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
+import { useFontReady } from "@/lib/studio/fontLoader";
+import { normalizeFontFamilyCss } from "@/lib/studio/fontRegistry";
 
 // All object/print-area math below is done in this fixed "design space" — box coordinates,
 // object x/y/width/height are all computed against these constants, never against the container's
@@ -217,6 +219,63 @@ function fontStyleFor(obj: DesignObjectRecord): string {
   return parts.length > 0 ? parts.join(" ") : "normal";
 }
 
+/** Display-only case transform (Text toolbar upgrade) — never touches obj.content itself, so
+ *  switching textTransform back to "none" always restores exactly what the customer typed,
+ *  including their own capitalization choices mid-word. */
+function displayTextFor(obj: DesignObjectRecord): string {
+  const raw = obj.content ?? "";
+  switch (obj.textTransform) {
+    case "uppercase":
+      return raw.toUpperCase();
+    case "lowercase":
+      return raw.toLowerCase();
+    case "title":
+      return raw.replace(/\p{L}[\p{L}\p{M}'’]*/gu, (word) => word[0].toUpperCase() + word.slice(1).toLowerCase());
+    default:
+      return raw;
+  }
+}
+
+/** Konva.Text's native `textDecoration` accepts a space-separated combination of "underline" and
+ *  "line-through" and draws both — no custom overlay needed for either straight or (per-glyph)
+ *  curved text. */
+function textDecorationFor(obj: DesignObjectRecord): string {
+  const parts: string[] = [];
+  if (obj.underline) parts.push("underline");
+  if (obj.strikethrough) parts.push("line-through");
+  return parts.join(" ");
+}
+
+/** Shared shadow prop bundle for the "shadow"/"lift"/"glow" effect presets — all three are the
+ *  same underlying Konva shadow capability with different default color/blur/offset (set when the
+ *  customer picks the preset in the Effects popover); rendering only ever reads the raw fields,
+ *  never the preset name, so a customer who nudges the sliders after picking "Lift" isn't fighting
+ *  a hardcoded preset. */
+function shadowPropsFor(obj: DesignObjectRecord): {
+  shadowEnabled: boolean;
+  shadowColor?: string;
+  shadowOpacity?: number;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+} {
+  const active = obj.effectType === "shadow" || obj.effectType === "lift" || obj.effectType === "glow";
+  if (!active) return { shadowEnabled: false };
+  return {
+    shadowEnabled: true,
+    shadowColor: obj.shadowColor ?? "#000000",
+    shadowOpacity: obj.shadowOpacity ?? 0.5,
+    shadowBlur: obj.shadowBlur ?? 6,
+    shadowOffsetX: obj.shadowOffsetX ?? 2,
+    shadowOffsetY: obj.shadowOffsetY ?? 2,
+  };
+}
+
+function fillFor(obj: DesignObjectRecord): string {
+  if (obj.effectType === "hollow") return "transparent";
+  return obj.fill ?? "#171412";
+}
+
 function DesignTextNode({
   obj,
   box,
@@ -246,6 +305,12 @@ function DesignTextNode({
   const height = obj.normalizedHeight * box.height;
   const fontSize = obj.fontSize ?? 28;
   const clickHandler = interactive ? onSelect : onClickSwitch;
+  // Font registry upgrade: with 100+ on-demand-loaded fonts, the requested family may still be
+  // fetching the first time this object renders — this triggers the load and re-renders once it
+  // resolves, so Konva never permanently bakes in geometry measured against a fallback face (both
+  // straight Text's native layout AND curved text's own per-glyph measureText below depend on it).
+  useFontReady(obj.fontFamily);
+  const resolvedFontFamily = normalizeFontFamilyCss(obj.fontFamily);
 
   const dragHandlers = !interactive
     ? { onClick: clickHandler, onTap: clickHandler }
@@ -272,11 +337,33 @@ function DesignTextNode({
   if (obj.curve) {
     // Curved text: one Text node per glyph, arced — see curvedText.ts. The invisible bounding Rect
     // is what the Transformer actually grabs (Konva can't usefully resize-handle a multi-child
-    // Group of independently-rotated glyphs), so curved text is draggable/rotatable but resized via
-    // the font-size slider in the inspector rather than corner handles. (Not wired into the smart
-    // alignment guides — its drag anchor is its visual center rather than a top-left box, and this
-    // is a rare enough object type that the added coordinate-conversion isn't worth it here.)
-    const glyphs = layoutCurvedText(obj.content ?? "", fontSize, obj.letterSpacing ?? 0, obj.curve);
+    // Group of independently-rotated glyphs), so the whole composition drags/rotates/resizes as
+    // one unit even though it's several Text nodes underneath — Layers still shows a single item
+    // (StudioClient never creates separate DesignObjectRecords per glyph). (Not wired into the
+    // smart alignment guides — its drag anchor is its visual center rather than a top-left box,
+    // and this is a rare enough object type that the added coordinate-conversion isn't worth it
+    // here.)
+    const glyphs = layoutCurvedText(
+      displayTextFor(obj),
+      fontSize,
+      obj.letterSpacing ?? 0,
+      obj.curve,
+      resolvedFontFamily,
+      obj.bold,
+      obj.italic,
+    );
+    // Real bounding box from the actual laid-out glyphs, not a fixed guess — a tight curve (small
+    // |curve|) and an extreme one (±100) have very different vertical sag, and a fixed-height hit
+    // rect either wastes empty selectable space or (worse, at high curve) clips off part of the
+    // visible arc entirely. Half-glyph-width/height margins account for each glyph's own box
+    // around its x/y anchor, not just the anchor point itself.
+    const glyphXs = glyphs.map((g) => g.x);
+    const glyphYs = glyphs.map((g) => g.y);
+    const hMargin = fontSize * 0.65;
+    const bboxMinX = glyphs.length ? Math.min(...glyphXs) - hMargin : -width / 2;
+    const bboxMaxX = glyphs.length ? Math.max(...glyphXs) + hMargin : width / 2;
+    const bboxMinY = glyphs.length ? Math.min(...glyphYs) - fontSize * 1.1 : -fontSize;
+    const bboxMaxY = glyphs.length ? Math.max(...glyphYs) + fontSize * 1.3 : fontSize * 1.4;
     return (
       <Group
         ref={nodeRef as unknown as (node: Konva.Group | null) => void}
@@ -296,8 +383,30 @@ function DesignTextNode({
                 })
             : undefined
         }
+        onTransformEnd={
+          interactive
+            ? (e) => {
+                // Corner-handle resize (Section "CURVE + RESIZE"): scales fontSize uniformly, which
+                // is what makes the WHOLE composition — arc radius, glyph spacing, everything —
+                // re-derive itself as one coherent shape on the next render (layoutCurvedText is a
+                // pure function of fontSize), rather than leaving a raw Konva scale transform
+                // sitting on the node that re-renders would silently fight or wipe out.
+                const node = e.target;
+                const scale = (Math.abs(node.scaleX()) + Math.abs(node.scaleY())) / 2;
+                node.scaleX(1);
+                node.scaleY(1);
+                const newFontSize = Math.max(6, Math.round(fontSize * scale));
+                onCommit({
+                  normalizedX: (node.x() - width / 2 - box.x) / box.width,
+                  normalizedY: (node.y() - fontSize - box.y) / box.height,
+                  fontSize: newFontSize,
+                  rotation: node.rotation(),
+                });
+              }
+            : undefined
+        }
       >
-        <Rect x={-width / 2} y={-fontSize} width={width} height={fontSize * 2.4} fill="transparent" />
+        <Rect x={bboxMinX} y={bboxMinY} width={bboxMaxX - bboxMinX} height={bboxMaxY - bboxMinY} fill="transparent" />
         {glyphs.map((g, i) => (
           <KonvaText
             key={i}
@@ -305,9 +414,13 @@ function DesignTextNode({
             x={g.x}
             y={g.y}
             fontSize={fontSize}
-            fontFamily={obj.fontFamily ?? "Manrope, sans-serif"}
+            fontFamily={resolvedFontFamily}
             fontStyle={fontStyleFor(obj)}
-            fill={obj.fill ?? "#171412"}
+            textDecoration={textDecorationFor(obj)}
+            fill={fillFor(obj)}
+            stroke={obj.strokeColor ?? undefined}
+            strokeWidth={obj.strokeColor && obj.strokeWidth ? obj.strokeWidth : 0}
+            {...shadowPropsFor(obj)}
             rotation={g.rotationDeg}
             offsetX={0}
             listening={false}
@@ -317,10 +430,27 @@ function DesignTextNode({
     );
   }
 
+  const showBackground = obj.effectType === "background";
+  const bgPaddingPx = obj.bgPadding ?? 10;
+
   return (
-    <KonvaText
+    <>
+      {showBackground && (
+        <Rect
+          x={x - bgPaddingPx}
+          y={y - bgPaddingPx}
+          width={width + bgPaddingPx * 2}
+          height={height + bgPaddingPx * 2}
+          fill={obj.bgColor ?? "#171412"}
+          cornerRadius={obj.bgCornerRadius ?? 8}
+          rotation={obj.rotation}
+          opacity={obj.opacity}
+          listening={false}
+        />
+      )}
+      <KonvaText
       ref={nodeRef as unknown as (node: Konva.Text | null) => void}
-      text={obj.content ?? ""}
+      text={displayTextFor(obj)}
       x={x}
       y={y}
       width={width}
@@ -328,10 +458,13 @@ function DesignTextNode({
       letterSpacing={obj.letterSpacing ?? 0}
       lineHeight={obj.lineHeight ?? 1.15}
       fontSize={fontSize}
-      fontFamily={obj.fontFamily ?? "Manrope, sans-serif"}
+      fontFamily={resolvedFontFamily}
       fontStyle={fontStyleFor(obj)}
-      textDecoration=""
-      fill={obj.fill ?? "#171412"}
+      textDecoration={textDecorationFor(obj)}
+      fill={fillFor(obj)}
+      stroke={obj.strokeColor ?? undefined}
+      strokeWidth={obj.strokeColor && obj.strokeWidth ? obj.strokeWidth : 0}
+      {...shadowPropsFor(obj)}
       rotation={obj.rotation}
       opacity={obj.opacity}
       draggable={interactive}
@@ -353,7 +486,8 @@ function DesignTextNode({
             }
           : undefined
       }
-    />
+      />
+    </>
   );
 }
 

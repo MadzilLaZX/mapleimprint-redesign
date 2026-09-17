@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import { Check, SpinnerGap, WarningCircle, X } from "@phosphor-icons/react/dist/ssr";
 import { useCart } from "@/components/cart/CartProvider";
 import { ReviewPanel } from "@/components/studio/ReviewPanel";
 import { PreviewMode } from "@/components/studio/PreviewMode";
@@ -14,6 +14,7 @@ import { ToolRail } from "@/components/studio/shell/ToolRail";
 import { SecondaryPanel } from "@/components/studio/shell/SecondaryPanel";
 import { TopBar } from "@/components/studio/shell/TopBar";
 import { LocationSelector } from "@/components/studio/shell/LocationSelector";
+import { TextToolbar } from "@/components/studio/shell/TextToolbar";
 import { ZoomControls } from "@/components/studio/shell/ZoomControls";
 import { Inspector, type BgRemovalState } from "@/components/studio/shell/Inspector";
 import { InspectorDock } from "@/components/studio/shell/InspectorDock";
@@ -26,7 +27,7 @@ import { MyStuffPanel } from "@/components/studio/panels/MyStuffPanel";
 import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
 import { backgroundUrlFor, printAreaPixelBox, printAreasOverlap } from "@/lib/studio/printAreas";
 import { viewGroupFor } from "@/lib/studio/garmentViews";
-import { resolveTemplateAssets, type DesignTemplate } from "@/lib/studio/templates";
+import { resolveTemplateAssets, scaleTemplateObjects, type DesignTemplate } from "@/lib/studio/templates";
 import {
   generateQr,
   isLikelyUrl,
@@ -180,6 +181,10 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [fixingAllQr, setFixingAllQr] = useState(false);
 
   const [history, setHistory] = useState<{ past: SidesState[]; future: SidesState[] }>({ past: [], future: [] });
+  // Text toolbar's "Copy style" / "Paste style" — deliberately NOT part of undo history (copying a
+  // style is a read, not a design mutation) and deliberately NOT persisted with the project (a
+  // clipboard that outlives the tab would be surprising) — plain component state is the right home.
+  const [copiedStyle, setCopiedStyle] = useState<Partial<DesignObjectRecord> | null>(null);
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const dirtySinceLoad = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -204,7 +209,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
         setSides(nextSides);
         setActiveSide(data.sides[0]?.sideType ?? "front");
         const hasAnyObject = data.sides.some((s) => s.objects.length > 0);
+        // Section 1: no full-screen "choose one of four options" gate. A brand-new design opens
+        // straight into the Designs panel (template-first, Canva-style first impression) with a
+        // small dismissible hint instead of a modal blocking the product; a design that already has
+        // objects (returning customer) opens straight into plain editing.
         setShowOnboarding(!hasAnyObject);
+        if (!hasAnyObject) setActiveTool("designs");
         if (data.status === "ordered") setApproveState("success");
       })
       .catch((err: Error) => {
@@ -322,6 +332,14 @@ export function StudioClient({ projectId }: { projectId: string }) {
         duplicateSelected();
         return;
       }
+      if (meta && selectedObject?.type === "text" && ["b", "i", "u"].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        const key = e.key.toLowerCase();
+        if (key === "b") commitObjectPatch(selectedObject.id, { bold: !selectedObject.bold });
+        if (key === "i") commitObjectPatch(selectedObject.id, { italic: !selectedObject.italic });
+        if (key === "u") commitObjectPatch(selectedObject.id, { underline: !selectedObject.underline });
+        return;
+      }
       if (meta && e.key.toLowerCase() === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
@@ -383,11 +401,6 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const overlappingWith = compositeLocations.find(
     (loc) => loc !== activeSide && (sides[loc]?.length ?? 0) > 0 && (activeObjects.length ?? 0) > 0 && printAreasOverlap(activeSide, loc),
   );
-
-  function closePanelAnd<T>(fn: () => T): T {
-    setActiveTool(null);
-    return fn();
-  }
 
   function addText(preset: TextPreset) {
     pushHistory(sides);
@@ -459,7 +472,18 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
   async function applyTemplate(template: DesignTemplate) {
     pushHistory(sides);
-    const resolved = await resolveTemplateAssets(template.objects);
+    // QA pass (Section "TEMPLATE GROUP SCALING"): every template is authored against the "front"
+    // print area's own box size — scale absolute-unit fields (fontSize/letterSpacing/strokeWidth;
+    // position/size fields are already box-relative fractions and need no change) by how much
+    // smaller/larger the ACTUAL active box is, so a badge template applied to Left Chest or a
+    // sleeve renders proportionally, not at full "front" scale inside a much smaller box. See
+    // scaleTemplateObjects's own doc comment for why this is the correct place to do it once,
+    // rather than re-tuning every template's numbers per print area.
+    const referenceBox = printAreaPixelBox("front");
+    const activeBox = printAreaPixelBox(activeSide);
+    const scale = Math.min(activeBox.width / referenceBox.width, activeBox.height / referenceBox.height);
+    const scaledSeeds = scaleTemplateObjects(template.objects, scale);
+    const resolved = await resolveTemplateAssets(scaledSeeds);
     const newObjects = resolved.map((seed) => ({ ...seed, id: crypto.randomUUID() }));
     applySides({ ...sides, [activeSide]: [...activeObjects, ...newObjects] });
     setSelectedId(null);
@@ -730,6 +754,29 @@ export function StudioClient({ projectId }: { projectId: string }) {
     if (stillFailingIds.length === 0) setMode("review");
   }
 
+  // Curved-text/mirroring brief: "live visual update while dragging, then commit a history state
+  // when interaction ends" — a slider's onChange fires on every tick of a drag, and
+  // commitObjectPatch pushes one history entry per call, so wiring a slider straight to it would
+  // spam dozens of undo steps per gesture. This coalesces an entire drag into exactly one history
+  // entry: the first live-patch of a gesture pushes history (capturing the pre-drag state, exactly
+  // like commitObjectPatch always has), every subsequent one during the same gesture just updates
+  // `sides` directly; liveEditEndRef flags the next call to start a new gesture again. Genuinely
+  // discrete interactions (clicks, drag-end, blur) keep using commitObjectPatch unchanged.
+  const liveEditActiveRef = useRef(false);
+  function livePatchObject(id: string, patch: Partial<DesignObjectRecord>, side: DesignSideType = activeSide) {
+    if (!liveEditActiveRef.current) {
+      pushHistory(sides);
+      liveEditActiveRef.current = true;
+    }
+    applySides({
+      ...sides,
+      [side]: (sides[side] ?? []).map((o) => (o.id === id ? { ...o, ...patch } : o)),
+    });
+  }
+  function endLivePatch() {
+    liveEditActiveRef.current = false;
+  }
+
   async function handleRemoveBackground(objectId: string, imageUrl: string) {
     setBgRemoval({ forObjectId: objectId, status: "processing" });
     try {
@@ -797,6 +844,62 @@ export function StudioClient({ projectId }: { projectId: string }) {
     pushHistory(sides);
     const next = [...activeObjects];
     [next[index], next[swapWith]] = [next[swapWith], next[index]];
+    applySides({ ...sides, [activeSide]: next });
+  }
+
+  // Text toolbar's "To front" / "To back" — moveLayer only swaps one adjacent step at a time
+  // (matches the Layers panel's up/down arrows); this splices straight to either end of the
+  // z-order array in one history entry instead of requiring N calls to moveLayer.
+  // Text toolbar's "Copy style" / "Paste style" (format painter) — deliberately excludes `content`
+  // (never copy the actual wording) and position/size/rotation fields (those describe placement,
+  // not typography). Reused verbatim as the Partial<DesignObjectRecord> patch onPasteStyle commits.
+  const STYLE_FIELDS = [
+    "fontFamily",
+    "fontSize",
+    "fill",
+    "bold",
+    "italic",
+    "underline",
+    "strikethrough",
+    "textTransform",
+    "align",
+    "letterSpacing",
+    "lineHeight",
+    "opacity",
+    "curve",
+    "effectType",
+    "shadowColor",
+    "shadowOpacity",
+    "shadowBlur",
+    "shadowOffsetX",
+    "shadowOffsetY",
+    "bgColor",
+    "bgPadding",
+    "bgCornerRadius",
+    "strokeColor",
+    "strokeWidth",
+  ] as const satisfies readonly (keyof DesignObjectRecord)[];
+
+  function copyStyle() {
+    if (!selectedObject) return;
+    const style: Partial<DesignObjectRecord> = {};
+    for (const key of STYLE_FIELDS) (style as Record<string, unknown>)[key] = selectedObject[key];
+    setCopiedStyle(style);
+  }
+
+  function pasteStyle() {
+    if (!selectedObject || !copiedStyle) return;
+    commitObjectPatch(selectedObject.id, copiedStyle);
+  }
+
+  function moveLayerToEdge(id: string, edge: "front" | "back") {
+    const index = activeObjects.findIndex((o) => o.id === id);
+    if (index === -1) return;
+    pushHistory(sides);
+    const next = [...activeObjects];
+    const [obj] = next.splice(index, 1);
+    if (edge === "front") next.push(obj);
+    else next.unshift(obj);
     applySides({ ...sides, [activeSide]: next });
   }
 
@@ -1069,6 +1172,26 @@ export function StudioClient({ projectId }: { projectId: string }) {
               )}
             </div>
 
+            {/* Contextual text toolbar — fast access to the formatting customers reach for most;
+                the Inspector panel still carries every control in full detail underneath this. */}
+            {selectedObject?.type === "text" && (
+              <div className="w-full max-w-full shrink-0">
+                <TextToolbar
+                  obj={selectedObject}
+                  onPatch={(patch) => commitObjectPatch(selectedObject.id, patch)}
+                  onLivePatch={(patch) => livePatchObject(selectedObject.id, patch)}
+                  onLivePatchEnd={endLivePatch}
+                  onDuplicate={duplicateSelected}
+                  onDelete={deleteSelected}
+                  onMoveLayer={(direction) => moveLayer(selectedObject.id, direction)}
+                  onMoveLayerToEdge={(edge) => moveLayerToEdge(selectedObject.id, edge)}
+                  onCopyStyle={copyStyle}
+                  onPasteStyle={pasteStyle}
+                  hasCopiedStyle={copiedStyle !== null}
+                />
+              </div>
+            )}
+
             {/* No items-center/justify-center here on purpose — CanvasStage's own root div needs
                 to actually stretch to fill this box's real width AND height (default flex
                 align-items: stretch) so its ResizeObserver has real dimensions to fit against;
@@ -1094,32 +1217,22 @@ export function StudioClient({ projectId }: { projectId: string }) {
                 zoom={zoom}
               />
 
+              {/* Section 1: subtle, dismissible hint — never covers the product, never blocks
+                  interaction. The Designs panel is already open beside it (see the load effect
+                  above), so this is just a one-line pointer rather than a gate the customer must
+                  clear before touching anything. */}
               {showOnboarding && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center bg-ink-950/40 p-6">
-                  <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl">
-                    <h2 className="font-display text-lg font-semibold text-ink-900">Start your design</h2>
-                    <p className="mt-1.5 text-sm text-muted">Use a template, upload your own, or add text — you can always add more.</p>
-                    <div className="mt-5 flex flex-col gap-2">
-                      <button type="button" onClick={() => closePanelAnd(() => setActiveTool("designs"))} className="rounded-full bg-maple-gradient px-4 py-2.5 text-sm font-semibold text-ink-950">
-                        Use a template
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowOnboarding(false);
-                          fileInputRef.current?.click();
-                        }}
-                        className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas"
-                      >
-                        Upload my design
-                      </button>
-                      <button type="button" onClick={() => addText({ label: "Body text", sampleSize: "text-sm", fontSize: 32, bold: false })} className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas">
-                        Add text
-                      </button>
-                      <button type="button" onClick={() => setShowOnboarding(false)} className="mt-1 text-xs font-medium text-muted hover:text-ink-900">
-                        I&apos;ll start on my own
-                      </button>
-                    </div>
+                <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center px-4">
+                  <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-ink-950/90 py-1.5 pl-3.5 pr-1.5 text-xs font-medium text-white shadow-lg">
+                    <span>Pick a template to start, or upload/add your own.</span>
+                    <button
+                      type="button"
+                      aria-label="Dismiss hint"
+                      onClick={() => setShowOnboarding(false)}
+                      className="rounded-full p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      <X className="size-3.5" weight="bold" />
+                    </button>
                   </div>
                 </div>
               )}
@@ -1151,6 +1264,8 @@ export function StudioClient({ projectId }: { projectId: string }) {
             <Inspector
               selectedObject={selectedObject}
               onPatch={(id, patch) => commitObjectPatch(id, patch)}
+              onLivePatch={(id, patch) => livePatchObject(id, patch)}
+              onLivePatchEnd={endLivePatch}
               onDuplicate={duplicateSelected}
               onDelete={deleteSelected}
               onOpenCrop={() => selectedObject && setCropTargetId(selectedObject.id)}

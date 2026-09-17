@@ -96,7 +96,36 @@ export interface DesignObjectRecord {
   /** 0 = straight text. Positive/negative bends the baseline into an arc; magnitude is the arc's
    *  strength, not a physical unit. Null/0 both mean "no curve." */
   curve: number | null;
-  // --- shape-only fields (null for image/text) ---
+  // --- text typography upgrade (all optional — every field below is undefined on any record
+  // written before this pass, template seed, or old saved design; every read site treats
+  // undefined exactly like its documented "off" default, so nothing needs a migration). ---
+  /** Default false/undefined. Rendered via Konva's native textDecoration (combines with
+   *  strikethrough — see CanvasStage). */
+  underline?: boolean;
+  strikethrough?: boolean;
+  /** Display-only transform — never mutates `content`, so switching back to "none" always
+   *  restores the customer's originally typed casing. Undefined/"none" = as typed. */
+  textTransform?: "none" | "uppercase" | "lowercase" | "title";
+  /** At most one "look" preset is active at a time (deliberately not an arbitrary stack — see the
+   *  text-toolbar brief's "Effect stacking" section) — but the *outline* fields below are always
+   *  independent of this, so Outline can combine with Shadow/Glow/etc. "hollow" renders fill as
+   *  transparent (see CanvasStage) so only the outline shows, revealing the garment underneath.
+   *  Undefined/"none" = no preset effect. */
+  effectType?: "none" | "shadow" | "lift" | "glow" | "background" | "hollow";
+  shadowColor?: string | null;
+  /** 0-1, independent of the object's own overall `opacity`. */
+  shadowOpacity?: number | null;
+  shadowBlur?: number | null;
+  shadowOffsetX?: number | null;
+  shadowOffsetY?: number | null;
+  /** Background box behind the text (effectType "background") — straight text only; see
+   *  CanvasStage's known-limitations note on curved text. */
+  bgColor?: string | null;
+  bgPadding?: number | null;
+  bgCornerRadius?: number | null;
+  // --- shape-only fields (null for image/text) — strokeColor/strokeWidth are ALSO reused for the
+  // text Outline effect (Konva.Text supports stroke/strokeWidth natively, same as shapes; adding
+  // a second pair of fields with identical semantics just for text would be pure duplication). ---
   shapeKind: ShapeKind | null;
   strokeColor: string | null;
   strokeWidth: number | null;
