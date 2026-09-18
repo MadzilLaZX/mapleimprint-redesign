@@ -154,6 +154,12 @@ export interface DesignObjectRecord {
   qrLabelText: string | null;
   /** Last-known result of validating this QR against its own destination — see qr.ts. */
   qrValidated: boolean | null;
+  /** Links this PLACEMENT back to the reusable QrAsset (see qrAssets.ts) it was created from — the
+   *  QR ASSET vs QR PLACEMENT split (Section "CORE UX DECISION"). Null for a QR placed before this
+   *  field existed, or a placement whose asset has since been deleted from My Stuff; both keep
+   *  working exactly like today (every qr* field below is still fully denormalized onto the
+   *  placement itself), they just can't be found again from "Recent QR Codes"/My Stuff. */
+  qrAssetId: string | null;
 }
 
 export interface DesignSideRecord {

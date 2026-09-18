@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Image as ImageIcon, LinkSimple, SpinnerGap, Trash, WarningCircle, X } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Check, Copy, Image as ImageIcon, LinkSimple, MapPin, SpinnerGap, Trash, WarningCircle, X } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import { isLikelyUrl, normalizeDestination, QR_PRESETS, type QrCornerStyle, type QrDotStyle, type QrErrorCorrection, type QrFrameStyle, type QrStylePresetId } from "@/lib/studio/qr";
-import type { DesignObjectRecord } from "@/lib/studio/types";
+import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
 
 export interface QrPatchChanges {
   destination?: string;
@@ -46,6 +46,10 @@ export function QRInspector({
   onFix,
   onTriggerLogoUpload,
   onRemoveLogo,
+  currentLocationLabel,
+  locationOptions,
+  onMoveTo,
+  onCopyTo,
 }: {
   obj: DesignObjectRecord;
   regenerating: boolean;
@@ -54,9 +58,15 @@ export function QRInspector({
   onFix: () => void;
   onTriggerLogoUpload: () => void;
   onRemoveLogo: () => void;
+  currentLocationLabel: string;
+  locationOptions: { id: DesignSideType; label: string }[];
+  onMoveTo: (side: DesignSideType) => void;
+  onCopyTo: (side: DesignSideType) => void;
 }) {
   const [destinationDraft, setDestinationDraft] = useState(obj.qrDestination ?? "");
   const [destinationTouched, setDestinationTouched] = useState(false);
+  const [moveTarget, setMoveTarget] = useState<DesignSideType | "">("");
+  const [copyTarget, setCopyTarget] = useState<DesignSideType | "">("");
 
   function commitDestination() {
     const normalized = normalizeDestination(destinationDraft);
@@ -106,6 +116,70 @@ export function QRInspector({
             <button type="button" onClick={onFix} className="mt-1.5 font-semibold underline underline-offset-2">
               Fix QR
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Section "QR MUST BE MOVABLE TO OTHER PRINT LOCATIONS" / "MOVE VS DUPLICATE" */}
+      <div className="rounded-lg border border-sand p-3">
+        <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+          <MapPin className="size-3.5" weight="bold" /> Placement
+        </p>
+        <p className="mt-1.5 text-xs text-ink-900/70">
+          Current location: <span className="font-semibold text-ink-900">{currentLocationLabel}</span>
+        </p>
+        {locationOptions.length > 0 && (
+          <div className="mt-2.5 space-y-2">
+            <div className="flex items-center gap-1.5">
+              <select
+                value={moveTarget}
+                onChange={(e) => setMoveTarget(e.target.value as DesignSideType)}
+                className="min-w-0 flex-1 rounded-lg border border-sand px-2 py-1.5 text-xs"
+              >
+                <option value="">Move to…</option>
+                {locationOptions.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={!moveTarget}
+                onClick={() => {
+                  if (moveTarget) onMoveTo(moveTarget);
+                  setMoveTarget("");
+                }}
+                className="flex shrink-0 items-center gap-1 rounded-lg bg-ink-950 px-2.5 py-1.5 text-[11px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <ArrowRight className="size-3.5" weight="bold" /> Move
+              </button>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <select
+                value={copyTarget}
+                onChange={(e) => setCopyTarget(e.target.value as DesignSideType)}
+                className="min-w-0 flex-1 rounded-lg border border-sand px-2 py-1.5 text-xs"
+              >
+                <option value="">Copy to…</option>
+                {locationOptions.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={!copyTarget}
+                onClick={() => {
+                  if (copyTarget) onCopyTo(copyTarget);
+                  setCopyTarget("");
+                }}
+                className="flex shrink-0 items-center gap-1 rounded-lg border border-sand px-2.5 py-1.5 text-[11px] font-semibold text-ink-900 hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <Copy className="size-3.5" weight="bold" /> Copy
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -197,9 +271,14 @@ export function QRInspector({
             onClick={onTriggerLogoUpload}
             className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-sand py-2 text-xs font-semibold text-ink-900 hover:bg-canvas"
           >
-            <ImageIcon className="size-3.5" weight="bold" /> Add logo
+            <ImageIcon className="size-3.5" weight="bold" /> Add your own logo
           </button>
         )}
+        {/* Section "BRAND-ASSET LICENSING SAFETY": no official Instagram/TikTok/YouTube/LinkedIn/
+            Facebook mark is bundled — Maple has no verified written brand-usage approval for any of
+            them (TikTok's own developer guidelines explicitly require this) — so there is
+            deliberately no "approved platform icon" option here, only a customer's own upload. */}
+        {!obj.qrLogoUrl && <p className="mt-1.5 text-[11px] leading-relaxed text-muted">Official platform logos aren&apos;t available yet — upload your own instead.</p>}
       </div>
 
       <div>

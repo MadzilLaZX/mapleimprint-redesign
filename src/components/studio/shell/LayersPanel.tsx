@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Copy, Eye, EyeSlash, Trash } from "@phosphor-icons/react/dist/ssr";
+import { useState } from "react";
+import { ArrowDown, ArrowUp, Copy, Eye, EyeSlash, PencilSimple, Trash } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import type { DesignObjectRecord } from "@/lib/studio/types";
 
@@ -23,6 +24,7 @@ export function LayersPanel({
   onToggleHidden,
   onDuplicate,
   onDelete,
+  onRename,
 }: {
   objects: DesignObjectRecord[];
   selectedId: string | null;
@@ -31,8 +33,17 @@ export function LayersPanel({
   onToggleHidden: (id: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
+  /** Section "QR OBJECT LAYER NAME": "Customer may rename" — generic across every object type. */
+  onRename: (id: string, name: string) => void;
 }) {
   const topFirst = [...objects].reverse();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+
+  function commitRename(id: string) {
+    onRename(id, draft);
+    setEditingId(null);
+  }
 
   if (objects.length === 0) {
     return <p className="px-1 py-2 text-xs text-muted">Nothing on this side yet.</p>;
@@ -52,10 +63,35 @@ export function LayersPanel({
               selected ? "border-crimson/40 bg-crimson/5" : "border-transparent hover:bg-canvas",
             )}
           >
-            <button type="button" onClick={() => onSelect(obj.id)} className="min-w-0 flex-1 truncate text-left font-medium text-ink-900">
-              {defaultLabel(obj)}
-            </button>
+            {editingId === obj.id ? (
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={() => commitRename(obj.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitRename(obj.id);
+                  if (e.key === "Escape") setEditingId(null);
+                }}
+                className="min-w-0 flex-1 rounded border border-ink-950/30 bg-white px-1 py-0.5 text-xs font-medium text-ink-900 outline-none"
+              />
+            ) : (
+              <button type="button" onClick={() => onSelect(obj.id)} className="min-w-0 flex-1 truncate text-left font-medium text-ink-900">
+                {defaultLabel(obj)}
+              </button>
+            )}
             <div className="flex shrink-0 items-center gap-0.5">
+              <button
+                type="button"
+                aria-label="Rename layer"
+                onClick={() => {
+                  setDraft(defaultLabel(obj));
+                  setEditingId(obj.id);
+                }}
+                className="rounded p-1 text-ink-900/50 hover:bg-white hover:text-ink-900"
+              >
+                <PencilSimple className="size-3.5" weight="bold" />
+              </button>
               <button
                 type="button"
                 aria-label="Move up"

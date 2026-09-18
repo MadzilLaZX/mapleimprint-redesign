@@ -53,6 +53,10 @@ export type TemplateCategory =
   | "qr-contact"
   | "social-media"
   | "appointment-card"
+  // Apparel QR/Social (QR ASSET LIBRARY brief, Section "APPAREL SOCIAL QR TEMPLATES") — a category
+  // of its own rather than folding into an apparel category that already means something else
+  // (e.g. "streetwear"), since these compositions are specifically built around a QR placeholder.
+  | "qr-social"
   // Flyer (Section "FLYER TEMPLATE CATEGORIES")
   | "grand-opening"
   | "sale"
@@ -129,6 +133,7 @@ const QR_DEFAULTS = {
   qrFrameStyle: null,
   qrLabelText: null,
   qrValidated: null,
+  qrAssetId: null,
 } as const;
 
 function textSeed(overrides: Partial<TemplateObjectSeed>): TemplateObjectSeed {
@@ -2505,6 +2510,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
       textSeed({ content: "FOLLOW US", fontSize: 26, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, normalizedY: 0.3, letterSpacing: 1 }),
       textSeed({ content: "@yourbusiness", fontSize: 14, normalizedY: 0.4, fill: "#5b5348" }),
       shapeSeed({ shapeKind: "rounded-rectangle", fill: "#F6F1E9", strokeColor: "#D8CFC0", strokeWidth: 1, normalizedX: 0.36, normalizedY: 0.5, normalizedWidth: 0.28, normalizedHeight: 0.2 }),
+      textSeed({ content: "ADD QR", fontSize: 10, align: "center", fill: "#9C9284", normalizedX: 0.36, normalizedY: 0.58, normalizedWidth: 0.28, normalizedHeight: 0.06 }),
     ],
   },
 
@@ -2616,6 +2622,152 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
       shapeSeed({ shapeKind: "rounded-rectangle", fill: "#F6F1E9", strokeColor: "#D8CFC0", strokeWidth: 1, normalizedX: 0.3, normalizedY: 0.3, normalizedWidth: 0.4, normalizedHeight: 0.3 }),
       textSeed({ content: "ADD QR", fontSize: 12, align: "center", fill: "#9C9284", normalizedX: 0.3, normalizedY: 0.43, normalizedWidth: 0.4, normalizedHeight: 0.06 }),
       textSeed({ content: "yourbusiness.com", fontSize: 13, normalizedY: 0.66, fill: "#5b5348" }),
+    ],
+  },
+];
+
+// ============================================================
+// QR / SOCIAL — QR ASSET LIBRARY brief, Sections "APPAREL SOCIAL QR TEMPLATES"/"BUSINESS CARD
+// SOCIAL QR TEMPLATE". Same rule as every other QR template above: the code itself is never baked
+// in (a template is applied before the customer has a real destination), just a placeholder
+// shape + "ADD QR" label marking where one goes once they use the QR tool. Deliberately apparel-
+// only here (business-card's own QR entry, "Social Business Card", also lives in this block) —
+// flyer/poster already got their QR/social templates in FLAT_PRINT_TEMPLATES above.
+// ============================================================
+const SOCIAL_QR_TEMPLATES: DesignTemplate[] = [
+  {
+    id: "tpl-tee-instagram-clean",
+    name: "Instagram — Clean",
+    category: "qr-social",
+    thumbnailUrl: "",
+    productFamilies: ["tee", "hoodie"],
+    compatiblePrintAreas: ["front", "back"],
+    tags: ["qr", "social", "instagram"],
+    linkedAssetIds: [],
+    featured: true,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      textSeed({ content: "@YOURHANDLE", fontSize: 16, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, letterSpacing: 1, normalizedY: 0.16, normalizedHeight: 0.08 }),
+      shapeSeed({ shapeKind: "rounded-rectangle", fill: "#FFFFFF", strokeColor: "#D8CFC0", strokeWidth: 1, normalizedX: 0.28, normalizedY: 0.28, normalizedWidth: 0.44, normalizedHeight: 0.4 }),
+      textSeed({ content: "ADD QR", fontSize: 11, align: "center", fill: "#9C9284", normalizedX: 0.28, normalizedY: 0.44, normalizedWidth: 0.44, normalizedHeight: 0.08 }),
+      textSeed({ content: "SCAN TO FOLLOW", fontSize: 10, letterSpacing: 2, fill: "#5b5348", normalizedY: 0.72, normalizedHeight: 0.06 }),
+    ],
+  },
+  {
+    id: "tpl-tee-instagram-street",
+    name: "Instagram — Street",
+    category: "qr-social",
+    thumbnailUrl: "",
+    productFamilies: ["tee", "hoodie"],
+    compatiblePrintAreas: ["front", "back"],
+    tags: ["qr", "social", "instagram", "streetwear"],
+    linkedAssetIds: [],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      // A large QR reads as the dominant graphic (Section 16's "large QR / @username vertical or
+      // small typography"), the handle stays small and unobtrusive off to the side.
+      shapeSeed({ shapeKind: "rectangle", fill: "#FFFFFF", strokeColor: "#171412", strokeWidth: 2, normalizedX: 0.2, normalizedY: 0.16, normalizedWidth: 0.6, normalizedHeight: 0.52 }),
+      textSeed({ content: "ADD QR", fontSize: 12, align: "center", fill: "#9C9284", normalizedX: 0.2, normalizedY: 0.38, normalizedWidth: 0.6, normalizedHeight: 0.08 }),
+      textSeed({ content: "@yourhandle", fontSize: 10, bold: true, letterSpacing: 1, normalizedX: 0.2, normalizedY: 0.7, normalizedWidth: 0.6, normalizedHeight: 0.06 }),
+    ],
+  },
+  {
+    id: "tpl-tee-social-badge",
+    name: "Social Badge",
+    category: "qr-social",
+    thumbnailUrl: "",
+    productFamilies: ["tee", "hoodie"],
+    compatiblePrintAreas: ["left-chest", "front"],
+    tags: ["qr", "social", "badge", "minimal"],
+    linkedAssetIds: ["heroicons-share"],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      // Small and restrained — sized for a chest-logo-scale placement (Section 16: "small icon,
+      // handle, QR — do not overwhelm the shirt").
+      graphicSeed("heroicons-share", { normalizedX: 0.06, normalizedY: 0.3, normalizedWidth: 0.16, normalizedHeight: 0.16, fill: "#171412" }),
+      textSeed({ content: "@handle", fontSize: 11, align: "left", normalizedX: 0.06, normalizedY: 0.5, normalizedWidth: 0.4, normalizedHeight: 0.1 }),
+      shapeSeed({ shapeKind: "rectangle", fill: "#FFFFFF", strokeColor: "#D8CFC0", strokeWidth: 1, normalizedX: 0.62, normalizedY: 0.24, normalizedWidth: 0.32, normalizedHeight: 0.32 }),
+      textSeed({ content: "QR", fontSize: 9, align: "center", fill: "#9C9284", normalizedX: 0.62, normalizedY: 0.37, normalizedWidth: 0.32, normalizedHeight: 0.06 }),
+    ],
+  },
+  {
+    id: "tpl-tee-connect-with-me",
+    name: "Connect With Me",
+    category: "qr-social",
+    thumbnailUrl: "",
+    productFamilies: ["tee", "hoodie"],
+    compatiblePrintAreas: ["front", "back"],
+    tags: ["qr", "social", "connect"],
+    linkedAssetIds: [],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      shapeSeed({ shapeKind: "rounded-rectangle", fill: "#F6F1E9", strokeColor: "#D8CFC0", strokeWidth: 1, normalizedX: 0.3, normalizedY: 0.18, normalizedWidth: 0.4, normalizedHeight: 0.36 }),
+      textSeed({ content: "ADD QR", fontSize: 11, align: "center", fill: "#9C9284", normalizedX: 0.3, normalizedY: 0.32, normalizedWidth: 0.4, normalizedHeight: 0.08 }),
+      textSeed({ content: "yourname", fontSize: 15, bold: true, normalizedY: 0.58, normalizedHeight: 0.08 }),
+      textSeed({ content: "LET'S CONNECT", fontSize: 10, letterSpacing: 2, fill: "#5b5348", normalizedY: 0.68, normalizedHeight: 0.06 }),
+    ],
+  },
+  {
+    id: "tpl-tee-qr-scatter",
+    name: "QR Scatter",
+    category: "qr-social",
+    thumbnailUrl: "",
+    productFamilies: ["tee", "hoodie"],
+    compatiblePrintAreas: ["front", "back"],
+    tags: ["qr", "social", "pattern"],
+    linkedAssetIds: [],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    // Section 16: "3-5 copies of the SAME QrAsset, tastefully arranged — do not overwhelm the
+    // shirt." Only one placeholder box is authored here (a template is applied before any real QR
+    // exists to scatter copies of) — once the customer creates their QR, Copy To/duplicate is how
+    // they build out the scatter, same as Section 7's "Copy To" pattern in the Inspector.
+    objects: [
+      shapeSeed({ shapeKind: "rectangle", fill: "#FFFFFF", strokeColor: "#D8CFC0", strokeWidth: 1, normalizedX: 0.34, normalizedY: 0.26, normalizedWidth: 0.32, normalizedHeight: 0.32, rotation: -6 }),
+      textSeed({ content: "ADD QR, THEN DUPLICATE", fontSize: 9, align: "center", fill: "#9C9284", normalizedX: 0.2, normalizedY: 0.4, normalizedWidth: 0.6, normalizedHeight: 0.12, rotation: -6 }),
+      textSeed({ content: "SCAN · FOLLOW · CONNECT", fontSize: 9, letterSpacing: 1.5, fill: "#5b5348", normalizedY: 0.68, normalizedHeight: 0.06 }),
+    ],
+  },
+  {
+    id: "tpl-card-social-business-card",
+    name: "Social Business Card",
+    category: "social-media",
+    thumbnailUrl: "",
+    productFamilies: ["business-card"],
+    compatiblePrintAreas: ["card-front"],
+    orientation: "landscape",
+    tags: ["qr", "social", "contact"],
+    linkedAssetIds: [],
+    featured: true,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      textSeed({ content: "Jordan Lee", fontSize: 17, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", normalizedX: 0.08, normalizedY: 0.14, normalizedWidth: 0.55, normalizedHeight: 0.14 }),
+      textSeed({ content: "Creative Director", fontSize: 10, align: "left", fill: "#5b5348", normalizedX: 0.08, normalizedY: 0.32, normalizedWidth: 0.55, normalizedHeight: 0.1 }),
+      textSeed({ content: "@jordanlee", fontSize: 10, align: "left", fill: "#5b5348", normalizedX: 0.08, normalizedY: 0.48, normalizedWidth: 0.55, normalizedHeight: 0.1 }),
+      textSeed({ content: "jordan@studio.co", fontSize: 9, align: "left", fill: "#5b5348", normalizedX: 0.08, normalizedY: 0.64, normalizedWidth: 0.55, normalizedHeight: 0.1 }),
+      shapeSeed({ shapeKind: "rounded-rectangle", fill: "#F6F1E9", strokeColor: "#D8CFC0", strokeWidth: 1, normalizedX: 0.68, normalizedY: 0.16, normalizedWidth: 0.24, normalizedHeight: 0.62 }),
+      textSeed({ content: "ADD QR", fontSize: 8, align: "center", fill: "#9C9284", normalizedX: 0.68, normalizedY: 0.42, normalizedWidth: 0.24, normalizedHeight: 0.1 }),
     ],
   },
 ];
@@ -3822,7 +3974,7 @@ const PRO_SPECS: ProSpec[] = [
   },
 ];
 
-export const MAPLE_TEMPLATES: DesignTemplate[] = [...SPECS.map(build), ...CREATIVE_SPECS.map(cbuild), ...PRO_SPECS.map(pbuild), ...FLAT_PRINT_TEMPLATES];
+export const MAPLE_TEMPLATES: DesignTemplate[] = [...SPECS.map(build), ...CREATIVE_SPECS.map(cbuild), ...PRO_SPECS.map(pbuild), ...FLAT_PRINT_TEMPLATES, ...SOCIAL_QR_TEMPLATES];
 
 export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string }[] = [
   { id: "business", label: "Business" },
@@ -3855,6 +4007,7 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string }[] = [
   { id: "qr-contact", label: "QR Contact" },
   { id: "social-media", label: "Social Media" },
   { id: "appointment-card", label: "Appointment Card" },
+  { id: "qr-social", label: "QR / Social" },
   { id: "grand-opening", label: "Grand Opening" },
   { id: "sale", label: "Sale" },
   { id: "nightlife", label: "Nightlife" },
@@ -3871,8 +4024,8 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string }[] = [
 /** Per-family priority order (Section 10) — used only to SORT the "Recommended" view, never to
  *  hide categories outright (a customer designing a hoodie can still search/browse anything). */
 const RECOMMENDED_CATEGORY_ORDER: Record<ProductFamily, TemplateCategory[]> = {
-  tee: ["events", "birthday", "business", "streetwear", "family", "fundraisers", "schools"],
-  hoodie: ["streetwear", "schools", "sports", "clubs", "events"],
+  tee: ["events", "birthday", "business", "streetwear", "family", "fundraisers", "schools", "qr-social"],
+  hoodie: ["streetwear", "schools", "sports", "clubs", "events", "qr-social"],
   joggers: ["streetwear", "sports", "minimal"],
   headwear: ["sports", "streetwear", "minimal", "trades"],
   accessory: ["business", "minimal", "canadian", "trades"],

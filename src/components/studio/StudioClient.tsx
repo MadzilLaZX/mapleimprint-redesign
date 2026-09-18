@@ -32,6 +32,7 @@ import {
   generateQr,
   isLikelyUrl,
   normalizeDestination,
+  platformPresetFor,
   qrObjectToWire,
   qrPresetFor,
   safestQrConfig,
@@ -40,6 +41,8 @@ import {
   type QrGenerateInput,
   type QrStylePresetId,
 } from "@/lib/studio/qr";
+import { loadQrAssets, saveQrAssets, type QrAsset } from "@/lib/studio/qrAssets";
+import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { QRPanel } from "@/components/studio/panels/QRPanel";
 import type { DesignAsset } from "@/lib/studio/assetProviders";
 import type { StudioToolId } from "@/lib/studio/tools";
@@ -103,6 +106,7 @@ function emptyObject(type: "text" | "image" | "shape" | "qr", overrides: Partial
     qrFrameStyle: null,
     qrLabelText: null,
     qrValidated: null,
+    qrAssetId: null,
     ...overrides,
   };
 }
@@ -131,6 +135,28 @@ function autoFitNormalized(location: DesignSideType, naturalAspect: number, cove
     normalizedX: (1 - wFrac) / 2,
     normalizedY: (1 - hFrac) / 2,
   };
+}
+
+/** Section "LOCATION TRANSFER POSITIONING": moving/copying a QR between print areas must not
+ *  preserve raw x/y (different boxes have different real dimensions) but SHOULD "preserve QR's
+ *  relative size where sensible" rather than always resetting to one fixed fraction. Both boxes
+ *  live in the same shared 520x650 design-space canvas (printAreaPixelBox), so the object's current
+ *  real pixel size is directly comparable across locations — this converts that pixel size into the
+ *  destination box's own normalized fraction, clamped so it can never overflow past 90% of the
+ *  destination's constraining axis and never shrink below 30% of it (a QR that reads as "reasonably
+ *  sized" moving from a 12x16 front to a 4x4 chest box, not a barely-visible speck). Always centers,
+ *  and — since width/height are derived from the SAME clamped pixel size divided by each axis of
+ *  the destination box — always comes out exactly square in real terms, never distorted.
+ */
+function refitQrForLocation(obj: DesignObjectRecord, fromSide: DesignSideType, toSide: DesignSideType) {
+  const fromBox = printAreaPixelBox(fromSide);
+  const toBox = printAreaPixelBox(toSide);
+  const currentPixelSize = Math.max(obj.normalizedWidth * fromBox.width, obj.normalizedHeight * fromBox.height);
+  const minToAxis = Math.min(toBox.width, toBox.height);
+  const sizePx = Math.min(Math.max(currentPixelSize, minToAxis * 0.3), minToAxis * 0.9);
+  const normalizedWidth = sizePx / toBox.width;
+  const normalizedHeight = sizePx / toBox.height;
+  return { normalizedWidth, normalizedHeight, normalizedX: (1 - normalizedWidth) / 2, normalizedY: (1 - normalizedHeight) / 2 };
 }
 
 export function StudioClient({ projectId }: { projectId: string }) {
@@ -179,6 +205,32 @@ export function StudioClient({ projectId }: { projectId: string }) {
   // means the gate modal is showing instead of switching to Review.
   const [qrReviewGate, setQrReviewGate] = useState<string[] | null>(null);
   const [fixingAllQr, setFixingAllQr] = useState(false);
+  // QR ASSET library (Section "CORE UX DECISION") — every reusable generated QR for this browser
+  // session, independent of which/how many print areas currently place it. Hydrated synchronously
+  // from localStorage via useState's lazy initializer (not an effect + setState — react-hooks/
+  // set-state-in-effect flags a synchronous setState in an effect body as a cascading-render risk;
+  // a lazy initializer runs once, during the first render, with no such risk). `sessionTokenRef`/
+  // `qrAssetsHydrated` are refs, not state — writing to them here during render is the accepted
+  // "cache a render-time computation" pattern, since ref writes don't themselves trigger a re-render.
+  const sessionTokenRef = useRef<string | null>(null);
+  const qrAssetsHydrated = useRef(false);
+  const [qrAssets, setQrAssets] = useState<QrAsset[]>(() => {
+    if (typeof window === "undefined") return [];
+    const token = getOrCreateClientSessionToken();
+    sessionTokenRef.current = token;
+    qrAssetsHydrated.current = true;
+    return loadQrAssets(token);
+  });
+  // Non-null while the "this QR is used in N places" confirmation is showing (Section "QR ASSET
+  // EDITING") — only a DESTINATION change on a shared asset triggers this; style/colour/logo edits
+  // always apply per-placement only (see requestQrPatch's own comment for why).
+  const [qrSharedEditPrompt, setQrSharedEditPrompt] = useState<{
+    objectId: string;
+    assetId: string;
+    siblingIds: string[];
+    pendingChanges: Partial<QrGenerateInput>;
+  } | null>(null);
+  const [qrSharedEditBusy, setQrSharedEditBusy] = useState(false);
 
   const [history, setHistory] = useState<{ past: SidesState[]; future: SidesState[] }>({ past: [], future: [] });
   // Text toolbar's "Copy style" / "Paste style" — deliberately NOT part of undo history (copying a
@@ -224,6 +276,15 @@ export function StudioClient({ projectId }: { projectId: string }) {
       cancelled = true;
     };
   }, [projectId]);
+
+  // Section "MY STUFF PERSISTENCE": QR assets survive tool switches, Review, and page refresh —
+  // persist on every change after the lazy-init hydration above has run. See qrAssets.ts's header
+  // for why localStorage is the right home for this (small structured data, no accounts to hang a
+  // server-side table off yet).
+  useEffect(() => {
+    if (!qrAssetsHydrated.current || !sessionTokenRef.current) return;
+    saveQrAssets(sessionTokenRef.current, qrAssets);
+  }, [qrAssets]);
 
   const pushHistory = useCallback((before: SidesState) => {
     setHistory((h) => ({ past: [...h.past.slice(-49), JSON.parse(JSON.stringify(before))], future: [] }));
@@ -555,18 +616,20 @@ export function StudioClient({ projectId }: { projectId: string }) {
     return null;
   }
 
-  /** Section "NEW LEFT TOOL — QR CODE": create a QR from a validated destination, using the
-   *  Classic preset as the default style (everything else is adjustable afterward in the
-   *  Inspector). Generates locally (qr-code-styling), then immediately checks it actually scans
-   *  (jsQR) before the object is even placed — "appears centered and selected... decode
-   *  validation passes" (QR TEST 1). */
-  async function addQrCode(destinationRaw: string) {
+  /** Section "NEW LEFT TOOL — QR CODE" / "AFTER CREATING A QR": create a QR from a validated
+   *  destination, using the chosen platform's recommended style preset (everything is still
+   *  adjustable afterward in the Inspector). Generates locally (qr-code-styling), checks it
+   *  actually scans (jsQR), THEN — new in this pass — saves it as a reusable QrAsset (so it shows
+   *  up in Recent QR Codes / My Stuff going forward) before placing the first instance on the
+   *  active print area and selecting it. */
+  async function addQrCode(destinationRaw: string, platformId: string) {
     const destination = normalizeDestination(destinationRaw);
     if (!isLikelyUrl(destination)) return;
     setQrCreating(true);
     setQrError(null);
     try {
-      const preset = qrPresetFor("classic");
+      const platform = platformPresetFor(platformId);
+      const preset = qrPresetFor(platform.stylePreset);
       const input: QrGenerateInput = {
         destination,
         errorCorrection: "M",
@@ -581,12 +644,40 @@ export function StudioClient({ projectId }: { projectId: string }) {
       const { displayDataUrl, bareDataUrl } = await generateQr(input);
       const validation = await validateQrScans(bareDataUrl, destination);
 
+      const now = new Date().toISOString();
+      const asset: QrAsset = {
+        id: crypto.randomUUID(),
+        sessionId: sessionTokenRef.current ?? "",
+        destination,
+        platform: platform.id,
+        displayName: `${platform.label} QR`,
+        stylePreset: preset.id,
+        foregroundColor: input.foregroundColor,
+        backgroundColor: input.backgroundColor,
+        dotStyle: input.dotStyle,
+        cornerStyle: input.cornerStyle,
+        logoUrl: null,
+        frameStyle: "none",
+        labelText: null,
+        errorCorrection: input.errorCorrection,
+        quietZone: 16,
+        displayDataUrl,
+        bareDataUrl,
+        scanValidated: validation.scans,
+        validatedAt: now,
+        archived: false,
+        createdAt: now,
+        updatedAt: now,
+      };
+      setQrAssets((prev) => [asset, ...prev]);
+
       pushHistory(sides);
       // Square (naturalAspect 1) sized against the real box aspect ratio — Section "QR ASPECT
       // RATIO" ("resize maintains 1:1") starts true from the moment it's placed, not just once
       // the customer first resizes it.
       const fit = autoFitNormalized(activeSide, 1, 0.55);
       const obj = emptyObject("qr", {
+        name: asset.displayName,
         assetUrl: displayDataUrl,
         normalizedWidth: fit.normalizedWidth,
         normalizedHeight: fit.normalizedHeight,
@@ -599,20 +690,113 @@ export function StudioClient({ projectId }: { projectId: string }) {
         qrDotStyle: input.dotStyle,
         qrCornerStyle: input.cornerStyle,
         qrLogoUrl: null,
-        qrStylePreset: "classic",
+        qrStylePreset: preset.id,
         qrFrameStyle: "none",
         qrLabelText: null,
         qrValidated: validation.scans,
+        qrAssetId: asset.id,
       });
       applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
       setSelectedId(obj.id);
       setShowOnboarding(false);
-      setActiveTool(null);
+      // Section "QR PANEL should show active asset" — leave the QR tool panel open (rather than
+      // closing it like every other add-* action) so the customer immediately sees "Current QR" +
+      // Recent QR Codes with their new code already at the top, instead of having to reopen the
+      // tool to discover it saved.
     } catch (err) {
       setQrError(err instanceof Error ? err.message : "We couldn't create this QR code.");
     } finally {
       setQrCreating(false);
     }
+  }
+
+  /** Section "QR PANEL — RECENT QR CODES" / "MY STUFF — QR CODES": places another instance of an
+   *  EXISTING asset onto the current print area without regenerating or re-validating it — "Do not
+   *  regenerate/pay/revalidate from scratch unless underlying data changed." Used by both "Recent
+   *  QR Codes" cards and My Stuff's "Add to Design". */
+  function placeQrAsset(asset: QrAsset) {
+    pushHistory(sides);
+    const fit = autoFitNormalized(activeSide, 1, 0.55);
+    const obj = emptyObject("qr", {
+      name: asset.displayName,
+      assetUrl: asset.displayDataUrl,
+      normalizedWidth: fit.normalizedWidth,
+      normalizedHeight: fit.normalizedHeight,
+      normalizedX: fit.normalizedX,
+      normalizedY: fit.normalizedY,
+      qrDestination: asset.destination,
+      qrErrorCorrection: asset.errorCorrection,
+      qrForegroundColor: asset.foregroundColor,
+      qrBackgroundColor: asset.backgroundColor,
+      qrDotStyle: asset.dotStyle,
+      qrCornerStyle: asset.cornerStyle,
+      qrLogoUrl: asset.logoUrl,
+      qrStylePreset: asset.stylePreset,
+      qrFrameStyle: asset.frameStyle,
+      qrLabelText: asset.labelText,
+      qrValidated: asset.scanValidated,
+      qrAssetId: asset.id,
+    });
+    applySides({ ...sides, [activeSide]: [...activeObjects, obj] });
+    setSelectedId(obj.id);
+    setShowOnboarding(false);
+    return obj.id;
+  }
+
+  function useRecentQrAsset(assetId: string) {
+    const asset = qrAssets.find((a) => a.id === assetId);
+    if (asset) placeQrAsset(asset);
+  }
+
+  /** My Stuff's "Edit QR": if this asset already has a placement somewhere in the open design,
+   *  jump straight to it (switching view if needed) rather than creating a duplicate — otherwise
+   *  place a fresh instance on the current side, exactly like "Add to Design". Either way the
+   *  customer lands with the QR selected and the Inspector already open on it (Section 11). */
+  function editQrAsset(assetId: string) {
+    for (const side of openSides) {
+      const existing = (sides[side] ?? []).find((o) => o.type === "qr" && o.qrAssetId === assetId);
+      if (existing) {
+        setActiveSide(side);
+        setSelectedId(existing.id);
+        setActiveTool(null);
+        return;
+      }
+    }
+    const asset = qrAssets.find((a) => a.id === assetId);
+    if (asset) {
+      placeQrAsset(asset);
+      setActiveTool(null);
+    }
+  }
+
+  /** My Stuff's "Duplicate" — a genuinely independent copy (new asset id), so Front can point at
+   *  one Instagram account and Back at another without either edit touching the shared original
+   *  (Section "CREATE COPY"). Does not place it anywhere; the customer adds it from My Stuff like
+   *  any other asset once duplicated. */
+  function duplicateQrAsset(assetId: string) {
+    const asset = qrAssets.find((a) => a.id === assetId);
+    if (!asset) return;
+    const now = new Date().toISOString();
+    const copy: QrAsset = { ...asset, id: crypto.randomUUID(), displayName: `${asset.displayName} copy`, createdAt: now, updatedAt: now };
+    setQrAssets((prev) => [copy, ...prev]);
+  }
+
+  /** My Stuff's "Delete" — archives instead of hard-deleting when the CURRENTLY LOADED design still
+   *  places this asset somewhere (Section "MY STUFF — QR CODES": "must not silently break that
+   *  design"); existing placements keep rendering regardless either way since their own qr* fields
+   *  are fully denormalized (types.ts), this only controls whether the asset is offered again from
+   *  Recent/My Stuff. Cross-project usage genuinely can't be checked — there's no server-side
+   *  QrAsset table to query other DesignProjects against (see qrAssets.ts's header) — so the safety
+   *  check is honestly scoped to this open design only. */
+  function deleteQrAsset(assetId: string) {
+    const stillUsed = openSides.some((side) => (sides[side] ?? []).some((o) => o.type === "qr" && o.qrAssetId === assetId));
+    setQrAssets((prev) => (stillUsed ? prev.map((a) => (a.id === assetId ? { ...a, archived: true, updatedAt: new Date().toISOString() } : a)) : prev.filter((a) => a.id !== assetId)));
+  }
+
+  function renameQrAsset(assetId: string, name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setQrAssets((prev) => prev.map((a) => (a.id === assetId ? { ...a, displayName: trimmed, updatedAt: new Date().toISOString() } : a)));
   }
 
   /** Regenerates a QR object's rendered image + re-validates against its own destination whenever
@@ -622,7 +806,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
    *  STYLE," not just a flattened PNG). Returns whether the new render scans correctly. */
   async function patchQrObject(
     id: string,
-    changes: Partial<QrGenerateInput> & { stylePreset?: QrStylePresetId | null },
+    changes: Partial<QrGenerateInput> & { stylePreset?: QrStylePresetId | null; assetId?: string | null },
   ): Promise<boolean> {
     const found = findQrObject(id);
     if (!found) return false;
@@ -638,10 +822,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
       frameStyle: changes.frameStyle ?? obj.qrFrameStyle ?? "none",
       labelText: changes.labelText !== undefined ? changes.labelText : obj.qrLabelText,
     };
+    const nextAssetId = changes.assetId !== undefined ? changes.assetId : obj.qrAssetId;
     setQrRegeneratingIds((prev) => [...prev, id]);
     try {
       const { displayDataUrl, bareDataUrl } = await generateQr(input);
       const validation = await validateQrScans(bareDataUrl, input.destination);
+      const nextStylePreset = changes.stylePreset !== undefined ? changes.stylePreset : obj.qrStylePreset;
       commitObjectPatch(
         id,
         {
@@ -653,13 +839,43 @@ export function StudioClient({ projectId }: { projectId: string }) {
           qrDotStyle: input.dotStyle,
           qrCornerStyle: input.cornerStyle,
           qrLogoUrl: input.logoUrl,
-          qrStylePreset: changes.stylePreset !== undefined ? changes.stylePreset : obj.qrStylePreset,
+          qrStylePreset: nextStylePreset,
           qrFrameStyle: input.frameStyle,
           qrLabelText: input.labelText,
           qrValidated: validation.scans,
+          qrAssetId: nextAssetId,
         },
         side,
       );
+      // Keep the QrAsset library's own copy of destination/style in sync with the LATEST edited
+      // placement, so a fresh "Recent"/"My Stuff" reuse reflects what the customer actually settled
+      // on rather than whatever the code looked like at creation time (Section "QR ASSET EDITING":
+      // "Destination + base QR style belong to QrAsset").
+      if (nextAssetId) {
+        setQrAssets((prev) =>
+          prev.map((a) =>
+            a.id === nextAssetId
+              ? {
+                  ...a,
+                  destination: input.destination,
+                  foregroundColor: input.foregroundColor,
+                  backgroundColor: input.backgroundColor,
+                  dotStyle: input.dotStyle,
+                  cornerStyle: input.cornerStyle,
+                  logoUrl: input.logoUrl,
+                  stylePreset: nextStylePreset,
+                  frameStyle: input.frameStyle,
+                  labelText: input.labelText,
+                  displayDataUrl,
+                  bareDataUrl,
+                  scanValidated: validation.scans,
+                  validatedAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                }
+              : a,
+          ),
+        );
+      }
       return validation.scans;
     } catch {
       commitObjectPatch(id, { qrValidated: false }, side);
@@ -667,6 +883,59 @@ export function StudioClient({ projectId }: { projectId: string }) {
     } finally {
       setQrRegeneratingIds((prev) => prev.filter((x) => x !== id));
     }
+  }
+
+  /** Section "SAME-VIEW DRAGGING"/"MOVE VS DUPLICATE": every placement-level QR change coming from
+   *  the Inspector routes through here rather than straight to patchQrObject, so a DESTINATION edit
+   *  on a QR shared by more than one placement can pause for "update all, or create a copy" first
+   *  (Section "QR ASSET EDITING"/"CREATE COPY"). Style/colour/logo/frame/label edits are
+   *  deliberately NOT gated — they apply to this placement only, immediately, exactly like today;
+   *  gating every colour-picker drag behind a confirmation modal would make styling unusable, and
+   *  the brief's own worked example for the shared-edit prompt is specifically about destination
+   *  ("instagram.com/account1" vs "account2"), not visual style. */
+  function requestQrPatch(id: string, changes: Partial<QrGenerateInput> & { stylePreset?: QrStylePresetId | null }) {
+    if (changes.destination === undefined) {
+      void patchQrObject(id, changes);
+      return;
+    }
+    const found = findQrObject(id);
+    if (!found) return;
+    const siblingIds = found.obj.qrAssetId
+      ? openSides.flatMap((s) => (sides[s] ?? []).filter((o) => o.type === "qr" && o.qrAssetId === found.obj.qrAssetId && o.id !== id).map((o) => o.id))
+      : [];
+    if (siblingIds.length === 0) {
+      void patchQrObject(id, changes);
+      return;
+    }
+    setQrSharedEditPrompt({ objectId: id, assetId: found.obj.qrAssetId!, siblingIds, pendingChanges: changes });
+  }
+
+  /** "UPDATE ALL": the new destination applies to this placement AND every sibling sharing the same
+   *  QrAsset (Section 26). */
+  async function resolveQrSharedEditUpdateAll() {
+    if (!qrSharedEditPrompt) return;
+    setQrSharedEditBusy(true);
+    const { objectId, siblingIds, pendingChanges } = qrSharedEditPrompt;
+    await Promise.all([objectId, ...siblingIds].map((id) => patchQrObject(id, pendingChanges)));
+    setQrSharedEditBusy(false);
+    setQrSharedEditPrompt(null);
+  }
+
+  /** "CREATE A COPY": this placement detaches onto a brand-new QrAsset (Section 27) and gets the
+   *  new destination; every sibling placement keeps pointing at the original, untouched. */
+  async function resolveQrSharedEditCreateCopy() {
+    if (!qrSharedEditPrompt) return;
+    setQrSharedEditBusy(true);
+    const { objectId, assetId, pendingChanges } = qrSharedEditPrompt;
+    const original = qrAssets.find((a) => a.id === assetId);
+    const now = new Date().toISOString();
+    const newAssetId = crypto.randomUUID();
+    if (original) {
+      setQrAssets((prev) => [{ ...original, id: newAssetId, displayName: `${original.displayName} copy`, createdAt: now, updatedAt: now }, ...prev]);
+    }
+    await patchQrObject(objectId, { ...pendingChanges, assetId: newAssetId });
+    setQrSharedEditBusy(false);
+    setQrSharedEditPrompt(null);
   }
 
   async function uploadQrLogo(id: string, file: File) {
@@ -719,6 +988,47 @@ export function StudioClient({ projectId }: { projectId: string }) {
       labelText: obj.qrLabelText,
     });
     return patchQrObject(id, { ...safe, stylePreset: null });
+  }
+
+  /** Section "QR MUST BE MOVABLE TO OTHER PRINT LOCATIONS" — MOVE removes the placement from its
+   *  current print area and creates it on the destination instead; the QR data/style never changes
+   *  (moving never re-triggers generation or scan validation — only WHERE it sits changes), only its
+   *  size/position are refit to the new box (refitQrForLocation) and Studio switches straight to
+   *  that view with the moved object already selected (Section 10). Silently no-ops if the
+   *  destination location can't be opened (ensureLocationOpen's network call failed). */
+  async function moveQrToLocation(objId: string, toSide: DesignSideType) {
+    const found = findQrObject(objId);
+    if (!found || found.side === toSide) return;
+    const ok = await ensureLocationOpen(toSide);
+    if (!ok) return;
+    const { obj, side: fromSide } = found;
+    const fit = refitQrForLocation(obj, fromSide, toSide);
+    pushHistory(sides);
+    applySides({
+      ...sides,
+      [fromSide]: (sides[fromSide] ?? []).filter((o) => o.id !== objId),
+      [toSide]: [...(sides[toSide] ?? []), { ...obj, ...fit }],
+    });
+    setActiveSide(toSide);
+    setSelectedId(objId);
+  }
+
+  /** COPY — Section "MOVE VS DUPLICATE": the original placement stays exactly where it is; a brand
+   *  NEW placement (fresh id, same qrAssetId) is added to the destination. Both instances render
+   *  from the same already-validated bare code, so no regeneration/re-validation is needed here
+   *  either. */
+  async function copyQrToLocation(objId: string, toSide: DesignSideType) {
+    const found = findQrObject(objId);
+    if (!found) return;
+    const ok = await ensureLocationOpen(toSide);
+    if (!ok) return;
+    const { obj, side: fromSide } = found;
+    const fit = refitQrForLocation(obj, fromSide, toSide);
+    pushHistory(sides);
+    const copy: DesignObjectRecord = { ...obj, ...fit, id: crypto.randomUUID() };
+    applySides({ ...sides, [toSide]: [...(sides[toSide] ?? []), copy] });
+    setActiveSide(toSide);
+    setSelectedId(copy.id);
   }
 
   // Section "QR REVIEW VALIDATION": "Before Review/approval... if one cannot be decoded, show a
@@ -907,6 +1217,13 @@ export function StudioClient({ projectId }: { projectId: string }) {
     commitObjectPatch(id, { hidden: !activeObjects.find((o) => o.id === id)?.hidden });
   }
 
+  // Section "QR OBJECT LAYER NAME": "Customer may rename" — a small, generic rename affordance on
+  // every layer (not just QR objects; there's no reason to special-case it), since LayersPanel
+  // already falls back to `obj.name` whenever it's set (defaultLabel in LayersPanel.tsx).
+  function renameLayer(id: string, name: string) {
+    commitObjectPatch(id, { name: name.trim() || null });
+  }
+
   function duplicateLayer(id: string) {
     const obj = activeObjects.find((o) => o.id === id);
     if (!obj) return;
@@ -925,14 +1242,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
   // Every location the product's family supports is already visible in the strip (Section 1 — no
   // "More" dropdown to hide the create-on-demand step behind), so selecting one that doesn't have
   // a real DesignSide row yet needs to transparently create it first — the customer never sees a
-  // separate "add this location" action, just a brief pending spinner on that pill.
-  async function handleSelectLocation(side: DesignSideType) {
-    if (!project) return;
-    if (openSides.includes(side)) {
-      setActiveSide(side);
-      setSelectedId(null);
-      return;
-    }
+  // separate "add this location" action, just a brief pending spinner on that pill. Extracted from
+  // the original handleSelectLocation so "Move To"/"Copy To" (QR PLACEMENT brief) can silently open
+  // a not-yet-visited destination location the same way, without duplicating this network call.
+  async function ensureLocationOpen(side: DesignSideType): Promise<boolean> {
+    if (!project) return false;
+    if (openSides.includes(side)) return true;
     setAddingLocation(side);
     try {
       const res = await fetch(`/api/studio/${projectId}/locations`, {
@@ -944,13 +1259,27 @@ export function StudioClient({ projectId }: { projectId: string }) {
       if (!res.ok) throw new Error(data.error);
       setProject((p) => (p ? { ...p, sides: [...p.sides, { id: `pending-${side}`, sideType: side, printAreaWidth: 0, printAreaHeight: 0, objects: [] }] } : p));
       setSides((s) => ({ ...s, [side]: s[side] ?? [] }));
-      setActiveSide(side);
-      setSelectedId(null);
+      return true;
     } catch {
-      // Silent no-op — the location simply doesn't switch; the customer can just click it again.
+      return false;
     } finally {
       setAddingLocation(null);
     }
+  }
+
+  async function handleSelectLocation(side: DesignSideType) {
+    if (openSides.includes(side)) {
+      setActiveSide(side);
+      setSelectedId(null);
+      return;
+    }
+    const ok = await ensureLocationOpen(side);
+    if (ok) {
+      setActiveSide(side);
+      setSelectedId(null);
+    }
+    // Silent no-op on failure — the location simply doesn't switch; the customer can just click it
+    // again.
   }
 
   const locationsWithArt = openSides.filter((s) => (sides[s]?.length ?? 0) > 0).length;
@@ -1140,8 +1469,28 @@ export function StudioClient({ projectId }: { projectId: string }) {
               {activeTool === "text" && <TextPanel onAddText={addText} />}
               {activeTool === "graphics" && <GraphicsPanel onAddGraphic={addGraphic} />}
               {activeTool === "shapes" && <ShapesPanel onAddShape={addShape} />}
-              {activeTool === "qr" && <QRPanel onCreate={addQrCode} creating={qrCreating} />}
-              {activeTool === "my-stuff" && <MyStuffPanel recent={recentUploads} onUseRecent={useRecentUpload} />}
+              {activeTool === "qr" && (
+                <QRPanel
+                  onCreate={addQrCode}
+                  creating={qrCreating}
+                  recentAssets={qrAssets.filter((a) => !a.archived)}
+                  onUseRecent={useRecentQrAsset}
+                  currentQr={selectedObject?.type === "qr" ? selectedObject : null}
+                  onEditCurrentDestination={() => setActiveTool(null)}
+                />
+              )}
+              {activeTool === "my-stuff" && (
+                <MyStuffPanel
+                  recent={recentUploads}
+                  onUseRecent={useRecentUpload}
+                  qrAssets={qrAssets.filter((a) => !a.archived)}
+                  onAddQrToDesign={useRecentQrAsset}
+                  onEditQr={editQrAsset}
+                  onDuplicateQr={duplicateQrAsset}
+                  onDeleteQr={deleteQrAsset}
+                  onRenameQr={renameQrAsset}
+                />
+              )}
             </SecondaryPanel>
           )}
 
@@ -1273,12 +1622,16 @@ export function StudioClient({ projectId }: { projectId: string }) {
               onRemoveBackground={() => selectedObject?.assetUrl && handleRemoveBackground(selectedObject.id, selectedObject.assetUrl)}
               onAcceptRemovedBackground={() => selectedObject && acceptRemovedBackground(selectedObject.id)}
               onDismissBackgroundRemoval={dismissBackgroundRemoval}
-              onQrPatch={(id, changes) => void patchQrObject(id, changes)}
+              onQrPatch={(id, changes) => requestQrPatch(id, changes)}
               onQrApplyPreset={applyQrPreset}
               onQrFix={(id) => void fixQr(id)}
               onQrTriggerLogoUpload={triggerQrLogoUpload}
               onQrRemoveLogo={(id) => void patchQrObject(id, { logoUrl: null })}
               qrRegenerating={selectedObject ? qrRegeneratingIds.includes(selectedObject.id) : false}
+              qrCurrentLocationLabel={activeLocation?.label ?? activeSide}
+              qrLocationOptions={profile.filter((l) => l.status !== "UNAVAILABLE" && l.id !== activeSide).map((l) => ({ id: l.id, label: l.label }))}
+              onQrMoveTo={(id, side) => void moveQrToLocation(id, side)}
+              onQrCopyTo={(id, side) => void copyQrToLocation(id, side)}
               activeSide={activeSide}
               layerObjects={activeObjects}
               selectedId={selectedId}
@@ -1287,6 +1640,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
               onToggleHiddenLayer={toggleLayerHidden}
               onDuplicateLayer={duplicateLayer}
               onDeleteLayer={deleteLayer}
+              onRenameLayer={renameLayer}
               productName={project.productName}
               brandName={project.brandName}
               colourName={project.colourName}
@@ -1351,6 +1705,46 @@ export function StudioClient({ projectId }: { projectId: string }) {
                   className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas"
                 >
                   Back to Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section "QR ASSET EDITING": a destination change on a QR shared by more than one
+            placement pauses here instead of silently propagating or silently diverging. */}
+        {qrSharedEditPrompt && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-950/50 p-6">
+            <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl">
+              <WarningCircle className="mx-auto size-8 text-orange" weight="bold" />
+              <h2 className="mt-3 font-display text-lg font-semibold text-ink-900">
+                This QR is used in {qrSharedEditPrompt.siblingIds.length + 1} places
+              </h2>
+              <p className="mt-1.5 text-sm text-muted">Update the destination everywhere it&apos;s placed, or split this one off with its own link.</p>
+              <div className="mt-5 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={resolveQrSharedEditUpdateAll}
+                  disabled={qrSharedEditBusy}
+                  className="rounded-full bg-maple-gradient px-4 py-2.5 text-sm font-semibold text-ink-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {qrSharedEditBusy ? "Updating…" : "Update All"}
+                </button>
+                <button
+                  type="button"
+                  onClick={resolveQrSharedEditCreateCopy}
+                  disabled={qrSharedEditBusy}
+                  className="rounded-full border border-sand px-4 py-2.5 text-sm font-semibold text-ink-900 hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Create a Copy Instead
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrSharedEditPrompt(null)}
+                  disabled={qrSharedEditBusy}
+                  className="text-xs font-semibold text-ink-900/60 underline underline-offset-2"
+                >
+                  Cancel
                 </button>
               </div>
             </div>

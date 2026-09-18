@@ -258,6 +258,43 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-18 QR asset library + move/copy between print locations + platform style presets:**
+QR codes were previously one-shot: generated straight onto whichever print area was active, with
+no way to reuse the same code elsewhere and no record of it once you moved on. Split the model into
+a QR ASSET (destination + style + rendered SVG — `src/lib/studio/qrAssets.ts`, a new `QrAsset`
+type) and a QR PLACEMENT (a `DesignObjectRecord` carrying a new `qrAssetId` back-reference; every
+qr* field stays fully denormalized onto the placement too, so nothing about existing rendering/
+validation code had to change). QrAssets persist in `localStorage`, keyed by the same anonymous
+session cookie that already scopes DesignProject drafts — deliberately more durable than
+`UploadsPanel`'s "resets on reload" MVP scope, since a QR asset is small structured JSON (a
+destination string + style enums), not a binary upload, so real persistence was actually practical
+here (see qrAssets.ts's header for the full reasoning and its honest limits: per-browser, not a
+real cross-device account library — there's still no login system in this app).
+New UX: the QR panel shows "Recent QR Codes" (reuse without regenerating/revalidating) and a
+"Current QR" summary when one's selected; My Stuff gained a "QR Codes" section (Add to Design/Edit/
+Duplicate/Delete, delete archives instead of hard-deleting when the open design still places it);
+the right Inspector gained a "Placement" block with Move To/Copy To selects (Move removes the old
+placement and refits size/position into the destination box's real aspect ratio — same 520x650
+design-space math as autoFitNormalized; Copy leaves the original alone and adds a second instance).
+A DESTINATION edit on a QR placed in more than one spot now pauses with "used in N places — Update
+All or Create a Copy" (style/colour/logo edits stay per-placement, unprompted, since gating every
+color-picker drag would make styling unusable — see StudioClient's requestQrPatch for the reasoning).
+Platform buttons (Website/Instagram/TikTok/etc.) now pick a recommended style preset, not just
+placeholder text — QR_PLATFORM_PRESETS in qr.ts — but still encode nothing but the destination URL,
+and `approvedLogoAssetId` is null for every platform: independent research this session found no
+platform (not just TikTok, which the brief flagged) grants blanket permission to embed its mark, so
+no official logo ships, ever, only a customer's own uploaded logo, with a note in the Inspector
+saying so. Added 6 new demo templates (5 apparel QR/Social — new `qr-social` category — plus one
+business card) using the same "ADD QR" placeholder-shape convention as every existing QR template,
+since a template is applied before a real destination exists to encode. Verified live end-to-end
+(create → recent-reuse → My Stuff → move to Right Chest → copy to Back → shared-destination-edit
+propagating to both placements → Review correctly pricing it as 2 separate print locations) with
+zero console errors; `npx tsc --noEmit` and `npm run lint` both pass clean. `npm run build` itself
+couldn't complete this session — Turbopack's type-check worker hit the OOM ceiling on this ~16GB
+host with only ~3GB free at the time (unrelated to this change; the compile step itself succeeded
+first) — so this is verified via tsc+lint+live dev-server testing rather than a full production
+build; worth re-running `npm run build` once the host has more headroom free.
+
 **2026-09-18 merged a parallel session's Studio work:** right after the Studio V4 push below,
 `origin/master` had moved 2 commits ahead from another session working on the *same* files at the
 same time — curved text, image mirroring, a professional text toolbar, an expanded font system,

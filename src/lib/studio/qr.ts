@@ -61,6 +61,10 @@ export interface QrStoredConfig {
   /** Last-known result of validateQrScans() against `destination` at save time — shown as a
    *  stale-but-useful hint on reload; StudioClient re-validates on every field change regardless. */
   validated: boolean | null;
+  /** Links back to the reusable QrAsset this placement was created from (see qrAssets.ts) — null
+   *  for a placement with no known/still-existing asset. Carried through the same JSON-in-`content`
+   *  channel as every other qr* field, for the same Postgres-column reason (see this file's header). */
+  assetId: string | null;
 }
 
 const QR_CONTENT_PREFIX = "maple-qr:v1:";
@@ -90,6 +94,7 @@ const QR_NULL_FIELDS = {
   qrFrameStyle: null,
   qrLabelText: null,
   qrValidated: null,
+  qrAssetId: null,
 } as const;
 
 export type WireDesignObject = Omit<DesignObjectRecord, keyof typeof QR_NULL_FIELDS>;
@@ -114,6 +119,7 @@ export function qrObjectToWire(obj: DesignObjectRecord): WireDesignObject {
     qrFrameStyle,
     qrLabelText,
     qrValidated,
+    qrAssetId,
     ...stripped
   } = obj;
   if (obj.type !== "qr") return stripped;
@@ -129,6 +135,7 @@ export function qrObjectToWire(obj: DesignObjectRecord): WireDesignObject {
     frameStyle: qrFrameStyle,
     labelText: qrLabelText,
     validated: qrValidated,
+    assetId: qrAssetId,
   };
   return { ...stripped, type: "image", content: encodeQrContent(config) };
 }
@@ -155,6 +162,7 @@ export function wireObjectToAppObject(obj: WireDesignObject): DesignObjectRecord
     qrFrameStyle: decoded.frameStyle,
     qrLabelText: decoded.labelText,
     qrValidated: decoded.validated,
+    qrAssetId: decoded.assetId ?? null,
   };
 }
 
@@ -320,14 +328,51 @@ export function safestQrConfig(input: QrGenerateInput): QrGenerateInput {
   };
 }
 
-/** Social-platform presets for the QR panel's optional helper (Section "SOCIAL PLATFORM PRESETS")
- *  — purely cosmetic (changes placeholder/help copy), never changes the QR standard: it is always
- *  just a URL underneath. */
-export const QR_SOCIAL_PRESETS: { id: string; label: string; placeholder: string; help: string }[] = [
-  { id: "website", label: "Website", placeholder: "https://example.com", help: "Paste your website link." },
-  { id: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourname", help: "Paste your Instagram profile link." },
-  { id: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@yourname", help: "Paste your TikTok profile link." },
-  { id: "youtube", label: "YouTube", placeholder: "https://youtube.com/@yourname", help: "Paste your YouTube channel link." },
-  { id: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/yourname", help: "Paste your LinkedIn profile link." },
-  { id: "facebook", label: "Facebook", placeholder: "https://facebook.com/yourpage", help: "Paste your Facebook page link." },
+/** Social-platform presets (Section "SOCIAL QR PRESETS"/"PLATFORM PRESET STRUCTURE"). Selecting a
+ *  platform now does more than swap placeholder/help copy — it also picks a recommended
+ *  `stylePreset` (one of QR_PRESETS above) so an Instagram QR reads differently from a LinkedIn
+ *  one at a glance. What it deliberately does NOT do is embed any platform's logo/glyph: Maple has
+ *  no verified, written brand-usage approval for Instagram/TikTok/YouTube/LinkedIn/Facebook (the
+ *  brief specifically flags TikTok's developer guidelines requiring prior written permission —
+ *  independent research found the other platforms are no more permissive by default), so
+ *  `approvedLogoAssetId` is null for every single one and stays that way until Maple actually
+ *  secures and records that approval somewhere real (see BrandAsset below). The QR's encoded DATA
+ *  is always just the destination URL regardless of platform — this only ever changes presentation. */
+export interface QrPlatformPreset {
+  id: string;
+  label: string;
+  placeholder: string;
+  help: string;
+  stylePreset: QrStylePresetId;
+  /** id of a Maple-owned, license-verified brand mark for this platform — always null today (see
+   *  this const's own doc comment). Kept as a real field, not hardcoded away, so the day Maple gets
+   *  written permission for one platform, turning its center-logo option on is a one-line change
+   *  here rather than new architecture. */
+  approvedLogoAssetId: string | null;
+  ctaExamples: string[];
+}
+
+export const QR_SOCIAL_PRESETS: QrPlatformPreset[] = [
+  { id: "website", label: "Website", placeholder: "https://example.com", help: "Paste your website link.", stylePreset: "classic", approvedLogoAssetId: null, ctaExamples: ["Visit our site", "Learn more"] },
+  { id: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourname", help: "Paste your Instagram profile link.", stylePreset: "rounded", approvedLogoAssetId: null, ctaExamples: ["Scan to follow", "Follow @yourname"] },
+  { id: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@yourname", help: "Paste your TikTok profile link.", stylePreset: "bold", approvedLogoAssetId: null, ctaExamples: ["Scan to follow", "Watch on TikTok"] },
+  { id: "youtube", label: "YouTube", placeholder: "https://youtube.com/@yourname", help: "Paste your YouTube channel link.", stylePreset: "bold", approvedLogoAssetId: null, ctaExamples: ["Subscribe", "Watch now"] },
+  { id: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/yourname", help: "Paste your LinkedIn profile link.", stylePreset: "minimal", approvedLogoAssetId: null, ctaExamples: ["Connect with me", "View my profile"] },
+  { id: "facebook", label: "Facebook", placeholder: "https://facebook.com/yourpage", help: "Paste your Facebook page link.", stylePreset: "classic", approvedLogoAssetId: null, ctaExamples: ["Like our page", "Follow us"] },
 ];
+
+export function platformPresetFor(id: string | null | undefined): QrPlatformPreset {
+  return QR_SOCIAL_PRESETS.find((p) => p.id === id) ?? QR_SOCIAL_PRESETS[0];
+}
+
+/** Best-effort human label for a QrAsset's destination, e.g. "instagram.com" — used as the
+ *  secondary line on Recent QR Codes / My Stuff cards (Section "MY STUFF — QR CODES"). Falls back
+ *  to the raw destination if it somehow isn't a parseable URL (shouldn't happen — every stored
+ *  destination already passed isLikelyUrl — but this is display code, not a validator). */
+export function destinationHost(destination: string): string {
+  try {
+    return new URL(destination).hostname.replace(/^www\./, "");
+  } catch {
+    return destination;
+  }
+}

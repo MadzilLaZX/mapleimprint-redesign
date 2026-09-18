@@ -95,6 +95,10 @@ export function Inspector({
   onQrTriggerLogoUpload,
   onQrRemoveLogo,
   qrRegenerating,
+  qrCurrentLocationLabel,
+  qrLocationOptions,
+  onQrMoveTo,
+  onQrCopyTo,
   activeSide,
   layerObjects,
   selectedId,
@@ -103,6 +107,7 @@ export function Inspector({
   onToggleHiddenLayer,
   onDuplicateLayer,
   onDeleteLayer,
+  onRenameLayer,
   productName,
   brandName,
   colourName,
@@ -130,6 +135,10 @@ export function Inspector({
   onQrTriggerLogoUpload: (id: string) => void;
   onQrRemoveLogo: (id: string) => void;
   qrRegenerating: boolean;
+  qrCurrentLocationLabel: string;
+  qrLocationOptions: { id: DesignSideType; label: string }[];
+  onQrMoveTo: (id: string, side: DesignSideType) => void;
+  onQrCopyTo: (id: string, side: DesignSideType) => void;
   activeSide: DesignSideType;
   layerObjects: DesignObjectRecord[];
   selectedId: string | null;
@@ -138,6 +147,7 @@ export function Inspector({
   onToggleHiddenLayer: (id: string) => void;
   onDuplicateLayer: (id: string) => void;
   onDeleteLayer: (id: string) => void;
+  onRenameLayer: (id: string, name: string) => void;
   productName: string;
   brandName: string;
   colourName: string;
@@ -186,6 +196,10 @@ export function Inspector({
               onFix={() => onQrFix(selectedObject.id)}
               onTriggerLogoUpload={() => onQrTriggerLogoUpload(selectedObject.id)}
               onRemoveLogo={() => onQrRemoveLogo(selectedObject.id)}
+              currentLocationLabel={qrCurrentLocationLabel}
+              locationOptions={qrLocationOptions}
+              onMoveTo={(side) => onQrMoveTo(selectedObject.id, side)}
+              onCopyTo={(side) => onQrCopyTo(selectedObject.id, side)}
             />
           )}
 
@@ -248,6 +262,7 @@ export function Inspector({
               onToggleHidden={onToggleHiddenLayer}
               onDuplicate={onDuplicateLayer}
               onDelete={onDeleteLayer}
+              onRename={onRenameLayer}
             />
           </div>
         )}
