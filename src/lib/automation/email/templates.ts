@@ -66,6 +66,64 @@ export function customerConfirmationEmail(inquiry: ScoredInquiry): { subject: st
   return { subject, html, text };
 }
 
+interface OrderConfirmationInput {
+  reference: string;
+  contactName: string;
+  contactEmail: string;
+  totalCents: number;
+  lines: { productName: string; quantity: number; colourName: string | null }[];
+}
+
+export function orderConfirmationEmail(order: OrderConfirmationInput): { subject: string; html: string; text: string } {
+  const firstName = order.contactName.split(" ")[0] || order.contactName;
+  const total = `$${(order.totalCents / 100).toFixed(2)}`;
+  const subject = `Order confirmed — ${order.reference}`;
+
+  const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}`);
+
+  const text = [
+    `Hi ${firstName},`,
+    "",
+    `Thanks — we've received your order and payment.`,
+    "",
+    `Order: ${order.reference}`,
+    `Total paid: ${total}`,
+    "",
+    "Items:",
+    ...itemLines.map((l) => `- ${l}`),
+    "",
+    "What happens next: your design(s) move into production preparation, then printing, then shipping.",
+    "We'll be in touch if we need anything from you.",
+    "",
+    `${BUSINESS.name}`,
+    BUSINESS.phoneDisplay,
+    SITE_URL,
+    BUSINESS_ADDRESS_ONE_LINE,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#1a1a1a;max-width:520px;margin:0 auto;">
+      <p>Hi ${escapeHtml(firstName)},</p>
+      <p>Thanks — we've received your order and payment.</p>
+      <table cellpadding="6" cellspacing="0" style="width:100%;background:#f7f4ef;border-radius:8px;margin:16px 0;">
+        <tr><td style="font-weight:600;white-space:nowrap;">Order</td><td>${escapeHtml(order.reference)}</td></tr>
+        <tr><td style="font-weight:600;white-space:nowrap;">Total paid</td><td>${escapeHtml(total)}</td></tr>
+        <tr><td style="font-weight:600;white-space:nowrap;vertical-align:top;">Items</td><td>${itemLines.map(escapeHtml).join("<br/>")}</td></tr>
+      </table>
+      <p>What happens next: your design(s) move into production preparation, then printing, then shipping. We'll
+        be in touch if we need anything from you.</p>
+      <p style="margin-top:24px;">
+        ${escapeHtml(BUSINESS.name)}<br/>
+        ${escapeHtml(BUSINESS.phoneDisplay)}<br/>
+        <a href="${SITE_URL}">${SITE_URL}</a><br/>
+        ${escapeHtml(BUSINESS_ADDRESS_ONE_LINE)}
+      </p>
+    </div>
+  `;
+
+  return { subject, html, text };
+}
+
 export function ownerNotificationEmail(inquiry: ScoredInquiry): { subject: string; html: string; text: string } {
   const subject = `New ${SOURCE_LABEL[inquiry.source]} — ${inquiry.name}${inquiry.organization ? ` (${inquiry.organization})` : ""} — score ${inquiry.score}`;
 

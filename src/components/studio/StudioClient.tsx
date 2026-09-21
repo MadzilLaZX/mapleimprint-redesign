@@ -175,7 +175,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [recentUploads, setRecentUploads] = useState<RecentUpload[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [mode, setMode] = useState<"edit" | "preview" | "review" | "post-cart">("edit");
-  // "adding" while the status PATCH is in flight, "success" once it lands (the button itself shows
+  // "adding" while the freeze call is in flight, "success" once it lands (the button itself shows
   // "✓ Added to Cart" for a beat before `mode` advances to "post-cart" — see handleApproveAndAddToCart),
   // "error" if it failed (never silently treated as success). Initialized from the loaded project's
   // own status, not just local interaction — reopening an already-ordered design (fresh load, or
@@ -1304,23 +1304,23 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
   const hasAnyDesign = openSides.some((s) => (sides[s]?.length ?? 0) > 0);
 
-  // The PATCH (marking this DesignProject revision as ordered/frozen) is awaited and happens
-  // BEFORE the local cart mutation, deliberately — a failed PATCH must never leave a cart line
-  // pointing at a project the server still considers a draft. `approveState` guards against a
-  // double-click or a stray extra call re-running this mid-flight or after it already succeeded
-  // (Section 18); reopening an already-"ordered" project starts in "success" already (see the load
-  // effect above), so browser Back after approving can't reach a fresh, clickable button either.
+  // Freezing (POST .../freeze) is awaited and happens BEFORE the local cart mutation,
+  // deliberately — a failed freeze must never leave a cart line pointing at a project the server
+  // still considers a draft. Unlike the plain status PATCH this replaces, freezing actually locks
+  // the design server-side: PATCH /api/studio/[id] now rejects further autosaves once frozen (409),
+  // so — unlike before — this comment's "ordered/frozen" claim is actually enforced, not just
+  // stated. `approveState` guards against a double-click or a stray extra call re-running this
+  // mid-flight or after it already succeeded (Section 18); reopening an already-"ordered" project
+  // starts in "success" already (see the load effect above), so browser Back after approving can't
+  // reach a fresh, clickable button either.
   async function handleApproveAndAddToCart() {
     if (!project || !priceBreakdown) return;
     if (approveState === "adding" || approveState === "success") return;
     setApproveState("adding");
     try {
-      const res = await fetch(`/api/studio/${projectId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "ordered" }),
-      });
-      if (!res.ok) throw new Error("Couldn't save your approval.");
+      const res = await fetch(`/api/studio/${projectId}/freeze`, { method: "POST" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error ?? "Couldn't save your approval.");
       addItem(
         {
           id: `studio-${project.id}`,
@@ -1334,6 +1334,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
           customizationType: "CUSTOM",
           designProjectId: project.id,
           designRevision: project.revision,
+          designFrozenRevision: data?.frozenRevision,
         },
         project.totalQuantity,
       );

@@ -6,22 +6,10 @@ import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Trash } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { useCart, QUOTE_PREFILL_KEY, type CartItem } from "@/components/cart/CartProvider";
+import { useCart, QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
 import { PRIMARY_CTA } from "@/lib/constants";
 import { cn } from "@/lib/cn";
-
-/** Real per-unit price for this item's CURRENT quantity — uses the tier matching `item.quantity`
- *  when the customizer attached a tier table, falling back to the flat startingPrice (lowest-tier
- *  quick-add) otherwise. Keeps the price honest if quantity is adjusted from the cart. */
-function unitPriceFor(item: CartItem): number | null {
-  if (item.priceTiers && item.priceTiers.length > 0) {
-    const tier = item.priceTiers.find(
-      (t) => item.quantity >= t.minQty && (t.maxQty === null || item.quantity <= t.maxQty),
-    );
-    return tier ? tier.pricePerUnit : null;
-  }
-  return item.startingPrice ?? null;
-}
+import { unitPriceFor } from "@/lib/pricing/cartItemPrice";
 
 export function CartView() {
   const { items, removeItem, updateQuantity, totalCount } = useCart();
@@ -103,25 +91,37 @@ export function CartView() {
                 ) : null;
               })()}
             </div>
-            <div className="flex shrink-0 items-center gap-1 rounded-full border border-sand p-1">
-              <button
-                type="button"
-                aria-label={`Decrease quantity of ${item.name}`}
-                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                className="flex size-7 items-center justify-center rounded-full text-ink-900 transition-colors hover:bg-canvas"
+            {item.customizationType === "CUSTOM" ? (
+              // Quantity/sizes for a Studio design are fixed at approval time (see the
+              // design-freeze mechanism) — the price/production package is priced for exactly
+              // this quantity, so it isn't adjustable from the cart like a plain product line.
+              <span
+                title="Set in Studio — remove and redesign to change quantity"
+                className="shrink-0 rounded-full border border-sand px-3 py-1.5 text-sm font-semibold text-ink-900/70"
               >
-                <Minus className="size-3.5" weight="bold" />
-              </button>
-              <span className="w-6 text-center text-sm font-semibold text-ink-900">{item.quantity}</span>
-              <button
-                type="button"
-                aria-label={`Increase quantity of ${item.name}`}
-                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                className="flex size-7 items-center justify-center rounded-full text-ink-900 transition-colors hover:bg-canvas"
-              >
-                <Plus className="size-3.5" weight="bold" />
-              </button>
-            </div>
+                Qty {item.quantity}
+              </span>
+            ) : (
+              <div className="flex shrink-0 items-center gap-1 rounded-full border border-sand p-1">
+                <button
+                  type="button"
+                  aria-label={`Decrease quantity of ${item.name}`}
+                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                  className="flex size-7 items-center justify-center rounded-full text-ink-900 transition-colors hover:bg-canvas"
+                >
+                  <Minus className="size-3.5" weight="bold" />
+                </button>
+                <span className="w-6 text-center text-sm font-semibold text-ink-900">{item.quantity}</span>
+                <button
+                  type="button"
+                  aria-label={`Increase quantity of ${item.name}`}
+                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                  className="flex size-7 items-center justify-center rounded-full text-ink-900 transition-colors hover:bg-canvas"
+                >
+                  <Plus className="size-3.5" weight="bold" />
+                </button>
+              </div>
+            )}
             <button
               type="button"
               aria-label={`Remove ${item.name} from cart`}
@@ -150,9 +150,15 @@ export function CartView() {
           {" "}Submitting sends this list straight into a project quote request.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Button onClick={handleGetQuote} showArrow>
-            Get a quote for these items
-          </Button>
+          {unpricedCount === 0 ? (
+            <Button href="/checkout" showArrow>
+              Proceed to checkout
+            </Button>
+          ) : (
+            <Button onClick={handleGetQuote} showArrow>
+              Get a quote for these items
+            </Button>
+          )}
           <Button href={PRIMARY_CTA.href} variant="secondary" tone="light">
             Keep browsing
           </Button>
