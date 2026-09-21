@@ -10,6 +10,15 @@ export type CartItem = {
   image: string;
   categorySlug: string;
   categoryName: string;
+  /** Set on BLANK lines only (ProductCustomizer.handleBuyBlank) — needed so /api/checkout/quote
+   *  can look the real CatalogueProduct back up server-side and recompute its price authoritatively
+   *  rather than trusting this line's stored `startingPrice`. Not stored anywhere before this
+   *  (ACTIVATE REAL CHECKOUT brief) — `id` alone encodes these as an unparseable composite string,
+   *  which is why the checkout brief's server-authoritative quote endpoint needed real fields to
+   *  look products up by. Optional so existing localStorage carts from before this change don't
+   *  break; a line missing these is simply treated as QUOTE_REQUIRED by the quote endpoint. */
+  subcategorySlug?: string;
+  productSlug?: string;
   quantity: number;
   /** Price at the lowest quantity tier, from the real print-cost chart — null when this item has
    *  no real catalogue product yet (shown as quote-only in the cart, never a guessed number). */
@@ -47,6 +56,10 @@ type CartContextValue = {
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
   totalCount: number;
+  /** False until the one-time localStorage read on mount completes — checkout's empty-cart
+   *  redirect (ACTIVATE REAL CHECKOUT brief, Section 11) needs this so it doesn't mistake "hasn't
+   *  loaded yet" for "genuinely empty" and bounce a customer with a real cart back to /cart. */
+  hydrated: boolean;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -120,8 +133,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const totalCount = useMemo(() => items.reduce((sum, i) => sum + i.quantity, 0), [items]);
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, updateQuantity, clearCart, totalCount }),
-    [items, addItem, removeItem, updateQuantity, clearCart, totalCount],
+    () => ({ items, addItem, removeItem, updateQuantity, clearCart, totalCount, hydrated }),
+    [items, addItem, removeItem, updateQuantity, clearCart, totalCount, hydrated],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

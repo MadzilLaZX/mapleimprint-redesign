@@ -258,6 +258,42 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-21 activated real checkout, retired quote as the default purchase path:** The cart had
+exactly one path — "Get a quote for these items," unconditionally, regardless of whether an item
+had real calculable pricing. A brief describing this as needing to be "connected" to an existing
+checkout foundation turned out to have a false premise on audit: no `/checkout` route, no
+`/api/checkout/*`, no checkout components, and no Order database existed anywhere in this
+repository or its git history — confirmed via `grep`, `find`, and `git log --all`. Built the real
+thing instead of connecting something that wasn't there. Core addition: a genuine CHECKOUT_READY/
+QUOTE_REQUIRED purchase-mode split (`src/lib/commerce/purchaseMode.ts`) — a client-side classifier
+drives instant cart UI, but nothing payable is ever trusted from the client: `/api/checkout/quote`
+(new) re-derives every line's price from scratch server-side (`getProduct()`/`blankUnitPrice()`
+for blanks, a fresh `DesignProject` re-fetch + `calculateCustomizePrice()` for Studio customs —
+closing a real gap where the original `pricingSnapshot` a customer's browser submitted at Studio-
+creation time was never actually verified server-side), and flags any line whose design/product
+can no longer be found rather than silently dropping it. New `(checkout)` route group (same
+sibling-layout pattern as `(studio)`) with its own minimal header — Contact → Delivery → Payment
+progression, a real sticky-desktop/collapsible-mobile Order Summary, and a Payment section that's
+a genuine structured placeholder (Apple Pay/Google Pay/Card slots visibly reserved but inert,
+"Square not connected") rather than fake card fields — a server-computed, non-`NEXT_PUBLIC_`
+`ENABLE_TEST_CHECKOUT`/`NODE_ENV` flag is the only thing that ever exposes a "Test Checkout" dev
+completion button, and it fabricates no order record (there's nowhere real to put one yet — see
+below). Cart got a genuine per-item composite design-preview thumbnail (`DesignPreviewThumbnail.tsx`
+— a DOM-layered mockup+artwork composite built from the same normalized-fraction data Studio
+already uses everywhere, not a Konva canvas export, since no pre-generated preview to "reuse"
+actually existed on `CartItem.previewImageUrl` despite the field being there — audited, it was
+dead code), mixed-cart handling (ready items check out, quote-only items get their own "Request
+Quote for Special Item" path, cart never silently forced into one mode), and a real fix for a
+found bug where the generic +/- quantity stepper silently corrupted any cart line configured with
+more than one size (it only ever touched the aggregate `quantity`, never the `sizeBreakdown` array
+that's supposed to sum to it) — stepper now only shows where it's provably safe. **Known gap,
+disclosed rather than hidden:** there is still no real Order/CheckoutSession database table (no
+schema-write access this session) — Contact/Delivery form state lives in `sessionStorage`
+(`src/lib/commerce/checkoutDraft.ts`), not a "protected order record," and Test Checkout doesn't
+persist anything. This is fine for now since nothing here accepts real payment yet (explicitly out
+of scope — Square is a deliberate follow-up), but a real migration is needed before this can
+process a genuine order.
+
 **2026-09-18 QR asset library + move/copy between print locations + platform style presets:**
 QR codes were previously one-shot: generated straight onto whichever print area was active, with
 no way to reuse the same code elsewhere and no record of it once you moved on. Split the model into
