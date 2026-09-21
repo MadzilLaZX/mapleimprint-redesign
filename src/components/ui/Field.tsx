@@ -35,6 +35,19 @@ export function TextInput({
   return <input id={id} className={cn(inputClasses, className)} {...props} />;
 }
 
+export function SelectInput({
+  id,
+  className,
+  children,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { id: string }) {
+  return (
+    <select id={id} className={cn(inputClasses, className)} {...props}>
+      {children}
+    </select>
+  );
+}
+
 export function TextArea({
   id,
   className,

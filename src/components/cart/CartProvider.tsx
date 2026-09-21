@@ -21,12 +21,22 @@ export type CartItem = {
   priceTiers?: CartItemPriceTier[];
   colourName?: string;
   sizeBreakdown?: { size: string; qty: number }[];
+  /** Set only for customizationType "BLANK" — lets the checkout quote/pay endpoints re-derive
+   *  this line's blank-garment price server-side from the real catalogue (src/lib/products.ts)
+   *  instead of trusting whatever `startingPrice` this browser sends. */
+  productSlug?: string;
+  subcategorySlug?: string;
   /** How this line was configured. Absent/undefined on older cart items and on non-apparel
    *  quick-add items — treat as equivalent to a plain quote-required line. */
   customizationType?: "BLANK" | "CUSTOM" | "MAPLE_DESIGNER";
   /** Set only for customizationType "CUSTOM" — the Studio project this line was built from. */
   designProjectId?: string;
   designRevision?: number;
+  /** The `DesignProject.frozenRevision` this cart line was added at — set by the freeze endpoint
+   *  (POST /api/studio/[id]/freeze), called right before addItem in handleApproveAndAddToCart.
+   *  Order creation uses this (not the live, possibly-newer `revision`) to confirm the frozen
+   *  snapshot it's about to price/produce is the exact one the customer approved. */
+  designFrozenRevision?: number;
   /** Set only for "MAPLE_DESIGNER" — the customer's mystery-design brief (see SurpriseMePanel).
    *  Maple always sends a digital proof for approval before producing a designer-created piece —
    *  this is never blind/unapproved production. */
