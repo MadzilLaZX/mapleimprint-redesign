@@ -274,10 +274,14 @@ export function Inspector({
             <span>Shirts × {priceBreakdown.quantity}</span>
             <span>${priceBreakdown.blankSubtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-ink-900/70">
-            <span>Design/customization</span>
-            <span>${priceBreakdown.designFee.toFixed(2)}</span>
-          </div>
+          {/* See ReviewPanel.tsx's identical guard for why this only shows for a pre-fix frozen
+              snapshot that genuinely carries a nonzero designFee. */}
+          {priceBreakdown.designFee > 0 && (
+            <div className="flex justify-between text-ink-900/70">
+              <span>Design/customization</span>
+              <span>${priceBreakdown.designFee.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-ink-900/70">
             <span>
               Printing ({priceBreakdown.locations} {priceBreakdown.locations === 1 ? "location" : "locations"})

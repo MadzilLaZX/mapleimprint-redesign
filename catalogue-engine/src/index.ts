@@ -65,6 +65,7 @@ export { recordMatchResult, approveMatch, rejectMatch } from './sync/dedup/revie
 
 export {
   calculatePrice,
+  roundUpTo99,
   type ProductType,
   type MarkupType,
   type MarkupAppliesTo,

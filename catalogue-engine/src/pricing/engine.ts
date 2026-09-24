@@ -6,6 +6,22 @@
 // print rules for a product type, or an unconfigured markup all resolve to `quote_required`
 // rather than a fabricated number. See architecture doc §"Current Pricing Disclaimer" —
 // the system must never claim a price is final when required inputs are missing.
+//
+// --- 2026-09-24 CORRECTION: "40%" is a MARGIN target, not a MARKUP multiplier ---
+// `type: 'percentage'` previously computed retail = cost * (1 + value) — a MARKUP. A 0.4 rule
+// turned a $20 cost into $28, which is only a 28.6% gross margin ((28-20)/28), not the 40% margin
+// the client's pricing brief explicitly specifies with a worked example
+// (requiredRetail = cost / (1 - 0.40) = cost / 0.60). The only prior "evidence" this file had for
+// markup was its OWN earlier comment paraphrasing a previous, less precise brief as "wholesale x
+// markup" — not a preserved client quote — so per the new brief's own instruction ("unless there
+// is evidence the client meant markup, implement the literal instruction: 40% gross margin"),
+// this is corrected here to true gross margin. `MarkupRuleInput`/the DB's `MarkupRule` model keep
+// their existing names (renaming a live column needs a real migration this session has no access
+// to run) — but `type: 'percentage'` now means "target gross margin fraction" everywhere it's
+// read. The already-seeded value (0.4) needs NO data change: 0.4 meant "40%" before and still
+// means "40%" now, only the formula applied to it changed. Phase 3's ".99 rounding" rule is
+// applied here too (roundUpTo99), scoped to the public BLANK retail component only — printing/
+// decoration costs are never touched by either the margin or the .99 rule.
 
 import {
   APPAREL_PRINT_TIERS,
@@ -21,7 +37,11 @@ export type MarkupAppliesTo = 'blank' | 'blank_plus_printing' | 'subtotal';
 
 export interface MarkupRuleInput {
   type: MarkupType;
-  value: number; // percentage as 0-1 (e.g. 0.4 = 40%), or a flat dollar amount if type === 'fixed'
+  /** For type 'percentage': the TARGET GROSS MARGIN as a 0-1 fraction (e.g. 0.4 = 40% margin —
+   *  requiredRetail = cost / (1 - value), NOT cost * (1 + value); see this file's 2026-09-24
+   *  correction note above). For type 'fixed': a flat dollar amount added on top of `appliesTo`'s
+   *  base. */
+  value: number;
   appliesTo: MarkupAppliesTo;
   version: string;
 }
@@ -62,7 +82,16 @@ export interface PriceBreakdown {
   reasons: string[];
   quantityTierLabel: string | null;
   printingCostPerUnit: number | null;
+  /** Raw wholesale cost — INTERNAL ONLY, never expose this to a customer-facing surface. */
   blankCostPerUnit: number | null;
+  /** The public-facing blank merchandise retail price: cost run through the margin target and
+   *  Section 3's roundUpTo99() — only populated when the matched rule's `appliesTo` is 'blank'
+   *  (the only mode any real caller uses today; see applyMarkup's doc comment for the other two
+   *  modes' current limitation). Null for a 'fixed'-type rule with a non-'blank' appliesTo too. */
+  blankRetail: number | null;
+  /** Despite the name (kept to avoid a wider breaking rename across snapshot.ts/index.ts for a
+   *  field whose ADDITIVE ROLE in finalUnitPrice is unchanged), this is now a MARGIN amount for
+   *  percentage rules — see this file's 2026-09-24 correction note. */
   markupAmountPerUnit: number | null;
   surchargeTotalPerUnit: number;
   finalUnitPrice: number | null;
@@ -73,6 +102,20 @@ export interface PriceBreakdown {
 
 function round2(n: number): number {
   return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+/** Section 3's ".99 RETAIL PRICING RULE": raises `price` to the next price ending in .99 that
+ *  never falls below it — i.e. if `price` is already <= that dollar's own .99, use that dollar's
+ *  .99; otherwise move up to the NEXT dollar's .99. Integer-cents arithmetic throughout (no
+ *  floating-point money math) so e.g. 38.00 reliably lands on 38.99, never drifts to 37.99 or
+ *  38.98/39.00 from a stray floating-point rounding error. Examples: 37.73 -> 37.99, 37.99 ->
+ *  37.99, 38.00 -> 38.99 (NOT 37.99 — that would violate the margin requirement). */
+export function roundUpTo99(price: number): number {
+  const cents = Math.round(price * 100);
+  const dollars = Math.floor(cents / 100);
+  const sameDollar99Cents = dollars * 100 + 99;
+  const resultCents = cents <= sameDollar99Cents ? sameDollar99Cents : sameDollar99Cents + 100;
+  return resultCents / 100;
 }
 
 function tierLabel(min: number, max: number | null): string {
@@ -139,21 +182,36 @@ function applyMarkup(
   printingCost: number,
   rule: MarkupRuleInput | undefined,
   reasons: string[],
-): number | null {
+): { adjustmentAmountPerUnit: number; blankRetail: number | null } | null {
   if (!rule) {
-    reasons.push('no markup rule configured — cannot determine a final customer price');
+    reasons.push('no pricing rule configured — cannot determine a final customer price');
     return null;
   }
 
+  if (rule.type === 'fixed') {
+    // Flat-dollar override — unaffected by the margin/markup correction (it was never a
+    // percentage). Not additionally .99-rounded: a fixed rule is already a deliberately chosen
+    // exact number, and Section 3's .99 rule only governs the margin-DERIVED blank retail price.
+    const blankRetail = rule.appliesTo === 'blank' ? round2(blankCost + rule.value) : null;
+    return { adjustmentAmountPerUnit: rule.value, blankRetail };
+  }
+
+  // type === 'percentage': target GROSS MARGIN (see this file's 2026-09-24 correction note).
+  if (rule.value < 0 || rule.value >= 1) {
+    reasons.push(`margin target ${rule.value} must be between 0 and 1 (exclusive) — a value >= 1 is impossible to satisfy`);
+    return null;
+  }
   const base =
     rule.appliesTo === 'blank'
       ? blankCost
-      : rule.appliesTo === 'blank_plus_printing'
-        ? blankCost + printingCost
-        : blankCost + printingCost; // 'subtotal' resolved after surcharges by the caller
+      : blankCost + printingCost; // 'blank_plus_printing' and 'subtotal' — no real caller uses these today; see PriceBreakdown.blankRetail's doc comment
+  const rawRetail = base / (1 - rule.value);
 
-  if (rule.type === 'percentage') return base * rule.value;
-  return rule.value; // fixed
+  if (rule.appliesTo === 'blank') {
+    const blankRetail = roundUpTo99(rawRetail);
+    return { adjustmentAmountPerUnit: round2(blankRetail - blankCost), blankRetail };
+  }
+  return { adjustmentAmountPerUnit: round2(rawRetail - base), blankRetail: null };
 }
 
 /**
@@ -186,8 +244,13 @@ export function calculatePrice(input: PriceCalculationInput): PriceBreakdown {
   );
 
   let markupAmountPerUnit: number | null = null;
+  let blankRetail: number | null = null;
   if (blankCostPerUnit !== null && printingCostPerUnit !== null) {
-    markupAmountPerUnit = applyMarkup(blankCostPerUnit, printingCostPerUnit, input.markupRule, reasons);
+    const adjustment = applyMarkup(blankCostPerUnit, printingCostPerUnit, input.markupRule, reasons);
+    if (adjustment) {
+      markupAmountPerUnit = adjustment.adjustmentAmountPerUnit;
+      blankRetail = adjustment.blankRetail;
+    }
   }
 
   const canPrice =
@@ -203,6 +266,7 @@ export function calculatePrice(input: PriceCalculationInput): PriceBreakdown {
       quantityTierLabel,
       printingCostPerUnit,
       blankCostPerUnit,
+      blankRetail,
       markupAmountPerUnit,
       surchargeTotalPerUnit,
       finalUnitPrice: null,
@@ -212,6 +276,10 @@ export function calculatePrice(input: PriceCalculationInput): PriceBreakdown {
     };
   }
 
+  // blankCost + adjustmentAmountPerUnit already equals blankRetail (when appliesTo === 'blank') —
+  // this additive assembly is unchanged by the margin correction, since applyMarkup() returns
+  // exactly the amount that makes it so. Printing/surcharges are added on top, never marked up or
+  // .99-rounded themselves (Section "IMPORTANT": "Printing-table prices stay EXACTLY as provided").
   const finalUnitPrice = round2(
     blankCostPerUnit! + printingCostPerUnit! + markupAmountPerUnit! + surchargeTotalPerUnit,
   );
@@ -223,6 +291,7 @@ export function calculatePrice(input: PriceCalculationInput): PriceBreakdown {
     quantityTierLabel,
     printingCostPerUnit,
     blankCostPerUnit,
+    blankRetail,
     markupAmountPerUnit,
     surchargeTotalPerUnit,
     finalUnitPrice,

@@ -137,10 +137,17 @@ export function ReviewPanel({
                     <span>Shirts × {priceBreakdown.quantity}</span>
                     <span>${priceBreakdown.blankSubtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-ink-900/80">
-                    <span>Design/customization</span>
-                    <span>${priceBreakdown.designFee.toFixed(2)}</span>
-                  </div>
+                  {/* Section "REMOVE DOUBLE-CHARGING OF DESIGN FEE": a standard self-service order
+                      never carries a design fee (see pricing.ts's header note) — this row only
+                      shows at all for an OLD frozen DesignProject snapshot created before that fix,
+                      which may still carry a real nonzero designFee. Never show a $0.00 line for a
+                      charge that genuinely doesn't apply. */}
+                  {priceBreakdown.designFee > 0 && (
+                    <div className="flex justify-between text-ink-900/80">
+                      <span>Design/customization</span>
+                      <span>${priceBreakdown.designFee.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-ink-900/80">
                     <span>
                       Printing ({priceBreakdown.locations} {priceBreakdown.locations === 1 ? "location" : "locations"})
