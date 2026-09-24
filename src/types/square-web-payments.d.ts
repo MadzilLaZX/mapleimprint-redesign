@@ -12,7 +12,22 @@ interface SquareVerificationDetails {
   amount: string;
   currencyCode: string;
   intent: "CHARGE" | "STORE";
-  billingContact?: { givenName?: string; familyName?: string; email?: string; phone?: string };
+  // Both required by Square's tokenize() despite being undocumented in the quickstart examples —
+  // omitting either throws "verificationDetails.X is required and must be a(n) boolean" at
+  // tokenize time (only surfaces with a real browser test, not a server-side nonce test).
+  customerInitiated: boolean;
+  sellerKeyedIn: boolean;
+  billingContact?: {
+    givenName?: string;
+    familyName?: string;
+    email?: string;
+    phone?: string;
+    addressLines?: string[];
+    city?: string;
+    state?: string;
+    countryCode?: string;
+    postalCode?: string;
+  };
 }
 
 interface SquareCard {
@@ -39,7 +54,11 @@ interface SquareGooglePayButton {
 }
 
 interface SquarePayments {
-  card(): Promise<SquareCard>;
+  // postalCode is an INITIAL VALUE for the card form's own built-in postal/zip sub-field — Square
+  // doesn't support hiding that field, only seeding it, so we prefill from the delivery address
+  // already collected instead of leaving it blank (which the customer then has to fill a second
+  // time, confusingly, in a field with no label of its own).
+  card(options?: { postalCode?: string }): Promise<SquareCard>;
   paymentRequest(options: {
     countryCode: string;
     currencyCode: string;

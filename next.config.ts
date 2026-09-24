@@ -12,7 +12,7 @@ const SQUARE_CSP = [
   `frame-src 'self' ${SQUARE_JS_HOST}`,
   `connect-src 'self' ${SQUARE_JS_HOST} ${SQUARE_PCI_HOST}`,
   "style-src 'self' 'unsafe-inline'",
-  "font-src https://square-fonts-production-f.squarecdn.com https://d1g145x70srn7h.cloudfront.net",
+  "font-src 'self' https://square-fonts-production-f.squarecdn.com https://d1g145x70srn7h.cloudfront.net",
 ].join("; ");
 
 const nextConfig: NextConfig = {

@@ -61,7 +61,7 @@ export function SquarePaymentSection({
     let cancelled = false;
 
     payments
-      .card()
+      .card({ postalCode: payload.shippingAddress.postalCode })
       .then((card) => card.attach("#square-card-container").then(() => card))
       .then((card) => {
         if (cancelled) {
@@ -79,6 +79,9 @@ export function SquarePaymentSection({
     return () => {
       cancelled = true;
     };
+    // postalCode is intentionally read once as a seed value, not tracked — re-running this on
+    // every keystroke would tear down and recreate the whole card element mid-typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payments]);
 
   useEffect(
@@ -121,11 +124,28 @@ export function SquarePaymentSection({
 
   async function handleCardPay() {
     if (!cardRef.current || submitting) return;
+    const [givenName, ...familyNameParts] = payload.contact.fullName.trim().split(/\s+/);
     const tokenResult = await cardRef.current.tokenize({
       amount: (totalCents / 100).toFixed(2),
       currencyCode: "CAD",
       intent: "CHARGE",
-      billingContact: { givenName: payload.contact.fullName, email: payload.contact.email, phone: payload.contact.phone },
+      // Both required by Square's tokenize() (see the ambient type's comment) — this is a
+      // customer typing their own card into a checkout form, never merchant-keyed-in.
+      customerInitiated: true,
+      sellerKeyedIn: false,
+      billingContact: {
+        givenName,
+        familyName: familyNameParts.join(" ") || undefined,
+        email: payload.contact.email,
+        phone: payload.contact.phone,
+        addressLines: [payload.shippingAddress.addressLine1, payload.shippingAddress.addressLine2].filter(
+          (line): line is string => Boolean(line),
+        ),
+        city: payload.shippingAddress.city,
+        state: payload.shippingAddress.province,
+        countryCode: payload.shippingAddress.country,
+        postalCode: payload.shippingAddress.postalCode,
+      },
     });
     if (tokenResult.status !== "OK" || !tokenResult.token) {
       setError(tokenResult.errors?.[0]?.message ?? "Couldn't process your card. Check the details and try again.");
