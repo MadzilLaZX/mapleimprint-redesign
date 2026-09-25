@@ -47,10 +47,13 @@ export default async function ProductDetailPage({
     <>
       <PageHeader eyebrow={`${p.brandName} · ${p.subcategorySlug.replace(/-/g, " ")}`} title={p.name} />
 
+      {/* Not wrapped in Reveal — this is the primary above-the-fold content, not a scroll-in
+          marketing section. Reveal's viewport threshold (30% of the element visible) assumed
+          short content; a real product configurator (especially banners/cards/flyers with many
+          real options) can be taller than the viewport, which left it stuck at opacity:0 until
+          the customer scrolled. */}
       <Section tone="canvas">
-        <Reveal>
-          <ProductDetail product={p} categoryName={categoryName} />
-        </Reveal>
+        <ProductDetail product={p} categoryName={categoryName} />
       </Section>
 
       {p.priceTiers && (

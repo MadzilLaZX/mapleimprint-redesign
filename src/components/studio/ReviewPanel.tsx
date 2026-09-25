@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import { EASE_PREMIUM } from "@/lib/motion";
-import { backgroundUrlFor } from "@/lib/studio/printAreas";
+import { backgroundUrlFor, printAreaOverrideFor } from "@/lib/studio/printAreas";
 import { groupLocationsByView } from "@/lib/studio/garmentViews";
 import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
@@ -98,7 +98,12 @@ export function ReviewPanel({
                     <span className={groupHasArt ? "text-crimson" : "text-muted/50"}>{groupHasArt ? "✓" : "—"}</span>
                   </p>
                   <CanvasStage
-                    layers={group.locations.map((loc) => ({ location: loc, objects: sides[loc] ?? [], active: false }))}
+                    layers={group.locations.map((loc) => ({
+                      location: loc,
+                      objects: sides[loc] ?? [],
+                      active: false,
+                      printAreaOverrideIn: printAreaOverrideFor(project.sides, loc),
+                    }))}
                     mockupUrl={mockupFor(primary)}
                     selectedId={null}
                     onSelect={() => {}}
@@ -134,7 +139,7 @@ export function ReviewPanel({
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Price breakdown</p>
                 <div className="mt-3 space-y-1.5 text-sm">
                   <div className="flex justify-between text-ink-900/80">
-                    <span>Shirts × {priceBreakdown.quantity}</span>
+                    <span>Items × {priceBreakdown.quantity}</span>
                     <span>${priceBreakdown.blankSubtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-ink-900/80">

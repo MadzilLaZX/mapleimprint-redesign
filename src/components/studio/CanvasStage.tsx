@@ -5,7 +5,7 @@ import { Stage, Layer, Image as KonvaImage, Rect, Circle, Ellipse, Line, Arrow, 
 import useImage from "use-image";
 import type Konva from "konva";
 import { cn } from "@/lib/cn";
-import { CANVAS_NATURAL_WIDTH, CANVAS_NATURAL_HEIGHT, PLACEMENT_GEOMETRY } from "@/lib/studio/printAreas";
+import { CANVAS_NATURAL_WIDTH, CANVAS_NATURAL_HEIGHT, PLACEMENT_GEOMETRY, bannerPlacementGeometry } from "@/lib/studio/printAreas";
 import { layoutCurvedText } from "@/lib/studio/curvedText";
 import { localPointToStage } from "@/lib/studio/localCoordinates";
 import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
@@ -37,6 +37,9 @@ export interface CanvasLayerSpec {
   location: DesignSideType;
   objects: DesignObjectRecord[];
   active: boolean;
+  /** Only set (and only meaningful) for "banner-face" — its real dimensions vary per order, so the
+   *  fixed PLACEMENT_GEOMETRY table can't represent it; see bannerPlacementGeometry(). */
+  printAreaOverrideIn?: { widthIn: number; heightIn: number };
 }
 
 function useHtmlImage(url: string | null) {
@@ -888,8 +891,8 @@ function normalizeDeg(deg: number): number {
   return Math.round(((deg % 360) + 540) % 360 - 180);
 }
 
-function boxFor(location: DesignSideType) {
-  const geometry = PLACEMENT_GEOMETRY[location];
+function boxFor(location: DesignSideType, override?: { widthIn: number; heightIn: number }) {
+  const geometry = override ? bannerPlacementGeometry(override.widthIn, override.heightIn) : PLACEMENT_GEOMETRY[location];
   return {
     box: { x: 0, y: 0, width: geometry.widthFrac * NATURAL_WIDTH, height: geometry.heightFrac * NATURAL_HEIGHT },
     groupCenterX: (geometry.xFrac + geometry.widthFrac / 2) * NATURAL_WIDTH,
@@ -956,7 +959,7 @@ export function CanvasStage({
   const [rotateReadout, setRotateReadout] = useState<{ x: number; y: number; deg: number } | null>(null);
 
   const activeLayer = layers.find((l) => l.active) ?? null;
-  const activeGeometry = activeLayer ? boxFor(activeLayer.location) : null;
+  const activeGeometry = activeLayer ? boxFor(activeLayer.location, activeLayer.printAreaOverrideIn) : null;
 
   useEffect(() => {
     const transformer = transformerRef.current;
@@ -1024,7 +1027,7 @@ export function CanvasStage({
   const selectedIsQr = selectedObj?.type === "qr";
 
   const preparedLayers = layers.map((layer) => {
-    const { box, groupCenterX, groupCenterY, rotationDeg } = boxFor(layer.location);
+    const { box, groupCenterX, groupCenterY, rotationDeg } = boxFor(layer.location, layer.printAreaOverrideIn);
     const interactive = !readOnly && layer.active;
     const renderObjects = layer.objects
       .filter((o) => !o.hidden)

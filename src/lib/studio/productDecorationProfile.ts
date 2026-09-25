@@ -19,7 +19,7 @@ import type { DesignSideType } from "./types";
 
 export type SupportStatus = "STANDARD" | "REVIEW_REQUIRED" | "UNAVAILABLE";
 
-export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "flyer" | "poster" | "mug";
+export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "flyer" | "poster" | "mug" | "banner";
 
 // Section 20: how a location's editing view is constructed, independent of its SupportStatus.
 // Status answers "can the customer design this, and is it confirmed for production"; viewType
@@ -45,7 +45,8 @@ export type LocationViewType =
   | "FLYER_FRONT_FLAT"
   | "FLYER_BACK_FLAT"
   | "POSTER_FLAT"
-  | "MUG_WRAP_FLAT";
+  | "MUG_WRAP_FLAT"
+  | "BANNER_FLAT";
 
 export interface DecorationLocation {
   id: DesignSideType;
@@ -85,6 +86,7 @@ export function familyFor(categorySlug: string, subcategorySlug: string): Produc
   if (subcategorySlug === "brochures-flyers" || subcategorySlug === "postcards") return "flyer";
   if (subcategorySlug === "posters") return "poster";
   if (subcategorySlug === "mugs") return "mug";
+  if (subcategorySlug === "vinyl-banners") return "banner";
   if (categorySlug === "hats-accessories") return "accessory"; // aprons, bags, general accessories
   return "tee";
 }
@@ -158,13 +160,18 @@ const ACCESSORY_LOCATIONS: DecorationLocation[] = [
 // bleed/safe area at the PRINT_AREAS level (printAreas.ts), never reusing apparel print-area
 // assumptions (Section "BUSINESS CARD TEMPLATE CATEGORIES": "Do not reuse T-shirt print-area
 // assumptions").
+// card-front/flyer-front flipped to STANDARD now that a real, orderable house product exists in
+// these families (src/lib/houseProducts/catalogue.ts) — the original REVIEW_REQUIRED reason ("no
+// live product to test end-to-end yet") is exactly what that feature resolves. -back stays
+// REVIEW_REQUIRED, reachable via the "More locations" flow (/api/studio/[id]/locations) when the
+// customer chooses double-sided — Maple confirms the back side before production either way.
 const BUSINESS_CARD_LOCATIONS: DecorationLocation[] = [
-  { id: "card-front", label: "Front", group: "core", status: "REVIEW_REQUIRED", viewType: "CARD_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Standard 3.5 × 2 in card. Bleed/safe/trim area confirmed by Maple before production." },
+  { id: "card-front", label: "Front", group: "core", status: "STANDARD", viewType: "CARD_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: false, productionNotes: "Standard 3.5 × 2 in card." },
   { id: "card-back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "CARD_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
 const FLYER_LOCATIONS: DecorationLocation[] = [
-  { id: "flyer-front", label: "Front", group: "core", status: "REVIEW_REQUIRED", viewType: "FLYER_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Standard 8.5 × 11 in flyer. Bleed/safe area confirmed by Maple before production." },
+  { id: "flyer-front", label: "Front", group: "core", status: "STANDARD", viewType: "FLYER_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: false, productionNotes: "Standard 8.5 × 11 in flyer." },
   { id: "flyer-back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "FLYER_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
@@ -174,6 +181,14 @@ const POSTER_LOCATIONS: DecorationLocation[] = [
 
 const MUG_LOCATIONS: DecorationLocation[] = [
   { id: "mug-wrap", label: "Wrap", group: "core", status: "REVIEW_REQUIRED", viewType: "MUG_WRAP_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Full sublimation wrap. Exact print-safe curvature confirmed by Maple before production." },
+];
+
+// One location only — a banner's real dimensions vary per order (28 offered sizes), so unlike
+// every other flat print piece there's no fixed PRINT_AREAS entry to trust; REVIEW_REQUIRED here
+// means what it always means (Maple confirms before production), which for a physically produced,
+// finished sign is honest regardless of how confident the on-screen proof looks.
+const BANNER_LOCATIONS: DecorationLocation[] = [
+  { id: "banner-face", label: "Banner", group: "core", status: "REVIEW_REQUIRED", viewType: "BANNER_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Size and material confirmed against the customer's order before production." },
 ];
 
 const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
@@ -186,6 +201,7 @@ const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   flyer: FLYER_LOCATIONS,
   poster: POSTER_LOCATIONS,
   mug: MUG_LOCATIONS,
+  banner: BANNER_LOCATIONS,
 };
 
 /** hasBackPhoto lets a specific product drop "back" from STANDARD even where the family default

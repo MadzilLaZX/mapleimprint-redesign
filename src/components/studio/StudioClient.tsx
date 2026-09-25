@@ -25,7 +25,7 @@ import { GraphicsPanel } from "@/components/studio/panels/GraphicsPanel";
 import { DesignsPanel } from "@/components/studio/panels/DesignsPanel";
 import { MyStuffPanel } from "@/components/studio/panels/MyStuffPanel";
 import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
-import { backgroundUrlFor, printAreaPixelBox, printAreasOverlap } from "@/lib/studio/printAreas";
+import { backgroundUrlFor, printAreaPixelBox, printAreaOverrideFor, printAreasOverlap } from "@/lib/studio/printAreas";
 import { viewGroupFor } from "@/lib/studio/garmentViews";
 import { resolveTemplateAssets, scaleTemplateObjects, type DesignTemplate } from "@/lib/studio/templates";
 import {
@@ -117,8 +117,13 @@ function emptyObject(type: "text" | "image" | "shape" | "qr", overrides: Partial
  *  assuming the box is square), then centers it — the Canva-like "add object, it appears in a
  *  sensible position" feel instead of a fixed-fraction box that ignores both the asset's shape and
  *  the print area's. */
-function autoFitNormalized(location: DesignSideType, naturalAspect: number, coverage = 0.68) {
-  const box = printAreaPixelBox(location);
+function autoFitNormalized(
+  location: DesignSideType,
+  naturalAspect: number,
+  coverage = 0.68,
+  override?: { widthIn: number; heightIn: number },
+) {
+  const box = printAreaPixelBox(location, override);
   const boxAspect = box.width / box.height;
   let wFrac: number;
   let hFrac: number;
@@ -148,9 +153,15 @@ function autoFitNormalized(location: DesignSideType, naturalAspect: number, cove
  *  and — since width/height are derived from the SAME clamped pixel size divided by each axis of
  *  the destination box — always comes out exactly square in real terms, never distorted.
  */
-function refitQrForLocation(obj: DesignObjectRecord, fromSide: DesignSideType, toSide: DesignSideType) {
-  const fromBox = printAreaPixelBox(fromSide);
-  const toBox = printAreaPixelBox(toSide);
+function refitQrForLocation(
+  obj: DesignObjectRecord,
+  fromSide: DesignSideType,
+  toSide: DesignSideType,
+  fromOverride?: { widthIn: number; heightIn: number },
+  toOverride?: { widthIn: number; heightIn: number },
+) {
+  const fromBox = printAreaPixelBox(fromSide, fromOverride);
+  const toBox = printAreaPixelBox(toSide, toOverride);
   const currentPixelSize = Math.max(obj.normalizedWidth * fromBox.width, obj.normalizedHeight * fromBox.height);
   const minToAxis = Math.min(toBox.width, toBox.height);
   const sizePx = Math.min(Math.max(currentPixelSize, minToAxis * 0.3), minToAxis * 0.9);
@@ -455,6 +466,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
     location: loc,
     objects: sides[loc] ?? [],
     active: loc === activeSide,
+    printAreaOverrideIn: printAreaOverrideFor(project?.sides ?? [], loc),
   }));
   // Gentle, non-blocking collision hint (Section 8's "overlapping locations") — only surfaced when
   // two open, ARTWORKED locations in the same view actually occupy overlapping print-area boxes;
@@ -541,7 +553,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
     // scaleTemplateObjects's own doc comment for why this is the correct place to do it once,
     // rather than re-tuning every template's numbers per print area.
     const referenceBox = printAreaPixelBox("front");
-    const activeBox = printAreaPixelBox(activeSide);
+    const activeBox = printAreaPixelBox(activeSide, printAreaOverrideFor(project?.sides ?? [], activeSide));
     const scale = Math.min(activeBox.width / referenceBox.width, activeBox.height / referenceBox.height);
     const scaledSeeds = scaleTemplateObjects(template.objects, scale);
     const resolved = await resolveTemplateAssets(scaledSeeds);
@@ -569,7 +581,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
         img.onerror = resolve;
       });
       const naturalAspect = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
-      const fit = autoFitNormalized(activeSide, naturalAspect);
+      const fit = autoFitNormalized(activeSide, naturalAspect, 0.68, printAreaOverrideFor(project?.sides ?? [], activeSide));
 
       pushHistory(sides);
       const obj = emptyObject("image", {
@@ -675,7 +687,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
       // Square (naturalAspect 1) sized against the real box aspect ratio — Section "QR ASPECT
       // RATIO" ("resize maintains 1:1") starts true from the moment it's placed, not just once
       // the customer first resizes it.
-      const fit = autoFitNormalized(activeSide, 1, 0.55);
+      const fit = autoFitNormalized(activeSide, 1, 0.55, printAreaOverrideFor(project?.sides ?? [], activeSide));
       const obj = emptyObject("qr", {
         name: asset.displayName,
         assetUrl: displayDataUrl,
@@ -716,7 +728,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
    *  QR Codes" cards and My Stuff's "Add to Design". */
   function placeQrAsset(asset: QrAsset) {
     pushHistory(sides);
-    const fit = autoFitNormalized(activeSide, 1, 0.55);
+    const fit = autoFitNormalized(activeSide, 1, 0.55, printAreaOverrideFor(project?.sides ?? [], activeSide));
     const obj = emptyObject("qr", {
       name: asset.displayName,
       assetUrl: asset.displayDataUrl,
@@ -1002,7 +1014,13 @@ export function StudioClient({ projectId }: { projectId: string }) {
     const ok = await ensureLocationOpen(toSide);
     if (!ok) return;
     const { obj, side: fromSide } = found;
-    const fit = refitQrForLocation(obj, fromSide, toSide);
+    const fit = refitQrForLocation(
+      obj,
+      fromSide,
+      toSide,
+      printAreaOverrideFor(project?.sides ?? [], fromSide),
+      printAreaOverrideFor(project?.sides ?? [], toSide),
+    );
     pushHistory(sides);
     applySides({
       ...sides,
@@ -1023,7 +1041,13 @@ export function StudioClient({ projectId }: { projectId: string }) {
     const ok = await ensureLocationOpen(toSide);
     if (!ok) return;
     const { obj, side: fromSide } = found;
-    const fit = refitQrForLocation(obj, fromSide, toSide);
+    const fit = refitQrForLocation(
+      obj,
+      fromSide,
+      toSide,
+      printAreaOverrideFor(project?.sides ?? [], fromSide),
+      printAreaOverrideFor(project?.sides ?? [], toSide),
+    );
     pushHistory(sides);
     const copy: DesignObjectRecord = { ...obj, ...fit, id: crypto.randomUUID() };
     applySides({ ...sides, [toSide]: [...(sides[toSide] ?? []), copy] });
@@ -1391,6 +1415,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
         colourName={project.colourName}
         profile={profile}
         onBack={() => setMode("edit")}
+        printAreaOverrides={project.sides}
       />
     );
   } else {
@@ -1634,6 +1659,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
               onQrMoveTo={(id, side) => void moveQrToLocation(id, side)}
               onQrCopyTo={(id, side) => void copyQrToLocation(id, side)}
               activeSide={activeSide}
+              printAreaOverrideIn={printAreaOverrideFor(project.sides, activeSide)}
               layerObjects={activeObjects}
               selectedId={selectedId}
               onSelectLayer={setSelectedId}

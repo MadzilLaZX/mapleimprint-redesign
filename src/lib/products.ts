@@ -5,6 +5,7 @@
 
 import rawProducts from "./generated/products.json";
 import { slugify } from "./slugify";
+import { HOUSE_PRODUCTS } from "./houseProducts/catalogue";
 
 export interface ProductImage {
   url: string;
@@ -37,9 +38,20 @@ export interface CatalogueProduct {
   priceTiers: ProductPriceTier[] | null;
   startingPrice: number | null;
   printRuleVersion: string;
+  /** Set only for Maple's own house-produced lines (banners/cards/flyers) — not sourced from
+   *  SanMar/S&S. `priceTiers`/`startingPrice` on these are display-only summaries for the shop
+   *  tile; the authoritative per-order price always comes from src/lib/houseProducts/pricing/,
+   *  since real pricing here is 2-D (size×material, stock×quantity), not the 1-D tier list this
+   *  field shape represents. Absent/undefined = today's ordinary supplier product, no behavior
+   *  change anywhere that doesn't explicitly check this field. */
+  houseProductKind?: "banner" | "business-card" | "flyer";
 }
 
-export const PRODUCTS: CatalogueProduct[] = rawProducts as CatalogueProduct[];
+// House-produced (Maple's own) products are merged in alongside the supplier-sourced catalogue —
+// every existing consumer (getProduct, getProductsBySubcategory, the product-detail page's
+// generateStaticParams) picks them up automatically with zero catalogue-engine/supplier-sync
+// changes, since CatalogueProduct's shape has no apparel-specific fields baked in.
+export const PRODUCTS: CatalogueProduct[] = [...(rawProducts as CatalogueProduct[]), ...HOUSE_PRODUCTS];
 
 export function getProductsBySubcategory(categorySlug: string, subcategorySlug: string): CatalogueProduct[] {
   return PRODUCTS.filter((p) => p.categorySlug === categorySlug && p.subcategorySlug === subcategorySlug);

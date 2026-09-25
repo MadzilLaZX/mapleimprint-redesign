@@ -11,11 +11,34 @@ import { standardLocationsFor } from "@/lib/studio/productDecorationProfile";
 import { heroImageFor } from "@/lib/productVariant";
 import { SurpriseMePanel } from "@/components/products/SurpriseMePanel";
 import { SizeGuidePanel } from "@/components/products/SizeGuidePanel";
+import { PaperProductConfigurator } from "@/components/products/PaperProductConfigurator";
+import { BannerConfigurator } from "@/components/products/BannerConfigurator";
 import type { CatalogueProduct } from "@/lib/products";
 
 const VISIBLE_COLOUR_COUNT = 8;
 
-export function ProductCustomizer({
+/** The one mount point ProductDetail.tsx renders — branches to a dedicated configurator for
+ *  Maple's own house-produced lines (banners/cards/flyers), which need entirely different state
+ *  (paper stock/sides, or size/material/add-ons — not garment colour/size) and can't share this
+ *  component's hooks. Kept as a branch here, not a houseProductKind check inside the apparel body
+ *  below, since conditionally skipping hooks based on a prop violates the rules of hooks. */
+export function ProductCustomizer(props: {
+  product: CatalogueProduct;
+  categoryName: string;
+  selectedColour: string;
+  onColourChange: (colour: string) => void;
+}) {
+  const { product } = props;
+  if (product.houseProductKind === "business-card" || product.houseProductKind === "flyer") {
+    return <PaperProductConfigurator product={product} kind={product.houseProductKind} />;
+  }
+  if (product.houseProductKind === "banner") {
+    return <BannerConfigurator product={product} />;
+  }
+  return <ApparelCustomizer {...props} />;
+}
+
+function ApparelCustomizer({
   product,
   categoryName,
   selectedColour,
@@ -128,7 +151,7 @@ export function ProductCustomizer({
             printRuleVersion: product.printRuleVersion,
           },
           mockupImages,
-          sides,
+          sides: sides.map((type) => ({ type })),
         }),
       });
 

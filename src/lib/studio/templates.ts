@@ -4036,6 +4036,10 @@ const RECOMMENDED_CATEGORY_ORDER: Record<ProductFamily, TemplateCategory[]> = {
   flyer: ["grand-opening", "sale", "real-estate", "restaurant", "nightlife", "church-community", "service-business", "qr-registration", "qr-ticket", "social-media"],
   poster: ["concert", "sale", "art", "announcement", "qr-cta"],
   mug: ["birthday", "family", "business", "minimal"],
+  // No seeded templates target a variable-aspect-ratio banner face yet — same "architecture ready,
+  // no live templates for this family yet" gap as the other flat-print families had before their
+  // own template sets were authored.
+  banner: ["grand-opening", "sale", "announcement", "qr-cta"],
 };
 
 /** Templates store a Maple asset id in `content` on image seeds (module-load time has no async

@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { ArrowLeft, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
-import { backgroundUrlFor } from "@/lib/studio/printAreas";
+import { backgroundUrlFor, printAreaOverrideFor } from "@/lib/studio/printAreas";
 import { groupLocationsByView } from "@/lib/studio/garmentViews";
 import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
-import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
+import type { DesignObjectRecord, DesignProjectRecord, DesignSideRecord, DesignSideType } from "@/lib/studio/types";
 
 const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then((m) => m.CanvasStage), {
   ssr: false,
@@ -31,6 +31,7 @@ export function PreviewMode({
   colourName,
   profile,
   onBack,
+  printAreaOverrides,
 }: {
   openSides: DesignSideType[];
   sides: Partial<Record<DesignSideType, DesignObjectRecord[]>>;
@@ -40,6 +41,9 @@ export function PreviewMode({
   colourName: string;
   profile: DecorationLocation[];
   onBack: () => void;
+  /** DesignProject's own `sides` rows — the only source of a banner-face's real per-order
+   *  dimensions, needed here so Preview renders the same aspect ratio Studio's editor does. */
+  printAreaOverrides: DesignSideRecord[];
 }) {
   const labelFor = (id: DesignSideType) => profile.find((l) => l.id === id)?.label ?? id;
   const viewGroups = groupLocationsByView(openSides, profile);
@@ -75,7 +79,12 @@ export function PreviewMode({
         <div className="min-h-0 w-full flex-1">
           {activeGroup && (
             <CanvasStage
-              layers={activeGroup.locations.map((loc) => ({ location: loc, objects: sides[loc] ?? [], active: false }))}
+              layers={activeGroup.locations.map((loc) => ({
+                location: loc,
+                objects: sides[loc] ?? [],
+                active: false,
+                printAreaOverrideIn: printAreaOverrideFor(printAreaOverrides, loc),
+              }))}
               mockupUrl={mockupUrl}
               selectedId={null}
               onSelect={() => {}}

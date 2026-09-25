@@ -51,6 +51,11 @@ export const PRINT_AREAS: Record<DesignSideType, { widthIn: number; heightIn: nu
   "flyer-back": { widthIn: 8.5, heightIn: 11, safeMarginIn: 0.25, confirmed: false },
   "poster-front": { widthIn: 18, heightIn: 24, safeMarginIn: 0.5, confirmed: false },
   "mug-wrap": { widthIn: 8, heightIn: 3.3, safeMarginIn: 0.25, confirmed: false },
+  // Placeholder only — a banner's real widthIn/heightIn always comes from its own DesignSide row
+  // (the customer's chosen size), passed explicitly as printAreaPixelBox's override param. This
+  // entry exists only so the Record stays total and the /api/studio route has a sane fallback if a
+  // caller somehow omits the override.
+  "banner-face": { widthIn: 24, heightIn: 36, safeMarginIn: 0.5, confirmed: false },
 };
 
 export interface PlacementGeometry {
@@ -115,7 +120,35 @@ export const PLACEMENT_GEOMETRY: Record<DesignSideType, PlacementGeometry> = {
   "flyer-back": { xFrac: 0.075, yFrac: 0.06, widthFrac: 0.85, heightFrac: 0.88, rotationDeg: 0 },
   "poster-front": { xFrac: 0.075, yFrac: 0.047, widthFrac: 0.85, heightFrac: 0.907, rotationDeg: 0 },
   "mug-wrap": { xFrac: 0.075, yFrac: 0.36, widthFrac: 0.85, heightFrac: 0.28, rotationDeg: 0 },
+  // Placeholder — never actually read for a real banner project (both printAreaPixelBox and
+  // CanvasStage's boxFor compute the real box from bannerPlacementGeometry() instead whenever an
+  // override is supplied, which it always is for "banner-face"). Kept only so this Record stays
+  // total.
+  "banner-face": { xFrac: 0.075, yFrac: 0.075, widthFrac: 0.85, heightFrac: 0.85, rotationDeg: 0 },
 };
+
+// A banner's real aspect ratio varies per order (2.5'x4' ~0.63 vs 8'x30' ~0.27 — over a 2x spread),
+// which a fixed per-DesignSideType PLACEMENT_GEOMETRY entry can't represent. Computed fresh from
+// the customer's actual chosen widthIn/heightIn instead: fit centered into ~85% of the canvas on
+// whichever axis constrains first. An 8'x30' banner renders as a noticeably thin strip at this
+// canvas size — workable but tighter to design on than a 2.5'x4' banner; no further fix attempted
+// for this pass.
+const BANNER_FIT_MAX_FRAC = 0.85;
+
+export function bannerPlacementGeometry(widthIn: number, heightIn: number): PlacementGeometry {
+  const aspect = widthIn / heightIn;
+  const canvasAspect = CANVAS_NATURAL_WIDTH / CANVAS_NATURAL_HEIGHT;
+  let widthFrac: number;
+  let heightFrac: number;
+  if (aspect > canvasAspect) {
+    widthFrac = BANNER_FIT_MAX_FRAC;
+    heightFrac = (widthFrac * CANVAS_NATURAL_WIDTH) / aspect / CANVAS_NATURAL_HEIGHT;
+  } else {
+    heightFrac = BANNER_FIT_MAX_FRAC;
+    widthFrac = (heightFrac * CANVAS_NATURAL_HEIGHT) * aspect / CANVAS_NATURAL_WIDTH;
+  }
+  return { xFrac: (1 - widthFrac) / 2, yFrac: (1 - heightFrac) / 2, widthFrac, heightFrac, rotationDeg: 0 };
+}
 
 /** @deprecated kept only as a type-compatible alias while any stale import lingers — use
  *  PLACEMENT_GEOMETRY, which carries rotationDeg. */
@@ -136,7 +169,8 @@ export type BackgroundKind =
   | "flyer-front-flat"
   | "flyer-back-flat"
   | "poster-flat"
-  | "mug-wrap-flat";
+  | "mug-wrap-flat"
+  | "banner-flat";
 
 /** What kind of background a location's viewType calls for — this is what let Section 20's
  *  viewType enum replace the old hardcoded "is this front or back" special-casing. A schematic
@@ -172,6 +206,8 @@ export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
       return "poster-flat";
     case "MUG_WRAP_FLAT":
       return "mug-wrap-flat";
+    case "BANNER_FLAT":
+      return "banner-flat";
     default:
       return "front-photo";
   }
@@ -181,9 +217,25 @@ export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
  *  Inspector's Position/Align controls and StudioClient's new-asset auto-fit sizing get a box's
  *  real aspect ratio from, so "fit inside 60-75% of the usable area" (Section 5) is measured
  *  against the box's actual shape rather than assuming it's square. */
-export function printAreaPixelBox(location: DesignSideType): { width: number; height: number } {
-  const g = PLACEMENT_GEOMETRY[location];
+export function printAreaPixelBox(
+  location: DesignSideType,
+  override?: { widthIn: number; heightIn: number },
+): { width: number; height: number } {
+  const g = override ? bannerPlacementGeometry(override.widthIn, override.heightIn) : PLACEMENT_GEOMETRY[location];
   return { width: g.widthFrac * CANVAS_NATURAL_WIDTH, height: g.heightFrac * CANVAS_NATURAL_HEIGHT };
+}
+
+/** Resolves a project's real per-side dimensions for the one DesignSideType that varies per order
+ *  — "banner-face" — or undefined for every other location (which should keep using the fixed
+ *  PRINT_AREAS/PLACEMENT_GEOMETRY constants). Shared by every printAreaPixelBox/CanvasStage caller
+ *  that has access to a DesignProjectRecord's `sides`, so the override logic lives in one place. */
+export function printAreaOverrideFor(
+  sides: { sideType: DesignSideType; printAreaWidth: number; printAreaHeight: number }[],
+  location: DesignSideType,
+): { widthIn: number; heightIn: number } | undefined {
+  if (location !== "banner-face") return undefined;
+  const side = sides.find((s) => s.sideType === location);
+  return side ? { widthIn: side.printAreaWidth, heightIn: side.printAreaHeight } : undefined;
 }
 
 /** Axis-aligned overlap test between two OPEN locations' print-area boxes, in the shared design
@@ -338,6 +390,8 @@ export function backgroundUrlFor(
       return printPieceSchematicSvg("Poster");
     case "mug-wrap-flat":
       return printPieceSchematicSvg("Mug Wrap");
+    case "banner-flat":
+      return printPieceSchematicSvg("Vinyl Banner");
   }
   const key: DesignSideType = kind === "back-photo" ? "back" : "front";
   return mockupImages[key] ?? (usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);

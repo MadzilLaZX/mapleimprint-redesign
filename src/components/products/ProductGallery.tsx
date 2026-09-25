@@ -14,12 +14,16 @@ export function ProductGallery({
   selectedColour: string;
 }) {
   const reduce = useReducedMotion();
-  const imagesForColour = product.images.filter((img) => img.colourName === selectedColour);
+  // House products (banners/cards/flyers) have no colour concept at all — colours: [], so
+  // defaultColourFor() returns "" — which is different from "this colour has no photo" and
+  // shouldn't trigger the "showing another colourway" disclosure below.
+  const hasColour = selectedColour !== "";
+  const imagesForColour = hasColour ? product.images.filter((img) => img.colourName === selectedColour) : product.images;
   // ~1.2% of colour/product pairs have no matching supplier photo — fall back to the product's
   // default images rather than showing nothing, but say so, rather than silently showing what
   // looks like (but isn't) the selected colour.
   const gallery = imagesForColour.length > 0 ? imagesForColour : product.images;
-  const usingFallback = imagesForColour.length === 0 && product.images.length > 0;
+  const usingFallback = hasColour && imagesForColour.length === 0 && product.images.length > 0;
 
   // Reset to the first image when the colour changes: keyed by selectedColour at the call site
   // (see ProductDetail.tsx) so this component remounts on colour change, which is what actually
@@ -61,7 +65,7 @@ export function ProductGallery({
             >
               <Image
                 src={current.url}
-                alt={`${product.name} in ${selectedColour}`}
+                alt={hasColour ? `${product.name} in ${selectedColour}` : product.name}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 priority

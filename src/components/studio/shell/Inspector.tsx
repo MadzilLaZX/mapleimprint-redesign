@@ -55,11 +55,19 @@ function useNaturalImageSize(url: string | null) {
   return url ? size : null;
 }
 
-function QualityFeedback({ obj, location }: { obj: DesignObjectRecord; location: DesignSideType }) {
+function QualityFeedback({
+  obj,
+  location,
+  printAreaOverrideIn,
+}: {
+  obj: DesignObjectRecord;
+  location: DesignSideType;
+  printAreaOverrideIn?: { widthIn: number; heightIn: number };
+}) {
   const natural = useNaturalImageSize(obj.assetUrl);
   if (!natural) return null;
-  const area = PRINT_AREAS[location];
-  const printedWidthIn = obj.normalizedWidth * area.widthIn;
+  const widthIn = printAreaOverrideIn?.widthIn ?? PRINT_AREAS[location].widthIn;
+  const printedWidthIn = obj.normalizedWidth * widthIn;
   const ppi = printedWidthIn > 0 ? natural.w / printedWidthIn : 0;
   const looksGood = ppi >= MIN_PRINT_PPI;
 
@@ -100,6 +108,7 @@ export function Inspector({
   onQrMoveTo,
   onQrCopyTo,
   activeSide,
+  printAreaOverrideIn,
   layerObjects,
   selectedId,
   onSelectLayer,
@@ -140,6 +149,7 @@ export function Inspector({
   onQrMoveTo: (id: string, side: DesignSideType) => void;
   onQrCopyTo: (id: string, side: DesignSideType) => void;
   activeSide: DesignSideType;
+  printAreaOverrideIn?: { widthIn: number; heightIn: number };
   layerObjects: DesignObjectRecord[];
   selectedId: string | null;
   onSelectLayer: (id: string) => void;
@@ -179,6 +189,7 @@ export function Inspector({
             <ImageInspector
               obj={selectedObject}
               activeSide={activeSide}
+              printAreaOverrideIn={printAreaOverrideIn}
               onPatch={(patch) => onPatch(selectedObject.id, patch)}
               onOpenCrop={onOpenCrop}
               bgRemoval={bgRemoval}
@@ -271,7 +282,7 @@ export function Inspector({
       {priceBreakdown && (
         <div className="space-y-1.5 border-t border-sand pt-4 text-xs">
           <div className="flex justify-between text-ink-900/70">
-            <span>Shirts × {priceBreakdown.quantity}</span>
+            <span>Items × {priceBreakdown.quantity}</span>
             <span>${priceBreakdown.blankSubtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-ink-900/70">
@@ -567,6 +578,7 @@ function ShapeInspector({ obj, onPatch }: { obj: DesignObjectRecord; onPatch: (p
 function ImageInspector({
   obj,
   activeSide,
+  printAreaOverrideIn,
   onPatch,
   onOpenCrop,
   bgRemoval,
@@ -576,6 +588,7 @@ function ImageInspector({
 }: {
   obj: DesignObjectRecord;
   activeSide: DesignSideType;
+  printAreaOverrideIn?: { widthIn: number; heightIn: number };
   onPatch: (patch: Partial<DesignObjectRecord>) => void;
   onOpenCrop: () => void;
   bgRemoval: BgRemovalState;
@@ -589,7 +602,7 @@ function ImageInspector({
 
   return (
     <div>
-      <QualityFeedback obj={obj} location={activeSide} />
+      <QualityFeedback obj={obj} location={activeSide} printAreaOverrideIn={printAreaOverrideIn} />
 
       <div className="mt-3 flex gap-2">
         <button type="button" onClick={onOpenCrop} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-sand py-2 text-xs font-semibold text-ink-900 hover:bg-canvas">

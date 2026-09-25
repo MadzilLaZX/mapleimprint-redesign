@@ -52,11 +52,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Couldn't start your design. Please try again." }, { status: 502 });
   }
 
-  const sideRows = input.sides.map((sideType) => ({
+  const sideRows = input.sides.map((side) => ({
     designProjectId: project.id,
-    sideType,
-    printAreaWidth: PRINT_AREAS[sideType].widthIn,
-    printAreaHeight: PRINT_AREAS[sideType].heightIn,
+    sideType: side.type,
+    printAreaWidth: side.widthIn ?? PRINT_AREAS[side.type].widthIn,
+    printAreaHeight: side.heightIn ?? PRINT_AREAS[side.type].heightIn,
   }));
 
   const { error: sidesError } = await supabase.from("DesignSide").insert(sideRows);

@@ -33,7 +33,13 @@ export type DesignSideType =
   | "flyer-front"
   | "flyer-back"
   | "poster-front"
-  | "mug-wrap";
+  | "mug-wrap"
+  // Vinyl banners — the one face of a house-produced banner. Unlike every other flat print piece
+  // above, its real-world size varies per order (28 offered sizes, 2.5'x4' up to 8'x30'), so its
+  // PRINT_AREAS/PLACEMENT_GEOMETRY entries (printAreas.ts) are placeholders only — the real
+  // dimensions live on this side's own DesignSide row and are threaded through explicitly wherever
+  // geometry is computed (see printAreaPixelBox's override param).
+  | "banner-face";
 
 export type DesignObjectType = "image" | "text" | "shape" | "qr";
 // Native, Maple-owned shape primitives (STUDIO V4 brief, "do not depend on external libraries for
@@ -223,5 +229,7 @@ export interface CreateDesignProjectInput {
   totalQuantity: number;
   pricingSnapshot: PricingSnapshot;
   mockupImages: Partial<Record<DesignSideType, string>>;
-  sides: DesignSideType[];
+  /** widthIn/heightIn are only meaningful for "banner-face" (its real size varies per order) —
+   *  every other DesignSideType ignores them and falls back to PRINT_AREAS[type] server-side. */
+  sides: { type: DesignSideType; widthIn?: number; heightIn?: number }[];
 }
