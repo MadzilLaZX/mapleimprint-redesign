@@ -190,6 +190,19 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
     if (!windFlapsEligible(material, BANNER_SIZES.find((s) => s.key === nextKey)?.heightFt ?? 0)) setWindFlaps(false);
   }
 
+  function handleSidesChange(value: string) {
+    const nextDoubleSided = value === "double";
+    setDoubleSided(nextDoubleSided);
+    // Double-sided drops these add-ons entirely (quoteBanner ignores them while doubleSided is
+    // set) — clear the state too, so a prior selection doesn't silently reappear if the customer
+    // switches back to single-sided later.
+    if (nextDoubleSided) {
+      setGrommets(false);
+      setReinforcedEdges(false);
+      setWindFlaps(false);
+    }
+  }
+
   function handleMaterialChange(value: BannerMaterial) {
     setMaterial(value);
     if (!doubleSidedAvailable(value)) setDoubleSided(false);
@@ -282,7 +295,7 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
           <OptionCardGrid
             options={printedSidesOptions}
             selected={doubleSided ? "double" : "single"}
-            onSelect={(v) => setDoubleSided(v === "double")}
+            onSelect={handleSidesChange}
           />
         </div>
       </div>

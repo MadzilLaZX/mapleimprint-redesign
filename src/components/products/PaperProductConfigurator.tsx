@@ -111,6 +111,14 @@ export function PaperProductConfigurator({
     return rows;
   }, [isCard, stock, sides, roundedCorners, quantityOptions]);
 
+  function handleSidesChange(value: string) {
+    const nextSides = value as "single" | "double";
+    setSides(nextSides);
+    // Rounded corners are single-sided only — clear a stale selection on switching to
+    // double-sided so the quote doesn't turn into a hard error with no visible cause.
+    if (nextSides === "double") setRoundedCorners(false);
+  }
+
   function handleStockChange(value: string) {
     setStock(value);
     const nextQuantities = isCard ? cardAvailableQuantities(value as CardStock) : [...FLYER_QUANTITIES];
@@ -184,7 +192,7 @@ export function PaperProductConfigurator({
       <div className="mt-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/70">Sides</p>
         <div className="mt-2">
-          <OptionCardGrid options={sidesOptions} selected={sides} onSelect={(v) => setSides(v as "single" | "double")} />
+          <OptionCardGrid options={sidesOptions} selected={sides} onSelect={handleSidesChange} />
         </div>
       </div>
 
