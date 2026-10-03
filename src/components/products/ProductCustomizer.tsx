@@ -179,8 +179,6 @@ function ApparelCustomizer({
         colourName: selectedColour,
         sizeBreakdown,
         customizationType: "BLANK",
-        productSlug: product.slug,
-        subcategorySlug: product.subcategorySlug,
       },
       totalQty,
     );
