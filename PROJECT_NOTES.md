@@ -258,6 +258,92 @@ plus several business decisions (Condé, full pricing rules, Gate A itself, imag
 See `catalogue-engine/README.md` for full details — it's kept current and is the fastest way to
 get back up to speed on that subsystem.
 
+**2026-09-24 pricing audit — fixed 40% markup-vs-margin bug and a real double-charged design fee:**
+Client-reported "prices are wrong," treated as a priority audit before any change. Two real,
+now-fixed bugs found and confirmed with evidence, not assumed:
+(1) `catalogue-engine/src/pricing/engine.ts`'s "40%" rule computed a MARKUP (`cost × 1.40`) —
+turning a $20 cost into $28, a 28.6% margin — not the 40% GROSS MARGIN (`cost / 0.60` = $33.34,
+then `.99`-rounded up to $33.99) the client's new brief specifies with a worked example. The only
+"evidence" for markup was this file's own prior comment paraphrasing an earlier, less precise
+brief as "wholesale × markup" — not a preserved client quote — so per the new brief's own rule
+("unless there is evidence the client meant markup, implement margin"), corrected to true margin.
+This needed NO database write: the seeded `MarkupRule` row's stored value (0.4) already meant
+"40%" and still does — only the FORMULA applied to it changed, so the fix is live the instant the
+corrected `engine.ts`/`export-products-for-frontend.mjs` are actually run. Also added the missing
+`.99`-rounding rule (`roundUpTo99()`, integer-cents-safe, new `blankRetail` field on
+`PriceBreakdown`) — this genuinely didn't exist before; live prices weren't even `.99`-ending.
+(2) `src/lib/studio/pricing.ts`'s `calculateCustomizePrice()` was unconditionally adding a flat
+$20 "design fee" ON TOP of the print-cost chart's own first-print fee (also $20 at qty 1-2) — a
+real, currently-live double-charge (a $15 shirt + $20 print should total $35, was actually
+charging $55) affecting Product page, Studio, Review, Cart, and `/api/checkout/quote` all at once
+(they share this one function — confirmed there's no separate formula to also fix). Removed for
+standard self-service Studio orders; `DESIGN_FEE`/the `designFee` field are kept only for a future
+Maple-assisted/"Surprise Me" design SERVICE fee, never auto-applied to a customer's own artwork.
+Verified live: an XS Gildan tee with one design added now correctly shows `$4.03 blank + $20.00
+printing = $24.03` (previously would have been `$44.03`), with the "Design/customization" line
+now correctly hidden rather than showing `$0.00` — screenshot-confirmed, not just code-reviewed.
+Also added the mug pricing formula (`MUG_CHART`/`calculateMugDecorationPrice` — a decoration-MODE
+choice, not additive print locations, per the client's table) to the frontend for the first time;
+no Studio UI wired to it yet since no live mug product exists to test against (S&S/SanMar don't
+carry drinkware). `catalogue-engine`'s own `MUG_PRINT_TIERS` already had this — frontend just
+didn't mirror it.
+**Confirmed correct, unchanged:** print-location counting (already counts artworked PRINT AREAS,
+never garment VIEWS, and never charges for an empty/just-opened location — `StudioClient.tsx`'s
+and `/api/checkout/quote`'s `locationsWithArt` both filter on `objects.length > 0`); same-design
+multi-size quantity aggregation (`DesignProject.totalQuantity` already sums the whole
+`sizeBreakdown`); S&S's wholesale-cost field (`customerPrice`, confirmed account-specific, CAD via
+the `.ca` API host) and currency-mismatch refusal (no FX policy exists, and none was invented).
+**Real, disclosed blocker:** this session has no database access at all (no Prisma `DATABASE_URL`,
+no Supabase MCP tool) — every formula above is fixed in code and unit-tested (165 passing tests in
+`catalogue-engine/test/pricing-engine.test.ts`, covering every quantity-tier boundary × 1-4
+locations for apparel/hat/mug, the exact `.99`-rounding cases from the brief, and a margin-floor
+assertion across sample costs), but the actual dollar amounts currently shown on Shop/Product pages
+(`src/lib/generated/products.json`) still reflect the OLD markup math, because recomputing them
+needs each variant's real wholesale cost — which isn't stored in that exported file (correctly —
+`supplierCost` is meant to stay internal-only) and can't be re-derived without a live DB read.
+Also unconfirmed and flagged, not assumed: SanMar's Bulk Data `price` field has no independently
+labeled semantics in the connector's own provenance notes (unlike S&S's `customerPrice`) — treat
+SanMar-sourced costs as unverified until confirmed against a real invoice. Next step: someone with
+real `DATABASE_URL`/Supabase credentials runs `node catalogue-engine/scripts/
+export-products-for-frontend.mjs`, which will pick up both fixes automatically with zero further
+code changes needed.
+
+**2026-09-21 activated real checkout, retired quote as the default purchase path:** The cart had
+exactly one path — "Get a quote for these items," unconditionally, regardless of whether an item
+had real calculable pricing. A brief describing this as needing to be "connected" to an existing
+checkout foundation turned out to have a false premise on audit: no `/checkout` route, no
+`/api/checkout/*`, no checkout components, and no Order database existed anywhere in this
+repository or its git history — confirmed via `grep`, `find`, and `git log --all`. Built the real
+thing instead of connecting something that wasn't there. Core addition: a genuine CHECKOUT_READY/
+QUOTE_REQUIRED purchase-mode split (`src/lib/commerce/purchaseMode.ts`) — a client-side classifier
+drives instant cart UI, but nothing payable is ever trusted from the client: `/api/checkout/quote`
+(new) re-derives every line's price from scratch server-side (`getProduct()`/`blankUnitPrice()`
+for blanks, a fresh `DesignProject` re-fetch + `calculateCustomizePrice()` for Studio customs —
+closing a real gap where the original `pricingSnapshot` a customer's browser submitted at Studio-
+creation time was never actually verified server-side), and flags any line whose design/product
+can no longer be found rather than silently dropping it. New `(checkout)` route group (same
+sibling-layout pattern as `(studio)`) with its own minimal header — Contact → Delivery → Payment
+progression, a real sticky-desktop/collapsible-mobile Order Summary, and a Payment section that's
+a genuine structured placeholder (Apple Pay/Google Pay/Card slots visibly reserved but inert,
+"Square not connected") rather than fake card fields — a server-computed, non-`NEXT_PUBLIC_`
+`ENABLE_TEST_CHECKOUT`/`NODE_ENV` flag is the only thing that ever exposes a "Test Checkout" dev
+completion button, and it fabricates no order record (there's nowhere real to put one yet — see
+below). Cart got a genuine per-item composite design-preview thumbnail (`DesignPreviewThumbnail.tsx`
+— a DOM-layered mockup+artwork composite built from the same normalized-fraction data Studio
+already uses everywhere, not a Konva canvas export, since no pre-generated preview to "reuse"
+actually existed on `CartItem.previewImageUrl` despite the field being there — audited, it was
+dead code), mixed-cart handling (ready items check out, quote-only items get their own "Request
+Quote for Special Item" path, cart never silently forced into one mode), and a real fix for a
+found bug where the generic +/- quantity stepper silently corrupted any cart line configured with
+more than one size (it only ever touched the aggregate `quantity`, never the `sizeBreakdown` array
+that's supposed to sum to it) — stepper now only shows where it's provably safe. **Known gap,
+disclosed rather than hidden:** there is still no real Order/CheckoutSession database table (no
+schema-write access this session) — Contact/Delivery form state lives in `sessionStorage`
+(`src/lib/commerce/checkoutDraft.ts`), not a "protected order record," and Test Checkout doesn't
+persist anything. This is fine for now since nothing here accepts real payment yet (explicitly out
+of scope — Square is a deliberate follow-up), but a real migration is needed before this can
+process a genuine order.
+
 **2026-09-18 QR asset library + move/copy between print locations + platform style presets:**
 QR codes were previously one-shot: generated straight onto whichever print area was active, with
 no way to reuse the same code elsewhere and no record of it once you moved on. Split the model into

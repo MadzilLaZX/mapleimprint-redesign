@@ -173,6 +173,8 @@ function ApparelCustomizer({
         image: heroImageFor(product, selectedColour)?.url ?? "",
         categorySlug: product.categorySlug,
         categoryName,
+        subcategorySlug: product.subcategorySlug,
+        productSlug: product.slug,
         startingPrice: blankPrice,
         colourName: selectedColour,
         sizeBreakdown,

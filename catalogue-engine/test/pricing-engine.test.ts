@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePrice, type MarkupRuleInput } from '../src/pricing/engine.js';
+import { calculatePrice, roundUpTo99, type MarkupRuleInput } from '../src/pricing/engine.js';
 
 const flatMarkup: MarkupRuleInput = {
   type: 'percentage',
@@ -134,7 +134,7 @@ describe('quote_required states — never fabricate a price', () => {
     expect(result.reasons.join(' ')).toMatch(/wholesale cost/);
   });
 
-  it('missing markup rule forces quote_required even with a known cost and quantity', () => {
+  it('missing pricing rule forces quote_required even with a known cost and quantity', () => {
     const result = calculatePrice({
       productType: 'apparel',
       quantity: 10,
@@ -142,7 +142,7 @@ describe('quote_required states — never fabricate a price', () => {
       printLocations: 1,
     });
     expect(result.status).toBe('quote_required');
-    expect(result.reasons.join(' ')).toMatch(/markup rule/);
+    expect(result.reasons.join(' ')).toMatch(/pricing rule/);
   });
 
   it('quantity 0 is invalid and does not resolve to any tier', () => {
@@ -236,4 +236,129 @@ describe('final price composition', () => {
     expect(result.finalUnitPrice).toBeCloseTo(31.5, 5);
     expect(result.finalTotal).toBeCloseTo(315.0, 5);
   });
+});
+
+// --- 2026-09-24 pricing audit: 40% GROSS MARGIN (not markup) + .99 rounding ---
+// See engine.ts's own top-of-file correction note for the full reasoning. These tests assert the
+// literal formula from the client's brief: requiredRetail = cost / (1 - marginTarget).
+describe('40% rule is GROSS MARGIN, not markup', () => {
+  const margin40: MarkupRuleInput = { type: 'percentage', value: 0.4, appliesTo: 'blank', version: 'margin-test-v1' };
+
+  it('$20 cost at 40% margin -> $33.34 blank retail (cost / 0.60, then .99-rounded up), NOT $28 (which would be markup)', () => {
+    const result = calculatePrice({
+      productType: 'apparel',
+      quantity: 1, // isolate the blank/margin math from any specific printing tier
+      wholesaleCostPerUnit: 20,
+      printLocations: 1,
+      markupRule: margin40,
+    });
+    expect(result.status).toBe('priced');
+    // 20 / 0.6 = 33.333... -> roundUpTo99 -> 33.99 (NOT 33.34; .99 rounding always lands on .99)
+    expect(result.blankRetail).toBeCloseTo(33.99, 5);
+    expect(result.blankRetail).not.toBeCloseTo(28.0, 5); // the old (wrong) markup answer
+  });
+
+  it('every margin-priced blank retail actually satisfies the 40% gross-margin floor', () => {
+    for (const cost of [5, 12.34, 20, 47.5, 99.99]) {
+      const result = calculatePrice({
+        productType: 'apparel',
+        quantity: 1,
+        wholesaleCostPerUnit: cost,
+        printLocations: 1,
+        markupRule: margin40,
+      });
+      expect(result.status).toBe('priced');
+      const margin = (result.blankRetail! - cost) / result.blankRetail!;
+      // .99 rounding only ever pushes the price UP, so realized margin is always >= target, with
+      // only trivial rounding tolerance in the other direction.
+      expect(margin).toBeGreaterThanOrEqual(0.4 - 0.0001);
+    }
+  });
+
+  it('printing/decoration cost is added on top of blank retail, never itself marked up or margin-adjusted', () => {
+    const result = calculatePrice({
+      productType: 'apparel',
+      quantity: 3, // 3-10 tier: first print $18.00
+      wholesaleCostPerUnit: 20,
+      printLocations: 1,
+      markupRule: margin40,
+    });
+    expect(result.status).toBe('priced');
+    expect(result.printingCostPerUnit).toBeCloseTo(18.0, 5); // exact chart value, untouched
+    expect(result.finalUnitPrice).toBeCloseTo(result.blankRetail! + 18.0, 5);
+  });
+});
+
+describe('roundUpTo99 — Section 3 (.99 RETAIL PRICING RULE)', () => {
+  const cases: [number, number][] = [
+    [37.73, 37.99],
+    [37.99, 37.99],
+    [38.0, 38.99], // must NOT fall back to 37.99 — that would violate the margin requirement
+    [12.01, 12.99],
+    [12.98, 12.99],
+    [12.99, 12.99],
+    [13.0, 13.99],
+    [0.0, 0.99],
+    [100.0, 100.99],
+  ];
+  for (const [input, expected] of cases) {
+    it(`${input} -> ${expected}`, () => {
+      expect(roundUpTo99(input)).toBeCloseTo(expected, 5);
+    });
+  }
+
+  it('never rounds DOWN below the input (the margin floor is never violated)', () => {
+    for (const price of [0.01, 4.999, 19.999999, 250.001]) {
+      expect(roundUpTo99(price)).toBeGreaterThanOrEqual(price - 0.0001);
+    }
+  });
+});
+
+describe('printing table covers all quantity/location boundaries required by the pricing audit', () => {
+  const quantities = [1, 2, 3, 10, 11, 35, 36, 70, 71, 99, 100, 500];
+  const locationCounts = [1, 2, 3, 4];
+
+  for (const quantity of quantities) {
+    for (const locations of locationCounts) {
+      it(`apparel qty ${quantity}, ${locations} location(s) prices successfully`, () => {
+        const result = calculatePrice({
+          productType: 'apparel',
+          quantity,
+          wholesaleCostPerUnit: 10,
+          printLocations: locations,
+          markupRule: { type: 'percentage', value: 0.4, appliesTo: 'blank', version: 'v1' },
+        });
+        expect(result.status).toBe('priced');
+        expect(result.printingCostPerUnit).toBeGreaterThan(0);
+      });
+
+      it(`hat qty ${quantity}, ${locations} location(s) prices successfully`, () => {
+        const result = calculatePrice({
+          productType: 'hat',
+          quantity,
+          wholesaleCostPerUnit: 5,
+          printLocations: locations,
+          markupRule: { type: 'percentage', value: 0.4, appliesTo: 'blank', version: 'v1' },
+        });
+        expect(result.status).toBe('priced');
+        expect(result.printingCostPerUnit).toBeGreaterThan(0);
+      });
+    }
+  }
+
+  for (const quantity of quantities) {
+    for (const decorationMode of ['one_side', 'wrap_around'] as const) {
+      it(`mug qty ${quantity}, ${decorationMode} prices successfully`, () => {
+        const result = calculatePrice({
+          productType: 'mug',
+          quantity,
+          wholesaleCostPerUnit: 3,
+          decorationMode,
+          markupRule: { type: 'percentage', value: 0.4, appliesTo: 'blank', version: 'v1' },
+        });
+        expect(result.status).toBe('priced');
+        expect(result.printingCostPerUnit).toBeGreaterThan(0);
+      });
+    }
+  }
 });
