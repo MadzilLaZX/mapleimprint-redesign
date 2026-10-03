@@ -33,7 +33,9 @@ export async function markOrderPaidAndNotify(
 
   const { data: lines } = await supabaseAdmin
     .from("MapleOrderLine")
-    .select("productName, quantity, colourName")
+    .select(
+      "id, productName, categorySlug, colourName, quantity, sizeBreakdown, designProjectId, designSnapshot",
+    )
     .eq("orderId", orderId);
 
   const { subject, html, text } = orderConfirmationEmail({
@@ -46,4 +48,38 @@ export async function markOrderPaidAndNotify(
 
   await sendEmail({ to: transitioned.contactEmail, subject, html, text });
   await supabaseAdmin.from("MapleOrder").update({ emailSentAt: new Date().toISOString() }).eq("id", orderId);
+
+  // Separate, best-effort production handoff to n8n — isolated in its own try/catch so an n8n
+  // outage (or the env var being unset, e.g. in local dev) never blocks the customer email or the
+  // PAID transition above. Each line's designSnapshot already carries every asset URL and layout
+  // field n8n needs to build that item's Asset file (logos/PNGs) and Design file (the layout spec)
+  // — nothing new had to be captured here, just forwarded.
+  const n8nWebhookUrl = process.env.N8N_ORDER_CONFIRMATION_WEBHOOK_URL;
+  if (n8nWebhookUrl) {
+    try {
+      await fetch(n8nWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          reference: transitioned.reference,
+          contactName: transitioned.contactName,
+          contactEmail: transitioned.contactEmail,
+          totalCents: transitioned.totalCents,
+          lines: (lines ?? []).map((line) => ({
+            orderLineId: line.id,
+            productName: line.productName,
+            categorySlug: line.categorySlug,
+            colourName: line.colourName,
+            quantity: line.quantity,
+            sizeBreakdown: line.sizeBreakdown,
+            designProjectId: line.designProjectId,
+            designSnapshot: line.designSnapshot,
+          })),
+        }),
+      });
+    } catch (err) {
+      console.error("[checkout] n8n order-confirmation webhook failed:", err);
+    }
+  }
 }
