@@ -19,7 +19,7 @@ export function ShopByNeed() {
             Shop by what you need
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted">
-            Eight categories cover the full catalogue. Pick one to see products, decoration methods and honest pricing.
+            Nine categories cover the full catalogue. Pick one to see products, decoration methods and honest pricing.
           </p>
         </Reveal>
 

@@ -38,13 +38,38 @@ export interface CatalogueProduct {
   priceTiers: ProductPriceTier[] | null;
   startingPrice: number | null;
   printRuleVersion: string;
-  /** Set only for Maple's own house-produced lines (banners/cards/flyers) — not sourced from
-   *  SanMar/S&S. `priceTiers`/`startingPrice` on these are display-only summaries for the shop
-   *  tile; the authoritative per-order price always comes from src/lib/houseProducts/pricing/,
-   *  since real pricing here is 2-D (size×material, stock×quantity), not the 1-D tier list this
-   *  field shape represents. Absent/undefined = today's ordinary supplier product, no behavior
-   *  change anywhere that doesn't explicitly check this field. */
-  houseProductKind?: "banner" | "business-card" | "flyer";
+  /** Set only for Maple's own house-produced lines — not sourced from SanMar/S&S.
+   *  `priceTiers`/`startingPrice` on these are display-only summaries for the shop tile; the
+   *  authoritative per-order price always comes from src/lib/houseProducts/pricing/, since real
+   *  pricing here is 2-D or variant-keyed, not the 1-D tier list this field shape represents.
+   *  Absent/undefined = today's ordinary supplier product, no behavior change anywhere that
+   *  doesn't explicitly check this field. The `drinkware-`/`promo-` prefixed values each map to
+   *  one DrinkwareKind/PromoKind in their respective pricing module (see
+   *  ProductCustomizer.tsx's branch) — kept as flat string literals rather than a nested type to
+   *  match this field's existing convention. */
+  houseProductKind?:
+    | "banner"
+    | "business-card"
+    | "flyer"
+    | "sticker"
+    | "label"
+    | "poster"
+    | "drinkware-mug"
+    | "drinkware-tumbler"
+    | "drinkware-water-bottle"
+    | "drinkware-pint-glass"
+    | "promo-tote-bag"
+    | "promo-pen"
+    | "promo-notebook"
+    | "promo-keychain"
+    | "promo-magnet"
+    | "promo-phone-stand"
+    | "quote-only";
+  /** Set only alongside houseProductKind: "quote-only" — real sourced sizes/materials to display
+   *  on the product page even though live per-configuration pricing wasn't reliably found (see
+   *  QuoteOnlyConfigurator). Never invented copy; always the same real catalogue facts gathered
+   *  for every other house product, just without a price attached. */
+  quoteOnlyInfo?: { sizes?: string[]; materials?: string[] };
 }
 
 // House-produced (Maple's own) products are merged in alongside the supplier-sourced catalogue —

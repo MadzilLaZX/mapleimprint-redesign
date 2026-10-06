@@ -13,11 +13,14 @@ import {
   reinforcedEdgesAvailable,
   doubleSidedAvailable,
   windFlapsEligible,
+  installedHeightFt,
   quoteBanner,
   type BannerMaterial,
+  type BannerOrientation,
+  type BannerSize,
 } from "@/lib/houseProducts/pricing/banners";
 import { isQuoteError } from "@/lib/houseProducts/pricing/types";
-import { BannerScaleVisualizer } from "@/components/products/BannerScaleVisualizer";
+import { SizeReferenceVisualizer } from "@/components/products/SizeReferenceVisualizer";
 import { OptionCardGrid, type OptionCardGridItem } from "@/components/products/OptionCardGrid";
 import { PricingGuideFlyout, type PricingGuideRow } from "@/components/products/PricingGuideFlyout";
 import type { CatalogueProduct } from "@/lib/products";
@@ -30,6 +33,21 @@ const GUIDE_QUANTITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 25, 30, 40, 50, 60,
 function unitPriceAt1(sizeKey: string, material: BannerMaterial): number | null {
   const q = quoteBanner({ sizeKey, material, quantity: 1 });
   return isQuoteError(q) ? null : q.totalCents;
+}
+
+/** Same raw size, relabeled for how the customer plans to hang it — "landscape" presents the
+ *  long side first ("30' x 8'") since that's the dimension a customer thinking "how wide is
+ *  this" cares about; "portrait" (default) keeps VistaPrint's own short-side-first convention. */
+function orientedDims(sizeDef: BannerSize, orientation: BannerOrientation): { widthFt: number; heightFt: number } {
+  return orientation === "landscape"
+    ? { widthFt: sizeDef.heightFt, heightFt: sizeDef.widthFt }
+    : { widthFt: sizeDef.widthFt, heightFt: sizeDef.heightFt };
+}
+
+function orientedLabel(sizeDef: BannerSize, orientation: BannerOrientation): string {
+  const { widthFt, heightFt } = orientedDims(sizeDef, orientation);
+  const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toString());
+  return `${fmt(widthFt)}' x ${fmt(heightFt)}'`;
 }
 
 function addonToggleOptions(
@@ -57,6 +75,7 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
   const router = useRouter();
   const [sizeKey, setSizeKey] = useState<string>(BANNER_SIZES[2].key); // 2.5'x4' — a representative default, not the smallest/cheapest
   const [material, setMaterial] = useState<BannerMaterial>("indoor-13oz");
+  const [orientation, setOrientation] = useState<BannerOrientation>("portrait");
   const [quantity, setQuantity] = useState(1);
   const [grommets, setGrommets] = useState(false);
   const [reinforcedEdges, setReinforcedEdges] = useState(false);
@@ -66,10 +85,11 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
   const [studioError, setStudioError] = useState<string | null>(null);
 
   const sizeDef = BANNER_SIZES.find((s) => s.key === sizeKey) ?? BANNER_SIZES[0];
+  const displayDims = orientedDims(sizeDef, orientation);
   const canDoubleSided = doubleSidedAvailable(material);
   const canGrommets = grommetsAvailable(material) && !doubleSided;
   const canReinforcedEdges = reinforcedEdgesAvailable(material) && !doubleSided;
-  const canWindFlaps = windFlapsEligible(material, sizeDef.heightFt) && !doubleSided;
+  const canWindFlaps = windFlapsEligible(material, installedHeightFt(sizeDef, orientation)) && !doubleSided;
 
   const quote = useMemo(
     () =>
@@ -81,8 +101,9 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
         reinforcedEdges,
         windFlaps,
         doubleSided,
+        orientation,
       }),
-    [sizeKey, material, quantity, grommets, reinforcedEdges, windFlaps, doubleSided],
+    [sizeKey, material, quantity, grommets, reinforcedEdges, windFlaps, doubleSided, orientation],
   );
 
   const baseUnitAt1 = useMemo(() => unitPriceAt1(sizeKey, material), [sizeKey, material]);
@@ -96,11 +117,11 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
         const price = materialForSize ? unitPriceAt1(s.key, materialForSize) : null;
         return {
           value: s.key,
-          label: s.label,
+          label: orientedLabel(s, orientation),
           priceDelta: price != null ? `From $${(price / 100).toFixed(2)}` : undefined,
         };
       }),
-    [material],
+    [material, orientation],
   );
 
   const materialOptions: OptionCardGridItem[] = useMemo(
@@ -187,7 +208,13 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
       const fallback = BANNER_MATERIALS.find((m) => BANNER_BASE_PRICES[nextKey]?.[m.value] !== undefined);
       if (fallback) setMaterial(fallback.value);
     }
-    if (!windFlapsEligible(material, BANNER_SIZES.find((s) => s.key === nextKey)?.heightFt ?? 0)) setWindFlaps(false);
+    const nextSizeDef = BANNER_SIZES.find((s) => s.key === nextKey);
+    if (!nextSizeDef || !windFlapsEligible(material, installedHeightFt(nextSizeDef, orientation))) setWindFlaps(false);
+  }
+
+  function handleOrientationChange(next: BannerOrientation) {
+    setOrientation(next);
+    if (!windFlapsEligible(material, installedHeightFt(sizeDef, next))) setWindFlaps(false);
   }
 
   function handleSidesChange(value: string) {
@@ -208,7 +235,7 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
     if (!doubleSidedAvailable(value)) setDoubleSided(false);
     if (!grommetsAvailable(value)) setGrommets(false);
     if (!reinforcedEdgesAvailable(value)) setReinforcedEdges(false);
-    if (!windFlapsEligible(value, sizeDef.heightFt)) setWindFlaps(false);
+    if (!windFlapsEligible(value, installedHeightFt(sizeDef, orientation))) setWindFlaps(false);
   }
 
   async function handleDesign() {
@@ -230,7 +257,7 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
           productName: product.name,
           brandName: product.brandName,
           colourName: materialLabel,
-          sizeBreakdown: [{ size: sizeDef.label, qty: quantity }],
+          sizeBreakdown: [{ size: orientedLabel(sizeDef, orientation), qty: quantity }],
           totalQuantity: quantity,
           pricingSnapshot: {
             unitBasePrice: quote.unitPriceCents / 100,
@@ -244,7 +271,9 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
           mockupImages: {},
           // Banners are the one product where the print area varies per order — widthIn/heightIn
           // travel with the side itself rather than coming from a fixed PRINT_AREAS constant.
-          sides: [{ type: "banner-face", widthIn: sizeDef.widthFt * 12, heightIn: sizeDef.heightFt * 12 }],
+          // Sent in the customer's chosen orientation so the production artwork canvas matches how
+          // it'll actually be hung, not always the raw (short, long) storage order.
+          sides: [{ type: "banner-face", widthIn: displayDims.widthFt * 12, heightIn: displayDims.heightFt * 12 }],
         }),
       });
 
@@ -260,6 +289,20 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
   return (
     <div>
       <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/70">Orientation</p>
+        <div className="mt-2">
+          <OptionCardGrid
+            options={[
+              { value: "landscape", label: "Horizontal", sublabel: "Wide — storefronts, stages" },
+              { value: "portrait", label: "Vertical", sublabel: "Tall — poles, doorways" },
+            ]}
+            selected={orientation}
+            onSelect={(v) => handleOrientationChange(v as BannerOrientation)}
+          />
+        </div>
+      </div>
+
+      <div className="mt-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/70">Size</p>
         <div className="mt-2">
           <OptionCardGrid options={sizeOptions} selected={sizeKey} onSelect={handleSizeChange} />
@@ -267,7 +310,7 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
       </div>
 
       <div className="mt-4">
-        <BannerScaleVisualizer widthFt={sizeDef.widthFt} heightFt={sizeDef.heightFt} />
+        <SizeReferenceVisualizer widthFt={displayDims.widthFt} heightFt={displayDims.heightFt} itemLabel="banner" />
       </div>
 
       <div className="mt-4">

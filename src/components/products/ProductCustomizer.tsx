@@ -13,6 +13,14 @@ import { SurpriseMePanel } from "@/components/products/SurpriseMePanel";
 import { SizeGuidePanel } from "@/components/products/SizeGuidePanel";
 import { PaperProductConfigurator } from "@/components/products/PaperProductConfigurator";
 import { BannerConfigurator } from "@/components/products/BannerConfigurator";
+import { StickerConfigurator } from "@/components/products/StickerConfigurator";
+import { LabelConfigurator } from "@/components/products/LabelConfigurator";
+import { PosterConfigurator } from "@/components/products/PosterConfigurator";
+import { DrinkwareConfigurator } from "@/components/products/DrinkwareConfigurator";
+import { PromoConfigurator } from "@/components/products/PromoConfigurator";
+import { QuoteOnlyConfigurator } from "@/components/products/QuoteOnlyConfigurator";
+import type { DrinkwareKind } from "@/lib/houseProducts/pricing/drinkware";
+import type { PromoKind } from "@/lib/houseProducts/pricing/promo";
 import type { CatalogueProduct } from "@/lib/products";
 
 const VISIBLE_COLOUR_COUNT = 8;
@@ -29,11 +37,41 @@ export function ProductCustomizer(props: {
   onColourChange: (colour: string) => void;
 }) {
   const { product } = props;
-  if (product.houseProductKind === "business-card" || product.houseProductKind === "flyer") {
-    return <PaperProductConfigurator product={product} kind={product.houseProductKind} />;
+  const kind = product.houseProductKind;
+  if (kind === "business-card" || kind === "flyer") {
+    return <PaperProductConfigurator product={product} kind={kind} />;
   }
-  if (product.houseProductKind === "banner") {
+  if (kind === "banner") {
     return <BannerConfigurator product={product} />;
+  }
+  if (kind === "sticker") {
+    // "Die-Cut Stickers" and "Kiss-Cut Stickers" are two catalogue products sharing this one
+    // configurator, distinguished by which shapes their subcategory allows — see
+    // StickerConfigurator's allowedShapes comment.
+    const allowedShapes =
+      product.subcategorySlug === "die-cut" ? (["die-cut"] as const) : (["square", "circle", "rectangle", "oval"] as const);
+    return <StickerConfigurator product={product} allowedShapes={[...allowedShapes]} />;
+  }
+  if (kind === "label") {
+    return <LabelConfigurator product={product} />;
+  }
+  if (kind === "poster") {
+    return <PosterConfigurator product={product} />;
+  }
+  if (kind?.startsWith("drinkware-")) {
+    return <DrinkwareConfigurator product={product} kind={kind.slice("drinkware-".length) as DrinkwareKind} />;
+  }
+  if (kind?.startsWith("promo-")) {
+    return <PromoConfigurator product={product} kind={kind.slice("promo-".length) as PromoKind} />;
+  }
+  if (kind === "quote-only") {
+    return (
+      <QuoteOnlyConfigurator
+        product={product}
+        sizes={product.quoteOnlyInfo?.sizes}
+        materials={product.quoteOnlyInfo?.materials}
+      />
+    );
   }
   return <ApparelCustomizer {...props} />;
 }

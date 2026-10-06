@@ -20,7 +20,7 @@ export default function ProductsPage() {
     <>
       <PageHeader
         eyebrow="Products"
-        title="Eight categories, one clear path to checkout"
+        title="Nine categories, one clear path to checkout"
         description="Every category supports instant customization for standard runs, and a guided quote for anything bigger or more specific."
       />
 

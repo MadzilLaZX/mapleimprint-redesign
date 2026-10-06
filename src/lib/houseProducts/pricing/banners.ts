@@ -177,6 +177,8 @@ export function bannerQuantityMultiplier(qty: number): number {
   return 1;
 }
 
+export type BannerOrientation = "portrait" | "landscape";
+
 export interface BannerQuoteInput {
   sizeKey: string;
   material: BannerMaterial;
@@ -185,6 +187,22 @@ export interface BannerQuoteInput {
   reinforcedEdges?: boolean;
   windFlaps?: boolean;
   doubleSided?: boolean;
+  /** Every BannerSize's two raw dimensions are stored as (short, long) regardless of how the
+   *  customer plans to hang it — a "4x20" is the same physical vinyl whether it's mounted as a
+   *  20'-tall pole banner or a 20'-wide storefront banner. "portrait" (default, matches
+   *  BannerSize's own widthFt/heightFt) keeps the short side as width; "landscape" swaps which
+   *  raw dimension counts as the INSTALLED height for eligibility checks that are genuinely
+   *  physical, not cosmetic — wind flaps are only offered on banners 4' tall as installed, and
+   *  which raw dimension is "installed height" depends on orientation. Pricing itself never
+   *  changes with orientation (same vinyl, same ink), so this only affects windFlapsEligible. */
+  orientation?: BannerOrientation;
+}
+
+/** The physical installed height depends on orientation, not just the raw size record — see
+ *  BannerQuoteInput.orientation's comment. Used by both quoteBanner (server-side truth) and
+ *  BannerConfigurator (so the UI's eligibility check can never drift from the quote's). */
+export function installedHeightFt(sizeDef: BannerSize, orientation: BannerOrientation = "portrait"): number {
+  return orientation === "landscape" ? sizeDef.widthFt : sizeDef.heightFt;
 }
 
 export interface BannerQuoteResult {
@@ -231,7 +249,7 @@ export function quoteBanner(input: BannerQuoteInput): BannerQuoteResult | QuoteE
       lineItems.push({ label: "Reinforced edges", cents: toCents(addons.reinforcedEdges) });
     }
     if (input.windFlaps) {
-      if (!windFlapsEligible(material, sizeDef.heightFt) || addons.windFlaps === null) {
+      if (!windFlapsEligible(material, installedHeightFt(sizeDef, input.orientation)) || addons.windFlaps === null) {
         return { error: "Wind flaps aren't available for this size/material." };
       }
       unitPrice += addons.windFlaps;
