@@ -66,7 +66,7 @@ export function PosterConfigurator({ product }: { product: CatalogueProduct }) {
             printRuleVersion: product.printRuleVersion,
           },
           mockupImages: {},
-          sides: [{ type: "poster-face", widthIn: displayWidthIn, heightIn: displayHeightIn }],
+          sides: [{ type: "poster-front", widthIn: displayWidthIn, heightIn: displayHeightIn }],
         }),
       });
 

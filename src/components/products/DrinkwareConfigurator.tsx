@@ -69,7 +69,11 @@ export function DrinkwareConfigurator({ product, kind }: { product: CataloguePro
             printRuleVersion: product.printRuleVersion,
           },
           mockupImages: {},
-          sides: [{ type: "drinkware-wrap" }],
+          // Every drinkware kind (mug/tumbler/water-bottle/pint-glass) shares the one real
+          // "mug-wrap" print area/schematic — a full cylindrical wrap print is the same shape of
+          // surface regardless of which vessel it's on; see productDecorationProfile.ts's "mug"
+          // family (REVIEW_REQUIRED either way, Maple confirms exact curvature before production).
+          sides: [{ type: "mug-wrap" }],
         }),
       });
 

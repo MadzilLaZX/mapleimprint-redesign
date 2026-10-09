@@ -68,7 +68,11 @@ export function PromoConfigurator({ product, kind }: { product: CatalogueProduct
             printRuleVersion: product.printRuleVersion,
           },
           mockupImages: {},
-          sides: [{ type: "promo-item" }],
+          // Reuses the generic "accessory" family's front location — promo items (bags, pens,
+          // notebooks, keychains, magnets, phone stands) are too physically varied to share one
+          // dedicated print area the way mugs/banners/stickers do; see familyFor()'s
+          // gifts-promo mapping.
+          sides: [{ type: "front" }],
         }),
       });
 

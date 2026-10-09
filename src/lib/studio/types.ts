@@ -39,7 +39,11 @@ export type DesignSideType =
   // PRINT_AREAS/PLACEMENT_GEOMETRY entries (printAreas.ts) are placeholders only — the real
   // dimensions live on this side's own DesignSide row and are threaded through explicitly wherever
   // geometry is computed (see printAreaPixelBox's override param).
-  | "banner-face";
+  | "banner-face"
+  // Stickers/labels (die-cut, kiss-cut, roll labels) — a real orderable house product
+  // (src/lib/houseProducts/catalogue.ts) with no photography involved, same "flat print piece on
+  // its own schematic" pattern as card-front/flyer-front/mug-wrap.
+  | "sticker-face";
 
 export type DesignObjectType = "image" | "text" | "shape" | "qr";
 // Native, Maple-owned shape primitives (STUDIO V4 brief, "do not depend on external libraries for

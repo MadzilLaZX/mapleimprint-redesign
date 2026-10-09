@@ -74,7 +74,10 @@ export function LabelConfigurator({ product }: { product: CatalogueProduct }) {
             printRuleVersion: product.printRuleVersion,
           },
           mockupImages: {},
-          sides: [{ type: "label-face" }],
+          // Reuses the sticker-face print area — same "flat piece, no photography" shape, and
+          // labels don't yet have their own dedicated DesignSideType/schematic (see
+          // printAreas.ts/productDecorationProfile.ts's "sticker" family).
+          sides: [{ type: "sticker-face" }],
         }),
       });
 

@@ -19,7 +19,7 @@ import type { DesignSideType } from "./types";
 
 export type SupportStatus = "STANDARD" | "REVIEW_REQUIRED" | "UNAVAILABLE";
 
-export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "flyer" | "poster" | "mug" | "banner";
+export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "flyer" | "poster" | "mug" | "banner" | "sticker";
 
 // Section 20: how a location's editing view is constructed, independent of its SupportStatus.
 // Status answers "can the customer design this, and is it confirmed for production"; viewType
@@ -46,7 +46,8 @@ export type LocationViewType =
   | "FLYER_BACK_FLAT"
   | "POSTER_FLAT"
   | "MUG_WRAP_FLAT"
-  | "BANNER_FLAT";
+  | "BANNER_FLAT"
+  | "STICKER_FLAT";
 
 export interface DecorationLocation {
   id: DesignSideType;
@@ -85,8 +86,19 @@ export function familyFor(categorySlug: string, subcategorySlug: string): Produc
   if (subcategorySlug === "business-cards") return "business-card";
   if (subcategorySlug === "brochures-flyers" || subcategorySlug === "postcards") return "flyer";
   if (subcategorySlug === "posters") return "poster";
-  if (subcategorySlug === "mugs") return "mug";
+  // Every drinkware kind shares the "mug" family/print-area — see DrinkwareConfigurator's
+  // sides[].type comment for why a wrap print is the same surface shape regardless of vessel.
+  if (subcategorySlug === "mugs" || subcategorySlug === "tumblers" || subcategorySlug === "bottles" || subcategorySlug === "glassware") return "mug";
   if (subcategorySlug === "vinyl-banners") return "banner";
+  // Gifts & promotional products (tote bags, pens, notebooks, keychains, magnets, phone stands) —
+  // too physically varied for one dedicated print area; reuses "accessory"'s generic front/back
+  // locations, same family aprons/bags/general hats-accessories items already use.
+  if (categorySlug === "gifts-promo") return "accessory";
+  // Stickers & labels — real orderable house products (src/lib/houseProducts/catalogue.ts:
+  // die-cut-stickers, kiss-cut-stickers, roll-labels). Without this mapping these fell through to
+  // the generic "tee" default below and showed t-shirt templates/graphics in Studio — a real
+  // misrouting bug, not just a missing-content gap.
+  if (categorySlug === "stickers-labels") return "sticker";
   if (categorySlug === "hats-accessories") return "accessory"; // aprons, bags, general accessories
   return "tee";
 }
@@ -191,6 +203,12 @@ const BANNER_LOCATIONS: DecorationLocation[] = [
   { id: "banner-face", label: "Banner", group: "core", status: "REVIEW_REQUIRED", viewType: "BANNER_FLAT", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Size and material confirmed against the customer's order before production." },
 ];
 
+// Stickers are a real, already-orderable house product (same STANDARD reasoning as card-front/
+// flyer-front above) — one flat face, no photography, own dedicated schematic.
+const STICKER_LOCATIONS: DecorationLocation[] = [
+  { id: "sticker-face", label: "Sticker", group: "core", status: "STANDARD", viewType: "STICKER_FLAT", usesPlacementPreview: true, requiresManualReview: false, productionNotes: "Shape and size confirmed against the customer's order before production." },
+];
+
 const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   tee: TEE_LOCATIONS,
   hoodie: HOODIE_LOCATIONS,
@@ -202,6 +220,7 @@ const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   poster: POSTER_LOCATIONS,
   mug: MUG_LOCATIONS,
   banner: BANNER_LOCATIONS,
+  sticker: STICKER_LOCATIONS,
 };
 
 /** hasBackPhoto lets a specific product drop "back" from STANDARD even where the family default

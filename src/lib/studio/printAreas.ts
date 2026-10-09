@@ -56,6 +56,11 @@ export const PRINT_AREAS: Record<DesignSideType, { widthIn: number; heightIn: nu
   // entry exists only so the Record stays total and the /api/studio route has a sane fallback if a
   // caller somehow omits the override.
   "banner-face": { widthIn: 24, heightIn: 36, safeMarginIn: 0.5, confirmed: false },
+  // Representative sticker size — a real die-cut/kiss-cut product exists (src/lib/houseProducts/
+  // pricing/stickers.ts) across many real shapes/sizes; 3x3in square is the common middle of that
+  // range, used only for the editing canvas's own box (the customer's actual chosen size prints
+  // from the same design scaled to spec, same as every other flat piece here).
+  "sticker-face": { widthIn: 3, heightIn: 3, safeMarginIn: 0.125, confirmed: false },
 };
 
 export interface PlacementGeometry {
@@ -125,6 +130,9 @@ export const PLACEMENT_GEOMETRY: Record<DesignSideType, PlacementGeometry> = {
   // override is supplied, which it always is for "banner-face"). Kept only so this Record stays
   // total.
   "banner-face": { xFrac: 0.075, yFrac: 0.075, widthFrac: 0.85, heightFrac: 0.85, rotationDeg: 0 },
+  // Square box at the sticker-face PRINT_AREAS real aspect ratio (3x3in = 1:1), same centered
+  // "generous but bounded" sizing as card-front/poster-front above.
+  "sticker-face": { xFrac: 0.075, yFrac: 0.16, widthFrac: 0.85, heightFrac: 0.68, rotationDeg: 0 },
 };
 
 // A banner's real aspect ratio varies per order (2.5'x4' ~0.63 vs 8'x30' ~0.27 — over a 2x spread),
@@ -170,7 +178,8 @@ export type BackgroundKind =
   | "flyer-back-flat"
   | "poster-flat"
   | "mug-wrap-flat"
-  | "banner-flat";
+  | "banner-flat"
+  | "sticker-face-flat";
 
 /** What kind of background a location's viewType calls for — this is what let Section 20's
  *  viewType enum replace the old hardcoded "is this front or back" special-casing. A schematic
@@ -208,6 +217,8 @@ export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
       return "mug-wrap-flat";
     case "BANNER_FLAT":
       return "banner-flat";
+    case "STICKER_FLAT":
+      return "sticker-face-flat";
     default:
       return "front-photo";
   }
@@ -392,6 +403,8 @@ export function backgroundUrlFor(
       return printPieceSchematicSvg("Mug Wrap");
     case "banner-flat":
       return printPieceSchematicSvg("Vinyl Banner");
+    case "sticker-face-flat":
+      return printPieceSchematicSvg("Custom Sticker");
   }
   const key: DesignSideType = kind === "back-photo" ? "back" : "front";
   return mockupImages[key] ?? (usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);
