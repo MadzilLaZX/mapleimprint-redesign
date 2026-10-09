@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
     "@supabase/supabase-js": "^2.112.3",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
@@ -24,6 +26,7 @@
     "resend": "^6.18.1",
     "server-only": "^0.0.1",
     "square": "^46.0.0",
+    "three": "^0.186.1",
     "use-image": "^1.1.4"
   },
   "devDependencies": {

@@ -58,6 +58,16 @@ const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then
   ),
 });
 
+// WebGL (three.js) needs real browser APIs — same ssr:false reasoning as CanvasStage above.
+const Mug3DPreview = dynamic(() => import("@/components/studio/Mug3DPreview").then((m) => m.Mug3DPreview), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center rounded-3xl bg-canvas">
+      <SpinnerGap className="size-6 animate-spin text-muted" weight="bold" />
+    </div>
+  ),
+});
+
 type SidesState = Partial<Record<DesignSideType, DesignObjectRecord[]>>;
 
 const AUTOSAVE_DELAY_MS = 900;
@@ -178,6 +188,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [sides, setSides] = useState<SidesState>({});
   const [activeSide, setActiveSide] = useState<DesignSideType>("front");
+  const [show3DPreview, setShow3DPreview] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -1615,10 +1626,23 @@ export function StudioClient({ projectId }: { projectId: string }) {
               {/* Floating canvas toolbar — deliberately absolute/out-of-flow so it can never add
                   to the workspace's height (previously it sat in normal flow below the canvas and
                   was part of what forced the whole page to scroll). */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
+              <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center gap-2">
                 <div className="pointer-events-auto">
                   <ZoomControls zoom={zoom} onZoomChange={setZoom} />
                 </div>
+                {/* Drinkware only — "so customers can see the design they picked on the actual
+                    mug," not just the flat wrap schematic. Gated on activeSide specifically
+                    (not the broader "mug" family) since this button sits over the canvas for
+                    whichever location is currently open. */}
+                {activeSide === "mug-wrap" && (
+                  <button
+                    type="button"
+                    onClick={() => setShow3DPreview(true)}
+                    className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-sand bg-white/95 px-3.5 py-2 text-xs font-semibold text-ink-900 shadow-sm backdrop-blur transition-colors hover:border-ink-950/25"
+                  >
+                    View in 3D
+                  </button>
+                )}
               </div>
 
               {/* Mobile has no permanent price/details panel — this pill is the entry point into
@@ -1704,6 +1728,26 @@ export function StudioClient({ projectId }: { projectId: string }) {
               setCropTargetId(null);
             }}
           />
+        )}
+
+        {show3DPreview && (
+          <div className="fixed inset-0 z-50 flex flex-col bg-ink-950/80 p-4 backdrop-blur-sm sm:p-8">
+            <div className="flex items-center justify-between pb-3">
+              <p className="font-display text-sm font-semibold text-white">Your design in 3D</p>
+              <button
+                type="button"
+                onClick={() => setShow3DPreview(false)}
+                className="rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+                aria-label="Close 3D preview"
+              >
+                <X className="size-4" weight="bold" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden rounded-3xl">
+              <Mug3DPreview objects={sides["mug-wrap"] ?? []} />
+            </div>
+            <p className="pt-3 text-center text-xs text-white/60">Drag to rotate · scroll to zoom</p>
+          </div>
         )}
 
         {qrReviewGate && (
