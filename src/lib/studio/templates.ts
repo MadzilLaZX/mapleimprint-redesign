@@ -2467,6 +2467,90 @@ const BANNER_GENERATED: DesignTemplate[] = BANNER_MESSAGE_BATCH.flatMap((spec) =
   bannerMessageTemplate(spec, "bold-text"),
 ]);
 
+// Gifts & Promo (tote bags, pens, notebooks, keychains, magnets, phone stands) — all map to the
+// generic "accessory" family and its "front" location (productDecorationProfile.ts: too physically
+// varied for one dedicated print area). These items are small, so compositions stay simple and
+// singular like stickers — one icon and a short phrase, never a multi-line layout.
+interface GiftPhraseSpec {
+  iconId: string;
+  phrase: string;
+  category: TemplateCategory;
+  tags: string[];
+  fill?: string;
+}
+
+const GIFT_PHRASE_BATCH: GiftPhraseSpec[] = [
+  { iconId: "coffee-bean", phrase: "COFFEE FIRST", category: "business", tags: ["coffee", "gift", "promo"] },
+  { iconId: "briefcase", phrase: "TEAM MVP", category: "business", tags: ["work", "team", "gift", "promo"] },
+  { iconId: "star-burst", phrase: "YOU'RE THE BEST", category: "events", tags: ["appreciation", "gift", "promo"], fill: "#D41414" },
+  { iconId: "heart", phrase: "MADE WITH LOVE", category: "family", tags: ["love", "gift", "promo"], fill: "#D41414" },
+  { iconId: "balloon", phrase: "HAPPY BIRTHDAY", category: "birthday", tags: ["birthday", "gift", "promo"], fill: "#D41414" },
+  { iconId: "fundraiser-heart-hands", phrase: "THANKS FOR GIVING", category: "fundraisers", tags: ["fundraiser", "gift", "promo"] },
+  { iconId: "maple-leaf", phrase: "PROUDLY CANADIAN", category: "canadian", tags: ["canadian", "gift", "promo"], fill: "#D41414" },
+  { iconId: "graduation-cap", phrase: "CLASS OF 2026", category: "graduation", tags: ["graduation", "gift", "promo"] },
+  { iconId: "book-open", phrase: "BOOKWORM", category: "schools", tags: ["books", "school", "gift", "promo"] },
+  { iconId: "trophy", phrase: "CHAMPION", category: "sports-teams", tags: ["sports", "gift", "promo"] },
+  { iconId: "paw", phrase: "DOG MOM", category: "family", tags: ["pet", "gift", "promo"] },
+  { iconId: "mountain", phrase: "ADVENTURE AWAITS", category: "canadian", tags: ["outdoors", "gift", "promo"] },
+  { iconId: "sun", phrase: "GOOD VIBES ONLY", category: "streetwear", tags: ["positivity", "gift", "promo"] },
+  { iconId: "pine-tree", phrase: "CABIN LIFE", category: "canadian", tags: ["cabin", "outdoors", "gift", "promo"], fill: "#2F5233" },
+  { iconId: "crown", phrase: "BOSS LADY", category: "business", tags: ["boss", "gift", "promo"] },
+  { iconId: "chef-hat", phrase: "HOME CHEF", category: "food-cafe", tags: ["cooking", "gift", "promo"] },
+  { iconId: "club-badge", phrase: "TEAM PLAYER", category: "clubs", tags: ["team", "club", "gift", "promo"] },
+  { iconId: "wings", phrase: "FLY HIGH", category: "minimal", tags: ["inspiration", "gift", "promo"] },
+  { iconId: "handshake", phrase: "THANK YOU", category: "business", tags: ["thank-you", "gift", "promo"] },
+  { iconId: "family-group", phrase: "OUR FAMILY", category: "family", tags: ["family", "gift", "promo"] },
+  { iconId: "rings", phrase: "JUST MARRIED", category: "events", tags: ["wedding", "gift", "promo"] },
+  { iconId: "snowflake", phrase: "WINTER VIBES", category: "events", tags: ["winter", "holiday", "gift", "promo"] },
+  { iconId: "gear", phrase: "WORK HARD", category: "business", tags: ["work", "motivation", "gift", "promo"] },
+  { iconId: "wave", phrase: "BEACH DAYS", category: "events", tags: ["summer", "beach", "gift", "promo"] },
+  { iconId: "checkered-flag", phrase: "RACE READY", category: "sports-teams", tags: ["racing", "gift", "promo"], fill: "#D41414" },
+  { iconId: "torch", phrase: "LIGHT IT UP", category: "events", tags: ["celebration", "gift", "promo"] },
+];
+
+function giftPhraseTemplate(spec: GiftPhraseSpec, layout: "icon-only" | "icon-text"): DesignTemplate {
+  const objects: TemplateObjectSeed[] = [];
+  if (layout === "icon-only") {
+    const size = squareIcon("front", 0.5);
+    objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.14, ...size, fill: spec.fill ?? "#171412" }));
+    objects.push(
+      textSeed({ content: spec.phrase, fontSize: fitHeadlineFontSize(spec.phrase, 220, 12, 20), fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "center", letterSpacing: 1, normalizedX: 0.08, normalizedY: 0.7, normalizedWidth: 0.84, normalizedHeight: 0.18 }),
+    );
+  } else {
+    const size = squareIcon("front", 0.3);
+    objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.16, ...size, fill: spec.fill ?? "#171412" }));
+    objects.push(
+      textSeed({ content: spec.phrase, fontSize: fitHeadlineFontSize(spec.phrase, 240, 13, 22), fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "center", letterSpacing: 1, normalizedX: 0.08, normalizedY: 0.5, normalizedWidth: 0.84, normalizedHeight: 0.18 }),
+    );
+    objects.push(
+      shapeSeed({ shapeKind: "line", normalizedX: 0.38, normalizedY: 0.72, normalizedWidth: 0.24, normalizedHeight: 0.008, fill: spec.fill ?? "#171412" }),
+    );
+  }
+  const slug = spec.phrase.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return {
+    id: `tpl-gift-gen-${layout}-${slug}`,
+    name: `${spec.phrase.charAt(0)}${spec.phrase.slice(1).toLowerCase()}`,
+    category: spec.category,
+    thumbnailUrl: "",
+    productFamilies: ["accessory"],
+    compatiblePrintAreas: ["front"],
+    orientation: "square",
+    tags: spec.tags,
+    linkedAssetIds: [`maple-${spec.iconId}`],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects,
+  };
+}
+
+const GIFT_GENERATED: DesignTemplate[] = GIFT_PHRASE_BATCH.flatMap((spec) => [
+  giftPhraseTemplate(spec, "icon-only"),
+  giftPhraseTemplate(spec, "icon-text"),
+]);
+
 interface CardContactSpec {
   iconId: string | null;
   name: string;
@@ -3814,6 +3898,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     ],
   },
   ...STICKER_GENERATED,
+  ...GIFT_GENERATED,
 ];
 
 // ============================================================
