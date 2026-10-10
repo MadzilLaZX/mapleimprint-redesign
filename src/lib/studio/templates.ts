@@ -55,6 +55,19 @@ function bannerBackground(fill: string): TemplateObjectSeed {
   return shapeSeed({ normalizedX: 0, normalizedY: 0, normalizedWidth: 1, normalizedHeight: 1, shapeKind: "rectangle", fill });
 }
 
+/** CanvasStage's text layout wraps at a fixed line-width in characters rather than measuring real
+ *  glyph width, and that wrap point is NOT word-aware — it breaks wherever the character count
+ *  runs out, mid-word if that's where it lands (confirmed live: a headline sized off its longest
+ *  single word, e.g. 12-char "CHAMPIONSHIP" in "CHAMPIONSHIP GAME", still broke into "CHAMPION" /
+ *  "SHIP GAME" once the 18-character total didn't fit one line at that size). The only reliable way
+ *  to keep a generated headline on one clean line is to size it so the FULL string's character
+ *  count fits the box at that font size. `budget` is a fit-tuned size*characterCount constant for a
+ *  given box/family, calibrated against this file's existing hand-written single-line headlines
+ *  (e.g. the poster family's 7-char "40% OFF" at fontSize 56). */
+function fitHeadlineFontSize(s: string, budget: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, Math.round(budget / s.length)));
+}
+
 export type TemplateCategory =
   | "business"
   | "trades"
@@ -2417,17 +2430,17 @@ function bannerMessageTemplate(spec: BannerMessageSpec, layout: "icon-stack" | "
     const size = squareIcon("banner-face", 0.16);
     objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.12, ...size, fill: spec.fg }));
     objects.push(
-      textSeed({ content: spec.headline, fontSize: spec.headline.length > 16 ? 18 : 24, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: spec.fg, align: "center", normalizedX: 0.06, normalizedY: 0.4, normalizedWidth: 0.88, normalizedHeight: 0.16, letterSpacing: 1 }),
+      textSeed({ content: spec.headline, fontSize: fitHeadlineFontSize(spec.headline, 210, 14, 26), fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: spec.fg, align: "center", normalizedX: 0.06, normalizedY: 0.38, normalizedWidth: 0.88, normalizedHeight: 0.22, letterSpacing: 1 }),
     );
     objects.push(
-      textSeed({ content: spec.subline, fontSize: 13, fill: BANNER_SUBLINE_FILL, align: "center", normalizedX: 0.1, normalizedY: 0.58, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
+      textSeed({ content: spec.subline, fontSize: 13, fill: BANNER_SUBLINE_FILL, align: "center", normalizedX: 0.1, normalizedY: 0.66, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
     );
   } else {
     objects.push(
-      textSeed({ content: spec.headline, fontSize: spec.headline.length > 16 ? 24 : 32, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: spec.fg, align: "center", normalizedX: 0.06, normalizedY: 0.34, normalizedWidth: 0.88, normalizedHeight: 0.2, letterSpacing: 1 }),
+      textSeed({ content: spec.headline, fontSize: fitHeadlineFontSize(spec.headline, 290, 18, 34), fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: spec.fg, align: "center", normalizedX: 0.06, normalizedY: 0.3, normalizedWidth: 0.88, normalizedHeight: 0.28, letterSpacing: 1 }),
     );
     objects.push(
-      textSeed({ content: spec.subline, fontSize: 14, fill: BANNER_SUBLINE_FILL, align: "center", letterSpacing: 0.5, normalizedX: 0.1, normalizedY: 0.56, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
+      textSeed({ content: spec.subline, fontSize: 14, fill: BANNER_SUBLINE_FILL, align: "center", letterSpacing: 0.5, normalizedX: 0.1, normalizedY: 0.64, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
     );
   }
   const slug = spec.headline.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -2452,6 +2465,235 @@ function bannerMessageTemplate(spec: BannerMessageSpec, layout: "icon-stack" | "
 const BANNER_GENERATED: DesignTemplate[] = BANNER_MESSAGE_BATCH.flatMap((spec) => [
   bannerMessageTemplate(spec, "icon-stack"),
   bannerMessageTemplate(spec, "bold-text"),
+]);
+
+interface CardContactSpec {
+  iconId: string | null;
+  name: string;
+  title: string;
+  org: string;
+  category: TemplateCategory;
+  tags: string[];
+  accent: string;
+}
+
+const CARD_CONTACT_BATCH: CardContactSpec[] = [
+  { iconId: "roof-house", name: "Alex Morgan", title: "Real Estate Agent", org: "Morgan Realty Group", category: "real-estate", tags: ["real-estate", "agent", "card"], accent: PALETTES.navyOrange.a },
+  { iconId: null, name: "Taylor Reed", title: "Senior Consultant", org: "Reed & Co. Advisory", category: "corporate", tags: ["corporate", "consulting", "card"], accent: PALETTES.slateSteel.a },
+  { iconId: null, name: "Isabella Grant", title: "Creative Director", org: "Grant Atelier", category: "luxury", tags: ["luxury", "elegant", "card"], accent: PALETTES.blackGold.b },
+  { iconId: "compass", name: "Jordan Lee", title: "Graphic Designer", org: "Lee Creative Studio", category: "creative", tags: ["creative", "design", "card"], accent: PALETTES.purpleGold.a },
+  { iconId: "wrench-gear", name: "Mike Donovan", title: "General Contractor", org: "Donovan Builders", category: "contractor", tags: ["contractor", "trades", "card"], accent: PALETTES.espressoCream.a },
+  { iconId: "chef-hat", name: "Chef Antoine Guy", title: "Executive Chef", org: "La Table Bistro", category: "restaurant", tags: ["restaurant", "chef", "card"], accent: PALETTES.oxbloodCream.a },
+  { iconId: null, name: "Sophia Chen", title: "Hair Stylist", org: "Luxe Hair Studio", category: "beauty", tags: ["beauty", "salon", "card"], accent: PALETTES.plumBlush.a },
+  { iconId: null, name: "Marcus Hale", title: "Photographer", org: "Hale Photography Co.", category: "photography", tags: ["photography", "card"], accent: PALETTES.charcoalIce.a },
+  { iconId: "gear", name: "Sam Okafor", title: "Software Engineer", org: "Okafor Tech Solutions", category: "technology", tags: ["technology", "software", "card"], accent: PALETTES.cobaltChalk.a },
+  { iconId: "briefcase", name: "Dana Whitfield", title: "Account Manager", org: "Whitfield & Partners", category: "business", tags: ["business", "corporate", "card"], accent: PALETTES.denimWhite.a },
+  { iconId: "wrench-gear", name: "Pat Nguyen", title: "Licensed Electrician", org: "Nguyen Electric", category: "trades", tags: ["trades", "electrician", "card"], accent: PALETTES.inkSaffron.a },
+  { iconId: "coffee-bean", name: "Lena Brooks", title: "Owner", org: "Brooks Coffee Roasters", category: "food-cafe", tags: ["cafe", "coffee", "card"], accent: PALETTES.mossGold.a },
+  { iconId: "fundraiser-heart-hands", name: "Maria Santos", title: "Development Director", org: "Hope Foundation", category: "fundraisers", tags: ["fundraiser", "nonprofit", "card"], accent: PALETTES.deepJuniper.a },
+  { iconId: "graduation-cap", name: "David Kim", title: "Principal", org: "Lincoln Elementary", category: "schools", tags: ["school", "education", "card"], accent: PALETTES.tealNavy.b },
+  { iconId: "wheel", name: "Carlos Reyes", title: "Shop Manager", org: "Reyes Auto Repair", category: "automotive", tags: ["automotive", "repair", "card"], accent: PALETTES.graphiteLime.a },
+  { iconId: "club-badge", name: "Jamie Park", title: "Club President", org: "Riverside Social Club", category: "clubs", tags: ["club", "social", "card"], accent: PALETTES.burgundyGold.a },
+  { iconId: "maple-leaf", name: "Chris Dubois", title: "Owner", org: "Maple Grove Outfitters", category: "canadian", tags: ["canadian", "outdoors", "card"], accent: PALETTES.crimsonInk.a },
+  { iconId: "lightning", name: "Devon Clark", title: "Founder", org: "Clark Apparel Co.", category: "streetwear", tags: ["streetwear", "apparel", "card"], accent: PALETTES.sandstoneInk.b },
+  { iconId: "family-group", name: "The Johnson Family", title: "Family Daycare", org: "Sunny Days Daycare", category: "family", tags: ["family", "daycare", "card"], accent: PALETTES.terracottaCream.a },
+  { iconId: null, name: "Patricia Lowe", title: "CEO", org: "Lowe Industries", category: "corporate", tags: ["corporate", "executive", "card"], accent: PALETTES.oliveTan.a },
+];
+
+function cardContactTemplate(spec: CardContactSpec, layout: "left-icon" | "centered"): DesignTemplate {
+  const objects: TemplateObjectSeed[] = [];
+  if (layout === "left-icon") {
+    if (spec.iconId) {
+      const size = squareIcon("card-front", 0.22);
+      objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: 0.08, normalizedY: (1 - size.normalizedHeight) / 2, ...size, fill: spec.accent }));
+    }
+    const textX = spec.iconId ? 0.34 : 0.08;
+    const textW = spec.iconId ? 0.58 : 0.84;
+    objects.push(textSeed({ content: spec.name, fontSize: 18, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", normalizedX: textX, normalizedY: 0.2, normalizedWidth: textW, normalizedHeight: 0.14 }));
+    objects.push(textSeed({ content: spec.title, fontSize: 10, align: "left", fill: "#5b5348", normalizedX: textX, normalizedY: 0.38, normalizedWidth: textW, normalizedHeight: 0.1 }));
+    objects.push(textSeed({ content: spec.org, fontSize: 9, align: "left", fill: spec.accent, normalizedX: textX, normalizedY: 0.64, normalizedWidth: textW, normalizedHeight: 0.1 }));
+  } else {
+    objects.push(textSeed({ content: spec.org, fontSize: 19, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "center", letterSpacing: 1, normalizedX: 0.08, normalizedY: 0.2, normalizedWidth: 0.84, normalizedHeight: 0.16 }));
+    objects.push(shapeSeed({ shapeKind: "line", normalizedX: 0.4, normalizedY: 0.46, normalizedWidth: 0.2, normalizedHeight: 0.008, fill: spec.accent }));
+    objects.push(textSeed({ content: spec.name, fontSize: 11, align: "center", fill: "#5b5348", normalizedX: 0.1, normalizedY: 0.56, normalizedWidth: 0.8, normalizedHeight: 0.1 }));
+    objects.push(textSeed({ content: spec.title, fontSize: 9, align: "center", letterSpacing: 1, fill: "#5b5348", normalizedX: 0.1, normalizedY: 0.68, normalizedWidth: 0.8, normalizedHeight: 0.1 }));
+  }
+  const slug = spec.org.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return {
+    id: `tpl-card-gen-${layout}-${slug}`,
+    name: spec.org,
+    category: spec.category,
+    thumbnailUrl: "",
+    productFamilies: ["business-card"],
+    compatiblePrintAreas: ["card-front"],
+    orientation: "landscape",
+    tags: spec.tags,
+    linkedAssetIds: layout === "left-icon" && spec.iconId ? [`maple-${spec.iconId}`] : [],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects,
+  };
+}
+
+const CARD_GENERATED: DesignTemplate[] = CARD_CONTACT_BATCH.flatMap((spec) => [
+  cardContactTemplate(spec, "left-icon"),
+  cardContactTemplate(spec, "centered"),
+]);
+
+interface FlyerMessageSpec {
+  iconId: string | null;
+  headline: string;
+  subline: string;
+  detail: string;
+  category: TemplateCategory;
+  tags: string[];
+  accent: string;
+}
+
+const FLYER_MESSAGE_BATCH: FlyerMessageSpec[] = [
+  { iconId: "banner-ribbon", headline: "GRAND RE-OPENING", subline: "After our big renovation", detail: "This Saturday · 10AM", category: "grand-opening", tags: ["grand-opening", "flyer"], accent: PALETTES.navyOrange.a },
+  { iconId: null, headline: "FLASH SALE", subline: "This weekend only", detail: "50% off select items", category: "sale", tags: ["sale", "flyer"], accent: "#D41414" },
+  { iconId: "speed-lines", headline: "SATURDAY NIGHT", subline: "DJ sets · drink specials", detail: "Doors at 9PM", category: "nightlife", tags: ["nightlife", "flyer"], accent: PALETTES.graphiteLime.a },
+  { iconId: "handshake", headline: "COMMUNITY POTLUCK", subline: "Bring a dish to share", detail: "Sunday · 1PM · Fellowship Hall", category: "church-community", tags: ["community", "flyer"], accent: PALETTES.sandstoneInk.a },
+  { iconId: "wrench-gear", headline: "SPRING CLEANUP SPECIAL", subline: "Book now and save 20%", detail: "Call (555) 010-7788", category: "service-business", tags: ["service", "flyer"], accent: PALETTES.slateSteel.a },
+  { iconId: "star-burst", headline: "ANNUAL GALA", subline: "An evening to remember", detail: "Saturday · 7PM · Grand Hall", category: "events", tags: ["events", "gala", "flyer"], accent: PALETTES.burgundyGold.a },
+  { iconId: "balloon", headline: "YOU'RE INVITED", subline: "Join us for a birthday celebration", detail: "Saturday · 2PM", category: "birthday", tags: ["birthday", "flyer"], accent: "#D41414" },
+  { iconId: "fundraiser-heart-hands", headline: "CHARITY 5K RUN", subline: "All proceeds support local families", detail: "Register today", category: "fundraisers", tags: ["fundraiser", "5k", "flyer"], accent: PALETTES.deepJuniper.a },
+  { iconId: "graduation-cap", headline: "GRADUATION OPEN HOUSE", subline: "Please join us to celebrate", detail: "Sunday · 1–4PM", category: "graduation", tags: ["graduation", "flyer"], accent: PALETTES.inkSaffron.a },
+  { iconId: "roof-house", headline: "JUST LISTED", subline: "3 bed · 2 bath · move-in ready", detail: "Call for a private showing", category: "real-estate", tags: ["real-estate", "flyer"], accent: PALETTES.denimWhite.a },
+  { iconId: "chef-hat", headline: "NEW MENU LAUNCH", subline: "Fresh seasonal dishes", detail: "Now serving dinner nightly", category: "restaurant", tags: ["restaurant", "flyer"], accent: PALETTES.mossGold.a },
+  { iconId: "book-open", headline: "BACK TO SCHOOL NIGHT", subline: "Meet the teachers", detail: "Thursday · 6PM", category: "schools", tags: ["school", "flyer"], accent: PALETTES.tealNavy.b },
+  { iconId: "maple-leaf", headline: "CANADA DAY BBQ", subline: "Food, music, and fun for the family", detail: "July 1st · Noon", category: "canadian", tags: ["canadian", "flyer"], accent: "#D41414" },
+  { iconId: "trophy", headline: "TRYOUTS THIS WEEK", subline: "All skill levels welcome", detail: "Sign up at the front desk", category: "sports", tags: ["sports", "tryouts", "flyer"], accent: PALETTES.blackGold.a },
+  { iconId: "family-group", headline: "FAMILY FUN DAY", subline: "Games, food trucks, and prizes", detail: "Saturday · 11AM–3PM", category: "family", tags: ["family", "flyer"], accent: PALETTES.terracottaCream.a },
+  { iconId: "wrench-gear", headline: "FREE ESTIMATES", subline: "Licensed & insured", detail: "Call today for a quote", category: "trades", tags: ["trades", "flyer"], accent: PALETTES.espressoCream.a },
+  { iconId: null, headline: "CLEARANCE EVENT", subline: "Everything must go", detail: "While supplies last", category: "sale", tags: ["sale", "clearance", "flyer"], accent: PALETTES.crimsonInk.a },
+  { iconId: "snowflake", headline: "HOLIDAY MARKET", subline: "Local vendors & handmade gifts", detail: "Sat & Sun · 10AM–5PM", category: "events", tags: ["holiday", "market", "flyer"], accent: PALETTES.oxbloodCream.a },
+  { iconId: "fundraiser-heart-hands", headline: "FOOD DRIVE", subline: "Help us support local families", detail: "Drop off donations by Friday", category: "church-community", tags: ["community", "food-drive", "flyer"], accent: PALETTES.deepJuniper.b },
+  { iconId: "coffee-bean", headline: "NOW BOOKING", subline: "Limited appointments available", detail: "Call to reserve your spot", category: "service-business", tags: ["service", "booking", "flyer"], accent: PALETTES.mossGold.b },
+  { iconId: "croissant", headline: "BAKE SALE", subline: "All proceeds support the team", detail: "Saturday · 9AM–1PM", category: "fundraisers", tags: ["fundraiser", "bake-sale", "flyer"], accent: PALETTES.espressoCream.c },
+  { iconId: "roof-house", headline: "OPEN HOUSE THIS WEEKEND", subline: "Stop by for a tour", detail: "Saturday & Sunday · 1–4PM", category: "real-estate", tags: ["real-estate", "open-house", "flyer"], accent: PALETTES.slateSteel.a },
+  { iconId: "speed-lines", headline: "TRIVIA NIGHT", subline: "Win prizes · great drink specials", detail: "Every Wednesday · 7PM", category: "nightlife", tags: ["nightlife", "trivia", "flyer"], accent: PALETTES.purpleGold.a },
+];
+
+function flyerMessageTemplate(spec: FlyerMessageSpec, layout: "icon-top" | "bold-headline"): DesignTemplate {
+  const objects: TemplateObjectSeed[] = [];
+  if (layout === "icon-top" && spec.iconId) {
+    const size = squareIcon("flyer-front", 0.14);
+    objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.08, ...size, fill: spec.accent }));
+    objects.push(textSeed({ content: spec.headline, fontSize: fitHeadlineFontSize(spec.headline, 280, 16, 32), fontFamily: "Bricolage Grotesque, sans-serif", bold: true, normalizedY: 0.24, normalizedHeight: 0.24, letterSpacing: 1 }));
+    objects.push(textSeed({ content: spec.subline, fontSize: fitHeadlineFontSize(spec.subline, 330, 11, 15), normalizedY: 0.52, normalizedHeight: 0.16, fill: "#5b5348" }));
+    objects.push(textSeed({ content: spec.detail, fontSize: 13, normalizedY: 0.7, fill: spec.accent }));
+  } else {
+    objects.push(textSeed({ content: spec.headline, fontSize: fitHeadlineFontSize(spec.headline, 340, 18, 38), fontFamily: "Bricolage Grotesque, sans-serif", bold: true, normalizedY: 0.12, normalizedHeight: 0.26, fill: spec.accent }));
+    objects.push(shapeSeed({ shapeKind: "line", normalizedX: 0.3, normalizedY: 0.42, normalizedWidth: 0.4, normalizedHeight: 0.008, fill: spec.accent }));
+    objects.push(textSeed({ content: spec.subline, fontSize: fitHeadlineFontSize(spec.subline, 380, 12, 16), normalizedY: 0.48, normalizedHeight: 0.16 }));
+    objects.push(textSeed({ content: spec.detail, fontSize: 14, normalizedY: 0.66, fill: "#5b5348" }));
+  }
+  const slug = spec.headline.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return {
+    id: `tpl-flyer-gen-${layout}-${slug}`,
+    name: `${spec.headline.charAt(0)}${spec.headline.slice(1).toLowerCase()}`,
+    category: spec.category,
+    thumbnailUrl: "",
+    productFamilies: ["flyer"],
+    compatiblePrintAreas: ["flyer-front"],
+    orientation: "portrait",
+    tags: spec.tags,
+    linkedAssetIds: layout === "icon-top" && spec.iconId ? [`maple-${spec.iconId}`] : [],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects,
+  };
+}
+
+const FLYER_GENERATED: DesignTemplate[] = FLYER_MESSAGE_BATCH.flatMap((spec) => [
+  flyerMessageTemplate(spec, "icon-top"),
+  flyerMessageTemplate(spec, "bold-headline"),
+]);
+
+interface PosterMessageSpec {
+  eyebrow: string;
+  headline: string;
+  detail: string;
+  category: TemplateCategory;
+  tags: string[];
+  accent: string;
+}
+
+const POSTER_MESSAGE_BATCH: PosterMessageSpec[] = [
+  { eyebrow: "SOLD OUT", headline: "RIVER & ROAD TOUR", detail: "Saturday · 8PM · Civic Theatre", category: "concert", tags: ["concert", "music", "poster"], accent: "#D41414" },
+  { eyebrow: "LIVE MUSIC", headline: "ACOUSTIC NIGHTS", detail: "Every Friday · 7PM", category: "concert", tags: ["concert", "music", "poster"], accent: PALETTES.purpleGold.a },
+  { eyebrow: "NEW EXHIBITION", headline: "MODERN PERSPECTIVES", detail: "Opening Night · March 14", category: "art", tags: ["art", "exhibition", "poster"], accent: PALETTES.charcoalIce.a },
+  { eyebrow: "ART MARKET", headline: "LOCAL MAKERS & CREATORS", detail: "Saturday · 10AM–4PM", category: "art", tags: ["art", "market", "poster"], accent: PALETTES.terracottaCream.a },
+  { eyebrow: "ANNOUNCEMENT", headline: "GRAND RE-OPENING", detail: "We're back and better than ever", category: "announcement", tags: ["announcement", "grand-opening", "poster"], accent: PALETTES.navyOrange.a },
+  { eyebrow: "ANNOUNCEMENT", headline: "NOW HIRING", detail: "Apply within", category: "announcement", tags: ["announcement", "hiring", "poster"], accent: PALETTES.slateSteel.a },
+  { eyebrow: "SALE", headline: "BIGGEST SALE OF THE YEAR", detail: "Up to 60% off storewide", category: "sale", tags: ["sale", "poster"], accent: "#D41414" },
+  { eyebrow: "ANNUAL GALA", headline: "AN EVENING OF GIVING BACK", detail: "Saturday · 7PM", category: "events", tags: ["events", "gala", "poster"], accent: PALETTES.burgundyGold.a },
+  { eyebrow: "GAME DAY", headline: "CHAMPIONSHIP GAME", detail: "Friday · 7PM · Home Stadium", category: "sports", tags: ["sports", "poster"], accent: PALETTES.blackGold.a },
+  { eyebrow: "TRYOUTS", headline: "ALL SKILL LEVELS WELCOME", detail: "Sign up today", category: "sports", tags: ["sports", "tryouts", "poster"], accent: PALETTES.denimWhite.a },
+  { eyebrow: "SCIENCE FAIR", headline: "SEE WHAT OUR STUDENTS CREATED", detail: "Thursday · 6PM · Gymnasium", category: "schools", tags: ["school", "poster"], accent: PALETTES.tealNavy.b },
+  { eyebrow: "CLASS OF 2026", headline: "CONGRATULATIONS GRADUATES", detail: "Ceremony · Saturday · 10AM", category: "graduation", tags: ["graduation", "poster"], accent: PALETTES.inkSaffron.a },
+  { eyebrow: "CANADA DAY", headline: "FIREWORKS, FOOD & LIVE MUSIC", detail: "July 1st · Downtown", category: "canadian", tags: ["canadian", "poster"], accent: "#D41414" },
+  { eyebrow: "CHARITY AUCTION", headline: "BID TO SUPPORT A GREAT CAUSE", detail: "Saturday · 6PM", category: "fundraisers", tags: ["fundraiser", "auction", "poster"], accent: PALETTES.deepJuniper.a },
+  { eyebrow: "NOW OPEN", headline: "FRESH, LOCAL, MADE DAILY", detail: "Visit us downtown", category: "restaurant", tags: ["restaurant", "poster"], accent: PALETTES.mossGold.a },
+  { eyebrow: "NEW YEAR'S EVE", headline: "COUNTDOWN WITH US", detail: "Doors at 9PM", category: "nightlife", tags: ["nightlife", "poster"], accent: PALETTES.graphiteLime.a },
+  { eyebrow: "COMMUNITY FESTIVAL", headline: "FOOD, GAMES & LIVE ENTERTAINMENT", detail: "Saturday · Noon–6PM", category: "church-community", tags: ["community", "festival", "poster"], accent: PALETTES.sandstoneInk.a },
+  { eyebrow: "COMING SOON", headline: "SOMETHING BIG IS ON THE WAY", detail: "Stay tuned", category: "announcement", tags: ["announcement", "teaser", "poster"], accent: PALETTES.oxbloodCream.a },
+  { eyebrow: "SALE", headline: "CLEARANCE BLOWOUT", detail: "While supplies last", category: "sale", tags: ["sale", "clearance", "poster"], accent: PALETTES.crimsonInk.a },
+  { eyebrow: "BATTLE OF THE BANDS", headline: "VOTE FOR YOUR FAVORITE", detail: "Friday · 7PM", category: "concert", tags: ["concert", "poster"], accent: PALETTES.cobaltChalk.a },
+  { eyebrow: "PHOTOGRAPHY SHOWCASE", headline: "A CELEBRATION OF LOCAL TALENT", detail: "Opening reception · Friday", category: "art", tags: ["art", "photography", "poster"], accent: PALETTES.espressoCream.a },
+  { eyebrow: "WINTER MARKET", headline: "HANDMADE GIFTS & WARM TREATS", detail: "Sat & Sun · 10AM–5PM", category: "events", tags: ["events", "market", "poster"], accent: PALETTES.deepJuniper.b },
+  { eyebrow: "SPRING CONCERT", headline: "FEATURING OUR STUDENT MUSICIANS", detail: "Thursday · 7PM", category: "schools", tags: ["school", "music", "poster"], accent: PALETTES.tealNavy.a },
+];
+
+function posterMessageTemplate(spec: PosterMessageSpec, layout: "eyebrow-stack" | "bold-only"): DesignTemplate {
+  const objects: TemplateObjectSeed[] = [];
+  const headlineSize = fitHeadlineFontSize(spec.headline, 340, 14, 52);
+  if (layout === "eyebrow-stack") {
+    // A long headline can still legitimately wrap to two lines even at its fit-tuned font size —
+    // the budget only guarantees it fits the box width, not that it's short enough for one line.
+    // normalizedHeight/the gap to the next element below are sized for that two-line case so a
+    // wrap never collides with the eyebrow above or the divider/detail below (see
+    // fitHeadlineFontSize's doc comment for why a wrap can't be avoided outright).
+    objects.push(textSeed({ content: spec.eyebrow, fontSize: fitHeadlineFontSize(spec.eyebrow, 170, 11, 16), bold: true, letterSpacing: 2, normalizedY: 0.08, fill: spec.accent }));
+    objects.push(textSeed({ content: spec.headline, fontSize: headlineSize, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, normalizedY: 0.22, normalizedHeight: 0.3 }));
+    objects.push(shapeSeed({ shapeKind: "line", normalizedX: 0.3, normalizedY: 0.56, normalizedWidth: 0.4, normalizedHeight: 0.008, fill: spec.accent }));
+    objects.push(textSeed({ content: spec.detail, fontSize: 15, normalizedY: 0.62, fill: "#5b5348" }));
+  } else {
+    objects.push(textSeed({ content: spec.headline, fontSize: headlineSize, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, normalizedY: 0.14, normalizedHeight: 0.3, fill: spec.accent }));
+    objects.push(textSeed({ content: spec.eyebrow, fontSize: 18, bold: true, letterSpacing: 2, normalizedY: 0.48 }));
+    objects.push(textSeed({ content: spec.detail, fontSize: 14, normalizedY: 0.56, fill: "#5b5348" }));
+  }
+  const slug = spec.headline.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return {
+    id: `tpl-poster-gen-${layout}-${slug}`,
+    name: `${spec.headline.charAt(0)}${spec.headline.slice(1).toLowerCase()}`,
+    category: spec.category,
+    thumbnailUrl: "",
+    productFamilies: ["poster"],
+    compatiblePrintAreas: ["poster-front"],
+    orientation: "portrait",
+    tags: spec.tags,
+    linkedAssetIds: [],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects,
+  };
+}
+
+const POSTER_GENERATED: DesignTemplate[] = POSTER_MESSAGE_BATCH.flatMap((spec) => [
+  posterMessageTemplate(spec, "eyebrow-stack"),
+  posterMessageTemplate(spec, "bold-only"),
 ]);
 
 const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
@@ -2683,6 +2925,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
       textSeed({ content: "SCAN TO SAVE CONTACT", fontSize: 8, align: "left", letterSpacing: 1, fill: "#5b5348", normalizedX: 0.08, normalizedY: 0.7, normalizedWidth: 0.55, normalizedHeight: 0.1 }),
     ],
   },
+  ...CARD_GENERATED,
 
   // ============================================================
   // FLYERS — Section "FLYER TEMPLATE CATEGORIES". Portrait 8.5x11in box, proportioned close enough
@@ -2907,6 +3150,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
       textSeed({ content: "ADD QR", fontSize: 10, align: "center", fill: "#9C9284", normalizedX: 0.36, normalizedY: 0.58, normalizedWidth: 0.28, normalizedHeight: 0.06 }),
     ],
   },
+  ...FLYER_GENERATED,
 
   // ============================================================
   // POSTERS — Section "POSTER TEMPLATE CATEGORIES". Portrait 18x24in box.
@@ -3018,6 +3262,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
       textSeed({ content: "yourbusiness.com", fontSize: 13, normalizedY: 0.66, fill: "#5b5348" }),
     ],
   },
+  ...POSTER_GENERATED,
 
   // ============================================================
   // MUG WRAP — the "mug-wrap" print area is a wide, short box (8in x 3.3in real, ~2.4:1) sitting
