@@ -47,6 +47,14 @@ function capGraphic(fraction: number, y: number, fill?: string) {
   return { x: (1 - w) / 2, y, w, h, fill };
 }
 
+/** Full-bleed solid-color rectangle, meant as the first object in a banner composition. Vinyl
+ *  banner designs here are built white-text-on-color (matching how these actually print), but the
+ *  Studio canvas itself defaults to a light cream background — without this, that white text was
+ *  rendering almost invisibly against it. */
+function bannerBackground(fill: string): TemplateObjectSeed {
+  return shapeSeed({ normalizedX: 0, normalizedY: 0, normalizedWidth: 1, normalizedHeight: 1, shapeKind: "rectangle", fill });
+}
+
 export type TemplateCategory =
   | "business"
   | "trades"
@@ -2364,6 +2372,88 @@ const MUG_GENERATED: DesignTemplate[] = MUG_PHRASE_BATCH.flatMap((spec) => [
   mugPhraseTemplate(spec, "stack"),
 ]);
 
+interface BannerMessageSpec {
+  iconId: string | null;
+  headline: string;
+  subline: string;
+  category: TemplateCategory;
+  tags: string[];
+  bg: string;
+  fg: string;
+}
+
+// Subline is always this fixed light tan — every `bg` below was picked dark/saturated enough that
+// both this and a white/accent headline stay legible, so contrast doesn't need re-checking per spec.
+const BANNER_SUBLINE_FILL = "#D8CFC0";
+
+const BANNER_MESSAGE_BATCH: BannerMessageSpec[] = [
+  { iconId: "banner-ribbon", headline: "NOW OPEN", subline: "Join us for our grand opening", category: "grand-opening", tags: ["grand-opening", "open", "launch", "banner"], bg: PALETTES.navyOrange.a, fg: PALETTES.navyOrange.c },
+  { iconId: "confetti", headline: "COMING SOON", subline: "Something exciting is on the way", category: "grand-opening", tags: ["grand-opening", "coming-soon", "banner"], bg: PALETTES.purpleGold.a, fg: PALETTES.purpleGold.c },
+  { iconId: null, headline: "CLEARANCE SALE", subline: "Everything must go", category: "sale", tags: ["sale", "clearance", "discount", "banner"], bg: PALETTES.crimsonInk.a, fg: "#FFFFFF" },
+  { iconId: "star-burst", headline: "SPRING SALE", subline: "Up to 50% off storewide", category: "sale", tags: ["sale", "seasonal", "discount", "banner"], bg: PALETTES.forestCream.a, fg: "#FFFFFF" },
+  { iconId: "roof-house", headline: "FOR SALE", subline: "Call for a private showing", category: "real-estate", tags: ["real-estate", "for-sale", "property", "banner"], bg: PALETTES.blackGold.a, fg: PALETTES.blackGold.b },
+  { iconId: "roof-house", headline: "OPEN HOUSE", subline: "This weekend · All welcome", category: "real-estate", tags: ["real-estate", "open-house", "property", "banner"], bg: PALETTES.slateSteel.a, fg: "#FFFFFF" },
+  { iconId: "graduation-cap", headline: "GRADUATION PARTY", subline: "Please join us to celebrate", category: "graduation", tags: ["graduation", "party", "school", "banner"], bg: PALETTES.tealNavy.b, fg: PALETTES.tealNavy.a },
+  { iconId: "graduation-hat-2", headline: "CONGRATULATIONS GRAD", subline: "We're so proud of you", category: "graduation", tags: ["graduation", "congratulations", "banner"], bg: PALETTES.inkSaffron.a, fg: PALETTES.inkSaffron.b },
+  { iconId: "rings", headline: "HAPPY ANNIVERSARY", subline: "Celebrating the years together", category: "events", tags: ["anniversary", "celebration", "banner"], bg: PALETTES.oxbloodCream.a, fg: "#FFFFFF" },
+  { iconId: "trophy", headline: "RETIREMENT PARTY", subline: "Please join us", category: "events", tags: ["retirement", "party", "celebration", "banner"], bg: PALETTES.espressoCream.a, fg: "#FFFFFF" },
+  { iconId: "heart", headline: "BABY SHOWER", subline: "Please join us to celebrate", category: "family", tags: ["baby-shower", "family", "celebration", "banner"], bg: PALETTES.plumBlush.a, fg: PALETTES.plumBlush.b },
+  { iconId: "shield", headline: "GO TEAM", subline: "Let's bring it home", category: "sports-teams", tags: ["sports", "team", "spirit", "banner"], bg: PALETTES.denimWhite.a, fg: "#FFFFFF" },
+  { iconId: "trophy", headline: "CHAMPIONS", subline: "State champions 2026", category: "sports-teams", tags: ["sports", "champions", "trophy", "banner"], bg: PALETTES.blackGold.a, fg: PALETTES.blackGold.b },
+  { iconId: "book-open", headline: "WELCOME BACK STUDENTS", subline: "Have a great school year", category: "schools", tags: ["school", "welcome-back", "banner"], bg: PALETTES.cyanNavy.b, fg: PALETTES.cyanNavy.a },
+  { iconId: "fundraiser-heart-hands", headline: "FUNDRAISER", subline: "Support our cause", category: "fundraisers", tags: ["fundraiser", "charity", "support", "banner"], bg: PALETTES.deepJuniper.a, fg: PALETTES.deepJuniper.b },
+  { iconId: "car-silhouette", headline: "CAR WASH FUNDRAISER", subline: "All proceeds support the team", category: "fundraisers", tags: ["fundraiser", "car-wash", "banner"], bg: PALETTES.royalBlue.a, fg: "#FFFFFF" },
+  { iconId: "maple-leaf", headline: "HAPPY CANADA DAY", subline: "July 1st", category: "canadian", tags: ["canada", "canada-day", "holiday", "banner"], bg: PALETTES.crimsonInk.a, fg: "#FFFFFF" },
+  { iconId: "snowflake", headline: "SEASON'S GREETINGS", subline: "From our family to yours", category: "events", tags: ["holiday", "winter", "seasonal", "banner"], bg: PALETTES.slateSteel.a, fg: "#FFFFFF" },
+  { iconId: "food-truck", headline: "FOOD TRUCK HERE TODAY", subline: "Hot & fresh, every day", category: "restaurant", tags: ["restaurant", "food-truck", "banner"], bg: PALETTES.mossGold.a, fg: PALETTES.mossGold.b },
+  { iconId: "chef-hat", headline: "NOW SERVING", subline: "Fresh daily specials", category: "restaurant", tags: ["restaurant", "cafe", "banner"], bg: PALETTES.espressoCream.a, fg: "#FFFFFF" },
+  { iconId: "speed-lines", headline: "LIVE MUSIC TONIGHT", subline: "Doors open at 8PM", category: "nightlife", tags: ["nightlife", "live-music", "event", "banner"], bg: PALETTES.graphiteLime.a, fg: PALETTES.graphiteLime.b },
+  { iconId: "handshake", headline: "COMMUNITY POTLUCK", subline: "Everyone welcome", category: "church-community", tags: ["community", "potluck", "church", "banner"], bg: PALETTES.sandstoneInk.b, fg: PALETTES.sandstoneInk.a },
+];
+
+function bannerMessageTemplate(spec: BannerMessageSpec, layout: "icon-stack" | "bold-text"): DesignTemplate {
+  const objects: TemplateObjectSeed[] = [bannerBackground(spec.bg)];
+  if (layout === "icon-stack" && spec.iconId) {
+    const size = squareIcon("banner-face", 0.16);
+    objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.12, ...size, fill: spec.fg }));
+    objects.push(
+      textSeed({ content: spec.headline, fontSize: spec.headline.length > 16 ? 18 : 24, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: spec.fg, align: "center", normalizedX: 0.06, normalizedY: 0.4, normalizedWidth: 0.88, normalizedHeight: 0.16, letterSpacing: 1 }),
+    );
+    objects.push(
+      textSeed({ content: spec.subline, fontSize: 13, fill: BANNER_SUBLINE_FILL, align: "center", normalizedX: 0.1, normalizedY: 0.58, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
+    );
+  } else {
+    objects.push(
+      textSeed({ content: spec.headline, fontSize: spec.headline.length > 16 ? 24 : 32, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: spec.fg, align: "center", normalizedX: 0.06, normalizedY: 0.34, normalizedWidth: 0.88, normalizedHeight: 0.2, letterSpacing: 1 }),
+    );
+    objects.push(
+      textSeed({ content: spec.subline, fontSize: 14, fill: BANNER_SUBLINE_FILL, align: "center", letterSpacing: 0.5, normalizedX: 0.1, normalizedY: 0.56, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
+    );
+  }
+  const slug = spec.headline.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return {
+    id: `tpl-banner-gen-${layout}-${slug}`,
+    name: `${spec.headline.charAt(0)}${spec.headline.slice(1).toLowerCase()}`,
+    category: spec.category,
+    thumbnailUrl: "",
+    productFamilies: ["banner"],
+    compatiblePrintAreas: ["banner-face"],
+    tags: spec.tags,
+    linkedAssetIds: layout === "icon-stack" && spec.iconId ? [`maple-${spec.iconId}`] : [],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects,
+  };
+}
+
+const BANNER_GENERATED: DesignTemplate[] = BANNER_MESSAGE_BATCH.flatMap((spec) => [
+  bannerMessageTemplate(spec, "icon-stack"),
+  bannerMessageTemplate(spec, "bold-text"),
+]);
+
 const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
   // ============================================================
   // BUSINESS CARDS — Section "BUSINESS CARD TEMPLATE CATEGORIES". Landscape 3.5x2in box (see
@@ -3124,6 +3214,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.navyOrange.a),
       textSeed({ content: "GRAND OPENING", fontSize: 30, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.1, normalizedY: 0.36, normalizedWidth: 0.8, normalizedHeight: 0.18, letterSpacing: 1 }),
       textSeed({ content: "Now open at our new location", fontSize: 14, fill: "#D8CFC0", align: "center", normalizedX: 0.1, normalizedY: 0.56, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
     ],
@@ -3143,6 +3234,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.crimsonInk.b),
       textSeed({ content: "SALE", fontSize: 40, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#D41414", align: "center", normalizedX: 0.1, normalizedY: 0.3, normalizedWidth: 0.8, normalizedHeight: 0.22 }),
       textSeed({ content: "UP TO 40% OFF", fontSize: 16, fill: "#FFFFFF", align: "center", letterSpacing: 1, normalizedX: 0.1, normalizedY: 0.56, normalizedWidth: 0.8, normalizedHeight: 0.14 }),
     ],
@@ -3162,6 +3254,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.tealNavy.b),
       textSeed({ content: "CONGRATULATIONS", fontSize: 24, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.08, normalizedY: 0.4, normalizedWidth: 0.84, normalizedHeight: 0.16, letterSpacing: 1 }),
     ],
   },
@@ -3180,6 +3273,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.blackGold.a),
       textSeed({ content: "WELCOME", fontSize: 32, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.1, normalizedY: 0.38, normalizedWidth: 0.8, normalizedHeight: 0.2, letterSpacing: 3 }),
     ],
   },
@@ -3198,11 +3292,12 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.denimWhite.a),
       graphicSeed("maple-shield", (() => {
         // banner-face has no single real aspect ratio (it varies per order) — sized against the
         // portrait placeholder box as a reasonable default; see squareIcon's doc comment.
         const size = squareIcon("banner-face", 0.14);
-        return { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.14, ...size };
+        return { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.14, ...size, fill: "#FFFFFF" };
       })()),
       textSeed({ content: "YOUR BUSINESS NAME", fontSize: 22, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.08, normalizedY: 0.42, normalizedWidth: 0.84, normalizedHeight: 0.16, letterSpacing: 1 }),
       textSeed({ content: "Quality service since 2015", fontSize: 12, fill: "#D8CFC0", align: "center", normalizedX: 0.1, normalizedY: 0.62, normalizedWidth: 0.8, normalizedHeight: 0.1 }),
@@ -3223,6 +3318,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.oxbloodCream.a),
       textSeed({ content: "YOU'RE INVITED", fontSize: 22, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.1, normalizedY: 0.32, normalizedWidth: 0.8, normalizedHeight: 0.16, letterSpacing: 1 }),
       textSeed({ content: "Saturday, June 14 · 10AM", fontSize: 13, fill: "#D8CFC0", align: "center", normalizedX: 0.1, normalizedY: 0.54, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
     ],
@@ -3242,6 +3338,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.navyOrange.a),
       graphicSeed("maple-balloon", (() => {
         const size = squareIcon("banner-face", 0.16);
         return { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.1, ...size, fill: "#D41414" };
@@ -3264,10 +3361,12 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
+      bannerBackground(PALETTES.slateSteel.a),
       textSeed({ content: "NOW HIRING", fontSize: 30, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.1, normalizedY: 0.34, normalizedWidth: 0.8, normalizedHeight: 0.18, letterSpacing: 2 }),
       textSeed({ content: "Apply within", fontSize: 13, fill: "#D8CFC0", align: "center", normalizedX: 0.1, normalizedY: 0.56, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
     ],
   },
+  ...BANNER_GENERATED,
 
   // ============================================================
   // STICKER FACE — "sticker-face" is a centered square-ish box (3x3in real, matching the common
@@ -4891,11 +4990,21 @@ const RECOMMENDED_CATEGORY_ORDER: Record<ProductFamily, TemplateCategory[]> = {
 
 /** Templates store a Maple asset id in `content` on image seeds (module-load time has no async
  *  asset lookup) — this resolves those to real data-URL asset sources right before the objects are
- *  copied into a DesignProject, and clears `content` back to null (image objects don't use it). */
+ *  copied into a DesignProject, and clears `content` back to null (image objects don't use it).
+ *  When the seed set an explicit `fill`, recolor via recolorMapleAsset() instead of taking the
+ *  asset's raw productionSource (always the library default #171412 ink) — without this, every
+ *  `graphicSeed(id, { fill })` call across every template silently rendered in the default ink
+ *  color no matter what fill it asked for, which is invisible on light template backgrounds but
+ *  renders icons essentially invisible on a dark one (surfaced by the banner backgrounds added
+ *  alongside this fix). */
 export async function resolveTemplateAssets(objects: TemplateObjectSeed[]): Promise<TemplateObjectSeed[]> {
   return Promise.all(
     objects.map(async (o) => {
       if (o.type !== "image" || !o.content) return o;
+      if (o.fill) {
+        const recolored = recolorMapleAsset(o.content, o.fill);
+        if (recolored) return { ...o, assetUrl: recolored, content: null };
+      }
       const asset = await MapleAssetProvider.getAsset(o.content);
       return { ...o, assetUrl: asset?.productionSource ?? null, content: null };
     }),
