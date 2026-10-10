@@ -38,6 +38,7 @@ export default function ProductsPage() {
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    priority={i < 3}
                     className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
                   />
                 </div>

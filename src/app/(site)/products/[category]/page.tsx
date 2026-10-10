@@ -138,6 +138,7 @@ export default async function CategoryPage({
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                    priority={i < 5}
                     className="object-cover transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />

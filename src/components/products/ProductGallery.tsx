@@ -98,7 +98,7 @@ export function ProductGallery({
                 i === index ? "ring-ink-950" : "ring-transparent hover:ring-sand",
               )}
             >
-              <Image src={img.url} alt="" fill sizes="120px" className="object-cover" />
+              <Image src={img.url} alt="" fill sizes="120px" priority={i < 4} className="object-cover" />
             </button>
           ))}
         </div>
