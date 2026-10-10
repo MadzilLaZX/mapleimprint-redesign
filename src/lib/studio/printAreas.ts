@@ -93,8 +93,12 @@ export interface PlacementGeometry {
  *  Konva Group representing each location's local coordinate space is the thing that actually
  *  rotates when rotationDeg is non-zero (see CanvasStage.tsx) — sleeves just no longer need it. */
 export const PLACEMENT_GEOMETRY: Record<DesignSideType, PlacementGeometry> = {
-  front: { xFrac: 0.3, yFrac: 0.22, widthFrac: 0.4, heightFrac: 0.36, rotationDeg: 0 },
-  back: { xFrac: 0.3, yFrac: 0.22, widthFrac: 0.4, heightFrac: 0.36, rotationDeg: 0 },
+  // widthFrac/heightFrac corrected to the real 12x16in (0.75) aspect from PRINT_AREAS above —
+  // the box was previously 208x234px (0.889 aspect), stretching anything placed inside it
+  // (icons, the canvas itself) by ~12%. Same center and area as the old box, so it still sits
+  // over the same spot on the S&S flat-lay photo, just correctly proportioned.
+  front: { xFrac: 0.3163, yFrac: 0.2041, widthFrac: 0.3674, heightFrac: 0.3919, rotationDeg: 0 },
+  back: { xFrac: 0.3163, yFrac: 0.2041, widthFrac: 0.3674, heightFrac: 0.3919, rotationDeg: 0 },
   "left-chest": { xFrac: 0.56, yFrac: 0.22, widthFrac: 0.14, heightFrac: 0.11, rotationDeg: 0 },
   "right-chest": { xFrac: 0.3, yFrac: 0.22, widthFrac: 0.14, heightFrac: 0.11, rotationDeg: 0 },
   // Positioned within each sleeve's own schematic illustration (sleeveSchematicSvg) — large enough
