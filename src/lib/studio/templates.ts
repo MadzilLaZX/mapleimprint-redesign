@@ -20,6 +20,32 @@
 import type { DesignObjectRecord, DesignSideType, ShapeKind, TextAlign } from "./types";
 import type { ProductFamily } from "./productDecorationProfile";
 import { MapleAssetProvider, recolorMapleAsset } from "./assetProviders";
+import { printAreaPixelBox } from "./printAreas";
+
+/** Every MAPLE_GRAPHICS/open-source icon has a square source viewBox — this is what guarantees
+ *  one renders as a true square (never stretched into an ellipse-like smear) regardless of how
+ *  non-square the print-area box itself is. normalizedWidth/normalizedHeight are fractions of
+ *  TWO DIFFERENT physical dimensions (box width vs. box height); equal fractions only look square
+ *  when the box itself is square. `fraction` is sized against the box's SHORTER physical side (so
+ *  it's never clipped), matching how a human eye judges "how big" an icon looks regardless of the
+ *  box's own proportions. (This was exactly the bug in the first mug templates — pine
+ *  tree/balloon/heart icons rendered visibly stretched tall because their normalizedWidth/Height
+ *  were hand-picked without accounting for mug-wrap's ~2.4:1 aspect.) Banner-face is excluded —
+ *  its real aspect varies per order (no single box to size against at template-definition time)
+ *  — callers should keep banner graphics modest/centered rather than relying on this. */
+function squareIcon(location: DesignSideType, fraction: number): { normalizedWidth: number; normalizedHeight: number } {
+  const box = printAreaPixelBox(location);
+  const aspect = box.width / box.height;
+  if (aspect >= 1) return { normalizedHeight: fraction, normalizedWidth: (fraction * box.height) / box.width };
+  return { normalizedWidth: fraction, normalizedHeight: (fraction * box.width) / box.height };
+}
+
+/** build()'s TemplateSpec.graphic shape (x/y/w/h), pre-sized to a true square via squareIcon()
+ *  and horizontally centered — used by the headwear specs below instead of hand-picked w/h. */
+function capGraphic(fraction: number, y: number, fill?: string) {
+  const { normalizedWidth: w, normalizedHeight: h } = squareIcon("front", fraction);
+  return { x: (1 - w) / 2, y, w, h, fill };
+}
 
 export type TemplateCategory =
   | "business"
@@ -1048,7 +1074,7 @@ const SPECS: TemplateSpec[] = [
     category: "sports-teams",
     tags: ["team", "sports", "cap", "crest"],
     productFamilies: ["headwear"],
-    graphic: { assetId: "shield", x: 0.38, y: 0.14, w: 0.24, h: 0.26 },
+    graphic: { assetId: "shield", ...capGraphic(0.26, 0.14) },
     lines: [{ text: "VARSITY", y: 0.52, size: 14, bold: true, font: DISPLAY_FONT, ls: 2 }],
     featured: true,
   },
@@ -1066,7 +1092,7 @@ const SPECS: TemplateSpec[] = [
     category: "streetwear",
     tags: ["outdoor", "mountain", "cap", "nature"],
     productFamilies: ["headwear"],
-    graphic: { assetId: "mountain", x: 0.3, y: 0.16, w: 0.4, h: 0.22 },
+    graphic: { assetId: "mountain", ...capGraphic(0.3, 0.14) },
     lines: [{ text: "OUTDOORS", y: 0.5, size: 12, bold: true, ls: 2, fill: "#5b5348" }],
   },
   {
@@ -1075,7 +1101,7 @@ const SPECS: TemplateSpec[] = [
     category: "minimal",
     tags: ["star", "minimal", "cap", "simple"],
     productFamilies: ["headwear"],
-    graphic: { assetId: "star-burst", x: 0.4, y: 0.2, w: 0.2, h: 0.2 },
+    graphic: { assetId: "star-burst", ...capGraphic(0.22, 0.2) },
     lines: [],
   },
   {
@@ -1084,7 +1110,7 @@ const SPECS: TemplateSpec[] = [
     category: "canadian",
     tags: ["canada", "maple", "cap", "canadian"],
     productFamilies: ["headwear"],
-    graphic: { assetId: "maple-leaf", x: 0.38, y: 0.16, w: 0.24, h: 0.24, fill: "#D41414" },
+    graphic: { assetId: "maple-leaf", ...capGraphic(0.26, 0.16, "#D41414") },
     lines: [],
     featured: true,
   },
@@ -1094,7 +1120,7 @@ const SPECS: TemplateSpec[] = [
     category: "streetwear",
     tags: ["crown", "streetwear", "cap", "bold"],
     productFamilies: ["headwear"],
-    graphic: { assetId: "crown", x: 0.36, y: 0.18, w: 0.28, h: 0.2 },
+    graphic: { assetId: "crown", ...capGraphic(0.24, 0.18) },
     lines: [],
   },
   {
@@ -1103,7 +1129,7 @@ const SPECS: TemplateSpec[] = [
     category: "sports-teams",
     tags: ["trophy", "champion", "sports", "cap"],
     productFamilies: ["headwear"],
-    graphic: { assetId: "trophy", x: 0.37, y: 0.14, w: 0.26, h: 0.26 },
+    graphic: { assetId: "trophy", ...capGraphic(0.26, 0.12) },
     lines: [{ text: "CHAMPS", y: 0.52, size: 13, bold: true, font: DISPLAY_FONT, ls: 1.5 }],
   },
   {
@@ -1112,7 +1138,7 @@ const SPECS: TemplateSpec[] = [
     category: "streetwear",
     tags: ["flame", "streetwear", "cap", "bold"],
     productFamilies: ["headwear"],
-    graphic: { assetId: "flame", x: 0.38, y: 0.14, w: 0.24, h: 0.28, fill: "#D41414" },
+    graphic: { assetId: "flame", ...capGraphic(0.26, 0.14, "#D41414") },
     lines: [],
   },
 ];
@@ -2137,6 +2163,207 @@ const CREATIVE_SPECS: CreativeSpec[] = [
 // them and their layouts (landscape cards vs. portrait flyers/posters) don't share a common
 // compact shorthand the way the apparel collections' front-and-center compositions do.
 // ===========================================================================================
+
+// ============================================================
+// STICKER FACE — generated batch, defined here (ahead of FLAT_PRINT_TEMPLATES, which spreads it
+// in) since const declarations aren't hoisted. Every entry uses a real, already-licensed icon
+// from MAPLE_GRAPHICS (assetProviders.ts) — the same library the 10 hand-built sticker templates
+// later in this file draw from, not a new/unverified source. Two clean, genuinely distinct
+// compositions per icon (a plain centered mark, and a circle-badge outline around it) rather than
+// one template repeated with only a colour swap — real sticker shops sell both styles as distinct
+// products. Sized exclusively through squareIcon() so none of these can repeat the stretched-icon
+// bug the first mug templates had.
+interface StickerIconSpec {
+  iconId: string; // MAPLE_GRAPHICS registry id — graphicSeed prefixes this with "maple-" itself
+  name: string;
+  category: TemplateCategory;
+  tags: string[];
+  fill?: string;
+}
+
+const STICKER_ICON_BATCH: StickerIconSpec[] = [
+  { iconId: "laurel", name: "Laurel Wreath", category: "vintage", tags: ["award", "vintage", "wreath"] },
+  { iconId: "bolt", name: "Bolt", category: "sports-teams", tags: ["energy", "sport", "fast"] },
+  { iconId: "compass", name: "Compass", category: "trades", tags: ["direction", "travel", "outdoor"] },
+  { iconId: "wrench-gear", name: "Wrench & Gear", category: "automotive", tags: ["mechanic", "trades", "automotive"] },
+  { iconId: "graduation-cap", name: "Graduation Cap", category: "graduation", tags: ["school", "grad", "education"] },
+  { iconId: "crown", name: "Crown", category: "streetwear", tags: ["crown", "royal", "streetwear"] },
+  { iconId: "snowflake", name: "Snowflake", category: "events", tags: ["winter", "seasonal", "event"] },
+  { iconId: "banner-ribbon", name: "Ribbon Banner", category: "business", tags: ["ribbon", "label", "business"] },
+  { iconId: "checkered-flag", name: "Checkered Flag", category: "automotive", tags: ["racing", "motorsport", "automotive"] },
+  { iconId: "basketball", name: "Basketball", category: "sports-teams", tags: ["basketball", "sports", "team"] },
+  { iconId: "soccer-ball", name: "Soccer Ball", category: "sports-teams", tags: ["soccer", "football", "sports", "team"] },
+  { iconId: "hockey-stick", name: "Hockey Sticks", category: "sports-teams", tags: ["hockey", "sports", "team"] },
+  { iconId: "baseball", name: "Baseball", category: "sports-teams", tags: ["baseball", "sports", "team"] },
+  { iconId: "volleyball", name: "Volleyball", category: "sports-teams", tags: ["volleyball", "sports", "team"] },
+  { iconId: "whistle", name: "Coach Whistle", category: "sports-teams", tags: ["coach", "sports", "team", "staff"] },
+  { iconId: "coffee-bean", name: "Coffee Bean", category: "food-cafe", tags: ["coffee", "cafe", "bean"] },
+  { iconId: "pizza-slice", name: "Pizza Slice", category: "food-cafe", tags: ["pizza", "food", "restaurant"] },
+  { iconId: "croissant", name: "Bakery", category: "food-cafe", tags: ["bakery", "pastries", "food", "cafe"] },
+  { iconId: "burger", name: "Burger", category: "food-cafe", tags: ["burger", "food", "restaurant"] },
+  { iconId: "briefcase", name: "Briefcase", category: "business", tags: ["business", "office", "professional"] },
+  { iconId: "handshake", name: "Handshake", category: "business", tags: ["business", "service", "trust"] },
+  { iconId: "book-open", name: "Open Book", category: "schools", tags: ["school", "education", "club"] },
+  { iconId: "balloon", name: "Balloons", category: "birthday", tags: ["birthday", "party", "celebration"] },
+  { iconId: "maple-flag", name: "Canadian Flag", category: "canadian", tags: ["canada", "flag", "canadian"] },
+  { iconId: "family-group", name: "Family", category: "family", tags: ["family", "reunion", "group"] },
+  { iconId: "fundraiser-heart-hands", name: "Giving Hands", category: "fundraisers", tags: ["fundraiser", "charity", "volunteer"] },
+  { iconId: "club-badge", name: "Club Badge", category: "clubs", tags: ["club", "society", "badge", "crest"] },
+  { iconId: "wings", name: "Memorial Wings", category: "memorial", tags: ["memorial", "remembrance"] },
+  { iconId: "trophy", name: "Trophy", category: "sports-teams", tags: ["trophy", "champion", "award"] },
+  { iconId: "gear", name: "Gear", category: "trades", tags: ["gear", "mechanic", "industrial"] },
+  { iconId: "pine-tree", name: "Pine Tree", category: "canadian", tags: ["outdoors", "nature", "tree"] },
+  { iconId: "sun", name: "Sun", category: "canadian", tags: ["outdoors", "sun", "summer"] },
+  { iconId: "wheel", name: "Wheel", category: "automotive", tags: ["automotive", "wheel", "racing"] },
+  { iconId: "torch", name: "Torch", category: "schools", tags: ["torch", "graduation", "academic"] },
+  { iconId: "rings", name: "Wedding Rings", category: "events", tags: ["wedding", "rings", "celebration"] },
+  { iconId: "chef-hat", name: "Chef Hat", category: "food-cafe", tags: ["chef", "restaurant", "kitchen"] },
+  { iconId: "abstract-diamond", name: "Abstract Diamond", category: "streetwear", tags: ["abstract", "geometric", "urban"] },
+  { iconId: "puck", name: "Hockey Puck", category: "sports-teams", tags: ["hockey", "puck", "sports"] },
+  { iconId: "shield", name: "Shield", category: "sports-teams", tags: ["team", "crest", "badge"] },
+  { iconId: "wave", name: "Wave", category: "minimal", tags: ["water", "wave", "minimal"] },
+  { iconId: "lightning", name: "Lightning", category: "trades", tags: ["electrical", "power", "trades"] },
+  { iconId: "mountain", name: "Mountain", category: "streetwear", tags: ["outdoor", "nature", "streetwear"] },
+];
+
+function stickerIconTemplate(spec: StickerIconSpec, variant: "plain" | "badge"): DesignTemplate {
+  const size = squareIcon("sticker-face", variant === "badge" ? 0.5 : 0.66);
+  const iconX = (1 - size.normalizedWidth) / 2;
+  const iconY = variant === "badge" ? 0.22 : (1 - size.normalizedHeight) / 2;
+  const objects: TemplateObjectSeed[] = [];
+  if (variant === "badge") {
+    objects.push(
+      shapeSeed({ shapeKind: "circle", fill: "transparent", strokeColor: "#171412", strokeWidth: 3, normalizedX: 0.06, normalizedY: 0.06, normalizedWidth: 0.88, normalizedHeight: 0.88 }),
+    );
+  }
+  objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: iconX, normalizedY: iconY, ...size, fill: spec.fill ?? "#171412" }));
+  if (variant === "badge") {
+    objects.push(
+      textSeed({ content: spec.name.toUpperCase(), fontSize: 9, fontFamily: BODY_FONT, bold: true, align: "center", letterSpacing: 1, fill: "#5b5348", normalizedX: 0.1, normalizedY: 0.78, normalizedWidth: 0.8, normalizedHeight: 0.12 }),
+    );
+  }
+  return {
+    id: `tpl-sticker-gen-${spec.iconId}-${variant}`,
+    name: variant === "badge" ? `${spec.name} Badge` : spec.name,
+    category: spec.category,
+    thumbnailUrl: "",
+    productFamilies: ["sticker"],
+    compatiblePrintAreas: ["sticker-face"],
+    orientation: "square",
+    tags: spec.tags,
+    linkedAssetIds: [`maple-${spec.iconId}`],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects,
+  };
+}
+
+const STICKER_GENERATED: DesignTemplate[] = STICKER_ICON_BATCH.flatMap((spec) => [
+  stickerIconTemplate(spec, "plain"),
+  stickerIconTemplate(spec, "badge"),
+]);
+
+// ============================================================
+// MUG WRAP — generated batch, same reasoning/placement as STICKER_GENERATED above (has to exist
+// before FLAT_PRINT_TEMPLATES spreads it in). Two genuinely different layouts per icon+phrase
+// pair — "side" (icon left, text right, the same composition the 8 hand-built mug templates use)
+// and "stack" (icon centered above a centered line of text) — not just a colour swap.
+interface MugPhraseSpec {
+  iconId: string;
+  phrase: string;
+  category: TemplateCategory;
+  tags: string[];
+  fill?: string;
+}
+
+const MUG_PHRASE_BATCH: MugPhraseSpec[] = [
+  { iconId: "coffee-bean", phrase: "COFFEE TIME", category: "food-cafe", tags: ["coffee", "mug", "morning"] },
+  { iconId: "heart", phrase: "LOVE YOU", category: "family", tags: ["love", "family", "gift"], fill: "#D41414" },
+  { iconId: "star-burst", phrase: "YOU'RE A STAR", category: "business", tags: ["appreciation", "star", "gift"] },
+  { iconId: "crown", phrase: "BOSS LADY", category: "business", tags: ["boss", "crown", "gift"] },
+  { iconId: "paw", phrase: "DOG MOM", category: "family", tags: ["pet", "dog", "mom"] },
+  { iconId: "mountain", phrase: "ADVENTURE AWAITS", category: "streetwear", tags: ["outdoor", "adventure", "travel"] },
+  { iconId: "sun", phrase: "GOOD VIBES", category: "minimal", tags: ["sun", "positive", "minimal"] },
+  { iconId: "graduation-cap", phrase: "CLASS OF 2026", category: "graduation", tags: ["graduation", "grad", "school"] },
+  { iconId: "flame", phrase: "ON FIRE", category: "streetwear", tags: ["flame", "bold", "motivation"], fill: "#D41414" },
+  { iconId: "trophy", phrase: "CHAMPION", category: "sports-teams", tags: ["trophy", "champion", "sports"] },
+  { iconId: "gear", phrase: "WORK HARD", category: "trades", tags: ["work", "trades", "motivation"] },
+  { iconId: "pine-tree", phrase: "CABIN VIBES", category: "canadian", tags: ["cabin", "outdoors", "nature"], fill: "#2F5233" },
+  { iconId: "maple-leaf", phrase: "PROUDLY CANADIAN", category: "canadian", tags: ["canada", "canadian", "pride"], fill: "#D41414" },
+  { iconId: "balloon", phrase: "LET'S CELEBRATE", category: "birthday", tags: ["birthday", "celebration", "party"], fill: "#D41414" },
+  { iconId: "family-group", phrase: "OUR FAMILY", category: "family", tags: ["family", "home", "gift"] },
+  { iconId: "club-badge", phrase: "TEAM PLAYER", category: "clubs", tags: ["team", "club", "sports"] },
+  { iconId: "wave", phrase: "BEACH DAYS", category: "minimal", tags: ["beach", "summer", "vacation"] },
+  { iconId: "chef-hat", phrase: "HOME CHEF", category: "food-cafe", tags: ["chef", "cooking", "kitchen"] },
+  { iconId: "book-open", phrase: "BOOKWORM", category: "schools", tags: ["books", "reading", "gift"] },
+  { iconId: "rings", phrase: "JUST MARRIED", category: "events", tags: ["wedding", "married", "gift"] },
+  { iconId: "snowflake", phrase: "WINTER VIBES", category: "events", tags: ["winter", "seasonal", "holiday"] },
+  { iconId: "briefcase", phrase: "OFFICE LEGEND", category: "business", tags: ["office", "work", "gift"] },
+];
+
+function mugPhraseTemplate(spec: MugPhraseSpec, layout: "side" | "stack"): DesignTemplate {
+  const objects: TemplateObjectSeed[] = [];
+  if (layout === "side") {
+    const size = squareIcon("mug-wrap", 0.62);
+    objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: 0.07, normalizedY: (1 - size.normalizedHeight) / 2, ...size, fill: spec.fill ?? "#171412" }));
+    objects.push(
+      textSeed({
+        content: spec.phrase,
+        fontSize: spec.phrase.length > 12 ? 16 : 22,
+        fontFamily: "Bricolage Grotesque, sans-serif",
+        bold: true,
+        align: "left",
+        normalizedX: 0.07 + size.normalizedWidth + 0.06,
+        normalizedY: 0.38,
+        normalizedWidth: 0.92 - size.normalizedWidth,
+        normalizedHeight: 0.24,
+      }),
+    );
+  } else {
+    const size = squareIcon("mug-wrap", 0.4);
+    objects.push(graphicSeed(`maple-${spec.iconId}`, { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.08, ...size, fill: spec.fill ?? "#171412" }));
+    objects.push(
+      textSeed({
+        content: spec.phrase,
+        fontSize: spec.phrase.length > 12 ? 14 : 18,
+        fontFamily: "Bricolage Grotesque, sans-serif",
+        bold: true,
+        align: "center",
+        letterSpacing: 1,
+        normalizedX: 0.06,
+        normalizedY: 0.58,
+        normalizedWidth: 0.88,
+        normalizedHeight: 0.3,
+      }),
+    );
+  }
+  return {
+    id: `tpl-mug-gen-${spec.iconId}-${layout}-${spec.phrase.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    name: `${spec.phrase.charAt(0)}${spec.phrase.slice(1).toLowerCase()}`,
+    category: spec.category,
+    thumbnailUrl: "",
+    productFamilies: ["mug"],
+    compatiblePrintAreas: ["mug-wrap"],
+    orientation: "landscape",
+    tags: spec.tags,
+    linkedAssetIds: [`maple-${spec.iconId}`],
+    featured: false,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects,
+  };
+}
+
+const MUG_GENERATED: DesignTemplate[] = MUG_PHRASE_BATCH.flatMap((spec) => [
+  mugPhraseTemplate(spec, "side"),
+  mugPhraseTemplate(spec, "stack"),
+]);
+
 const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
   // ============================================================
   // BUSINESS CARDS — Section "BUSINESS CARD TEMPLATE CATEGORIES". Landscape 3.5x2in box (see
@@ -2723,7 +2950,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
-      graphicSeed("maple-trophy", { normalizedX: 0.06, normalizedY: 0.18, normalizedWidth: 0.22, normalizedHeight: 0.64 }),
+      graphicSeed("maple-trophy", { normalizedX: 0.06, normalizedY: 0.18, ...squareIcon("mug-wrap", 0.64) }),
       textSeed({ content: "WORLD'S BEST", fontSize: 18, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", letterSpacing: 1, normalizedX: 0.34, normalizedY: 0.28, normalizedWidth: 0.6, normalizedHeight: 0.22 }),
       textSeed({ content: "BOSS", fontSize: 26, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", normalizedX: 0.34, normalizedY: 0.5, normalizedWidth: 0.6, normalizedHeight: 0.3 }),
     ],
@@ -2764,7 +2991,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
-      graphicSeed("maple-briefcase", { normalizedX: 0.07, normalizedY: 0.26, normalizedWidth: 0.18, normalizedHeight: 0.48 }),
+      graphicSeed("maple-briefcase", { normalizedX: 0.07, normalizedY: 0.26, ...squareIcon("mug-wrap", 0.48) }),
       textSeed({ content: "YOUR COMPANY", fontSize: 19, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", normalizedX: 0.32, normalizedY: 0.3, normalizedWidth: 0.62, normalizedHeight: 0.22 }),
       textSeed({ content: "EST. 2015", fontSize: 11, align: "left", letterSpacing: 2, fill: "#5b5348", normalizedX: 0.32, normalizedY: 0.56, normalizedWidth: 0.62, normalizedHeight: 0.14 }),
     ],
@@ -2785,7 +3012,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
-      graphicSeed("maple-balloon", { normalizedX: 0.07, normalizedY: 0.14, normalizedWidth: 0.22, normalizedHeight: 0.72, fill: "#D41414" }),
+      graphicSeed("maple-balloon", { normalizedX: 0.07, normalizedY: 0.14, ...squareIcon("mug-wrap", 0.72), fill: "#D41414" }),
       textSeed({ content: "HAPPY", fontSize: 20, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", normalizedX: 0.34, normalizedY: 0.26, normalizedWidth: 0.6, normalizedHeight: 0.24 }),
       textSeed({ content: "BIRTHDAY!", fontSize: 24, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", fill: "#D41414", normalizedX: 0.34, normalizedY: 0.5, normalizedWidth: 0.62, normalizedHeight: 0.28 }),
     ],
@@ -2807,7 +3034,10 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     updatedAt: NOW,
     objects: [
       textSeed({ content: "TEAM", fontSize: 32, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "center", letterSpacing: 3, normalizedX: 0.1, normalizedY: 0.16, normalizedWidth: 0.8, normalizedHeight: 0.3 }),
-      graphicSeed("maple-handshake", { normalizedX: 0.38, normalizedY: 0.5, normalizedWidth: 0.24, normalizedHeight: 0.4 }),
+      graphicSeed("maple-handshake", (() => {
+        const size = squareIcon("mug-wrap", 0.4);
+        return { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.5, ...size };
+      })()),
     ],
   },
   {
@@ -2845,7 +3075,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
-      graphicSeed("maple-heart", { normalizedX: 0.08, normalizedY: 0.22, normalizedWidth: 0.2, normalizedHeight: 0.56, fill: "#D41414" }),
+      graphicSeed("maple-heart", { normalizedX: 0.08, normalizedY: 0.22, ...squareIcon("mug-wrap", 0.56), fill: "#D41414" }),
       textSeed({ content: "THANK YOU", fontSize: 24, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", normalizedX: 0.34, normalizedY: 0.38, normalizedWidth: 0.6, normalizedHeight: 0.26 }),
     ],
   },
@@ -2865,11 +3095,12 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
-      graphicSeed("maple-pine-tree", { normalizedX: 0.08, normalizedY: 0.14, normalizedWidth: 0.2, normalizedHeight: 0.72, fill: "#2F5233" }),
+      graphicSeed("maple-pine-tree", { normalizedX: 0.08, normalizedY: 0.14, ...squareIcon("mug-wrap", 0.72), fill: "#2F5233" }),
       textSeed({ content: "HOME", fontSize: 20, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, align: "left", normalizedX: 0.34, normalizedY: 0.26, normalizedWidth: 0.6, normalizedHeight: 0.24 }),
       textSeed({ content: "SWEET HOME", fontSize: 15, align: "left", letterSpacing: 1, fill: "#5b5348", normalizedX: 0.34, normalizedY: 0.54, normalizedWidth: 0.6, normalizedHeight: 0.18 }),
     ],
   },
+  ...MUG_GENERATED,
 
   // ============================================================
   // VINYL BANNER — "banner-face" is the one print area whose real aspect ratio varies hugely per
@@ -2967,7 +3198,12 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
-      graphicSeed("maple-shield", { normalizedX: 0.44, normalizedY: 0.14, normalizedWidth: 0.12, normalizedHeight: 0.2 }),
+      graphicSeed("maple-shield", (() => {
+        // banner-face has no single real aspect ratio (it varies per order) — sized against the
+        // portrait placeholder box as a reasonable default; see squareIcon's doc comment.
+        const size = squareIcon("banner-face", 0.14);
+        return { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.14, ...size };
+      })()),
       textSeed({ content: "YOUR BUSINESS NAME", fontSize: 22, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.08, normalizedY: 0.42, normalizedWidth: 0.84, normalizedHeight: 0.16, letterSpacing: 1 }),
       textSeed({ content: "Quality service since 2015", fontSize: 12, fill: "#D8CFC0", align: "center", normalizedX: 0.1, normalizedY: 0.62, normalizedWidth: 0.8, normalizedHeight: 0.1 }),
     ],
@@ -3006,7 +3242,10 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
     createdAt: NOW,
     updatedAt: NOW,
     objects: [
-      graphicSeed("maple-balloon", { normalizedX: 0.42, normalizedY: 0.1, normalizedWidth: 0.16, normalizedHeight: 0.26, fill: "#D41414" }),
+      graphicSeed("maple-balloon", (() => {
+        const size = squareIcon("banner-face", 0.16);
+        return { normalizedX: (1 - size.normalizedWidth) / 2, normalizedY: 0.1, ...size, fill: "#D41414" };
+      })()),
       textSeed({ content: "HAPPY BIRTHDAY", fontSize: 24, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", normalizedX: 0.08, normalizedY: 0.42, normalizedWidth: 0.84, normalizedHeight: 0.16, letterSpacing: 1 }),
     ],
   },
@@ -3230,6 +3469,7 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
       textSeed({ content: "YOU", fontSize: 16, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, fill: "#FFFFFF", align: "center", letterSpacing: 2, normalizedX: 0.15, normalizedY: 0.5, normalizedWidth: 0.7, normalizedHeight: 0.14 }),
     ],
   },
+  ...STICKER_GENERATED,
 ];
 
 // ============================================================
