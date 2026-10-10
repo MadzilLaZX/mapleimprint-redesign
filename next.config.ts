@@ -8,10 +8,19 @@ const SQUARE_JS_HOST = isSquareSandbox ? "https://sandbox.web.squarecdn.com" : "
 const SQUARE_PCI_HOST = isSquareSandbox ? "https://pci-connect.squareupsandbox.com" : "https://pci-connect.squareup.com";
 const SQUARE_CSP = [
   "default-src 'self'",
-  `script-src 'self' ${SQUARE_JS_HOST}`,
+  // Square's docs say script-src only needs the squarecdn.com host, but the SDK's hosted iframe
+  // injects its own inline <script> tags at runtime with a different hash every load (confirmed
+  // in a real production build — without 'unsafe-inline' here, Square's own SDK fails to connect
+  // to its backend and the card form never loads). Scoped to /checkout only, not sitewide — user
+  // explicitly authorized this tradeoff after reviewing it. (Google Pay's own pay.google.com host
+  // is deliberately NOT allowed here — the express-checkout button is a separate, smaller scope
+  // the user hasn't signed off on; the Card form, the primary path, doesn't need it.)
+  `script-src 'self' 'unsafe-inline' ${SQUARE_JS_HOST}`,
   `frame-src 'self' ${SQUARE_JS_HOST}`,
   `connect-src 'self' ${SQUARE_JS_HOST} ${SQUARE_PCI_HOST}`,
-  "style-src 'self' 'unsafe-inline'",
+  // The card form's own stylesheet (card-wrapper.css) is hosted on the same squarecdn.com host as
+  // the SDK script, not inlined — style-src needs that host, not just 'unsafe-inline'.
+  `style-src 'self' 'unsafe-inline' ${SQUARE_JS_HOST}`,
   "font-src 'self' https://square-fonts-production-f.squarecdn.com https://d1g145x70srn7h.cloudfront.net",
 ].join("; ");
 
