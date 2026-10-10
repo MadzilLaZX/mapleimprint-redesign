@@ -64,6 +64,13 @@ export interface CatalogueProduct {
     | "promo-keychain"
     | "promo-magnet"
     | "promo-phone-stand"
+    | "sign-yard"
+    | "sign-rigid"
+    | "sign-window-cling"
+    | "packaging-product-box"
+    | "packaging-mailer-box"
+    | "packaging-tissue-paper"
+    | "packaging-tape"
     | "quote-only";
   /** Set only alongside houseProductKind: "quote-only" — real sourced sizes/materials to display
    *  on the product page even though live per-configuration pricing wasn't reliably found (see

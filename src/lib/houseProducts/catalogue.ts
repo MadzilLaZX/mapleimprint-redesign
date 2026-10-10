@@ -17,6 +17,8 @@ import { quoteLabel } from "./pricing/labels";
 import { quotePoster } from "./pricing/posters";
 import { quoteDrinkware } from "./pricing/drinkware";
 import { quotePromo } from "./pricing/promo";
+import { quoteSign } from "./pricing/signs";
+import { quotePackaging } from "./pricing/packaging";
 import { isQuoteError } from "./pricing/types";
 
 /** Pulls a real "from" unit price out of a quote function at its cheapest realistic configuration,
@@ -194,21 +196,16 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "signs-banners",
     subcategorySlug: "outdoor-signs",
     description:
-      "Corrugated plastic yard signs for real estate, elections and events — 19 real sizes from " +
-      "5\"x18\" up to 48\"x96\", with wire or plastic stake mounting. Tell us your size, quantity and " +
-      "mounting option and we'll send a firm quote within one business day.",
+      "Corrugated plastic yard signs for real estate, elections and events — 8 sizes from " +
+      "9\"x12\" up to 48\"x96\", weather/fade/UV-resistant. Design yours right here.",
     images: [{ url: "/images/products/subcategories/signs-banners/outdoor-signs.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: null,
+    startingPrice: fromPrice(quoteSign({ kind: "yard", sizeKey: "9x12", material: "coroplast", quantity: 1 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "quote-only",
-    quoteOnlyInfo: {
-      sizes: ["9\"x12\"", "12\"x18\"", "18\"x24\"", "18\"x30\"", "24\"x24\"", "24\"x36\"", "48\"x72\"", "48\"x96\"", "and more — 19 sizes total"],
-      materials: ["4mm corrugated plastic (coroplast)", "weather/fade/UV-resistant", "optional scratch-resistant glossy coating", "wire or plastic stake mounting"],
-    },
+    houseProductKind: "sign-yard",
   },
   {
     slug: "rigid-signs",
@@ -217,21 +214,16 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "signs-banners",
     subcategorySlug: "indoor-signs",
     description:
-      "Foam board, PVC, aluminum composite, acrylic or wood signs for storefronts, offices and " +
-      "trade shows, up to 24\"x48\". Tell us your size, material and quantity and we'll send a firm " +
-      "quote within one business day.",
+      "Foam board or rigid PVC signs for storefronts, offices and trade shows, up to 24\"x48\". " +
+      "Design yours right here.",
     images: [{ url: "/images/products/subcategories/signs-banners/indoor-signs.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: null,
+    startingPrice: fromPrice(quoteSign({ kind: "rigid", sizeKey: "11x17", material: "foam-board", quantity: 1 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "quote-only",
-    quoteOnlyInfo: {
-      sizes: ["11\"x17\"", "16\"x20\"", "18\"x24\"", "22\"x28\"", "24\"x36\"", "24\"x48\"", "custom sizes available"],
-      materials: ["5mm PVC foam board", "3mm PVC-free foam", "3mm/6mm rigid PVC plastic", "aluminum composite", "acrylic", "plywood/MDF"],
-    },
+    houseProductKind: "sign-rigid",
   },
   {
     slug: "window-clings-decals",
@@ -240,25 +232,16 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "signs-banners",
     subcategorySlug: "decals",
     description:
-      "Removable window decals, repositionable window clings, wall decals and floor decals. Tell us " +
-      "your size and surface and we'll send a firm quote within one business day.",
+      "Removable window decals and repositionable window clings, priced by size. Design yours " +
+      "right here.",
     images: [{ url: "/images/products/subcategories/signs-banners/decals.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: null,
+    startingPrice: fromPrice(quoteSign({ kind: "window-cling", sizeKey: "6x9", material: "removable-vinyl", quantity: 1 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "quote-only",
-    quoteOnlyInfo: {
-      materials: [
-        "Removable vinyl window decals (semi-permanent, inside/outside glass)",
-        "Repositionable PVC window clings",
-        "One-way-vision perforated window vinyl",
-        "Wall decals (drywall)",
-        "Floor decals",
-      ],
-    },
+    houseProductKind: "sign-window-cling",
   },
 
   // --- Drinkware -------------------------------------------------------------------------------
@@ -435,19 +418,16 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "packaging",
     subcategorySlug: "product-boxes",
     description:
-      "Reverse tuck and lock-bottom product boxes on 19pt coated white paperboard, matte, soft-touch " +
-      "or gloss finish. Tell us your size and quantity and we'll send a firm quote within one business day.",
+      "Reverse tuck product boxes on coated white paperboard, 10 sizes from 2\"x2\"x2\" up to " +
+      "6\"x4\"x2.5\". Design yours right here.",
     images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: null,
+    startingPrice: fromPrice(quotePackaging({ kind: "product-box", sizeKey: "2x2x2", quantity: 100 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "quote-only",
-    quoteOnlyInfo: {
-      materials: ["19pt coated white paperboard", "Matte, Soft Touch or Gloss finish", "Reverse tuck (73 sizes) or lock-bottom (18 sizes)"],
-    },
+    houseProductKind: "packaging-product-box",
   },
   {
     slug: "mailer-shipping-boxes",
@@ -456,20 +436,16 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "packaging",
     subcategorySlug: "mailer-shipping-boxes",
     description:
-      "Custom mailer boxes, full-print inside and out, from 5\"x3\"x1.5\" up to 14\"x12\"x5\" — " +
-      "starting around $13. Tell us your size and quantity and we'll send a firm quote within one business day.",
+      "Custom mailer boxes, full-print inside and out, from 5\"x3\"x1.5\" up to 12\"x9\"x2\". " +
+      "Design yours right here.",
     images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: null,
+    startingPrice: fromPrice(quotePackaging({ kind: "mailer-box", sizeKey: "5x3x1.5", quantity: 144 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "quote-only",
-    quoteOnlyInfo: {
-      sizes: ["5\"x3\"x1.5\"", "6\"x4\"x3\"", "8\"x6\"x3\"", "9\"x7\"x2.25\"", "12\"x10\"x4\"", "14\"x12\"x5\"", "and more — 13 sizes total"],
-      materials: ["1/16\" white E-flute cardboard, 32 ECT", "all-over or logo print, inside/outside/both"],
-    },
+    houseProductKind: "packaging-mailer-box",
   },
   {
     slug: "custom-tissue-paper",
@@ -477,18 +453,15 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     brandName: "Maple Imprint",
     categorySlug: "packaging",
     subcategorySlug: "tissue-paper",
-    description:
-      "Branded tissue paper for gift wrapping and unboxing. Tell us your quantity and we'll send a " +
-      "firm quote within one business day.",
+    description: "Branded tissue paper for gift wrapping and unboxing. Design yours right here.",
     images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: null,
+    startingPrice: fromPrice(quotePackaging({ kind: "tissue-paper", sizeKey: "14x10", weight: 10, quantity: 100 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "quote-only",
-    quoteOnlyInfo: { materials: ["White or Kraft", "10#, 18# or 30# weight", "single-sided print"] },
+    houseProductKind: "packaging-tissue-paper",
   },
   {
     slug: "packaging-tape",
@@ -496,17 +469,14 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     brandName: "Maple Imprint",
     categorySlug: "packaging",
     subcategorySlug: "packaging-tape",
-    description:
-      "Branded poly packaging tape, 2.81\" wide, in 165ft or 330ft rolls. Tell us your quantity and " +
-      "we'll send a firm quote within one business day.",
+    description: "Branded water-activated packaging tape, in 100ft or 300ft rolls. Design yours right here.",
     images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: null,
+    startingPrice: fromPrice(quotePackaging({ kind: "packaging-tape", rollKey: "100ft", quantity: 1 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "quote-only",
-    quoteOnlyInfo: { materials: ["Clear or white plastic", "165ft or 330ft roll", "logo-repeat spacing from 3\" to 12\""] },
+    houseProductKind: "packaging-tape",
   },
 ];

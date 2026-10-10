@@ -90,10 +90,21 @@ export function familyFor(categorySlug: string, subcategorySlug: string): Produc
   // sides[].type comment for why a wrap print is the same surface shape regardless of vessel.
   if (subcategorySlug === "mugs" || subcategorySlug === "tumblers" || subcategorySlug === "bottles" || subcategorySlug === "glassware") return "mug";
   if (subcategorySlug === "vinyl-banners") return "banner";
+  // Yard signs, rigid/foam board signs, window clings & decals — each is physically a single flat
+  // print surface at an arbitrary width/height (no fixed aspect ratio), exactly what "banner-face"
+  // already models (see squareIcon()'s doc comment in templates.ts on banner-face having no single
+  // aspect ratio). Reusing the family means these products inherit the existing banner template
+  // library (centered, generous-margin compositions already safe at any aspect) rather than
+  // needing a second near-identical print area built from scratch.
+  if (subcategorySlug === "outdoor-signs" || subcategorySlug === "indoor-signs" || subcategorySlug === "decals") return "banner";
   // Gifts & promotional products (tote bags, pens, notebooks, keychains, magnets, phone stands) —
   // too physically varied for one dedicated print area; reuses "accessory"'s generic front/back
   // locations, same family aprons/bags/general hats-accessories items already use.
   if (categorySlug === "gifts-promo") return "accessory";
+  // Packaging (product boxes, mailer boxes, tissue paper, packaging tape) — same reasoning as
+  // gifts-promo: a box panel, a tissue sheet, and a tape strip are too physically different to
+  // share one dedicated print area, but all read fine as a simple front/back logo+phrase mark.
+  if (categorySlug === "packaging") return "accessory";
   // Stickers & labels — real orderable house products (src/lib/houseProducts/catalogue.ts:
   // die-cut-stickers, kiss-cut-stickers, roll-labels). Without this mapping these fell through to
   // the generic "tee" default below and showed t-shirt templates/graphics in Studio — a real

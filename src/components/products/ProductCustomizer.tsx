@@ -18,9 +18,13 @@ import { LabelConfigurator } from "@/components/products/LabelConfigurator";
 import { PosterConfigurator } from "@/components/products/PosterConfigurator";
 import { DrinkwareConfigurator } from "@/components/products/DrinkwareConfigurator";
 import { PromoConfigurator } from "@/components/products/PromoConfigurator";
+import { SignConfigurator } from "@/components/products/SignConfigurator";
+import { PackagingConfigurator } from "@/components/products/PackagingConfigurator";
 import { QuoteOnlyConfigurator } from "@/components/products/QuoteOnlyConfigurator";
 import type { DrinkwareKind } from "@/lib/houseProducts/pricing/drinkware";
 import type { PromoKind } from "@/lib/houseProducts/pricing/promo";
+import type { SignKind } from "@/lib/houseProducts/pricing/signs";
+import type { PackagingKind } from "@/lib/houseProducts/pricing/packaging";
 import type { CatalogueProduct } from "@/lib/products";
 
 const VISIBLE_COLOUR_COUNT = 8;
@@ -63,6 +67,13 @@ export function ProductCustomizer(props: {
   }
   if (kind?.startsWith("promo-")) {
     return <PromoConfigurator product={product} kind={kind.slice("promo-".length) as PromoKind} />;
+  }
+  if (kind === "sign-yard" || kind === "sign-rigid" || kind === "sign-window-cling") {
+    return <SignConfigurator product={product} kind={kind.slice("sign-".length) as SignKind} />;
+  }
+  if (kind === "packaging-product-box" || kind === "packaging-mailer-box" || kind === "packaging-tissue-paper" || kind === "packaging-tape") {
+    const packagingKind = (kind === "packaging-tape" ? "packaging-tape" : kind.slice("packaging-".length)) as PackagingKind;
+    return <PackagingConfigurator product={product} kind={packagingKind} />;
   }
   if (kind === "quote-only") {
     return (
