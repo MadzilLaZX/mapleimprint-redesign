@@ -224,6 +224,18 @@ export function stickerCell(shape: StickerShape, sizeKey: string, material: Stic
   return STICKER_PRICES[shape]?.[sizeKey]?.[material];
 }
 
+/** STICKER_MATERIALS_BY_SHAPE above lists every material VistaPrint's own site offers per shape,
+ *  but buildStickerPrices() only ever priced the subset this research actually sampled (e.g. Square
+ *  and Circle only got a White Plastic price ladder, despite VistaPrint showing 5-6 material
+ *  options for them) — selecting an unpriced material silently turned into a quote error with no
+ *  obvious cause. This narrows the advertised list down to materials this module can actually
+ *  quote for that shape, checked against its first size (price-cell availability is uniform across
+ *  a shape's own sizes, per buildStickerPrices' construction, so one size is representative). */
+export function pricedMaterialsForShape(shape: StickerShape): StickerMaterial[] {
+  const firstSize = STICKER_SIZES[shape][0].key;
+  return STICKER_MATERIALS_BY_SHAPE[shape].filter((m) => stickerCell(shape, firstSize, m) !== undefined);
+}
+
 export interface StickerQuoteInput {
   shape: StickerShape;
   sizeKey: string;

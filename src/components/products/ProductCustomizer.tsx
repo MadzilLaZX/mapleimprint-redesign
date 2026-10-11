@@ -49,12 +49,20 @@ export function ProductCustomizer(props: {
     return <BannerConfigurator product={product} />;
   }
   if (kind === "sticker") {
-    // "Die-Cut Stickers" and "Kiss-Cut Stickers" are two catalogue products sharing this one
-    // configurator, distinguished by which shapes their subcategory allows — see
-    // StickerConfigurator's allowedShapes comment.
+    // "Die-Cut Stickers", "Kiss-Cut Stickers" and "Clear Stickers" are three catalogue products
+    // sharing this one configurator, distinguished by which shapes their subcategory allows and
+    // (for Clear) which material starts selected — see StickerConfigurator's own comment.
+    // Clear starts on Oval rather than Square/Circle — those two only ever got a White Plastic
+    // price ladder (see stickers.ts's pricedMaterialsForShape comment), so defaulting to Square
+    // here would silently fall back to White Plastic on load instead of actually showing Clear.
     const allowedShapes =
-      product.subcategorySlug === "die-cut" ? (["die-cut"] as const) : (["square", "circle", "rectangle", "oval"] as const);
-    return <StickerConfigurator product={product} allowedShapes={[...allowedShapes]} />;
+      product.subcategorySlug === "die-cut"
+        ? (["die-cut"] as const)
+        : product.subcategorySlug === "clear"
+          ? (["oval", "rectangle", "square", "circle"] as const)
+          : (["square", "circle", "rectangle", "oval"] as const);
+    const defaultMaterial = product.subcategorySlug === "clear" ? "clear-plastic" : undefined;
+    return <StickerConfigurator product={product} allowedShapes={[...allowedShapes]} defaultMaterial={defaultMaterial} />;
   }
   if (kind === "label") {
     return <LabelConfigurator product={product} />;

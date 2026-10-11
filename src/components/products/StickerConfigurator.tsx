@@ -8,7 +8,7 @@ import {
   STICKER_SHAPES,
   STICKER_SIZES,
   STICKER_MATERIALS,
-  STICKER_MATERIALS_BY_SHAPE,
+  pricedMaterialsForShape,
   quoteSticker,
   type StickerShape,
   type StickerMaterial,
@@ -22,18 +22,31 @@ const ALL_SHAPES: StickerShape[] = STICKER_SHAPES.map((s) => s.value);
 
 /** `allowedShapes` restricts the shape picker — used to ship "Die-Cut Stickers" and "Kiss-Cut
  *  Stickers" as two separate catalogue products (matching the site's existing Die-cut/Kiss-cut
- *  subcategory split) while sharing this one component and the one stickers.ts pricing module. */
-export function StickerConfigurator({ product, allowedShapes = ALL_SHAPES }: { product: CatalogueProduct; allowedShapes?: StickerShape[] }) {
+ *  subcategory split) while sharing this one component and the one stickers.ts pricing module.
+ *  `defaultMaterial` does the same job for "Clear Stickers" — same shapes as the generic sticker
+ *  product, just pre-selecting clear-plastic instead of white-plastic (still changeable). */
+export function StickerConfigurator({
+  product,
+  allowedShapes = ALL_SHAPES,
+  defaultMaterial = "white-plastic",
+}: {
+  product: CatalogueProduct;
+  allowedShapes?: StickerShape[];
+  defaultMaterial?: StickerMaterial;
+}) {
   const router = useRouter();
   const [shape, setShape] = useState<StickerShape>(allowedShapes[0]);
   const [sizeKey, setSizeKey] = useState<string>(STICKER_SIZES[allowedShapes[0]][1]?.key ?? STICKER_SIZES[allowedShapes[0]][0].key);
-  const [material, setMaterial] = useState<StickerMaterial>("white-plastic");
+  const [material, setMaterial] = useState<StickerMaterial>(() => {
+    const priced = pricedMaterialsForShape(allowedShapes[0]);
+    return priced.includes(defaultMaterial) ? defaultMaterial : priced[0];
+  });
   const [quantity, setQuantity] = useState(DEFAULT_QTY);
   const [startingStudio, setStartingStudio] = useState(false);
   const [studioError, setStudioError] = useState<string | null>(null);
 
   const sizesForShape = STICKER_SIZES[shape];
-  const materialsForShape = STICKER_MATERIALS_BY_SHAPE[shape];
+  const materialsForShape = pricedMaterialsForShape(shape);
   const sizeDef = sizesForShape.find((s) => s.key === sizeKey) ?? sizesForShape[0];
 
   // Size/material lists depend on shape — if the shape changes and the current selection isn't
@@ -43,7 +56,7 @@ export function StickerConfigurator({ product, allowedShapes = ALL_SHAPES }: { p
     setShape(next);
     const nextSizes = STICKER_SIZES[next];
     if (!nextSizes.some((s) => s.key === sizeKey)) setSizeKey(nextSizes[0].key);
-    const nextMaterials = STICKER_MATERIALS_BY_SHAPE[next];
+    const nextMaterials = pricedMaterialsForShape(next);
     if (!nextMaterials.includes(material)) setMaterial(nextMaterials[0]);
   }
 

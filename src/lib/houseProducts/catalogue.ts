@@ -147,6 +147,27 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     houseProductKind: "sticker",
   },
   {
+    slug: "clear-stickers",
+    name: "Clear Stickers",
+    brandName: "Maple Imprint",
+    categorySlug: "stickers-labels",
+    subcategorySlug: "clear",
+    description:
+      "Individual stickers on clear plastic stock — the background shows through, not a white " +
+      "square or circle — square, circle, rectangle or oval. Design yours right here.",
+    images: [{ url: "/images/products/subcategories/stickers-labels/clear.jpg", colourName: null, imageType: "front" }],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    // Square and Circle's own price ladders only have confirmed cells for white-plastic (see
+    // stickers.ts's buildStickerPrices) — Oval is the cheapest shape with a real clear-plastic
+    // cell, so that's the "from" anchor rather than a shape/material combo with no price at all.
+    startingPrice: fromPrice(quoteSticker({ shape: "oval", sizeKey: "1x2", material: "clear-plastic", quantity: 10 })),
+    printRuleVersion: "house-v1-vistaprint-2026-10-06",
+    houseProductKind: "sticker",
+  },
+  {
     slug: "product-labels-sheets",
     name: "Product Labels (Sheets)",
     brandName: "Maple Imprint",
