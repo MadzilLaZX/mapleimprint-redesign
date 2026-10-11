@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, SpinnerGap, WarningCircle, X } from "@phosphor-icons/react/dist/ssr";
+import { cn } from "@/lib/cn";
 import { useCart } from "@/components/cart/CartProvider";
 import { ReviewPanel } from "@/components/studio/ReviewPanel";
 import { PreviewMode } from "@/components/studio/PreviewMode";
@@ -24,8 +25,8 @@ import { ShapesPanel } from "@/components/studio/panels/ShapesPanel";
 import { GraphicsPanel } from "@/components/studio/panels/GraphicsPanel";
 import { DesignsPanel } from "@/components/studio/panels/DesignsPanel";
 import { MyStuffPanel } from "@/components/studio/panels/MyStuffPanel";
-import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
-import { backgroundUrlFor, printAreaPixelBox, printAreaOverrideFor, printAreasOverlap } from "@/lib/studio/printAreas";
+import { decorationProfileFor, type ProductFamily } from "@/lib/studio/productDecorationProfile";
+import { backgroundUrlFor, printAreaPixelBox, printAreaOverrideFor, printAreasOverlap, PRINT_AREAS } from "@/lib/studio/printAreas";
 import { viewGroupFor } from "@/lib/studio/garmentViews";
 import { resolveTemplateAssets, scaleTemplateObjects, type DesignTemplate } from "@/lib/studio/templates";
 import {
@@ -69,9 +70,25 @@ const Mug3DPreview = dynamic(() => import("@/components/studio/Mug3DPreview").th
   ),
 });
 
+const Flat3DPreview = dynamic(() => import("@/components/studio/Flat3DPreview").then((m) => m.Flat3DPreview), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center rounded-3xl bg-canvas">
+      <SpinnerGap className="size-6 animate-spin text-muted" weight="bold" />
+    </div>
+  ),
+});
+
 type SidesState = Partial<Record<DesignSideType, DesignObjectRecord[]>>;
 
 const AUTOSAVE_DELAY_MS = 900;
+
+// Families that render on real garment photography (front/back are an actual photo, not a flat
+// schematic) — a rotatable 3D box/plane doesn't fit that mental model the way it does for a print
+// piece, and there's no real-world "this garment as a box" shape to show anyway. Every other
+// family (mug, business-card, postcard, flyer, poster, banner, sticker, accessory) gets the 2D/3D
+// toggle: mug via the vessel-aware Mug3DPreview, everything else via the generic Flat3DPreview.
+const FAMILIES_WITHOUT_3D: ProductFamily[] = ["tee", "hoodie", "joggers", "headwear"];
 
 // Every drinkware subcategory shares the "mug" family/print-area (see productDecorationProfile's
 // familyFor), but the 3D preview needs to know which actual vessel it's rendering — this mirrors
@@ -202,7 +219,11 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [sides, setSides] = useState<SidesState>({});
   const [activeSide, setActiveSide] = useState<DesignSideType>("front");
-  const [show3DPreview, setShow3DPreview] = useState(false);
+  // 2D is the only editable surface — 3D is read-only preview, same object data rendered as a
+  // rotatable model instead of the flat canvas. Keyed to a ref of the side it was opened for isn't
+  // needed: switching location goes through setActiveSide, which this file's own handleSelectLocation
+  // already routes through, so resetting there (not here) keeps this a single source of truth.
+  const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -476,10 +497,26 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const selectedObject = activeObjects.find((o) => o.id === selectedId) ?? null;
   const openSides = project?.sides.map((s) => s.sideType) ?? [];
   const hasBackPhoto = Boolean(project?.mockupImages.back);
-  const profile = project ? decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).locations : [];
+  const decorationProfile = project ? decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto) : null;
+  const profile = decorationProfile?.locations ?? [];
   const activeLocation = profile.find((l) => l.id === activeSide) ?? null;
   const zoom = zoomByLocation[activeSide] ?? 1;
   const setZoom = (next: number) => setZoomByLocation((prev) => ({ ...prev, [activeSide]: next }));
+
+  const family = decorationProfile?.family ?? null;
+  const can3D = Boolean(family && !FAMILIES_WITHOUT_3D.includes(family) && activeLocation);
+  // Banner's real dimensions vary per order (no fixed PRINT_AREAS entry to trust) — reuse the same
+  // override lookup the 2D canvas already threads through for it, same reasoning as printAreaPixelBox.
+  // "accessory" family (gifts-promo/packaging) reuses the generic "front"/"back" DesignSideType IDs
+  // that PRINT_AREAS otherwise defines for APPAREL (a 12x16in chest print) — there's no real per-
+  // product physical size tracked anywhere for a coaster vs. a tote bag vs. a packaging box (see
+  // productDecorationProfile's own "too physically varied for one dedicated print area" comment),
+  // so pulling PRINT_AREAS[activeSide] here would silently render every accessory-family item as a
+  // tall apparel-chest-shaped slab. A neutral near-square fallback is the honest "we don't know
+  // this item's real proportions" stand-in instead.
+  const flatPrintAreaIn = project
+    ? (printAreaOverrideFor(project.sides, activeSide) ?? (family === "accessory" ? { widthIn: 4, heightIn: 4 } : PRINT_AREAS[activeSide]))
+    : PRINT_AREAS[activeSide];
 
   // GarmentView vs PrintArea (STUDIO V3 brief, Section 8): every OPEN location that shares the
   // active location's view (front/left-chest/right-chest all sit on the same front photo, etc.)
@@ -1320,12 +1357,14 @@ export function StudioClient({ projectId }: { projectId: string }) {
     if (openSides.includes(side)) {
       setActiveSide(side);
       setSelectedId(null);
+      setViewMode("2d");
       return;
     }
     const ok = await ensureLocationOpen(side);
     if (ok) {
       setActiveSide(side);
       setSelectedId(null);
+      setViewMode("2d");
     }
     // Silent no-op on failure — the location simply doesn't switch; the customer can just click it
     // again.
@@ -1603,25 +1642,41 @@ export function StudioClient({ projectId }: { projectId: string }) {
                   {uploadError || qrError}
                 </div>
               )}
-              <CanvasStage
-                layers={compositeLayers}
-                mockupUrl={mockupUrl}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                onCommitObject={(id, patch) => commitObjectPatch(id, patch)}
-                editingTextId={editingTextId}
-                onEditRequest={setEditingTextId}
-                onEditCommit={commitTextEdit}
-                onSwitchLocation={handleSelectLocation}
-                placementPreview={activeLocation?.usesPlacementPreview ?? false}
-                zoom={zoom}
-              />
+              {viewMode === "3d" && can3D ? (
+                // 3D is read-only preview, not a second editing surface — same object data as the
+                // 2D canvas, rendered as a rotatable model instead. family === "mug" gets the
+                // vessel-aware preview (mug/tumbler/bottle/glass all have their own real shape);
+                // every other 3D-eligible family gets the generic flat-piece box, sized to this
+                // location's own real print-area dimensions so a card and a banner don't share a
+                // box shaped like neither of them.
+                <div className="h-full w-full">
+                  {family === "mug" ? (
+                    <Mug3DPreview objects={activeObjects} kind={project ? drinkwareKindFor(project.subcategorySlug) : "mug"} />
+                  ) : (
+                    <Flat3DPreview objects={activeObjects} widthIn={flatPrintAreaIn.widthIn} heightIn={flatPrintAreaIn.heightIn} />
+                  )}
+                </div>
+              ) : (
+                <CanvasStage
+                  layers={compositeLayers}
+                  mockupUrl={mockupUrl}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  onCommitObject={(id, patch) => commitObjectPatch(id, patch)}
+                  editingTextId={editingTextId}
+                  onEditRequest={setEditingTextId}
+                  onEditCommit={commitTextEdit}
+                  onSwitchLocation={handleSelectLocation}
+                  placementPreview={activeLocation?.usesPlacementPreview ?? false}
+                  zoom={zoom}
+                />
+              )}
 
               {/* Section 1: subtle, dismissible hint — never covers the product, never blocks
                   interaction. The Designs panel is already open beside it (see the load effect
                   above), so this is just a one-line pointer rather than a gate the customer must
                   clear before touching anything. */}
-              {showOnboarding && (
+              {showOnboarding && viewMode === "2d" && (
                 <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center px-4">
                   <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-ink-950/90 py-1.5 pl-3.5 pr-1.5 text-xs font-medium text-white shadow-lg">
                     <span>Pick a template to start, or upload/add your own.</span>
@@ -1641,23 +1696,48 @@ export function StudioClient({ projectId }: { projectId: string }) {
                   to the workspace's height (previously it sat in normal flow below the canvas and
                   was part of what forced the whole page to scroll). */}
               <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center gap-2">
-                <div className="pointer-events-auto">
-                  <ZoomControls zoom={zoom} onZoomChange={setZoom} />
-                </div>
-                {/* Drinkware only — "so customers can see the design they picked on the actual
-                    mug," not just the flat wrap schematic. Gated on activeSide specifically
-                    (not the broader "mug" family) since this button sits over the canvas for
-                    whichever location is currently open. */}
-                {activeSide === "mug-wrap" && (
-                  <button
-                    type="button"
-                    onClick={() => setShow3DPreview(true)}
-                    className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-sand bg-white/95 px-3.5 py-2 text-xs font-semibold text-ink-900 shadow-sm backdrop-blur transition-colors hover:border-ink-950/25"
-                  >
-                    View in 3D
-                  </button>
+                {viewMode === "2d" && (
+                  <div className="pointer-events-auto">
+                    <ZoomControls zoom={zoom} onZoomChange={setZoom} />
+                  </div>
+                )}
+                {/* "So customers can see the design they picked on the actual product," not just
+                    the flat canvas — available for every family except real-garment-photo ones
+                    (tee/hoodie/joggers/headwear), where front/back already show a real photo, not
+                    a flat schematic a 2D/3D toggle would add anything to. */}
+                {can3D && (
+                  <div className="pointer-events-auto flex items-center rounded-full border border-sand bg-white/95 p-1 text-xs font-semibold shadow-sm backdrop-blur">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("2d")}
+                      aria-pressed={viewMode === "2d"}
+                      className={cn(
+                        "rounded-full px-3.5 py-1.5 transition-colors",
+                        viewMode === "2d" ? "bg-ink-950 text-white" : "text-ink-900 hover:bg-canvas",
+                      )}
+                    >
+                      2D
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("3d")}
+                      aria-pressed={viewMode === "3d"}
+                      className={cn(
+                        "rounded-full px-3.5 py-1.5 transition-colors",
+                        viewMode === "3d" ? "bg-ink-950 text-white" : "text-ink-900 hover:bg-canvas",
+                      )}
+                    >
+                      3D
+                    </button>
+                  </div>
                 )}
               </div>
+
+              {viewMode === "3d" && can3D && (
+                <p className="pointer-events-none absolute inset-x-0 bottom-[4.25rem] text-center text-xs font-medium text-ink-900/50">
+                  Drag to rotate · scroll to zoom
+                </p>
+              )}
 
               {/* Mobile has no permanent price/details panel — this pill is the entry point into
                   InspectorDock's bottom sheet when nothing is selected on canvas. */}
@@ -1742,26 +1822,6 @@ export function StudioClient({ projectId }: { projectId: string }) {
               setCropTargetId(null);
             }}
           />
-        )}
-
-        {show3DPreview && (
-          <div className="fixed inset-0 z-50 flex flex-col bg-ink-950/80 p-4 backdrop-blur-sm sm:p-8">
-            <div className="flex items-center justify-between pb-3">
-              <p className="font-display text-sm font-semibold text-white">Your design in 3D</p>
-              <button
-                type="button"
-                onClick={() => setShow3DPreview(false)}
-                className="rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-                aria-label="Close 3D preview"
-              >
-                <X className="size-4" weight="bold" />
-              </button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden rounded-3xl">
-              <Mug3DPreview objects={sides["mug-wrap"] ?? []} kind={project ? drinkwareKindFor(project.subcategorySlug) : "mug"} />
-            </div>
-            <p className="pt-3 text-center text-xs text-white/60">Drag to rotate · scroll to zoom</p>
-          </div>
         )}
 
         {qrReviewGate && (

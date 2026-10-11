@@ -179,8 +179,18 @@ const HEADWEAR_LOCATIONS: DecorationLocation[] = [
   { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Only on structured/flat-brim styles with a back panel; confirmed per style." },
 ];
 
+// usesPlacementPreview: true on "front" (not false, unlike every other family's real-photo front
+// location) because this family is shared by two very different kinds of product: real supplier
+// accessories (hats-accessories aprons/bags) that DO have real colourway photos in mockupImages,
+// and house-produced gifts-promo/packaging items (coasters, magnets, tote bags, packaging boxes,
+// etc.) that never populate mockupImages at all (every Configurator for them posts `{}` — see
+// DrinkwareConfigurator's sibling PromoConfigurator/PackagingConfigurator). backgroundUrlFor's
+// `mockupImages[key] ?? (usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null)` means a real
+// photo still wins when one exists; this only changes the fallback for products that never had
+// one, from a blank canvas with literally nothing behind the print box to the same generic
+// "Placement Preview" illustration every other photo-less location already uses.
 const ACCESSORY_LOCATIONS: DecorationLocation[] = [
-  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT", usesPlacementPreview: true, requiresManualReview: false },
   { id: "back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
