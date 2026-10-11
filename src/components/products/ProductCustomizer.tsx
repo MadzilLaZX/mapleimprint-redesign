@@ -42,7 +42,7 @@ export function ProductCustomizer(props: {
 }) {
   const { product } = props;
   const kind = product.houseProductKind;
-  if (kind === "business-card" || kind === "flyer") {
+  if (kind === "business-card" || kind === "flyer" || kind === "postcard") {
     return <PaperProductConfigurator product={product} kind={kind} />;
   }
   if (kind === "banner") {

@@ -30,6 +30,8 @@ export type DesignSideType =
   // printAreas.ts's printPieceSchematicSvg) rather than a garment mockup.
   | "card-front"
   | "card-back"
+  | "postcard-front"
+  | "postcard-back"
   | "flyer-front"
   | "flyer-back"
   | "poster-front"

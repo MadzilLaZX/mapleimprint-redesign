@@ -19,7 +19,7 @@ import type { DesignSideType } from "./types";
 
 export type SupportStatus = "STANDARD" | "REVIEW_REQUIRED" | "UNAVAILABLE";
 
-export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "flyer" | "poster" | "mug" | "banner" | "sticker";
+export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "postcard" | "flyer" | "poster" | "mug" | "banner" | "sticker";
 
 // Section 20: how a location's editing view is constructed, independent of its SupportStatus.
 // Status answers "can the customer design this, and is it confirmed for production"; viewType
@@ -42,6 +42,8 @@ export type LocationViewType =
   | "PANTS_LEG_PLACEMENT"
   | "CARD_FRONT_FLAT"
   | "CARD_BACK_FLAT"
+  | "POSTCARD_FRONT_FLAT"
+  | "POSTCARD_BACK_FLAT"
   | "FLYER_FRONT_FLAT"
   | "FLYER_BACK_FLAT"
   | "POSTER_FLAT"
@@ -84,7 +86,12 @@ export function familyFor(categorySlug: string, subcategorySlug: string): Produc
   // see PROJECT_NOTES.md for this being an explicit, honest "architecture ready, no live product
   // to test end-to-end yet" gap rather than a claim these are orderable today.
   if (subcategorySlug === "business-cards") return "business-card";
-  if (subcategorySlug === "brochures-flyers" || subcategorySlug === "postcards") return "flyer";
+  // Postcards used to fall through to the "flyer" family (letter-size, 0.773 aspect) before a real
+  // orderable postcard product existed — now that it does (6x4, 1.5 aspect), it gets its own family
+  // so its print-area box matches its real dimensions instead of a mismatched flyer-shaped one (the
+  // same aspect-ratio bug class fixed on the apparel front/back box — see printAreas.ts).
+  if (subcategorySlug === "postcards") return "postcard";
+  if (subcategorySlug === "brochures-flyers") return "flyer";
   if (subcategorySlug === "posters") return "poster";
   // Every drinkware kind shares the "mug" family/print-area — see DrinkwareConfigurator's
   // sides[].type comment for why a wrap print is the same surface shape regardless of vessel.
@@ -193,6 +200,11 @@ const BUSINESS_CARD_LOCATIONS: DecorationLocation[] = [
   { id: "card-back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "CARD_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
+const POSTCARD_LOCATIONS: DecorationLocation[] = [
+  { id: "postcard-front", label: "Front", group: "core", status: "STANDARD", viewType: "POSTCARD_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: false, productionNotes: "Standard 6 × 4 in postcard." },
+  { id: "postcard-back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "POSTCARD_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: true },
+];
+
 const FLYER_LOCATIONS: DecorationLocation[] = [
   { id: "flyer-front", label: "Front", group: "core", status: "STANDARD", viewType: "FLYER_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: false, productionNotes: "Standard 8.5 × 11 in flyer." },
   { id: "flyer-back", label: "Back", group: "core", status: "REVIEW_REQUIRED", viewType: "FLYER_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: true },
@@ -227,6 +239,7 @@ const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   headwear: HEADWEAR_LOCATIONS,
   accessory: ACCESSORY_LOCATIONS,
   "business-card": BUSINESS_CARD_LOCATIONS,
+  postcard: POSTCARD_LOCATIONS,
   flyer: FLYER_LOCATIONS,
   poster: POSTER_LOCATIONS,
   mug: MUG_LOCATIONS,

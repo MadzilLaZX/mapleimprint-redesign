@@ -3237,6 +3237,78 @@ const FLAT_PRINT_TEMPLATES: DesignTemplate[] = [
   ...FLYER_GENERATED,
 
   // ============================================================
+  // POSTCARDS — real 6x4in (1.5 aspect) landscape box, NOT the flyer's portrait one — authored
+  // fresh rather than reusing flyer templates, which would stretch badly at this very different
+  // aspect ratio (see productDecorationProfile.ts's comment on why postcards got their own family).
+  // Deliberately small (3, not dozens) — a real usable starting set, not full category parity.
+  // ============================================================
+  {
+    id: "tpl-postcard-grand-opening",
+    name: "Grand Opening",
+    category: "grand-opening",
+    thumbnailUrl: "",
+    productFamilies: ["postcard"],
+    compatiblePrintAreas: ["postcard-front"],
+    orientation: "landscape",
+    tags: ["grand-opening", "launch", "event"],
+    linkedAssetIds: [],
+    featured: true,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      textSeed({ content: "GRAND OPENING", fontSize: 26, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, normalizedY: 0.18, normalizedHeight: 0.2 }),
+      shapeSeed({ shapeKind: "line", normalizedX: 0.32, normalizedY: 0.46, normalizedWidth: 0.36, normalizedHeight: 0.012, fill: "#D41414" }),
+      textSeed({ content: "Saturday, June 14 · 10AM–6PM", fontSize: 12, normalizedY: 0.55, normalizedHeight: 0.12, fill: "#5b5348" }),
+      textSeed({ content: "123 Main Street", fontSize: 11, normalizedY: 0.68, normalizedHeight: 0.1, fill: "#5b5348" }),
+    ],
+  },
+  {
+    id: "tpl-postcard-sale",
+    name: "Big Sale",
+    category: "sale",
+    thumbnailUrl: "",
+    productFamilies: ["postcard"],
+    compatiblePrintAreas: ["postcard-front"],
+    orientation: "landscape",
+    tags: ["sale", "discount", "promotion"],
+    linkedAssetIds: [],
+    featured: true,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      textSeed({ content: "SALE", fontSize: 46, fontFamily: "Bricolage Grotesque, sans-serif", bold: true, normalizedY: 0.16, normalizedHeight: 0.28, fill: "#D41414" }),
+      textSeed({ content: "UP TO 40% OFF", fontSize: 16, bold: true, normalizedY: 0.5, normalizedHeight: 0.14, letterSpacing: 1 }),
+      textSeed({ content: "This weekend only", fontSize: 11, normalizedY: 0.66, normalizedHeight: 0.1, fill: "#5b5348" }),
+    ],
+  },
+  {
+    id: "tpl-postcard-save-the-date",
+    name: "Save the Date",
+    category: "announcement",
+    thumbnailUrl: "",
+    productFamilies: ["postcard"],
+    compatiblePrintAreas: ["postcard-front"],
+    orientation: "landscape",
+    tags: ["invite", "event", "announcement"],
+    linkedAssetIds: [],
+    featured: true,
+    licenseMetadata: "Maple Imprint internal demo template.",
+    status: "published",
+    createdAt: NOW,
+    updatedAt: NOW,
+    objects: [
+      textSeed({ content: "SAVE THE DATE", fontSize: 14, letterSpacing: 2, normalizedY: 0.16, normalizedHeight: 0.1, fill: "#5b5348" }),
+      textSeed({ content: "Amelia & Cole", fontSize: 28, fontFamily: "Playfair Display, serif", italic: true, normalizedY: 0.34, normalizedHeight: 0.22 }),
+      shapeSeed({ shapeKind: "line", normalizedX: 0.38, normalizedY: 0.64, normalizedWidth: 0.24, normalizedHeight: 0.01, fill: "#D8CFC0" }),
+      textSeed({ content: "October 24, 2026", fontSize: 12, normalizedY: 0.7, normalizedHeight: 0.1, fill: "#5b5348" }),
+    ],
+  },
+
+  // ============================================================
   // POSTERS — Section "POSTER TEMPLATE CATEGORIES". Portrait 18x24in box.
   // ============================================================
   {
@@ -5308,6 +5380,9 @@ const RECOMMENDED_CATEGORY_ORDER: Record<ProductFamily, TemplateCategory[]> = {
   // have an entry (TypeScript would otherwise error on the missing keys the moment
   // productDecorationProfile.ts's ProductFamily type grew these four values).
   "business-card": ["corporate", "luxury", "creative", "qr-contact", "real-estate", "contractor", "restaurant", "beauty", "photography", "technology", "social-media", "appointment-card"],
+  // Postcards read as mini-flyers (promos/announcements/invites), not business cards — same
+  // recommended set as flyer rather than a dedicated one built from scratch.
+  postcard: ["grand-opening", "sale", "real-estate", "restaurant", "nightlife", "church-community", "service-business", "qr-registration", "qr-ticket", "social-media"],
   flyer: ["grand-opening", "sale", "real-estate", "restaurant", "nightlife", "church-community", "service-business", "qr-registration", "qr-ticket", "social-media"],
   poster: ["concert", "sale", "art", "announcement", "qr-cta"],
   mug: ["birthday", "family", "business", "minimal"],

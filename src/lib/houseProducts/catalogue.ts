@@ -13,6 +13,7 @@
 import type { CatalogueProduct } from "@/lib/products";
 import { applyHouseMargin } from "./pricing/margin";
 import { quoteSticker } from "./pricing/stickers";
+import { quotePostcard } from "./pricing/postcards";
 import { quoteLabel } from "./pricing/labels";
 import { quotePoster } from "./pricing/posters";
 import { quoteDrinkware } from "./pricing/drinkware";
@@ -86,6 +87,25 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     startingPrice: applyHouseMargin(25.99),
     printRuleVersion: "house-v1-vistaprint-2026-09-25",
     houseProductKind: "flyer",
+  },
+  {
+    slug: "postcards",
+    name: "Postcards",
+    brandName: "Maple Imprint",
+    categorySlug: "business-printing",
+    subcategorySlug: "postcards",
+    description:
+      "Custom 6\" x 4\" postcards on standard or rounded-corner stock, single or double-sided — for " +
+      "mailers, promos and handouts. Design yours right here, from a first draft to a finished, " +
+      "print-ready file.",
+    images: [{ url: "/images/products/subcategories/business-printing/postcards.jpg", colourName: null, imageType: "front" }],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: fromPrice(quotePostcard({ stock: "standard", quantity: 25, sides: "single" })),
+    printRuleVersion: "house-v1-vistaprint-2026-10-11",
+    houseProductKind: "postcard",
   },
 
   // --- Stickers & Labels ---------------------------------------------------------------------
@@ -408,6 +428,45 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     startingPrice: fromPrice(quotePromo({ kind: "phone-stand", variantKey: "slim-adjustable", quantity: 25 })),
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
     houseProductKind: "promo-phone-stand",
+  },
+  {
+    slug: "coasters",
+    name: "Coasters",
+    brandName: "Maple Imprint",
+    categorySlug: "gifts-promo",
+    subcategorySlug: "coasters",
+    description: "Custom paper coasters, printed with your logo or design. Design yours right here.",
+    images: [{ url: "/images/products/subcategories/gifts-promo/coasters.jpg", colourName: null, imageType: "front" }],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: fromPrice(quotePromo({ kind: "coaster", variantKey: "paper", quantity: 20 })),
+    printRuleVersion: "house-v1-vistaprint-2026-10-11",
+    houseProductKind: "promo-coaster",
+  },
+  {
+    slug: "photo-panels",
+    name: "Photo Panels",
+    brandName: "Maple Imprint",
+    categorySlug: "gifts-promo",
+    subcategorySlug: "photo-panels",
+    description:
+      "Wall-ready acrylic, wood or metal photo panels in a range of standard sizes. Pricing depends " +
+      "on your exact size and material — tell us what you need and we'll send a firm quote within " +
+      "one business day, with your design and asset files attached.",
+    images: [{ url: "/images/products/subcategories/gifts-promo/photo-panels.jpg", colourName: null, imageType: "front" }],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: null,
+    printRuleVersion: "house-v1-vistaprint-2026-10-11",
+    houseProductKind: "quote-only",
+    quoteOnlyInfo: {
+      sizes: ["8\"x10\"", "11\"x14\"", "12\"x12\"", "16\"x20\"", "20\"x24\"", "24\"x36\""],
+      materials: ["Acrylic", "Wood", "Brushed Metal", "Easel-back canvas"],
+    },
   },
 
   // --- Packaging ---------------------------------------------------------------------------------

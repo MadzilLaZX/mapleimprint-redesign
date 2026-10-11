@@ -13,41 +13,47 @@ import {
   type CardStock,
 } from "@/lib/houseProducts/pricing/businessCards";
 import { FLYER_STOCKS, FLYER_QUANTITIES, quoteFlyer, type FlyerStock } from "@/lib/houseProducts/pricing/flyers";
+import { POSTCARD_STOCKS, availableQuantities as postcardAvailableQuantities, quotePostcard, type PostcardStock } from "@/lib/houseProducts/pricing/postcards";
 import { isQuoteError } from "@/lib/houseProducts/pricing/types";
 import { OptionCardGrid, type OptionCardGridItem } from "@/components/products/OptionCardGrid";
 import { PricingGuideFlyout, type PricingGuideRow } from "@/components/products/PricingGuideFlyout";
 import type { CatalogueProduct } from "@/lib/products";
 
-/** Shared by business cards and flyers — same three controls (stock, sides, quantity), same
- *  Studio-kickoff path, just pointed at a different pricing module and print-area pair. Kept as
- *  one component with a `kind` branch rather than two near-identical ones. */
+type PaperKind = "business-card" | "flyer" | "postcard";
+
+/** Shared by business cards, flyers and postcards — same three controls (stock, sides, quantity),
+ *  same Studio-kickoff path, just pointed at a different pricing module and print-area pair. Kept
+ *  as one component with a `kind` branch rather than three near-identical ones. */
 export function PaperProductConfigurator({
   product,
   kind,
 }: {
   product: CatalogueProduct;
-  kind: "business-card" | "flyer";
+  kind: PaperKind;
 }) {
   const router = useRouter();
   const isCard = kind === "business-card";
-  const [stock, setStock] = useState<string>(isCard ? CARD_STOCKS[0].value : FLYER_STOCKS[0].value);
+  const isPostcard = kind === "postcard";
+  const [stock, setStock] = useState<string>(
+    isCard ? CARD_STOCKS[0].value : isPostcard ? POSTCARD_STOCKS[0].value : FLYER_STOCKS[0].value,
+  );
   const [sides, setSides] = useState<"single" | "double">("single");
-  const [quantity, setQuantity] = useState<number>(isCard ? 100 : 100);
+  const [quantity, setQuantity] = useState<number>(isPostcard ? 100 : 100);
   const [roundedCorners, setRoundedCorners] = useState(false);
   const [startingStudio, setStartingStudio] = useState(false);
   const [studioError, setStudioError] = useState<string | null>(null);
 
-  const quantityOptions = useMemo(
-    () => (isCard ? cardAvailableQuantities(stock as CardStock) : [...FLYER_QUANTITIES]),
-    [isCard, stock],
-  );
+  const quantityOptions = useMemo(() => {
+    if (isCard) return cardAvailableQuantities(stock as CardStock);
+    if (isPostcard) return postcardAvailableQuantities();
+    return [...FLYER_QUANTITIES];
+  }, [isCard, isPostcard, stock]);
 
   const quote = useMemo(() => {
-    if (isCard) {
-      return quoteBusinessCard({ stock: stock as CardStock, quantity, sides, roundedCorners });
-    }
+    if (isCard) return quoteBusinessCard({ stock: stock as CardStock, quantity, sides, roundedCorners });
+    if (isPostcard) return quotePostcard({ stock: stock as PostcardStock, quantity, sides });
     return quoteFlyer({ stock: stock as FlyerStock, sides, quantity });
-  }, [isCard, stock, quantity, sides, roundedCorners]);
+  }, [isCard, isPostcard, stock, quantity, sides, roundedCorners]);
 
   const canOfferDoubleSided = isCard ? cardDoubleSidedAvailable(stock as CardStock) : true;
   const canOfferRoundedCorners = isCard && sides === "single" && roundedCornersAvailable(stock as CardStock);
@@ -64,6 +70,17 @@ export function PaperProductConfigurator({
         };
       });
     }
+    if (isPostcard) {
+      const qty = postcardAvailableQuantities()[0];
+      return POSTCARD_STOCKS.map((s) => {
+        const q = quotePostcard({ stock: s.value, quantity: qty, sides: "single" });
+        return {
+          value: s.value,
+          label: s.label,
+          priceDelta: !isQuoteError(q) ? `From $${(q.totalCents / 100).toFixed(2)}` : undefined,
+        };
+      });
+    }
     return FLYER_STOCKS.map((s) => {
       const q = quoteFlyer({ stock: s.value, sides: "single", quantity: FLYER_QUANTITIES[0] });
       return {
@@ -72,7 +89,7 @@ export function PaperProductConfigurator({
         priceDelta: !isQuoteError(q) ? `From $${(q.totalCents / 100).toFixed(2)}` : undefined,
       };
     });
-  }, [isCard]);
+  }, [isCard, isPostcard]);
 
   const sidesOptions: OptionCardGridItem[] = useMemo(
     () => [
@@ -105,11 +122,13 @@ export function PaperProductConfigurator({
     for (const qty of quantityOptions) {
       const q = isCard
         ? quoteBusinessCard({ stock: stock as CardStock, quantity: qty, sides, roundedCorners })
-        : quoteFlyer({ stock: stock as FlyerStock, sides, quantity: qty });
+        : isPostcard
+          ? quotePostcard({ stock: stock as PostcardStock, quantity: qty, sides })
+          : quoteFlyer({ stock: stock as FlyerStock, sides, quantity: qty });
       if (!isQuoteError(q)) rows.push({ qty, totalCents: q.totalCents, perUnitCents: q.unitPriceCents });
     }
     return rows;
-  }, [isCard, stock, sides, roundedCorners, quantityOptions]);
+  }, [isCard, isPostcard, stock, sides, roundedCorners, quantityOptions]);
 
   function handleSidesChange(value: string) {
     const nextSides = value as "single" | "double";
@@ -121,7 +140,11 @@ export function PaperProductConfigurator({
 
   function handleStockChange(value: string) {
     setStock(value);
-    const nextQuantities = isCard ? cardAvailableQuantities(value as CardStock) : [...FLYER_QUANTITIES];
+    const nextQuantities = isCard
+      ? cardAvailableQuantities(value as CardStock)
+      : isPostcard
+        ? postcardAvailableQuantities()
+        : [...FLYER_QUANTITIES];
     if (!nextQuantities.includes(quantity)) setQuantity(nextQuantities[0]);
     if (isCard && !cardDoubleSidedAvailable(value as CardStock)) setSides("single");
     if (isCard && !roundedCornersAvailable(value as CardStock)) setRoundedCorners(false);
@@ -134,13 +157,13 @@ export function PaperProductConfigurator({
     try {
       getOrCreateClientSessionToken();
 
-      const frontType = isCard ? "card-front" : "flyer-front";
-      const backType = isCard ? "card-back" : "flyer-back";
+      const frontType = isCard ? "card-front" : isPostcard ? "postcard-front" : "flyer-front";
+      const backType = isCard ? "card-back" : isPostcard ? "postcard-back" : "flyer-back";
       // Both sides created eagerly when double-sided is chosen — the customer already paid for
       // both, they shouldn't have to go find a "More locations" menu to reach the one they picked.
       const sideTypes = sides === "double" ? [frontType, backType] : [frontType];
 
-      const stockLabel = (isCard ? CARD_STOCKS : FLYER_STOCKS).find((s) => s.value === stock)?.label ?? stock;
+      const stockLabel = (isCard ? CARD_STOCKS : isPostcard ? POSTCARD_STOCKS : FLYER_STOCKS).find((s) => s.value === stock)?.label ?? stock;
 
       const res = await fetch("/api/studio", {
         method: "POST",
@@ -179,6 +202,8 @@ export function PaperProductConfigurator({
       setStartingStudio(false);
     }
   }
+
+  const designLabel = isCard ? "Cards" : isPostcard ? "Postcards" : "Flyer";
 
   return (
     <div>
@@ -239,6 +264,9 @@ export function PaperProductConfigurator({
             <div className="mt-2">
               <PricingGuideFlyout rows={pricingGuideRows} />
             </div>
+            {isPostcard && "priceIsEstimate" in quote && quote.priceIsEstimate && (
+              <p className="mt-1 text-xs text-muted">Estimated pricing for this configuration.</p>
+            )}
           </>
         )}
       </div>
@@ -253,7 +281,7 @@ export function PaperProductConfigurator({
         disabled={isQuoteError(quote) || startingStudio}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-maple-gradient px-6 py-3.5 text-sm font-semibold text-ink-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {startingStudio ? <SpinnerGap className="size-4 animate-spin" weight="bold" /> : `Design Your ${isCard ? "Cards" : "Flyer"} →`}
+        {startingStudio ? <SpinnerGap className="size-4 animate-spin" weight="bold" /> : `Design Your ${designLabel} →`}
       </button>
       <p className="mt-2 text-center text-xs text-muted">Add your logo, text or artwork in Maple Studio.</p>
     </div>

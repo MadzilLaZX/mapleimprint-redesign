@@ -50,6 +50,7 @@ export interface CatalogueProduct {
   houseProductKind?:
     | "banner"
     | "business-card"
+    | "postcard"
     | "flyer"
     | "sticker"
     | "label"
@@ -64,6 +65,7 @@ export interface CatalogueProduct {
     | "promo-keychain"
     | "promo-magnet"
     | "promo-phone-stand"
+    | "promo-coaster"
     | "sign-yard"
     | "sign-rigid"
     | "sign-window-cling"

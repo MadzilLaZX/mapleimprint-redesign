@@ -47,6 +47,11 @@ export const PRINT_AREAS: Record<DesignSideType, { widthIn: number; heightIn: nu
   // has been checked against an actual Maple production run.
   "card-front": { widthIn: 3.5, heightIn: 2, safeMarginIn: 0.125, confirmed: false },
   "card-back": { widthIn: 3.5, heightIn: 2, safeMarginIn: 0.125, confirmed: false },
+  // Standard VistaPrint-sourced 6x4 landscape postcard — see houseProducts/pricing/postcards.ts.
+  // confirmed: false to match card-front/flyer-front's own precedent above (real orderable product,
+  // but "confirmed" here tracks calibration against real photography, which flat pieces never have).
+  "postcard-front": { widthIn: 6, heightIn: 4, safeMarginIn: 0.125, confirmed: false },
+  "postcard-back": { widthIn: 6, heightIn: 4, safeMarginIn: 0.125, confirmed: false },
   "flyer-front": { widthIn: 8.5, heightIn: 11, safeMarginIn: 0.25, confirmed: false },
   "flyer-back": { widthIn: 8.5, heightIn: 11, safeMarginIn: 0.25, confirmed: false },
   "poster-front": { widthIn: 18, heightIn: 24, safeMarginIn: 0.5, confirmed: false },
@@ -125,6 +130,10 @@ export const PLACEMENT_GEOMETRY: Record<DesignSideType, PlacementGeometry> = {
   // is easy" principle the sleeve/inner-neck schematics already established.
   "card-front": { xFrac: 0.075, yFrac: 0.306, widthFrac: 0.85, heightFrac: 0.389, rotationDeg: 0 },
   "card-back": { xFrac: 0.075, yFrac: 0.306, widthFrac: 0.85, heightFrac: 0.389, rotationDeg: 0 },
+  // Sized at the real 6x4 (1.5) aspect from PRINT_AREAS above, same centered/generous-margin
+  // convention as card-front/poster-front.
+  "postcard-front": { xFrac: 0.075, yFrac: 0.2733, widthFrac: 0.85, heightFrac: 0.4533, rotationDeg: 0 },
+  "postcard-back": { xFrac: 0.075, yFrac: 0.2733, widthFrac: 0.85, heightFrac: 0.4533, rotationDeg: 0 },
   "flyer-front": { xFrac: 0.075, yFrac: 0.06, widthFrac: 0.85, heightFrac: 0.88, rotationDeg: 0 },
   "flyer-back": { xFrac: 0.075, yFrac: 0.06, widthFrac: 0.85, heightFrac: 0.88, rotationDeg: 0 },
   "poster-front": { xFrac: 0.075, yFrac: 0.047, widthFrac: 0.85, heightFrac: 0.907, rotationDeg: 0 },
@@ -178,6 +187,8 @@ export type BackgroundKind =
   | "sleeve-right-schematic"
   | "card-front-flat"
   | "card-back-flat"
+  | "postcard-front-flat"
+  | "postcard-back-flat"
   | "flyer-front-flat"
   | "flyer-back-flat"
   | "poster-flat"
@@ -211,6 +222,10 @@ export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
       return "card-front-flat";
     case "CARD_BACK_FLAT":
       return "card-back-flat";
+    case "POSTCARD_FRONT_FLAT":
+      return "postcard-front-flat";
+    case "POSTCARD_BACK_FLAT":
+      return "postcard-back-flat";
     case "FLYER_FRONT_FLAT":
       return "flyer-front-flat";
     case "FLYER_BACK_FLAT":
@@ -397,6 +412,10 @@ export function backgroundUrlFor(
       return printPieceSchematicSvg("Business Card — Front");
     case "card-back-flat":
       return printPieceSchematicSvg("Business Card — Back");
+    case "postcard-front-flat":
+      return printPieceSchematicSvg("Postcard — Front");
+    case "postcard-back-flat":
+      return printPieceSchematicSvg("Postcard — Back");
     case "flyer-front-flat":
       return printPieceSchematicSvg("Flyer — Front");
     case "flyer-back-flat":

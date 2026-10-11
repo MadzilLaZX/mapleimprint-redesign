@@ -12,7 +12,7 @@ import type { QuoteError } from "./types";
 
 const BULK_QTY_REFERENCE = 250;
 
-export type PromoKind = "tote-bag" | "pen" | "notebook" | "keychain" | "magnet" | "phone-stand";
+export type PromoKind = "tote-bag" | "pen" | "notebook" | "keychain" | "magnet" | "phone-stand" | "coaster";
 
 export interface PromoVariant {
   key: string;
@@ -47,12 +47,19 @@ export const PROMO_VARIANTS: Record<PromoKind, PromoVariant[]> = {
     { key: "foldable", label: "Foldable Phone & Tablet Stand", minQty: 125, priceAtMinQty: 1.86, priceAtBulkQty: 1.0 },
     { key: "slim-adjustable", label: "Slim Adjustable Phone Stand", minQty: 25, priceAtMinQty: 1.51, priceAtBulkQty: 0.91 },
   ],
+  coaster: [
+    // minQty/priceAtMinQty confirmed live from VistaPrint's Paper Coasters page 2026-10-11
+    // ($34.99 for 20 units = $1.75 each). priceAtBulkQty wasn't independently confirmed — estimated
+    // at roughly the same ~50% bulk discount the other promo items above show between their own
+    // min and 250-unit reference price; see UNCONFIRMED_BULK_PRICE.
+    { key: "paper", label: "Paper Coasters", minQty: 20, priceAtMinQty: 1.75, priceAtBulkQty: 0.88 },
+  ],
 };
 
 /** Only the fridge-magnet low end wasn't independently confirmed (the research only had the
  *  qty-10 promo price) — everything else above is a real sourced range. Surfaced per-variant so
  *  the configurator can show "estimated" rather than presenting it as a sourced figure. */
-const UNCONFIRMED_BULK_PRICE: Partial<Record<string, true>> = { "fridge-circle": true };
+const UNCONFIRMED_BULK_PRICE: Partial<Record<string, true>> = { "fridge-circle": true, paper: true };
 
 export const PROMO_LABELS: Record<PromoKind, string> = {
   "tote-bag": "Tote Bags",
@@ -61,6 +68,7 @@ export const PROMO_LABELS: Record<PromoKind, string> = {
   keychain: "Keychains",
   magnet: "Magnets",
   "phone-stand": "Phone Stands",
+  coaster: "Coasters",
 };
 
 function toCents(dollars: number): number {
