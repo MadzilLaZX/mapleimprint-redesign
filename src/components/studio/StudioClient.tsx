@@ -44,6 +44,7 @@ import {
 import { loadQrAssets, saveQrAssets, type QrAsset } from "@/lib/studio/qrAssets";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { QRPanel } from "@/components/studio/panels/QRPanel";
+import type { DrinkwareKind } from "@/lib/houseProducts/pricing/drinkware";
 import type { DesignAsset } from "@/lib/studio/assetProviders";
 import type { StudioToolId } from "@/lib/studio/tools";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType, ShapeKind } from "@/lib/studio/types";
@@ -71,6 +72,19 @@ const Mug3DPreview = dynamic(() => import("@/components/studio/Mug3DPreview").th
 type SidesState = Partial<Record<DesignSideType, DesignObjectRecord[]>>;
 
 const AUTOSAVE_DELAY_MS = 900;
+
+// Every drinkware subcategory shares the "mug" family/print-area (see productDecorationProfile's
+// familyFor), but the 3D preview needs to know which actual vessel it's rendering — this mirrors
+// the same subcategorySlug set familyFor checks against, mapped onto DrinkwareConfigurator's
+// DrinkwareKind. Falls back to "mug" for anything unrecognized rather than guessing.
+function drinkwareKindFor(subcategorySlug: string): DrinkwareKind {
+  switch (subcategorySlug) {
+    case "tumblers": return "tumbler";
+    case "bottles": return "water-bottle";
+    case "glassware": return "pint-glass";
+    default: return "mug";
+  }
+}
 
 function emptyObject(type: "text" | "image" | "shape" | "qr", overrides: Partial<DesignObjectRecord>): DesignObjectRecord {
   return {
@@ -1744,7 +1758,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-hidden rounded-3xl">
-              <Mug3DPreview objects={sides["mug-wrap"] ?? []} />
+              <Mug3DPreview objects={sides["mug-wrap"] ?? []} kind={project ? drinkwareKindFor(project.subcategorySlug) : "mug"} />
             </div>
             <p className="pt-3 text-center text-xs text-white/60">Drag to rotate · scroll to zoom</p>
           </div>
