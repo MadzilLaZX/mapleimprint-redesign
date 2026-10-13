@@ -1461,6 +1461,8 @@ export function StudioClient({ projectId }: { projectId: string }) {
         profile={profile}
         onBack={() => setMode("edit")}
         printAreaOverrides={project.sides}
+        categorySlug={project.categorySlug}
+        subcategorySlug={project.subcategorySlug}
       />
     );
   } else {
