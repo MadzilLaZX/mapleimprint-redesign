@@ -1,16 +1,36 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Check, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import { EASE_PREMIUM } from "@/lib/motion";
-import { backgroundUrlFor, printAreaOverrideFor } from "@/lib/studio/printAreas";
+import { backgroundUrlFor, printAreaOverrideFor, PRINT_AREAS } from "@/lib/studio/printAreas";
 import { groupLocationsByView } from "@/lib/studio/garmentViews";
-import type { DecorationLocation } from "@/lib/studio/productDecorationProfile";
+import { decorationProfileFor, type DecorationLocation } from "@/lib/studio/productDecorationProfile";
+import { FAMILIES_WITHOUT_3D, drinkwareKindFor } from "@/lib/studio/preview3d";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 
 const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then((m) => m.CanvasStage), {
+  ssr: false,
+  loading: () => (
+    <div className="mx-auto flex aspect-[4/5] w-full max-w-[420px] items-center justify-center rounded-3xl bg-white">
+      <SpinnerGap className="size-6 animate-spin text-muted" weight="bold" />
+    </div>
+  ),
+});
+
+const Mug3DPreview = dynamic(() => import("@/components/studio/Mug3DPreview").then((m) => m.Mug3DPreview), {
+  ssr: false,
+  loading: () => (
+    <div className="mx-auto flex aspect-[4/5] w-full max-w-[420px] items-center justify-center rounded-3xl bg-white">
+      <SpinnerGap className="size-6 animate-spin text-muted" weight="bold" />
+    </div>
+  ),
+});
+
+const Flat3DPreview = dynamic(() => import("@/components/studio/Flat3DPreview").then((m) => m.Flat3DPreview), {
   ssr: false,
   loading: () => (
     <div className="mx-auto flex aspect-[4/5] w-full max-w-[420px] items-center justify-center rounded-3xl bg-white">
@@ -54,6 +74,28 @@ export function ReviewPanel({
     return backgroundUrlFor(loc.viewType, project.mockupImages, project.colourName, loc.usesPlacementPreview);
   };
 
+  // Same "can this family show a rotatable 3D preview" rule Studio's own canvas uses (see
+  // StudioClient's FAMILIES_WITHOUT_3D) — real-garment-photo families (tee/hoodie/joggers/headwear)
+  // keep the flat photo-backed preview here too, since a 3D box adds nothing over an actual photo.
+  const hasBackPhoto = Boolean(project.mockupImages.back);
+  const family = decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).family;
+  const canShow3D = !FAMILIES_WITHOUT_3D.includes(family);
+
+  // One 2D/3D toggle per view group (front/back can each be flipped independently) rather than a
+  // single page-wide switch — a two-sided product's Review should let you check each side's 3D look
+  // on its own.
+  const [viewModeByGroup, setViewModeByGroup] = useState<Record<string, "2d" | "3d">>({});
+  const viewModeFor = (groupKey: string) => viewModeByGroup[groupKey] ?? "2d";
+  const setViewModeFor = (groupKey: string, mode: "2d" | "3d") =>
+    setViewModeByGroup((prev) => ({ ...prev, [groupKey]: mode }));
+
+  // Mirrors StudioClient's flatPrintAreaIn: the accessory family (gifts-promo/packaging) reuses
+  // apparel's "front"/"back" DesignSideType IDs with no real per-item print-area entry of its own,
+  // so PRINT_AREAS[side] would silently render every coaster/tote/etc. at a 12x16in chest-print
+  // aspect ratio — fall back to a neutral square instead.
+  const flatPrintAreaInFor = (side: DesignSideType) =>
+    printAreaOverrideFor(project.sides, side) ?? (family === "accessory" ? { widthIn: 4, heightIn: 4 } : PRINT_AREAS[side]);
+
   // Section 25: "do not show Left Chest as if it were an entirely different shirt" — group every
   // decorated location back into the GarmentView it actually shares (front/left-chest/right-chest
   // are one composite picture, not three), so Review reads as a handful of real views rather than
@@ -91,29 +133,74 @@ export function ReviewPanel({
             {viewGroups.map((group) => {
               const primary = group.locations[0];
               const groupHasArt = group.locations.some(hasArt);
+              const groupKey = group.view;
+              const viewMode = viewModeFor(groupKey);
+              const flatPrintAreaIn = flatPrintAreaInFor(primary);
               return (
-                <div key={group.view}>
-                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
-                    {groupLabel(group.locations)} preview
-                    <span className={groupHasArt ? "text-crimson" : "text-muted/50"}>{groupHasArt ? "✓" : "—"}</span>
-                  </p>
-                  <CanvasStage
-                    layers={group.locations.map((loc) => ({
-                      location: loc,
-                      objects: sides[loc] ?? [],
-                      active: false,
-                      printAreaOverrideIn: printAreaOverrideFor(project.sides, loc),
-                    }))}
-                    mockupUrl={mockupFor(primary)}
-                    selectedId={null}
-                    onSelect={() => {}}
-                    onCommitObject={() => {}}
-                    editingTextId={null}
-                    onEditRequest={() => {}}
-                    onEditCommit={() => {}}
-                    readOnly
-                    fitMode="width"
-                  />
+                <div key={groupKey}>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+                      {groupLabel(group.locations)} preview
+                      <span className={groupHasArt ? "text-crimson" : "text-muted/50"}>{groupHasArt ? "✓" : "—"}</span>
+                    </p>
+                    {canShow3D && (
+                      <div className="flex items-center rounded-full border border-sand bg-white p-0.5 text-[11px] font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => setViewModeFor(groupKey, "2d")}
+                          aria-pressed={viewMode === "2d"}
+                          className={cn(
+                            "rounded-full px-2.5 py-1 transition-colors",
+                            viewMode === "2d" ? "bg-ink-950 text-white" : "text-ink-900 hover:bg-canvas",
+                          )}
+                        >
+                          2D
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setViewModeFor(groupKey, "3d")}
+                          aria-pressed={viewMode === "3d"}
+                          className={cn(
+                            "rounded-full px-2.5 py-1 transition-colors",
+                            viewMode === "3d" ? "bg-ink-950 text-white" : "text-ink-900 hover:bg-canvas",
+                          )}
+                        >
+                          3D
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {viewMode === "3d" && canShow3D ? (
+                    <div className="mx-auto aspect-[4/5] w-full max-w-[420px] overflow-hidden rounded-3xl bg-white">
+                      {family === "mug" ? (
+                        <Mug3DPreview objects={sides[primary] ?? []} kind={drinkwareKindFor(project.subcategorySlug)} />
+                      ) : (
+                        <Flat3DPreview
+                          objects={sides[primary] ?? []}
+                          widthIn={flatPrintAreaIn.widthIn}
+                          heightIn={flatPrintAreaIn.heightIn}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <CanvasStage
+                      layers={group.locations.map((loc) => ({
+                        location: loc,
+                        objects: sides[loc] ?? [],
+                        active: false,
+                        printAreaOverrideIn: printAreaOverrideFor(project.sides, loc),
+                      }))}
+                      mockupUrl={mockupFor(primary)}
+                      selectedId={null}
+                      onSelect={() => {}}
+                      onCommitObject={() => {}}
+                      editingTextId={null}
+                      onEditRequest={() => {}}
+                      onEditCommit={() => {}}
+                      readOnly
+                      fitMode="width"
+                    />
+                  )}
                 </div>
               );
             })}

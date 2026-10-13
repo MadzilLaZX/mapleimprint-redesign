@@ -56,6 +56,10 @@ interface VesselParams {
   opacity?: number;
   /** Open top shows an inner wall + rim ring (mug, glass); capped vessels don't need either. */
   openTop: boolean;
+  /** Tumbler-style push-on lids are translucent plastic, not solid metal/paint like a bottle's
+   *  screw cap — set on the cap material only when true, so bottle caps stay fully opaque. */
+  capTransparent?: boolean;
+  capOpacity?: number;
 }
 
 const VESSEL_PARAMS: Record<DrinkwareKind, VesselParams> = {
@@ -64,9 +68,11 @@ const VESSEL_PARAMS: Record<DrinkwareKind, VesselParams> = {
     bodyColor: "#FAFAF7", metalness: 0.04, roughness: 0.35, openTop: true,
   },
   tumbler: {
-    // Insulated steel tumbler — tapers slightly narrower at the base, brushed-metal finish, flush lid.
+    // Insulated steel tumbler — tapers slightly narrower at the base, brushed-metal finish, clear
+    // push-on plastic lid (capTransparent) rather than a solid-color cap like a bottle's screw top.
     radiusTop: 0.95, radiusBottom: 0.82, height: 3.0, hasHandle: false, hasCap: true,
-    bodyColor: "#C9CDD1", capColor: "#2B2B2E", metalness: 0.75, roughness: 0.3, openTop: false,
+    bodyColor: "#C9CDD1", capColor: "#E7E9EA", metalness: 0.75, roughness: 0.3, openTop: false,
+    capTransparent: true, capOpacity: 0.55,
   },
   "water-bottle": {
     // Narrow insulated bottle body with a distinct narrower neck + screw cap.
@@ -137,11 +143,31 @@ function VesselModel({ kind, texture }: { kind: DrinkwareKind; texture: THREE.Ca
         </>
       )}
       {p.hasCap && !p.neckRadius && (
-        // Tumbler-style flush lid — a short cap cylinder sitting directly on the body's rim.
-        <mesh position={[0, p.height / 2 + 0.12, 0]} castShadow>
-          <cylinderGeometry args={[p.radiusTop * 0.98, p.radiusTop, 0.24, 64]} />
-          <meshStandardMaterial color={p.capColor} roughness={0.4} metalness={0.3} />
-        </mesh>
+        // Tumbler-style flush lid — a short cap cylinder sitting directly on the body's rim, plus
+        // a small raised spout off-center (where you'd actually sip from) so it doesn't read as a
+        // plain disc from the three-quarter camera angle.
+        <group>
+          <mesh position={[0, p.height / 2 + 0.12, 0]} castShadow>
+            <cylinderGeometry args={[p.radiusTop * 0.98, p.radiusTop, 0.24, 64]} />
+            <meshStandardMaterial
+              color={p.capColor}
+              roughness={p.capTransparent ? 0.15 : 0.4}
+              metalness={p.capTransparent ? 0 : 0.3}
+              transparent={p.capTransparent}
+              opacity={p.capTransparent ? p.capOpacity : 1}
+            />
+          </mesh>
+          <mesh position={[p.radiusTop * 0.4, p.height / 2 + 0.27, 0]} castShadow>
+            <cylinderGeometry args={[0.16, 0.18, 0.14, 24]} />
+            <meshStandardMaterial
+              color={p.capColor}
+              roughness={p.capTransparent ? 0.15 : 0.4}
+              metalness={p.capTransparent ? 0 : 0.3}
+              transparent={p.capTransparent}
+              opacity={p.capTransparent ? p.capOpacity : 1}
+            />
+          </mesh>
+        </group>
       )}
       {p.hasCap && p.neckRadius && (
         // Bottle-style neck + screw cap, narrower than the body.
