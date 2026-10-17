@@ -63,7 +63,13 @@ function PieceModel({ texture, width, height, depth }: { texture: THREE.CanvasTe
           Positioned just outside the box's own +Z face so it doesn't z-fight with it. */}
       <mesh position={[0, 0, depth / 2 + 0.0015]} castShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial map={texture ?? undefined} roughness={0.55} metalness={0} />
+        {/* toneMapped={false}: this plane is a UI-like printed design, not a lit physical surface
+            whose color should respond to the scene's filmic tone-mapping curve — with tone mapping
+            on, the curve compresses/brightens mid-tones, which is exactly what was quietly washing
+            out a template's lighter secondary text (confirmed by comparing the same text's color
+            directly in the 2D canvas, which reads clearly, against the 3D render, which didn't,
+            with geometry/facing/camera angle all otherwise already correct). */}
+        <meshStandardMaterial map={texture ?? undefined} roughness={0.55} metalness={0} toneMapped={false} />
       </mesh>
     </group>
   );
@@ -131,7 +137,8 @@ function ToteBagModel({ texture }: { texture: THREE.CanvasTexture | null }) {
           rather than edge-to-edge coverage. */}
       <mesh position={[0, 0, TOTE_PARAMS.depth / 2 + 0.0015]} castShadow>
         <planeGeometry args={[TOTE_PARAMS.width * 0.82, TOTE_HEIGHT * 0.82]} />
-        <meshStandardMaterial map={texture ?? undefined} roughness={0.6} metalness={0} />
+        {/* toneMapped={false} — see PieceModel's own decal plane comment above. */}
+        <meshStandardMaterial map={texture ?? undefined} roughness={0.6} metalness={0} toneMapped={false} />
       </mesh>
       {[-1, 1].map((side) => (
         <mesh key={side} position={[side * handleX, handleY, 0]} castShadow>
@@ -173,7 +180,8 @@ function PenModel({ texture }: { texture: THREE.CanvasTexture | null }) {
       {texture && (
         <mesh>
           <cylinderGeometry args={[PEN_BODY_RADIUS + 0.004, PEN_BODY_RADIUS + 0.004, PEN_BODY_LENGTH * 0.82, 48, 1, true, start, arc]} />
-          <meshStandardMaterial map={texture} roughness={0.4} side={THREE.DoubleSide} />
+          {/* toneMapped={false} — see PieceModel's own decal plane comment above. */}
+          <meshStandardMaterial map={texture} roughness={0.4} side={THREE.DoubleSide} toneMapped={false} />
         </mesh>
       )}
       {/* Tip */}
@@ -293,6 +301,14 @@ export function Flat3DPreview({
       if (cancelled) return;
       const tex = new THREE.CanvasTexture(canvas);
       tex.colorSpace = THREE.SRGBColorSpace;
+      // Anisotropic filtering — without this, fine/small template text (a business card's
+      // secondary lines, a postcard's fine print) blurs into near-illegibility the moment the
+      // decal plane is viewed at anything but dead-on, because WebGL's default texture filtering
+      // only accounts for minification, not the extra foreshortening an oblique view angle adds
+      // along one axis. A bold, large mark (this app's own hand-built graphics, a big icon) hides
+      // this well enough to look fine; small template body text does not. 16 is a safe, broadly
+      // supported ceiling — WebGL clamps to the GPU's real max automatically if lower.
+      tex.anisotropy = 16;
       tex.needsUpdate = true;
       setTexture((prev) => {
         prev?.dispose();

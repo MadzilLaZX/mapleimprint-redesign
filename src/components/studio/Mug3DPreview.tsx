@@ -193,7 +193,10 @@ function VesselModel({ kind, texture }: { kind: DrinkwareKind; texture: THREE.Ca
           <cylinderGeometry
             args={[decalRadius, decalRadius, p.height * 0.68, 64, 1, true, degToRad(start), degToRad(arc)]}
           />
-          <meshStandardMaterial map={texture} roughness={0.42} side={THREE.DoubleSide} />
+          {/* toneMapped={false} — a printed design decal shouldn't respond to the scene's filmic
+              tone-mapping curve, which otherwise compresses/brightens mid-tones and can wash out
+              lighter design elements (same fix applied to Flat3DPreview's decal planes). */}
+          <meshStandardMaterial map={texture} roughness={0.42} side={THREE.DoubleSide} toneMapped={false} />
         </mesh>
       )}
       {/* Handle — a partial torus, attached on the +X side (mug only) */}
@@ -239,6 +242,10 @@ export function Mug3DPreview({ objects, kind = "mug" }: { objects: DesignObjectR
       if (cancelled) return;
       const tex = new THREE.CanvasTexture(canvas);
       tex.colorSpace = THREE.SRGBColorSpace;
+      // Anisotropic filtering — see the matching comment in Flat3DPreview.tsx. A curved decal
+      // wrap is an oblique view by definition almost everywhere except dead-center, so fine
+      // design text benefits here too, not just on the flat-piece preview.
+      tex.anisotropy = 16;
       tex.needsUpdate = true;
       setTexture((prev) => {
         prev?.dispose();
