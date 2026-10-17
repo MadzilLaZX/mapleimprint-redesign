@@ -22,3 +22,21 @@ export function drinkwareKindFor(subcategorySlug: string): DrinkwareKind {
     default: return "mug";
   }
 }
+
+// Four "accessory" family products (gifts-promo/packaging) get a bespoke Flat3DPreview shape
+// instead of the generic flat card — everything else in that family (stickers, keychains,
+// magnets, coasters, packaging boxes, etc.) keeps the plain flat box unchanged. Keyed on the
+// catalogue's `productSlug` (DesignProjectRecord.productSlug), NOT `subcategorySlug` — pens and
+// notebooks share subcategorySlug "stationery" (see catalogue.ts), so subcategorySlug alone can't
+// tell them apart. Falls back to "flat" (today's unchanged box) for every other product.
+export type AccessoryKind = "tote-bag" | "pen" | "notebook" | "phone-stand" | "flat";
+
+export function accessoryKindFor(productSlug: string): AccessoryKind {
+  switch (productSlug) {
+    case "tote-bags": return "tote-bag";
+    case "promotional-pens": return "pen";
+    case "notebooks-journals": return "notebook";
+    case "phone-stands": return "phone-stand";
+    default: return "flat";
+  }
+}

@@ -9,7 +9,7 @@ import { EASE_PREMIUM } from "@/lib/motion";
 import { backgroundUrlFor, printAreaOverrideFor, PRINT_AREAS } from "@/lib/studio/printAreas";
 import { groupLocationsByView } from "@/lib/studio/garmentViews";
 import { decorationProfileFor, type DecorationLocation } from "@/lib/studio/productDecorationProfile";
-import { FAMILIES_WITHOUT_3D, drinkwareKindFor } from "@/lib/studio/preview3d";
+import { FAMILIES_WITHOUT_3D, drinkwareKindFor, accessoryKindFor } from "@/lib/studio/preview3d";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 
 const CanvasStage = dynamic(() => import("@/components/studio/CanvasStage").then((m) => m.CanvasStage), {
@@ -179,6 +179,7 @@ export function ReviewPanel({
                           objects={sides[primary] ?? []}
                           widthIn={flatPrintAreaIn.widthIn}
                           heightIn={flatPrintAreaIn.heightIn}
+                          kind={accessoryKindFor(project.productSlug)}
                         />
                       )}
                     </div>

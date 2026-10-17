@@ -26,7 +26,7 @@ import { GraphicsPanel } from "@/components/studio/panels/GraphicsPanel";
 import { DesignsPanel } from "@/components/studio/panels/DesignsPanel";
 import { MyStuffPanel } from "@/components/studio/panels/MyStuffPanel";
 import { decorationProfileFor } from "@/lib/studio/productDecorationProfile";
-import { FAMILIES_WITHOUT_3D, drinkwareKindFor } from "@/lib/studio/preview3d";
+import { FAMILIES_WITHOUT_3D, drinkwareKindFor, accessoryKindFor } from "@/lib/studio/preview3d";
 import { backgroundUrlFor, printAreaPixelBox, printAreaOverrideFor, printAreasOverlap, PRINT_AREAS } from "@/lib/studio/printAreas";
 import { viewGroupFor } from "@/lib/studio/garmentViews";
 import { resolveTemplateAssets, scaleTemplateObjects, type DesignTemplate } from "@/lib/studio/templates";
@@ -1463,6 +1463,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
         printAreaOverrides={project.sides}
         categorySlug={project.categorySlug}
         subcategorySlug={project.subcategorySlug}
+        productSlug={project.productSlug}
       />
     );
   } else {
@@ -1636,7 +1637,12 @@ export function StudioClient({ projectId }: { projectId: string }) {
                   {family === "mug" ? (
                     <Mug3DPreview objects={activeObjects} kind={project ? drinkwareKindFor(project.subcategorySlug) : "mug"} />
                   ) : (
-                    <Flat3DPreview objects={activeObjects} widthIn={flatPrintAreaIn.widthIn} heightIn={flatPrintAreaIn.heightIn} />
+                    <Flat3DPreview
+                      objects={activeObjects}
+                      widthIn={flatPrintAreaIn.widthIn}
+                      heightIn={flatPrintAreaIn.heightIn}
+                      kind={project ? accessoryKindFor(project.productSlug) : "flat"}
+                    />
                   )}
                 </div>
               ) : (
