@@ -11,7 +11,11 @@ import { ProductDetail } from "@/components/products/ProductDetail";
 import { calculateCustomizePrice } from "@/lib/studio/pricing";
 
 export function generateStaticParams() {
-  return PRODUCTS.map((p) => ({
+  // Drafts are excluded here (not just from the public filter functions) so Next never
+  // statically pre-builds a page for them in the first place — the runtime notFound() check
+  // below is the real enforcement, this just avoids wasted build work for pages that would
+  // immediately 404 anyway.
+  return PRODUCTS.filter((p) => p.status !== "draft").map((p) => ({
     category: p.categorySlug,
     subcategory: p.subcategorySlug,
     product: p.slug,
@@ -25,7 +29,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { category, subcategory, product } = await params;
   const p = getProduct(category, subcategory, product);
-  if (!p) return {};
+  if (!p || p.status === "draft") return {};
   return {
     title: `${p.name} — ${p.brandName}`,
     description: p.description ? p.description.slice(0, 155) : `${p.name} from Maple Imprint, custom decorated.`,
@@ -39,7 +43,11 @@ export default async function ProductDetailPage({
 }) {
   const { category, subcategory, product } = await params;
   const p = getProduct(category, subcategory, product);
-  if (!p) notFound();
+  // Draft products aren't publicly orderable yet (pending sample approval, material verification
+  // and pricing review) — their own detail URL must 404 like any other nonexistent product, not
+  // silently render, even though getProduct() itself still resolves them (checkout's
+  // priceCartItem.ts uses the same lookup and has no reason to special-case drafts there).
+  if (!p || p.status === "draft") notFound();
 
   const categoryName = PRODUCT_CATEGORIES.find((c) => c.slug === p.categorySlug)?.name ?? p.categorySlug;
 

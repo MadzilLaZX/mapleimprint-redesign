@@ -38,6 +38,16 @@ export interface CatalogueProduct {
   priceTiers: ProductPriceTier[] | null;
   startingPrice: number | null;
   printRuleVersion: string;
+  /** Draft/published catalogue state. Absent/undefined = "published" — every one of the site's
+   *  existing supplier-sourced and house products has no opinion on this field and behaves exactly
+   *  as before. Set to "draft" only for newly-added catalogue rows still pending sample approval,
+   *  material verification and pricing review — getProductsByCategory/getProductsBySubcategory
+   *  below filter these out of every category/subcategory listing (and therefore the shop grid,
+   *  which reads through getProductsBySubcategory via src/lib/shopProducts.ts), and the
+   *  product-detail route 404s a draft's own URL directly (see that page) so it's unreachable via
+   *  any public path. sitemap.ts doesn't enumerate individual products today, so it needs no
+   *  change here. */
+  status?: "draft" | "published";
   /** Set only for Maple's own house-produced lines — not sourced from SanMar/S&S.
    *  `priceTiers`/`startingPrice` on these are display-only summaries for the shop tile; the
    *  authoritative per-order price always comes from src/lib/houseProducts/pricing/, since real
@@ -88,11 +98,13 @@ export interface CatalogueProduct {
 export const PRODUCTS: CatalogueProduct[] = [...(rawProducts as CatalogueProduct[]), ...HOUSE_PRODUCTS];
 
 export function getProductsBySubcategory(categorySlug: string, subcategorySlug: string): CatalogueProduct[] {
-  return PRODUCTS.filter((p) => p.categorySlug === categorySlug && p.subcategorySlug === subcategorySlug);
+  return PRODUCTS.filter(
+    (p) => p.categorySlug === categorySlug && p.subcategorySlug === subcategorySlug && p.status !== "draft",
+  );
 }
 
 export function getProductsByCategory(categorySlug: string): CatalogueProduct[] {
-  return PRODUCTS.filter((p) => p.categorySlug === categorySlug);
+  return PRODUCTS.filter((p) => p.categorySlug === categorySlug && p.status !== "draft");
 }
 
 export function getProduct(categorySlug: string, subcategorySlug: string, productSlug: string): CatalogueProduct | undefined {

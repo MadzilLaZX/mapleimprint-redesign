@@ -21,6 +21,7 @@ import { quotePromo } from "./pricing/promo";
 import { quoteSign } from "./pricing/signs";
 import { quotePackaging } from "./pricing/packaging";
 import { isQuoteError } from "./pricing/types";
+import { PRINT_CATALOGUE_DRAFT } from "./printCatalogueDraft";
 
 /** Pulls a real "from" unit price out of a quote function at its cheapest realistic configuration,
  *  for the shop-grid tile — same role applyHouseMargin(rawPrice) plays for banner/card/flyer above,
@@ -559,4 +560,8 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     printRuleVersion: "house-v1-vistaprint-2026-10-06",
     houseProductKind: "packaging-tape",
   },
+
+  // --- Draft print-catalogue additions (business owner's commissioned spreadsheet) ------------
+  // See printCatalogueDraft.ts's header for the full gap/exclusion rationale. All status: "draft".
+  ...PRINT_CATALOGUE_DRAFT,
 ];
