@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePrice, roundUpTo99, type MarkupRuleInput } from '../src/pricing/engine.js';
+import { calculatePrice, roundUpTo99, TIERED_MARKUP_DEFAULT_TIERS, type MarkupRuleInput } from '../src/pricing/engine.js';
 
 const flatMarkup: MarkupRuleInput = {
   type: 'percentage',
@@ -361,4 +361,112 @@ describe('printing table covers all quantity/location boundaries required by the
       });
     }
   }
+});
+
+// --- 2026-10-19 pricing policy: tiered MARKUP by cost bracket ---
+// price = cost * (1 + rate), bracket selected by cost itself, lower bound inclusive, upper bound
+// exclusive: <$7 -> 30%, $7-15 -> 25%, $15-25 -> 20%, $25-35 -> 15%, >=$35 -> 10%. This is MARKUP,
+// explicitly NOT margin — do not conflate with the "40% rule is GROSS MARGIN" tests above, that's
+// a different, unrelated rule this business specified as a margin target.
+describe('tiered_markup rule: cost-bracket MARKUP, not margin', () => {
+  const tieredMarkup: MarkupRuleInput = {
+    type: 'tiered_markup',
+    value: 0, // unused for this type
+    appliesTo: 'blank',
+    version: 'tiered-markup-test-v1',
+  };
+
+  const cases: [cost: number, expectedRate: number][] = [
+    [5, 0.3], // below $7
+    [6.99, 0.3],
+    [7, 0.25], // exactly $7 -> next bracket (lower bound inclusive)
+    [10, 0.25],
+    [14.99, 0.25],
+    [15, 0.2],
+    [20, 0.2],
+    [24.99, 0.2],
+    [25, 0.15],
+    [30, 0.15],
+    [34.99, 0.15],
+    [35, 0.1], // exactly $35 -> top bracket
+    [50, 0.1],
+    [100, 0.1],
+  ];
+
+  for (const [cost, expectedRate] of cases) {
+    it(`$${cost} cost gets ${expectedRate * 100}% markup, not margin`, () => {
+      const result = calculatePrice({
+        productType: 'apparel',
+        quantity: 1,
+        wholesaleCostPerUnit: cost,
+        printLocations: 1,
+        markupRule: tieredMarkup,
+      });
+      expect(result.status).toBe('priced');
+      const expectedRawRetail = cost * (1 + expectedRate);
+      expect(result.blankRetail).toBeCloseTo(roundUpTo99(expectedRawRetail), 5);
+      // Margin math gives a strictly higher RAW retail at every one of these rates/costs — compare
+      // pre-.99-rounding values, since rounding can coincidentally tie two nearby raw numbers onto
+      // the same .99 (e.g. $6.99 cost: markup raw 9.087 and margin raw 9.986 both round up to
+      // 9.99), which would make a post-rounding comparison a false negative, not a real failure.
+      const marginEquivalentRaw = cost / (1 - expectedRate);
+      expect(expectedRawRetail).toBeLessThan(marginEquivalentRaw);
+    });
+  }
+
+  it('defaults to TIERED_MARKUP_DEFAULT_TIERS when no `tiers` array is given on the rule', () => {
+    const result = calculatePrice({
+      productType: 'apparel',
+      quantity: 1,
+      wholesaleCostPerUnit: 20,
+      printLocations: 1,
+      markupRule: tieredMarkup, // no `tiers` field set
+    });
+    expect(result.status).toBe('priced');
+    // $20 is in the $15-25 bracket -> 20% markup -> 24.00 -> roundUpTo99 -> 24.99
+    expect(result.blankRetail).toBeCloseTo(24.99, 5);
+  });
+
+  it('a custom `tiers` array overrides the default table', () => {
+    const result = calculatePrice({
+      productType: 'apparel',
+      quantity: 1,
+      wholesaleCostPerUnit: 20,
+      printLocations: 1,
+      markupRule: {
+        type: 'tiered_markup',
+        value: 0,
+        appliesTo: 'blank',
+        version: 'custom-tiers-v1',
+        tiers: [{ belowOrAt: null, rate: 0.5 }], // flat 50% for everything
+      },
+    });
+    expect(result.status).toBe('priced');
+    // 20 * 1.5 = 30.00 -> 30.99
+    expect(result.blankRetail).toBeCloseTo(30.99, 5);
+  });
+
+  it('exported TIERED_MARKUP_DEFAULT_TIERS matches the documented brackets exactly', () => {
+    expect(TIERED_MARKUP_DEFAULT_TIERS).toEqual([
+      { belowOrAt: 7, rate: 0.3 },
+      { belowOrAt: 15, rate: 0.25 },
+      { belowOrAt: 25, rate: 0.2 },
+      { belowOrAt: 35, rate: 0.15 },
+      { belowOrAt: null, rate: 0.1 },
+    ]);
+  });
+
+  it('printing/decoration cost is added on top of blank retail, never itself marked up', () => {
+    const result = calculatePrice({
+      productType: 'apparel',
+      quantity: 3, // 3-10 tier: first print $18.00
+      wholesaleCostPerUnit: 20, // $15-25 bracket -> 20% markup -> 24.00 -> 24.99
+      printLocations: 1,
+      markupRule: tieredMarkup,
+    });
+    expect(result.status).toBe('priced');
+    expect(result.blankRetail).toBeCloseTo(24.99, 5);
+    expect(result.printingCostPerUnit).toBeCloseTo(18.0, 5);
+    expect(result.finalUnitPrice).toBeCloseTo(result.blankCostPerUnit! + 18.0 + result.markupAmountPerUnit!, 5);
+  });
 });

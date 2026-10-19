@@ -32,18 +32,66 @@ import {
 } from './rules/seed-data.js';
 
 export type ProductType = 'apparel' | 'hat' | 'mug';
-export type MarkupType = 'percentage' | 'fixed';
+export type MarkupType = 'percentage' | 'fixed' | 'tiered_markup';
 export type MarkupAppliesTo = 'blank' | 'blank_plus_printing' | 'subtotal';
+
+/** One bracket of a 'tiered_markup' rule — `belowOrAt` is the bracket's exclusive upper bound
+ *  (null = unbounded, i.e. the top bracket); the bracket is selected by whichever cost figure
+ *  `appliesTo` points at, lower bound inclusive. See TIERED_MARKUP_DEFAULT_TIERS below for the
+ *  business's actual 2026-10-19 brackets and the full policy note. */
+export interface MarkupTier {
+  belowOrAt: number | null;
+  rate: number;
+}
+
+// --- 2026-10-19 pricing policy: tiered MARKUP by cost bracket ---
+// This mirrors src/lib/houseProducts/pricing/margin.ts's MARKUP_TIERS exactly (that file is this
+// business's actual live house-product pricing chokepoint; this engine is the separate,
+// not-yet-wired-into-any-live-route apparel/hat/mug calculator — see this package's own
+// description: "feeds whichever commerce platform is chosen, Gate A decision not yet made"). Kept
+// as a literal duplicate rather than a cross-package import on purpose: catalogue-engine builds
+// and ships standalone (`tsc -p tsconfig.json`, its own package.json/dist), so it must not reach
+// into the Next.js app's `src/lib` at build time. If the two ever drift, trust src/lib's version —
+// that's the one actually charging real customers.
+//
+// MARKUP (price = cost * (1 + rate)), explicitly NOT margin (cost / (1 - rate)) — do not "fix"
+// this to margin math by analogy with the 40% rule below; that correction was for a different
+// rule this business explicitly specified as a margin target, this one was explicitly specified
+// as markup. Lower bound inclusive, upper bound exclusive, so every cost lands in exactly one
+// bracket: <$7 -> 30%, $7-15 -> 25%, $15-25 -> 20%, $25-35 -> 15%, >=$35 -> 10%.
+export const TIERED_MARKUP_DEFAULT_TIERS: MarkupTier[] = [
+  { belowOrAt: 7, rate: 0.3 },
+  { belowOrAt: 15, rate: 0.25 },
+  { belowOrAt: 25, rate: 0.2 },
+  { belowOrAt: 35, rate: 0.15 },
+  { belowOrAt: null, rate: 0.1 },
+];
+
+function tieredMarkupRateFor(cost: number, tiers: MarkupTier[]): number {
+  let lastRate = 0;
+  for (const tier of tiers) {
+    lastRate = tier.rate;
+    if (tier.belowOrAt === null || cost < tier.belowOrAt) return tier.rate;
+  }
+  // Only reached if every tier had a finite belowOrAt (caller error — the real table always ends
+  // with belowOrAt: null) — falls back to the last tier's own rate rather than throwing, since
+  // applyMarkup's caller (calculatePrice) is documented to never fabricate a price on bad input,
+  // but a rate lookup helper returning 0 silently would be worse than reusing the top bracket.
+  return lastRate;
+}
 
 export interface MarkupRuleInput {
   type: MarkupType;
   /** For type 'percentage': the TARGET GROSS MARGIN as a 0-1 fraction (e.g. 0.4 = 40% margin —
    *  requiredRetail = cost / (1 - value), NOT cost * (1 + value); see this file's 2026-09-24
    *  correction note above). For type 'fixed': a flat dollar amount added on top of `appliesTo`'s
-   *  base. */
+   *  base. For type 'tiered_markup': unused — see `tiers` instead. */
   value: number;
   appliesTo: MarkupAppliesTo;
   version: string;
+  /** Required for type 'tiered_markup' — the bracket table to apply (see MarkupTier/
+   *  TIERED_MARKUP_DEFAULT_TIERS above). Ignored for 'percentage'/'fixed'. */
+  tiers?: MarkupTier[];
 }
 
 export interface Surcharge {
@@ -194,6 +242,28 @@ function applyMarkup(
     // exact number, and Section 3's .99 rule only governs the margin-DERIVED blank retail price.
     const blankRetail = rule.appliesTo === 'blank' ? round2(blankCost + rule.value) : null;
     return { adjustmentAmountPerUnit: rule.value, blankRetail };
+  }
+
+  if (rule.type === 'tiered_markup') {
+    // See TIERED_MARKUP_DEFAULT_TIERS' doc comment above — MARKUP (cost * (1 + rate)), bracket
+    // selected by the same cost figure `appliesTo` would otherwise use as the margin base.
+    const tiers = rule.tiers ?? TIERED_MARKUP_DEFAULT_TIERS;
+    if (tiers.length === 0) {
+      reasons.push("tiered_markup rule has no tiers configured");
+      return null;
+    }
+    const base =
+      rule.appliesTo === 'blank'
+        ? blankCost
+        : blankCost + printingCost; // 'blank_plus_printing' and 'subtotal' — no real caller uses these today
+    const rate = tieredMarkupRateFor(base, tiers);
+    const rawRetail = base * (1 + rate);
+
+    if (rule.appliesTo === 'blank') {
+      const blankRetail = roundUpTo99(rawRetail);
+      return { adjustmentAmountPerUnit: round2(blankRetail - blankCost), blankRetail };
+    }
+    return { adjustmentAmountPerUnit: round2(rawRetail - base), blankRetail: null };
   }
 
   // type === 'percentage': target GROSS MARGIN (see this file's 2026-09-24 correction note).
