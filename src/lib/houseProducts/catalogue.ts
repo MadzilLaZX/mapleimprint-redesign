@@ -22,6 +22,7 @@ import { quoteSign } from "./pricing/signs";
 import { quotePackaging } from "./pricing/packaging";
 import { isQuoteError } from "./pricing/types";
 import { PRINT_CATALOGUE_DRAFT } from "./printCatalogueDraft";
+import { ENGRAVING_CATALOGUE_DRAFT } from "./engravingCatalogDraft";
 
 /** Pulls a real "from" unit price out of a quote function at its cheapest realistic configuration,
  *  for the shop-grid tile — same role applyHouseMargin(rawPrice) plays for banner/card/flyer above,
@@ -564,4 +565,9 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
   // --- Draft print-catalogue additions (business owner's commissioned spreadsheet) ------------
   // See printCatalogueDraft.ts's header for the full gap/exclusion rationale. All status: "draft".
   ...PRINT_CATALOGUE_DRAFT,
+
+  // --- Draft engraving-catalogue additions (xTool M1 Developer Catalog, new business line) ----
+  // See engravingCatalogDraft.ts's header for the full rationale. All status: "draft". Internal
+  // cost/supplier data is intentionally NOT spread in here — see engravingInternalOnly.ts.
+  ...ENGRAVING_CATALOGUE_DRAFT,
 ];

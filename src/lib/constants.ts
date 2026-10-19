@@ -91,7 +91,10 @@ export const PRODUCT_CATEGORIES = [
     slug: "drinkware",
     name: "Drinkware",
     blurb: "Mugs, tumblers, bottles and glassware for gifts and daily use.",
-    subcategories: ["Mugs", "Tumblers", "Bottles", "Glassware"],
+    // "Engraved & personalized" added for the xTool M1 laser-engraving draft line (coating-removal
+    // tumbler/water-bottle variants) — kept distinct from "Tumblers"/"Bottles" since those are a
+    // different product (different supplier, different decoration process), not the same item.
+    subcategories: ["Mugs", "Tumblers", "Bottles", "Glassware", "Engraved & personalized"],
     cover: "/images/products/drinkware.jpg",
   },
   {
@@ -113,6 +116,33 @@ export const PRODUCT_CATEGORIES = [
     name: "Events & Invitations",
     blurb: "Invitations, wedding stationery, tickets and certificates for events worth marking.",
     subcategories: ["Invitations", "Greeting cards", "Wedding stationery", "Tickets", "Certificates & awards"],
+    cover: "/images/products/business-printing.jpg",
+  },
+  {
+    slug: "personalized-engraving",
+    name: "Personalized Engraving",
+    blurb: "Laser-engraved keepsakes, signs and gifts, personalized to order.",
+    // New business line (xTool M1 laser engraving), same precedent as "Events & Invitations"
+    // above — a whole new top-level category since the sheet's own category names (Ornaments,
+    // Signs, Memorial gifts, Wedding favours, Business signage, Patches, Office/Bar/Kitchen/
+    // Business gifts, Teacher gifts) don't fit any existing category well. "Keychains" and
+    // "Drinkware" items from the same sheet are NOT here — those map onto existing categories
+    // instead (gifts-promo > Keychains, drinkware > Engraved & personalized) since a real fit
+    // already existed. See the task report's full mapping table for every product's placement.
+    subcategories: [
+      "Home gifts",
+      "Ornaments",
+      "Office gifts",
+      "Bar gifts",
+      "Kitchen gifts",
+      "Signs",
+      "Wedding favours",
+      "Business gifts",
+      "Memorial gifts",
+      "Business signage",
+      "Patches",
+      "Teacher gifts",
+    ],
     cover: "/images/products/business-printing.jpg",
   },
 ] as const;

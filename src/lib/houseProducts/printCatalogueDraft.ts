@@ -21,13 +21,29 @@
 // Known data gaps (see the task brief for the full reasoning):
 // - MI-027 "Table Tents" has no pricing.json rows — added below with priceTiers: null rather than
 //   a guessed price.
-// - MI-003 "Postcards", MI-044 "Vinyl Banners", MI-045 "Retractable Banners", MI-046 "Yard Signs",
-//   MI-047 "Foam Board Signs", MI-049 "Custom Cotton T-shirts" and MI-050 "Custom Ceramic Mugs"
-//   are NOT included here — each either has no product spec at all (044-047, pricing-only rows)
-//   or collides/duplicates a real product this site already sells (MI-003's sheet slug
-//   "postcards" collides exactly with the existing published Postcards house product below;
-//   MI-044 is pricing-only AND a duplicate of the existing "vinyl-banner" entry; MI-049/050 are
-//   likely duplicates of real apparel/drinkware already sold here). See the task report for detail.
+//
+// Follow-up pass (2026-10-20): the 6 items originally left out above are now added as their own
+// draft entries, each under a slug deliberately distinct from any real/live product so none of
+// them can ever shadow or be confused with the real thing at the URL level:
+// - MI-003 "Postcards" (slug "postcards-mi") — the sheet's slug "postcards" collides exactly with
+//   the existing LIVE published Postcards house product (business-printing/postcards/postcards,
+//   houseProductKind: "postcard", priced via quotePostcard() in pricing/postcards.ts). This entry
+//   captures the sheet's own flat 3-tier pricing as a separate, clearly-distinct draft — it must
+//   NOT be merged into or used to overwrite the live product's real quote-engine pricing.
+// - MI-044 "Vinyl Banners" (slug "vinyl-banners-mi") — collides with the existing published
+//   "vinyl-banner" product (real quoteSign()/banners.ts width/height-based pricing). Like MI-003,
+//   this is pricing-only in the source sheet (no Products-sheet row at all, same gap as
+//   045/046/047 below) — the description here is honestly provisional, not sheet-sourced.
+// - MI-045 "Retractable Banners", MI-046 "Yard Signs" (slug "yard-signs-mi" — MI-046 also shadows
+//   the existing live "yard-signs" house product under the same subcategory, hence the distinct
+//   slug), MI-047 "Foam Board Signs" — pricing-only rows, no Products-sheet spec at all. Added
+//   with categorySlug "signs-banners" (best subcategory fit noted per entry below) and an honest
+//   provisional description — no invented dimensions/material.
+// - MI-049 "Custom Cotton T-shirts" (slug "mi-custom-cotton-tshirt"), MI-050 "Custom Ceramic Mugs"
+//   (slug "mi-custom-ceramic-mug") — pricing-only rows that conceptually duplicate real, already-
+//   live apparel/drinkware products using a different (flat sheet price vs. supplier-cost-based)
+//   pricing model. Flagged here and in the task report: should never go live without reconciling
+//   which pricing model wins against the real apparel/drinkware catalog.
 import type { CatalogueProduct } from "@/lib/products";
 
 export const PRINT_CATALOGUE_DRAFT: CatalogueProduct[] = [
@@ -928,6 +944,167 @@ export const PRINT_CATALOGUE_DRAFT: CatalogueProduct[] = [
       { minQty: 10, maxQty: null, pricePerUnit: 18.9 },
     ],
     startingPrice: 29,
+    printRuleVersion: "house-v1-vistaprint-2026-10-20",
+  },
+
+  // --- Follow-up additions (2026-10-20): the 6 previously-excluded rows, see header for why each
+  // uses a slug distinct from a real/live product. ---------------------------------------------
+  {
+    slug: "postcards-mi",
+    name: "Postcards",
+    brandName: "Maple Imprint",
+    categorySlug: "business-printing",
+    subcategorySlug: "postcards",
+    // Real sheet-sourced description (MI-003 has a full Products-sheet row) — NOT provisional.
+    description: "Personalize postcards with your logo, text or artwork. Flat trim. Made for direct mail and promotional offers.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: [
+      { minQty: 100, maxQty: 199, pricePerUnit: 0.45 },
+      { minQty: 200, maxQty: 499, pricePerUnit: 0.37 },
+      { minQty: 500, maxQty: null, pricePerUnit: 0.306 },
+    ],
+    startingPrice: 0.45,
+    printRuleVersion: "house-v1-vistaprint-2026-10-20",
+  },
+
+  {
+    slug: "vinyl-banners-mi",
+    name: "Vinyl Banners",
+    brandName: "Maple Imprint",
+    categorySlug: "signs-banners",
+    subcategorySlug: "vinyl-banners",
+    // MI-044 has no Products-sheet row — honest provisional description, no invented spec.
+    description: "Custom-sized Vinyl Banners — full specifications pending production review.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: [
+      { minQty: 1, maxQty: 4, pricePerUnit: 99 },
+      { minQty: 5, maxQty: 9, pricePerUnit: 75.2 },
+      { minQty: 10, maxQty: null, pricePerUnit: 64.4 },
+    ],
+    startingPrice: 99,
+    printRuleVersion: "house-v1-vistaprint-2026-10-20",
+  },
+
+  {
+    slug: "retractable-banners",
+    name: "Retractable Banners",
+    brandName: "Maple Imprint",
+    categorySlug: "signs-banners",
+    subcategorySlug: "indoor-signs",
+    // MI-045 has no Products-sheet row (pricing-only) — honest provisional description.
+    description: "Custom-sized Retractable Banners — full specifications pending production review.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: [
+      { minQty: 1, maxQty: 4, pricePerUnit: 199 },
+      { minQty: 5, maxQty: 9, pricePerUnit: 151.2 },
+      { minQty: 10, maxQty: null, pricePerUnit: 129.4 },
+    ],
+    startingPrice: 199,
+    printRuleVersion: "house-v1-vistaprint-2026-10-20",
+  },
+
+  {
+    slug: "yard-signs-mi",
+    name: "Yard Signs",
+    brandName: "Maple Imprint",
+    categorySlug: "signs-banners",
+    subcategorySlug: "outdoor-signs",
+    // MI-046 has no Products-sheet row (pricing-only) — honest provisional description. Distinct
+    // slug since this subcategory already has a real live "yard-signs" house product.
+    description: "Custom-sized Yard Signs — full specifications pending production review.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: [
+      { minQty: 1, maxQty: 4, pricePerUnit: 39 },
+      { minQty: 5, maxQty: 9, pricePerUnit: 29.6 },
+      { minQty: 10, maxQty: null, pricePerUnit: 25.4 },
+    ],
+    startingPrice: 39,
+    printRuleVersion: "house-v1-vistaprint-2026-10-20",
+  },
+
+  {
+    slug: "foam-board-signs",
+    name: "Foam Board Signs",
+    brandName: "Maple Imprint",
+    categorySlug: "signs-banners",
+    subcategorySlug: "indoor-signs",
+    // MI-047 has no Products-sheet row (pricing-only) — honest provisional description.
+    description: "Custom-sized Foam Board Signs — full specifications pending production review.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: [
+      { minQty: 1, maxQty: 4, pricePerUnit: 49 },
+      { minQty: 5, maxQty: 9, pricePerUnit: 37.2 },
+      { minQty: 10, maxQty: null, pricePerUnit: 31.9 },
+    ],
+    startingPrice: 49,
+    printRuleVersion: "house-v1-vistaprint-2026-10-20",
+  },
+
+  {
+    slug: "mi-custom-cotton-tshirt",
+    name: "Custom Cotton T-shirts",
+    brandName: "Maple Imprint",
+    categorySlug: "custom-apparel",
+    subcategorySlug: "t-shirts",
+    // MI-049 has no Products-sheet row (pricing-only) — honest provisional description. This is a
+    // different (flat sheet-price) pricing model than the real apparel catalog's supplier-cost-
+    // based pricing; see this file's header — flag before ever publishing.
+    description: "Custom Cotton T-shirts — full specifications pending production review.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: [
+      { minQty: 1, maxQty: 4, pricePerUnit: 29 },
+      { minQty: 5, maxQty: 9, pricePerUnit: 22.0 },
+      { minQty: 10, maxQty: null, pricePerUnit: 18.9 },
+    ],
+    startingPrice: 29,
+    printRuleVersion: "house-v1-vistaprint-2026-10-20",
+  },
+
+  {
+    slug: "mi-custom-ceramic-mug",
+    name: "Custom Ceramic Mugs",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "mugs",
+    // MI-050 has no Products-sheet row (pricing-only) — honest provisional description. This is a
+    // different (flat sheet-price) pricing model than the real drinkware catalog's supplier-cost-
+    // based pricing; see this file's header — flag before ever publishing.
+    description: "Custom Ceramic Mugs — full specifications pending production review.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: [
+      { minQty: 1, maxQty: 4, pricePerUnit: 19 },
+      { minQty: 5, maxQty: 9, pricePerUnit: 14.4 },
+      { minQty: 10, maxQty: null, pricePerUnit: 12.4 },
+    ],
+    startingPrice: 19,
     printRuleVersion: "house-v1-vistaprint-2026-10-20",
   },
 ];

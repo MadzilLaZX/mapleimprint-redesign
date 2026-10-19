@@ -89,6 +89,22 @@ export interface CatalogueProduct {
    *  QuoteOnlyConfigurator). Never invented copy; always the same real catalogue facts gathered
    *  for every other house product, just without a price attached. */
   quoteOnlyInfo?: { sizes?: string[]; materials?: string[] };
+  /** Optional design-template metadata, set only on src/lib/houseProducts/engravingCatalogDraft.ts
+   *  entries, carried over from the xTool M1 Developer Catalog's "Design templates" sheet for
+   *  whenever the personalization-input UI that sheet describes (character-limited customer text
+   *  fields, layout/zone rules, text/stroke minimums) actually gets built. No component reads
+   *  this field today — it is not wired into ProductCustomizer or any other UI, deliberately out
+   *  of scope for this pass. Contains no supplier/cost data (that lives only in
+   *  engravingInternalOnly.ts, never imported by any customer-facing file — see that file's own
+   *  header for how this was verified). */
+  engravingTemplateMeta?: {
+    templateId: string;
+    customerInputs: string;
+    layoutType: string;
+    zoneInstructions: string;
+    textStrokeRule: string;
+    templateStatus: string;
+  };
 }
 
 // House-produced (Maple's own) products are merged in alongside the supplier-sourced catalogue —
