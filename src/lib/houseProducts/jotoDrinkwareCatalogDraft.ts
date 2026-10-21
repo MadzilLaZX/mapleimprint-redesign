@@ -152,14 +152,14 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     ],
   },
   {
-    slug: "sublimation-mug-15oz-inner-colour-pack-6",
-    name: "15oz Inner Colour Sublimation Mug — Pack of 6",
+    slug: "sublimation-mug-15oz-inner-colour-case-6",
+    name: "15oz Inner Colour Sublimation Mug — Case of 6",
     brandName: "Maple Imprint",
     categorySlug: "drinkware",
     subcategorySlug: "mugs",
     description:
       "Large 15oz white ceramic mug with a coloured interior and matching handle, ready for full-colour sublimation. " +
-      "Microwave and dishwasher safe, lead and cadmium free, FDA compliant. Sold by the pack of 6 mugs.",
+      "Microwave and dishwasher safe, lead and cadmium free, FDA compliant. Sold by the case of 6 mugs.",
     images: [],
     colours: [],
     sizes: [],
@@ -171,7 +171,7 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     productOptions: [{ name: "Inner colour", values: ["Black", "Red"] }],
     supplierBundlePricing: [
       {
-        sellUnit: "pack",
+        sellUnit: "case",
         itemsPerBundle: 6,
         tiers: [{ bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 29.99 }],
       },
