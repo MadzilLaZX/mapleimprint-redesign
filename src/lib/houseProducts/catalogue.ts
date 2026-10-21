@@ -23,6 +23,7 @@ import { quotePackaging } from "./pricing/packaging";
 import { isQuoteError } from "./pricing/types";
 import { PRINT_CATALOGUE_DRAFT } from "./printCatalogueDraft";
 import { ENGRAVING_CATALOGUE_DRAFT } from "./engravingCatalogDraft";
+import { JOTO_BLANKS_CATALOGUE_DRAFT } from "./jotoBlanksCatalogDraft";
 
 /** Pulls a real "from" unit price out of a quote function at its cheapest realistic configuration,
  *  for the shop-grid tile — same role applyHouseMargin(rawPrice) plays for banner/card/flyer above,
@@ -570,4 +571,9 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
   // See engravingCatalogDraft.ts's header for the full rationale. All status: "draft". Internal
   // cost/supplier data is intentionally NOT spread in here — see engravingInternalOnly.ts.
   ...ENGRAVING_CATALOGUE_DRAFT,
+
+  // --- Draft Joto Imaging Supplies sublimation-blank additions (owner's full-catalog request) --
+  // See jotoBlanksCatalogDraft.ts's header for sourcing/coverage rationale. All status: "draft".
+  // Internal cost/supplier data is intentionally NOT spread in here — see jotoBlanksInternalOnly.ts.
+  ...JOTO_BLANKS_CATALOGUE_DRAFT,
 ];
