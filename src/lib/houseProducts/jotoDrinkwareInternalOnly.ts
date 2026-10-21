@@ -22,7 +22,7 @@ export const JOTO_DRINKWARE_SUPPLIER_INTERNAL: JotoDrinkwareSupplierRecord[] = [
   { slug: "sublimation-mug-15oz-inner-colour-case-6", jotoSku: "CE-MUG-15-BK / CE-MUG-15-RD", jotoTitle: "Pearl Coating™ 15oz Inner Colored Sublimation Mug - Case of 6" },
   // Title says "Case of 48"; the tiers on the same page say 24 mugs per case. Recorded as 24.
   { slug: "sublimation-colour-changing-mug-11oz-case", jotoSku: "B-MUG-CC11-BK", jotoTitle: "Pearl Coating™ 11oz Sublimation Color Changing Mug - Case of 48" },
-  { slug: "sublimation-black-mug-white-patch-case-36", jotoSku: "B-MUG-FC11-BLWP-EGC", jotoTitle: "Pearl Coating™ Sublimation Black Mug with White Patch - Case of 36" },
+  { slug: "sublimation-black-mug-white-patch-case-36", jotoSku: "B-MUG-FC11-BLWP-EGC (11oz) / B-MUG-FC15-BLWP-EGC (15oz)", jotoTitle: "Pearl Coating™ Sublimation Black Mug with White Patch - Case of 36" },
   { slug: "sublimation-marble-mug-11oz-case-36", jotoSku: "B-MUG-026-11-PK", jotoTitle: "Pearl Coating™ 11oz Sublimation Ceramic Marble Mug - Case of 36" },
   { slug: "sublimation-bone-china-mug-gold-rim-pack-6", jotoSku: "B-MUG-PC-10-GR", jotoTitle: "Pearl Coating™ Sublimation 10oz Bone China White Mug with Gold Rim and Handle - Pack of 6" },
   { slug: "sublimation-latte-mug-12oz-case-36", jotoSku: "B-MUG-LT-12-EGC", jotoTitle: "Pearl Coating™ 12oz Sublimation Latte White Mug - Case of 36" },

@@ -239,7 +239,7 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     priceTiers: null,
     startingPrice: 95.4,
     printRuleVersion: RULE,
-    productOptions: [{ name: "Size", values: ["11oz", "15oz"], note: "15oz price not captured yet" }],
+    productOptions: [{ name: "Size", values: ["11oz", "15oz"] }],
     supplierBundlePricing: [
       {
         sellUnit: "case",
@@ -249,6 +249,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
           { bundleCount: 1, totalItems: 36, perItemCad: 2.65, totalCad: 95.4 },
           { bundleCount: 6, totalItems: 216, perItemCad: 2.5, totalCad: 540.0 },
           { bundleCount: 20, totalItems: 720, perItemCad: 2.3, totalCad: 1656.0 },
+        ],
+      },
+      {
+        sellUnit: "case",
+        itemsPerBundle: 36,
+        appliesTo: "15oz",
+        tiers: [
+          { bundleCount: 1, totalItems: 36, perItemCad: 3.8, totalCad: 136.8 },
+          { bundleCount: 2, totalItems: 72, perItemCad: 3.7, totalCad: 266.4 },
+          { bundleCount: 6, totalItems: 216, perItemCad: 3.55, totalCad: 766.8 },
+          { bundleCount: 20, totalItems: 720, perItemCad: 3.25, totalCad: 2340.0 },
         ],
       },
     ],
