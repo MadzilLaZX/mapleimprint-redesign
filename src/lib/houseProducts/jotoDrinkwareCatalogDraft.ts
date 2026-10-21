@@ -1,17 +1,17 @@
 // Draft catalogue additions: mugs and drinkware blanks from Joto Imaging Supplies Canada
 // (jotoimagingsupplies.ca), imported 2026-10-21 from the owner's own screenshots of each product
-// page, taken while logged in to the Mapleimprint dealer account — so every price below is the
-// price Joto shows that account, in CAD.
+// page, taken while logged in to the Mapleimprint dealer account.
 //
-// PRICING POLICY FOR THIS FILE (owner's explicit instruction for this initial import): prices are
-// copied EXACTLY as Joto shows them — no applyHouseMargin(), no rounding, no derived per-unit
-// figures. This differs from jotoBlanksCatalogDraft.ts on purpose; retail markup is a separate,
-// later step. Until then these prices equal Maple's dealer cost, so none of these may be
-// published as-is.
+// PRICING: every price below is RETAIL (CAD) — Joto's exact dealer cost (kept verbatim in
+// jotoDrinkwareInternalOnly.ts) marked up with the site's tiered rule (margin.ts markupRateFor:
+// <$7 30%, $7–15 25%, $15–25 20%, $25–35 15%, $35+ 10%). Owner's decisions, 2026-10-21: the
+// bracket is chosen by the PER-PIECE cost, not the bundle total; sale items are marked up from
+// Joto's REGULAR price, not the sale price. Where Joto states a per-piece price, the retail
+// per-piece price is rounded to the cent and the tier total is that x the piece count.
 //
-// Bundles: supplierBundlePricing[].sellUnit says what one price buys (a whole case, a whole pack,
-// or a single unit), and each tier's totalCad is the price for that whole tier, exactly as Joto
-// lists it. startingPrice is the first tier's totalCad (one case/pack/unit), NOT a per-mug price.
+// Bundles: bundlePricing[].sellUnit says what one price buys (a whole case, a whole pack, or a
+// single unit), and each tier's totalCad is the retail price for that whole tier.
+// startingPrice is the first tier's totalCad (one case/pack/unit), NOT a per-mug price.
 //
 // Every entry is status: "draft" (hidden from listings; its product URL 404s). Joto SKUs live in
 // jotoDrinkwareInternalOnly.ts (never imported by customer-facing code).
@@ -53,16 +53,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 52.2,
+    startingPrice: 77.22,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 36,
-        regularPriceCad: 59.4,
         tiers: [
-          { bundleCount: 1, totalItems: 36, perItemCad: 1.45, totalCad: 52.2 },
-          { bundleCount: 60, totalItems: 2160, perItemCad: 1.4, totalCad: 3024.0 },
+          { bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 77.22 },
+          { bundleCount: 60, totalItems: 2160, perItemCad: 1.82, totalCad: 3931.2 },
         ],
       },
     ],
@@ -84,17 +83,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 90.0,
+    startingPrice: 117,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 36,
         tiers: [
-          { bundleCount: 1, totalItems: 36, perItemCad: 2.5, totalCad: 90.0 },
-          { bundleCount: 2, totalItems: 72, perItemCad: 2.4, totalCad: 172.8 },
-          { bundleCount: 5, totalItems: 180, perItemCad: 2.3, totalCad: 414.0 },
-          { bundleCount: 20, totalItems: 720, perItemCad: 2.1, totalCad: 1512.0 },
+          { bundleCount: 1, totalItems: 36, perItemCad: 3.25, totalCad: 117 },
+          { bundleCount: 2, totalItems: 72, perItemCad: 3.12, totalCad: 224.64 },
+          { bundleCount: 5, totalItems: 180, perItemCad: 2.99, totalCad: 538.2 },
+          { bundleCount: 20, totalItems: 720, perItemCad: 2.73, totalCad: 1965.6 },
         ],
       },
     ],
@@ -127,7 +126,7 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 81.0,
+    startingPrice: 105.48,
     printRuleVersion: RULE,
     productOptions: [
       {
@@ -136,15 +135,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
         note: "Colour names confirmed from Joto's per-colour SKUs. Owner confirmed every colour is the same price.",
       },
     ],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 36,
         tiers: [
-          { bundleCount: 1, totalItems: 36, perItemCad: 2.25, totalCad: 81.0 },
-          { bundleCount: 2, totalItems: 72, perItemCad: 2.15, totalCad: 154.8 },
-          { bundleCount: 6, totalItems: 216, perItemCad: 2.05, totalCad: 442.8 },
-          { bundleCount: 20, totalItems: 720, perItemCad: 1.95, totalCad: 1404.0 },
+          { bundleCount: 1, totalItems: 36, perItemCad: 2.93, totalCad: 105.48 },
+          { bundleCount: 2, totalItems: 72, perItemCad: 2.8, totalCad: 201.6 },
+          { bundleCount: 6, totalItems: 216, perItemCad: 2.67, totalCad: 576.72 },
+          { bundleCount: 20, totalItems: 720, perItemCad: 2.54, totalCad: 1828.8 },
         ],
       },
     ],
@@ -171,7 +170,7 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 122.4,
+    startingPrice: 159.12,
     printRuleVersion: RULE,
     productOptions: [
       {
@@ -182,15 +181,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
           "Owner confirmed every colour is the same price.",
       },
     ],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 36,
         tiers: [
-          { bundleCount: 1, totalItems: 36, perItemCad: 3.4, totalCad: 122.4 },
-          { bundleCount: 2, totalItems: 72, perItemCad: 3.3, totalCad: 237.6 },
-          { bundleCount: 6, totalItems: 216, perItemCad: 3.1, totalCad: 669.6 },
-          { bundleCount: 20, totalItems: 720, perItemCad: 2.95, totalCad: 2124.0 },
+          { bundleCount: 1, totalItems: 36, perItemCad: 4.42, totalCad: 159.12 },
+          { bundleCount: 2, totalItems: 72, perItemCad: 4.29, totalCad: 308.88 },
+          { bundleCount: 6, totalItems: 216, perItemCad: 4.03, totalCad: 870.48 },
+          { bundleCount: 20, totalItems: 720, perItemCad: 3.84, totalCad: 2764.8 },
         ],
       },
     ],
@@ -213,14 +212,16 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 29.99,
+    startingPrice: 38.99,
     printRuleVersion: RULE,
     productOptions: [{ name: "Inner colour", values: ["Black", "Red"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 6,
-        tiers: [{ bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 29.99 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 38.99 },
+        ],
       },
     ],
   },
@@ -241,19 +242,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 189.6,
+    startingPrice: 237.12,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
-        // Joto's title says "Case of 48" but every tier says 24 mugs per case (and 24 x $7.90 =
-        // $189.60), so the tiers are recorded as shown — pending owner confirmation.
         sellUnit: "case",
         itemsPerBundle: 24,
         tiers: [
-          { bundleCount: 1, totalItems: 24, perItemCad: 7.9, totalCad: 189.6 },
-          { bundleCount: 2, totalItems: 48, perItemCad: 7.5, totalCad: 360.0 },
-          { bundleCount: 6, totalItems: 144, perItemCad: 7.0, totalCad: 1008.0 },
-          { bundleCount: 20, totalItems: 480, perItemCad: 6.5, totalCad: 3120.0 },
+          { bundleCount: 1, totalItems: 24, perItemCad: 9.88, totalCad: 237.12 },
+          { bundleCount: 2, totalItems: 48, perItemCad: 9.38, totalCad: 450.24 },
+          { bundleCount: 6, totalItems: 144, perItemCad: 8.75, totalCad: 1260 },
+          { bundleCount: 20, totalItems: 480, perItemCad: 8.45, totalCad: 4056 },
         ],
       },
     ],
@@ -276,18 +275,18 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 95.4,
+    startingPrice: 124.2,
     printRuleVersion: RULE,
     productOptions: [{ name: "Size", values: ["11oz", "15oz"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 36,
         appliesTo: "11oz",
         tiers: [
-          { bundleCount: 1, totalItems: 36, perItemCad: 2.65, totalCad: 95.4 },
-          { bundleCount: 6, totalItems: 216, perItemCad: 2.5, totalCad: 540.0 },
-          { bundleCount: 20, totalItems: 720, perItemCad: 2.3, totalCad: 1656.0 },
+          { bundleCount: 1, totalItems: 36, perItemCad: 3.45, totalCad: 124.2 },
+          { bundleCount: 6, totalItems: 216, perItemCad: 3.25, totalCad: 702 },
+          { bundleCount: 20, totalItems: 720, perItemCad: 2.99, totalCad: 2152.8 },
         ],
       },
       {
@@ -295,10 +294,10 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
         itemsPerBundle: 36,
         appliesTo: "15oz",
         tiers: [
-          { bundleCount: 1, totalItems: 36, perItemCad: 3.8, totalCad: 136.8 },
-          { bundleCount: 2, totalItems: 72, perItemCad: 3.7, totalCad: 266.4 },
-          { bundleCount: 6, totalItems: 216, perItemCad: 3.55, totalCad: 766.8 },
-          { bundleCount: 20, totalItems: 720, perItemCad: 3.25, totalCad: 2340.0 },
+          { bundleCount: 1, totalItems: 36, perItemCad: 4.94, totalCad: 177.84 },
+          { bundleCount: 2, totalItems: 72, perItemCad: 4.81, totalCad: 346.32 },
+          { bundleCount: 6, totalItems: 216, perItemCad: 4.62, totalCad: 997.92 },
+          { bundleCount: 20, totalItems: 720, perItemCad: 4.23, totalCad: 3045.6 },
         ],
       },
     ],
@@ -321,17 +320,18 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 41.4,
+    startingPrice: 184.86,
     printRuleVersion: RULE,
     productOptions: [
       { name: "Colour", values: ["Pink", "Blue"], note: "Joto shows a third swatch marked unavailable; names inferred from swatch colour — confirm" },
     ],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 36,
-        regularPriceCad: 142.2,
-        tiers: [{ bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 41.4 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 184.86 },
+        ],
       },
     ],
   },
@@ -352,16 +352,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 41.7,
+    startingPrice: 92.1,
     printRuleVersion: RULE,
     productOptions: [{ name: "Size", values: ["10oz", "11oz"], note: "11oz price not captured yet" }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 6,
         appliesTo: "10oz",
-        regularPriceCad: 73.68,
-        tiers: [{ bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 41.7 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 92.1 },
+        ],
       },
     ],
   },
@@ -382,17 +383,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 110.52,
+    startingPrice: 143.64,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 36,
         tiers: [
-          { bundleCount: 1, totalItems: 36, perItemCad: 3.07, totalCad: 110.52 },
-          { bundleCount: 2, totalItems: 72, perItemCad: 2.92, totalCad: 210.24 },
-          { bundleCount: 6, totalItems: 216, perItemCad: 2.69, totalCad: 581.04 },
-          { bundleCount: 20, totalItems: 720, perItemCad: 2.45, totalCad: 1764.0 },
+          { bundleCount: 1, totalItems: 36, perItemCad: 3.99, totalCad: 143.64 },
+          { bundleCount: 2, totalItems: 72, perItemCad: 3.8, totalCad: 273.6 },
+          { bundleCount: 6, totalItems: 216, perItemCad: 3.5, totalCad: 756 },
+          { bundleCount: 20, totalItems: 720, perItemCad: 3.19, totalCad: 2296.8 },
         ],
       },
     ],
@@ -414,17 +415,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 84.0,
+    startingPrice: 109.2,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 24,
         tiers: [
-          { bundleCount: 1, totalItems: 24, perItemCad: 3.5, totalCad: 84.0 },
-          { bundleCount: 2, totalItems: 48, perItemCad: 3.4, totalCad: 163.2 },
-          { bundleCount: 6, totalItems: 144, perItemCad: 3.2, totalCad: 460.8 },
-          { bundleCount: 20, totalItems: 480, perItemCad: 2.95, totalCad: 1416.0 },
+          { bundleCount: 1, totalItems: 24, perItemCad: 4.55, totalCad: 109.2 },
+          { bundleCount: 2, totalItems: 48, perItemCad: 4.42, totalCad: 212.16 },
+          { bundleCount: 6, totalItems: 144, perItemCad: 4.16, totalCad: 599.04 },
+          { bundleCount: 20, totalItems: 480, perItemCad: 3.84, totalCad: 1843.2 },
         ],
       },
     ],
@@ -446,17 +447,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 118.56,
+    startingPrice: 154.08,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "case",
         itemsPerBundle: 24,
         tiers: [
-          { bundleCount: 1, totalItems: 24, perItemCad: 4.94, totalCad: 118.56 },
-          { bundleCount: 2, totalItems: 48, perItemCad: 4.73, totalCad: 227.04 },
-          { bundleCount: 6, totalItems: 144, perItemCad: 4.39, totalCad: 632.16 },
-          { bundleCount: 20, totalItems: 480, perItemCad: 3.97, totalCad: 1905.6 },
+          { bundleCount: 1, totalItems: 24, perItemCad: 6.42, totalCad: 154.08 },
+          { bundleCount: 2, totalItems: 48, perItemCad: 6.15, totalCad: 295.2 },
+          { bundleCount: 6, totalItems: 144, perItemCad: 5.71, totalCad: 822.24 },
+          { bundleCount: 20, totalItems: 480, perItemCad: 5.16, totalCad: 2476.8 },
         ],
       },
     ],
@@ -480,17 +481,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 54.96,
+    startingPrice: 71.4,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 12,
         tiers: [
-          { bundleCount: 1, totalItems: 12, perItemCad: 4.58, totalCad: 54.96 },
-          { bundleCount: 4, totalItems: 48, perItemCad: 4.48, totalCad: 215.04 },
-          { bundleCount: 8, totalItems: 96, perItemCad: 4.35, totalCad: 417.6 },
-          { bundleCount: 20, totalItems: 240, perItemCad: 4.2, totalCad: 1008.0 },
+          { bundleCount: 1, totalItems: 12, perItemCad: 5.95, totalCad: 71.4 },
+          { bundleCount: 4, totalItems: 48, perItemCad: 5.82, totalCad: 279.36 },
+          { bundleCount: 8, totalItems: 96, perItemCad: 5.65, totalCad: 542.4 },
+          { bundleCount: 20, totalItems: 240, perItemCad: 5.46, totalCad: 1310.4 },
         ],
       },
     ],
@@ -512,17 +513,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 33.37,
+    startingPrice: 43.38,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 6,
         tiers: [
-          { bundleCount: 1, totalItems: 6, perItemCad: 5.56, totalCad: 33.37 },
-          { bundleCount: 2, totalItems: 12, perItemCad: 5.25, totalCad: 63.0 },
-          { bundleCount: 4, totalItems: 24, perItemCad: 4.97, totalCad: 119.28 },
-          { bundleCount: 8, totalItems: 48, perItemCad: 4.63, totalCad: 222.24 },
+          { bundleCount: 1, totalItems: 6, perItemCad: 7.23, totalCad: 43.38 },
+          { bundleCount: 2, totalItems: 12, perItemCad: 6.83, totalCad: 81.96 },
+          { bundleCount: 4, totalItems: 24, perItemCad: 6.46, totalCad: 155.04 },
+          { bundleCount: 8, totalItems: 48, perItemCad: 6.02, totalCad: 288.96 },
         ],
       },
     ],
@@ -547,17 +548,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 65.2,
+    startingPrice: 81.5,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 5, perItemCad: 13.04, totalCad: 65.2 },
-          { bundleCount: 2, totalItems: 10, perItemCad: 12.3, totalCad: 123.0 },
-          { bundleCount: 4, totalItems: 20, perItemCad: 11.64, totalCad: 232.8 },
-          { bundleCount: 8, totalItems: 40, perItemCad: 10.86, totalCad: 434.4 },
+          { bundleCount: 1, totalItems: 5, perItemCad: 16.3, totalCad: 81.5 },
+          { bundleCount: 2, totalItems: 10, perItemCad: 15.38, totalCad: 153.8 },
+          { bundleCount: 4, totalItems: 20, perItemCad: 14.55, totalCad: 291 },
+          { bundleCount: 8, totalItems: 40, perItemCad: 13.58, totalCad: 543.2 },
         ],
       },
     ],
@@ -580,17 +581,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 52.38,
+    startingPrice: 65.46,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 6,
         tiers: [
-          { bundleCount: 1, totalItems: 6, perItemCad: 8.73, totalCad: 52.38 },
-          { bundleCount: 4, totalItems: 24, perItemCad: 8.72, totalCad: 209.28 },
-          { bundleCount: 11, totalItems: 66, perItemCad: 8.42, totalCad: 555.72 },
-          { bundleCount: 20, totalItems: 120, perItemCad: 8.13, totalCad: 975.6 },
+          { bundleCount: 1, totalItems: 6, perItemCad: 10.91, totalCad: 65.46 },
+          { bundleCount: 4, totalItems: 24, perItemCad: 10.9, totalCad: 261.6 },
+          { bundleCount: 11, totalItems: 66, perItemCad: 10.53, totalCad: 694.98 },
+          { bundleCount: 20, totalItems: 120, perItemCad: 10.16, totalCad: 1219.2 },
         ],
       },
     ],
@@ -612,17 +613,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 10.65,
+    startingPrice: 13.31,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "unit",
         itemsPerBundle: 1,
         tiers: [
-          { bundleCount: 1, totalItems: 1, perItemCad: 10.65, totalCad: 10.65 },
-          { bundleCount: 24, totalItems: 24, perItemCad: 10.51, totalCad: 252.24 },
-          { bundleCount: 48, totalItems: 48, perItemCad: 10.37, totalCad: 497.76 },
-          { bundleCount: 120, totalItems: 120, perItemCad: 10.09, totalCad: 1210.8 },
+          { bundleCount: 1, totalItems: 1, perItemCad: 13.31, totalCad: 13.31 },
+          { bundleCount: 24, totalItems: 24, perItemCad: 13.14, totalCad: 315.36 },
+          { bundleCount: 48, totalItems: 48, perItemCad: 12.96, totalCad: 622.08 },
+          { bundleCount: 120, totalItems: 120, perItemCad: 12.61, totalCad: 1513.2 },
         ],
       },
     ],
@@ -645,18 +646,18 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 54.75,
+    startingPrice: 68.45,
     printRuleVersion: RULE,
     productOptions: [{ name: "Colour", values: ["Black", "White"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 5, perItemCad: 10.95, totalCad: 54.75 },
-          { bundleCount: 3, totalItems: 15, perItemCad: 10.62, totalCad: 159.3 },
-          { bundleCount: 5, totalItems: 25, perItemCad: 10.3, totalCad: 257.5 },
-          { bundleCount: 10, totalItems: 50, perItemCad: 9.99, totalCad: 499.5 },
+          { bundleCount: 1, totalItems: 5, perItemCad: 13.69, totalCad: 68.45 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 13.27, totalCad: 199.05 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 12.88, totalCad: 322 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 12.49, totalCad: 624.5 },
         ],
       },
     ],
@@ -680,13 +681,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 89.99,
+    startingPrice: 116.99,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 36,
-        tiers: [{ bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 89.99 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 116.99 },
+        ],
       },
     ],
   },
@@ -707,13 +710,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 139.99,
+    startingPrice: 181.99,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 36,
-        tiers: [{ bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 139.99 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 181.99 },
+        ],
       },
     ],
   },
@@ -734,17 +739,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 62.25,
+    startingPrice: 77.8,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 5, perItemCad: 12.45, totalCad: 62.25 },
-          { bundleCount: 2, totalItems: 10, perItemCad: 11.95, totalCad: 119.5 },
-          { bundleCount: 5, totalItems: 25, perItemCad: 10.95, totalCad: 273.75 },
-          { bundleCount: 15, totalItems: 75, perItemCad: 10.45, totalCad: 783.75 },
+          { bundleCount: 1, totalItems: 5, perItemCad: 15.56, totalCad: 77.8 },
+          { bundleCount: 2, totalItems: 10, perItemCad: 14.94, totalCad: 149.4 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 13.69, totalCad: 342.25 },
+          { bundleCount: 15, totalItems: 75, perItemCad: 13.06, totalCad: 979.5 },
         ],
       },
     ],
@@ -767,15 +772,16 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 24.75,
+    startingPrice: 84.95,
     printRuleVersion: RULE,
     productOptions: [{ name: "Colour", values: ["Silver"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
-        regularPriceCad: 67.96,
-        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 24.75 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 84.95 },
+        ],
       },
     ],
   },
@@ -794,17 +800,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 64.95,
+    startingPrice: 81.2,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 5, perItemCad: 12.99, totalCad: 64.95 },
-          { bundleCount: 2, totalItems: 10, perItemCad: 11.99, totalCad: 119.9 },
-          { bundleCount: 4, totalItems: 20, perItemCad: 11.49, totalCad: 229.8 },
-          { bundleCount: 12, totalItems: 60, perItemCad: 10.99, totalCad: 659.4 },
+          { bundleCount: 1, totalItems: 5, perItemCad: 16.24, totalCad: 81.2 },
+          { bundleCount: 2, totalItems: 10, perItemCad: 14.99, totalCad: 149.9 },
+          { bundleCount: 4, totalItems: 20, perItemCad: 14.36, totalCad: 287.2 },
+          { bundleCount: 12, totalItems: 60, perItemCad: 13.74, totalCad: 824.4 },
         ],
       },
     ],
@@ -828,17 +834,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 66.55,
+    startingPrice: 83.2,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 5, perItemCad: 13.31, totalCad: 66.55 },
-          { bundleCount: 3, totalItems: 15, perItemCad: 13.01, totalCad: 195.15 },
-          { bundleCount: 5, totalItems: 25, perItemCad: 12.79, totalCad: 319.75 },
-          { bundleCount: 10, totalItems: 50, perItemCad: 12.42, totalCad: 621.0 },
+          { bundleCount: 1, totalItems: 5, perItemCad: 16.64, totalCad: 83.2 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 16.26, totalCad: 243.9 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 15.99, totalCad: 399.75 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 15.53, totalCad: 776.5 },
         ],
       },
     ],
@@ -863,17 +869,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 66.55,
+    startingPrice: 83.2,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 5, perItemCad: 13.31, totalCad: 66.55 },
-          { bundleCount: 3, totalItems: 15, perItemCad: 13.01, totalCad: 195.15 },
-          { bundleCount: 5, totalItems: 25, perItemCad: 12.79, totalCad: 319.75 },
-          { bundleCount: 10, totalItems: 50, perItemCad: 12.42, totalCad: 621.0 },
+          { bundleCount: 1, totalItems: 5, perItemCad: 16.64, totalCad: 83.2 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 16.26, totalCad: 243.9 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 15.99, totalCad: 399.75 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 15.53, totalCad: 776.5 },
         ],
       },
     ],
@@ -898,18 +904,18 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 73.32,
+    startingPrice: 91.68,
     printRuleVersion: RULE,
     productOptions: [{ name: "Colour", values: ["Silver"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 6,
         tiers: [
-          { bundleCount: 1, totalItems: 6, perItemCad: 12.22, totalCad: 73.32 },
-          { bundleCount: 2, totalItems: 12, perItemCad: 11.87, totalCad: 142.44 },
-          { bundleCount: 4, totalItems: 24, perItemCad: 11.5, totalCad: 276.0 },
-          { bundleCount: 12, totalItems: 72, perItemCad: 10.97, totalCad: 789.84 },
+          { bundleCount: 1, totalItems: 6, perItemCad: 15.28, totalCad: 91.68 },
+          { bundleCount: 2, totalItems: 12, perItemCad: 14.84, totalCad: 178.08 },
+          { bundleCount: 4, totalItems: 24, perItemCad: 14.38, totalCad: 345.12 },
+          { bundleCount: 12, totalItems: 72, perItemCad: 13.71, totalCad: 987.12 },
         ],
       },
     ],
@@ -936,17 +942,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 55.96,
+    startingPrice: 69.96,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 4,
         tiers: [
-          { bundleCount: 1, totalItems: 4, perItemCad: 13.99, totalCad: 55.96 },
-          { bundleCount: 2, totalItems: 8, perItemCad: 12.99, totalCad: 103.92 },
-          { bundleCount: 6, totalItems: 24, perItemCad: 11.99, totalCad: 287.76 },
-          { bundleCount: 10, totalItems: 40, perItemCad: 11.79, totalCad: 471.6 },
+          { bundleCount: 1, totalItems: 4, perItemCad: 17.49, totalCad: 69.96 },
+          { bundleCount: 2, totalItems: 8, perItemCad: 16.24, totalCad: 129.92 },
+          { bundleCount: 6, totalItems: 24, perItemCad: 14.99, totalCad: 359.76 },
+          { bundleCount: 10, totalItems: 40, perItemCad: 14.74, totalCad: 589.6 },
         ],
       },
     ],
@@ -966,13 +972,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 77.25,
+    startingPrice: 92.7,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
-        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 77.25 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 92.7 },
+        ],
       },
     ],
   },
@@ -997,18 +1005,18 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 48.75,
+    startingPrice: 60.95,
     printRuleVersion: RULE,
     productOptions: [{ name: "Colour", values: ["Black", "White", "Mint Green", "Royal Blue"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 5, perItemCad: 9.75, totalCad: 48.75 },
-          { bundleCount: 3, totalItems: 15, perItemCad: 9.46, totalCad: 141.9 },
-          { bundleCount: 5, totalItems: 25, perItemCad: 9.17, totalCad: 229.25 },
-          { bundleCount: 10, totalItems: 50, perItemCad: 8.9, totalCad: 445.0 },
+          { bundleCount: 1, totalItems: 5, perItemCad: 12.19, totalCad: 60.95 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 11.83, totalCad: 177.45 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 11.46, totalCad: 286.5 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 11.13, totalCad: 556.5 },
         ],
       },
     ],
@@ -1036,15 +1044,16 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 58.2,
+    startingPrice: 79.69,
     printRuleVersion: RULE,
     productOptions: [{ name: "Colour", values: ["Black", "White"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
-        regularPriceCad: 63.75,
-        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 58.2 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 79.69 },
+        ],
       },
     ],
   },
@@ -1066,14 +1075,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 20.0,
+    startingPrice: 32.76,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 6,
-        regularPriceCad: 25.2,
-        tiers: [{ bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 20.0 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 32.76 },
+        ],
       },
     ],
   },
@@ -1092,14 +1102,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 42.0,
+    startingPrice: 90.48,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 12,
-        regularPriceCad: 69.6,
-        tiers: [{ bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 42.0 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 90.48 },
+        ],
       },
     ],
   },
@@ -1122,22 +1133,25 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 41.88,
+    startingPrice: 70.2,
     printRuleVersion: RULE,
     productOptions: [{ name: "Finish", values: ["Frosted", "Clear"] }],
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 12,
         appliesTo: "Frosted",
-        regularPriceCad: 54.0,
-        tiers: [{ bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 41.88 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 70.2 },
+        ],
       },
       {
         sellUnit: "pack",
         itemsPerBundle: 12,
         appliesTo: "Clear",
-        tiers: [{ bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 54.0 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 70.2 },
+        ],
       },
     ],
   },
@@ -1160,13 +1174,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 63.65,
+    startingPrice: 79.56,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
-        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 63.65 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 79.56 },
+        ],
       },
     ],
   },
@@ -1189,13 +1205,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 137.5,
+    startingPrice: 171.88,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 10,
-        tiers: [{ bundleCount: 1, totalItems: 10, perItemCad: null, totalCad: 137.5 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 10, perItemCad: null, totalCad: 171.88 },
+        ],
       },
     ],
   },
@@ -1214,13 +1232,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     variants: [],
     status: "draft",
     priceTiers: null,
-    startingPrice: 66.25,
+    startingPrice: 82.81,
     printRuleVersion: RULE,
-    supplierBundlePricing: [
+    bundlePricing: [
       {
         sellUnit: "pack",
         itemsPerBundle: 5,
-        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 66.25 }],
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 82.81 },
+        ],
       },
     ],
   },

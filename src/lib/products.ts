@@ -38,9 +38,10 @@ export interface SupplierBundleTier {
   totalCad: number;
 }
 
-/** Supplier bundle/quantity pricing copied verbatim from the supplier's page, in CAD, with no
- *  markup — see jotoDrinkwareCatalogDraft.ts. Deliberately a separate field from priceTiers,
- *  which is apparel-specific (the product page adds a design/setup fee on top of it). */
+/** Bundle/quantity pricing in CAD, shaped like the supplier's page (cases/packs/units and their
+ *  tiers). Used both for the supplier's exact cost (jotoDrinkwareInternalOnly.ts) and for the
+ *  retail price derived from it (CatalogueProduct.bundlePricing). Deliberately a separate field
+ *  from priceTiers, which is apparel-specific (the product page adds a design/setup fee on top). */
 export interface SupplierBundlePricing {
   /** What one price buys: a whole case, a whole pack, or a single unit. */
   sellUnit: "case" | "pack" | "unit";
@@ -122,9 +123,11 @@ export interface CatalogueProduct {
    *  (e.g. "MI-001") and its print specs, shown on the product page by PriceListConfigurator. */
   catalogueId?: string;
   printSpecs?: { sizeLabel: string; size: string; material?: string; printedSides?: string; finish?: string };
-  /** Set only on supplier-bundle drafts (jotoDrinkwareCatalogDraft.ts). Not read by any UI yet —
-   *  the bundle/option selector for these products is a separate, later step. */
-  supplierBundlePricing?: SupplierBundlePricing[];
+  /** Customer (retail) bundle/quantity pricing, markup already applied — set only on
+   *  jotoDrinkwareCatalogDraft.ts entries. The supplier cost it was derived from lives in
+   *  jotoDrinkwareInternalOnly.ts. Not read by any UI yet — the bundle/option selector for these
+   *  products is a separate, later step. */
+  bundlePricing?: SupplierBundlePricing[];
   /** Selectable options confirmed on the supplier page. `values` is empty with a `note` where the
    *  page shows swatches but no names — never guessed. Not read by any UI yet. */
   productOptions?: { name: string; values: string[]; note?: string }[];
