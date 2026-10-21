@@ -33,7 +33,11 @@ export interface EngravingBlankCostRecord {
 export const ENGRAVING_BLANK_COSTS_INTERNAL: EngravingBlankCostRecord[] = [
   { sku: "M1-001", blankId: "B01", blanksPerSale: 1, blankCostPerSaleCad: 2.25, supplierId: "S01" },
   { sku: "M1-002", blankId: "B02", blanksPerSale: 4, blankCostPerSaleCad: 15.0, supplierId: "S02" },
-  { sku: "M1-003", blankId: "B03", blanksPerSale: 1, blankCostPerSaleCad: 0.99, supplierId: "S02" },
+  // 2026-10-21: corrected from 0.99 (sheet wrongly assumed a 12-pack). Joto's "3" Round Slate
+  // Ornament Double Sided" is a pack of 10 — regular $17.88/10 = $1.788/blank. The $11.88 figure
+  // the sheet also cited is that same listing's current sale price ($1.188/blank), not a second
+  // product — using the regular (non-sale) price as the stable cost baseline, per house convention.
+  { sku: "M1-003", blankId: "B03", blanksPerSale: 1, blankCostPerSaleCad: 1.788, supplierId: "S02" },
   { sku: "M1-004", blankId: "B04", blanksPerSale: 1, blankCostPerSaleCad: 7.31, supplierId: "S02" },
   { sku: "M1-005", blankId: "B05", blanksPerSale: 1, blankCostPerSaleCad: 2.95, supplierId: "S01" },
   { sku: "M1-006", blankId: "B06", blanksPerSale: 1, blankCostPerSaleCad: 3.99, supplierId: "S02" },
@@ -41,7 +45,7 @@ export const ENGRAVING_BLANK_COSTS_INTERNAL: EngravingBlankCostRecord[] = [
   { sku: "M1-010", blankId: "B10", blanksPerSale: 1, blankCostPerSaleCad: 2.69, supplierId: "S02" },
   { sku: "M1-016", blankId: "B01", blanksPerSale: 25, blankCostPerSaleCad: 56.25, supplierId: "S01" },
   { sku: "M1-017", blankId: "B06", blanksPerSale: 1, blankCostPerSaleCad: 3.99, supplierId: "S02" },
-  { sku: "M1-018", blankId: "B03", blanksPerSale: 1, blankCostPerSaleCad: 0.99, supplierId: "S02" },
+  { sku: "M1-018", blankId: "B03", blanksPerSale: 1, blankCostPerSaleCad: 1.788, supplierId: "S02" },
   { sku: "M1-019", blankId: "B04", blanksPerSale: 1, blankCostPerSaleCad: 7.31, supplierId: "S02" },
   { sku: "M1-020", blankId: "B09", blanksPerSale: 25, blankCostPerSaleCad: 43.75, supplierId: "S03" },
   { sku: "M1-021", blankId: "B02", blanksPerSale: 4, blankCostPerSaleCad: 15.0, supplierId: "S02" },
@@ -56,6 +60,15 @@ export const ENGRAVING_BLANK_COSTS_INTERNAL: EngravingBlankCostRecord[] = [
   { sku: "M1-013", blankId: "B13", blanksPerSale: 1, blankCostPerSaleCad: 9.99, supplierId: "S03" },
   { sku: "M1-014", blankId: "B14", blanksPerSale: 1, blankCostPerSaleCad: 13.49, supplierId: "S03" },
   { sku: "M1-015", blankId: "B15", blanksPerSale: 1, blankCostPerSaleCad: 9.99, supplierId: "S03" },
+
+  // 2026-10-21 addition: sourced directly from Joto's own site (jotoimagingsupplies.ca), not from
+  // the xTool M1 sheet (new "J-" SKU prefix, kept out of the M1- numbering so the two sourcing
+  // batches stay distinguishable at a glance). Costs are each listing's *regular* CAD price
+  // divided by its pack size, per the same "use regular, not sale, price as the cost baseline"
+  // convention applied to the B03 correction above.
+  { sku: "J-001", blankId: "B16", blanksPerSale: 1, blankCostPerSaleCad: 3.95, supplierId: "S02" }, // Wall Slate Rectangle 20x30cm, pack of 12: $47.40/12
+  { sku: "J-002", blankId: "B17", blanksPerSale: 4, blankCostPerSaleCad: 12.48, supplierId: "S02" }, // Slate Mug Coaster (round), pack of 10: $31.20/10 = $3.12/ea x 4
+  { sku: "J-003", blankId: "B18", blanksPerSale: 1, blankCostPerSaleCad: 5.90, supplierId: "S02" }, // Bamboo Cutting Board 8"x6", pack of 5: $29.50/5
 ];
 
 export interface EngravingSupplierRecord {

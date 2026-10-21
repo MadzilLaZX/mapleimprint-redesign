@@ -683,4 +683,91 @@ export const ENGRAVING_CATALOGUE_DRAFT: CatalogueProduct[] = [
     },
   },
 
+  // --- 2026-10-21 addition: sourced directly from Joto Imaging Supplies Canada's own site
+  // (jotoimagingsupplies.ca), not from the xTool M1 sheet -- new "J-" SKUs (see
+  // engravingInternalOnly.ts). Unlike the M1- batch above, the sheet gave no "Suggested sell CAD"
+  // for these, so `startingPrice` here is a provisional estimate set by analogy to the closest
+  // comparable M1- SKU's own sell-price-to-blank-cost ratio, NOT a verified owner-set price --
+  // treat these as needing a pricing pass before publish even more than the M1- batch.
+  {
+    slug: "large-personalized-wall-slate-sign",
+    name: "Large personalized wall slate sign",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "signs",
+    // J-001 -- larger (20x30cm / 8"x12") polished wall slate, distinct blank from the smaller
+    // slate used by family-name-slate-sign/business-qr-code-slate-sign (both B10).
+    description: "A large 8 x 12 in. polished wall slate engraved with a name, family message or business signage. Suits an entryway, porch or storefront.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 54.95,
+    printRuleVersion: "house-v1-joto-2026-10-21",
+    engravingTemplateMeta: {
+      templateId: "TJ01",
+      customerInputs: "heading:25; subtitle:35; logo_upload",
+      layoutType: "Flat single-side layout",
+      zoneInstructions: "Rectangle; measure polished face margin before defining text zone",
+      textStrokeRule: "Set minimum text 3 mm and stroke 0.3 mm provisionally; test legibility; preserve accents in names",
+      templateStatus: "Pending physical blank measurement, pricing review, and sample approval",
+    },
+  },
+
+  {
+    slug: "personalized-slate-coaster-set",
+    name: "Personalized slate coaster set",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "home-gifts",
+    // J-002 -- four round slate coasters, distinct blank from the marble/wood (B02) and
+    // leatherette (B08) coaster sets already in this file.
+    description: "A four-piece round slate coaster set, each personalized with a matching monogram or short message.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 34.95,
+    printRuleVersion: "house-v1-joto-2026-10-21",
+    engravingTemplateMeta: {
+      templateId: "TJ02",
+      customerInputs: "initials:3; family_name:20",
+      layoutType: "Flat single-side layout",
+      zoneInstructions: "Measure coaster face; provisional 30 mm circle",
+      textStrokeRule: "Set minimum text 3 mm and stroke 0.3 mm provisionally; test legibility; preserve accents in names",
+      templateStatus: "Pending physical blank measurement, pricing review, and sample approval",
+    },
+  },
+
+  {
+    slug: "personalized-bamboo-cutting-board",
+    name: "Personalized bamboo cutting board",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "kitchen-gifts",
+    // J-003 -- plain 8"x6" rectangular bamboo board, distinct blank from the wine-bottle-shaped
+    // bamboo serving board (B06) already in this file.
+    description: "An 8 x 6 in. bamboo cutting board personalized with a family name, monogram or short message.",
+    images: [],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 44.95,
+    printRuleVersion: "house-v1-joto-2026-10-21",
+    engravingTemplateMeta: {
+      templateId: "TJ03",
+      customerInputs: "family_name:24; date:10",
+      layoutType: "Flat single-side layout",
+      zoneInstructions: "Provisional body area; verify board outline",
+      textStrokeRule: "Set minimum text 3 mm and stroke 0.3 mm provisionally; test legibility; preserve accents in names",
+      templateStatus: "Pending physical blank measurement, pricing review, and sample approval",
+    },
+  },
+
 ];
