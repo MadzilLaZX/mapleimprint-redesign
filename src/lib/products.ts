@@ -27,6 +27,31 @@ export interface ProductVariantSummary {
   size: string;
 }
 
+/** One quantity tier exactly as a supplier's product page lists it. For sellUnit "case"/"pack",
+ *  bundleCount is the number of cases/packs; for sellUnit "unit" it's the tier's minimum unit
+ *  count. perItemCad is null where the supplier page doesn't state a per-item figure (never
+ *  derived by dividing — that would introduce rounding the supplier didn't show). */
+export interface SupplierBundleTier {
+  bundleCount: number;
+  totalItems: number;
+  perItemCad: number | null;
+  totalCad: number;
+}
+
+/** Supplier bundle/quantity pricing copied verbatim from the supplier's page, in CAD, with no
+ *  markup — see jotoDrinkwareCatalogDraft.ts. Deliberately a separate field from priceTiers,
+ *  which is apparel-specific (the product page adds a design/setup fee on top of it). */
+export interface SupplierBundlePricing {
+  /** What one price buys: a whole case, a whole pack, or a single unit. */
+  sellUnit: "case" | "pack" | "unit";
+  itemsPerBundle: number;
+  /** Set when this pricing is only confirmed for one option value (e.g. "11oz"). */
+  appliesTo?: string;
+  tiers: SupplierBundleTier[];
+  /** The supplier's struck-through "Regular Price" for one bundle, when a sale price is shown. */
+  regularPriceCad?: number;
+}
+
 export interface CatalogueProduct {
   slug: string;
   name: string;
@@ -97,6 +122,12 @@ export interface CatalogueProduct {
    *  (e.g. "MI-001") and its print specs, shown on the product page by PriceListConfigurator. */
   catalogueId?: string;
   printSpecs?: { sizeLabel: string; size: string; material?: string; printedSides?: string; finish?: string };
+  /** Set only on supplier-bundle drafts (jotoDrinkwareCatalogDraft.ts). Not read by any UI yet —
+   *  the bundle/option selector for these products is a separate, later step. */
+  supplierBundlePricing?: SupplierBundlePricing[];
+  /** Selectable options confirmed on the supplier page. `values` is empty with a `note` where the
+   *  page shows swatches but no names — never guessed. Not read by any UI yet. */
+  productOptions?: { name: string; values: string[]; note?: string }[];
   /** Optional design-template metadata, set only on src/lib/houseProducts/engravingCatalogDraft.ts
    *  entries, carried over from the xTool M1 Developer Catalog's "Design templates" sheet for
    *  whenever the personalization-input UI that sheet describes (character-limited customer text

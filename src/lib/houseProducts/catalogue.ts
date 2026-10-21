@@ -23,6 +23,7 @@ import { isQuoteError } from "./pricing/types";
 import { PRINT_CATALOGUE } from "./printCatalogue";
 import { ENGRAVING_CATALOGUE_DRAFT } from "./engravingCatalogDraft";
 import { JOTO_BLANKS_CATALOGUE_DRAFT } from "./jotoBlanksCatalogDraft";
+import { JOTO_DRINKWARE_CATALOGUE_DRAFT } from "./jotoDrinkwareCatalogDraft";
 
 /** Pulls a real "from" unit price out of a quote function at its cheapest realistic configuration,
  *  for the shop-grid tile — same role applyHouseMargin(rawPrice) plays for banner/card/flyer above,
@@ -502,4 +503,9 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
   // See jotoBlanksCatalogDraft.ts's header for sourcing/coverage rationale. All status: "draft".
   // Internal cost/supplier data is intentionally NOT spread in here — see jotoBlanksInternalOnly.ts.
   ...JOTO_BLANKS_CATALOGUE_DRAFT,
+
+  // --- Draft Joto mugs & drinkware (owner's screenshots, exact Joto pricing, no markup yet) ----
+  // See jotoDrinkwareCatalogDraft.ts's header. All status: "draft". Supplier SKUs are
+  // intentionally NOT spread in here — see jotoDrinkwareInternalOnly.ts.
+  ...JOTO_DRINKWARE_CATALOGUE_DRAFT,
 ];
