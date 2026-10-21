@@ -13,9 +13,14 @@
 // or a single unit), and each tier's totalCad is the price for that whole tier, exactly as Joto
 // lists it. startingPrice is the first tier's totalCad (one case/pack/unit), NOT a per-mug price.
 //
-// Every entry is status: "draft" (hidden from listings; its product URL 404s). Images are left
-// empty pending confirmation that Joto's product photos may be reused. Joto SKUs and open
-// questions live in jotoDrinkwareInternalOnly.ts (never imported by customer-facing code).
+// Every entry is status: "draft" (hidden from listings; its product URL 404s). Joto SKUs live in
+// jotoDrinkwareInternalOnly.ts (never imported by customer-facing code).
+//
+// Images (owner approved reusing Joto's photos): public/images/products/joto/ — cropped from the
+// owner's screenshots (Joto's site blocks automated downloads), carousel arrows painted out,
+// upscaled 2x with lanczos3 and lightly sharpened. Placeholder quality; swap in Joto's originals
+// when available. Only blank product photos were used — the 6 products whose screenshots show
+// only Joto's sample designs (third-party logos/characters) have no image yet.
 //
 // Held back, not imported: "11oz Sublimation Purple Plated Ceramic Mug" ($149.40, but the page
 // doesn't say how many mugs that buys) and "Pearl Coating Sublimation 6oz White..." (only seen in
@@ -35,7 +40,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "Classic 11oz white ceramic mug with a bright, super-white gloss coating for vivid full-colour prints. " +
       "Approx. 3.75\" tall x 3.25\" wide. Microwave and dishwasher safe. Sold by the case of 36 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-mug-11oz-white-case-36.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -94,7 +101,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "11oz white ceramic mug with a coloured interior and matching handle, ready for full-colour sublimation. " +
       "Dishwasher and microwave safe, lead and cadmium free, FDA compliant. Sold by the case of 36 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36.webp", colourName: "Black", imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -133,7 +142,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "Large 15oz white ceramic mug with a coloured interior and matching handle, ready for full-colour sublimation. " +
       "Microwave and dishwasher safe, lead and cadmium free, FDA compliant. Sold by the case of 36 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-36.webp", colourName: "Black", imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -172,7 +183,10 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "Large 15oz white ceramic mug with a coloured interior and matching handle, ready for full-colour sublimation. " +
       "Microwave and dishwasher safe, lead and cadmium free, FDA compliant. Sold by the case of 6 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-6-black.webp", colourName: "Black", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-6-red.webp", colourName: "Red", imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -198,7 +212,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "11oz heat-sensitive ceramic mug: black when cold, revealing your full-colour photo or design when filled " +
       "with a hot drink. Approx. 3.67\" tall x 3.5\" wide. Sold by the case.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-colour-changing-mug-11oz-case.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -231,7 +247,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
       "Black ceramic mug with a white sublimation patch for your design. Patch approx. 7.75\" x 3.125\" (11oz) " +
       "or 8.11\" x 3.82\" (15oz). Dishwasher and microwave safe, lead and cadmium free, FDA compliant. " +
       "Sold by the case of 36 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-black-mug-white-patch-case-36.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -273,7 +291,10 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "11oz ceramic mug with marbling inside and out, ready for sublimation. Each mug's marbling is unique. " +
       "Sold by the case of 36 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-marble-mug-11oz-case-36.webp", colourName: null, imageType: "front" },
+      { url: "/images/products/joto/sublimation-marble-mug-11oz-case-36-blue.webp", colourName: "Blue", imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -302,7 +323,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "Elegant white bone china mug with a gold rim and gold handle, ready for sublimation. Available in 10oz " +
       "and 11oz, each with a different handle shape. Sold by the pack of 6 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-bone-china-mug-gold-rim-pack-6.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -330,7 +353,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "Tapered 12oz white ceramic latte mug for sublimation — approx. 4\" tall, 3.5\" across the top and 2.5\" at " +
       "the base. Sold by the case of 36 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-latte-mug-12oz-case-36.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -360,7 +385,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "Tall 17oz white ceramic latte mug for sublimation — approx. 6\" tall, 3.5\" across the top and 2.5\" at the " +
       "base. Dishwasher and microwave safe, lead and cadmium free, FDA compliant. Sold by the case of 24 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-latte-mug-17oz-case-24.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -390,7 +417,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "13oz speckled beige ceramic camp-style mug with a dark rim, impact resistant, ready for sublimation. " +
       "Approx. 3.5\" tall x 3.25\" wide. Requires a mug wrap and convection oven to print. Sold by the case of 24 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-camp-mug-13oz-beige-ceramic-case-24.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -422,7 +451,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "12oz white enamel camp cup with a steel rim — impact resistant, great for camping and outdoor use. " +
       "Approx. 3.1\" tall x 3.4\" wide. Sold by the pack of 12 cups.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-enamel-camp-cup-12oz-pack-12.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -484,7 +515,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "13oz (400ml) white stainless steel coffee cup with a handle and clear flat lid, ready for sublimation. " +
       "Durable and rust resistant. Sold by the pack of 5 cups.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-stainless-coffee-cup-13oz-lid-pack-5.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -574,7 +607,10 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "10oz (300ml) double-wall 304 stainless steel mug with a powder-coated finish, handle and clear lid — " +
       "made for laser engraving. Sold by the pack of 5 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/engraving-stainless-mug-10oz-pack-5.webp", colourName: null, imageType: "front" },
+      { url: "/images/products/joto/engraving-stainless-mug-10oz-pack-5-white.webp", colourName: "White", imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
