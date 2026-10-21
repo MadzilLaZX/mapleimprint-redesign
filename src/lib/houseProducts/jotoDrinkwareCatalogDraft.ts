@@ -19,8 +19,8 @@
 // Images (owner approved reusing Joto's photos): public/images/products/joto/ — cropped from the
 // owner's screenshots (Joto's site blocks automated downloads), carousel arrows painted out,
 // upscaled 2x with lanczos3 and lightly sharpened. Placeholder quality; swap in Joto's originals
-// when available. Only blank product photos were used — the 6 products whose screenshots show
-// only Joto's sample designs (third-party logos/characters) have no image yet.
+// when available. Where no blank photo existed, Joto's sample-design photo is used as-is (owner's
+// choice); the Olympics-logo travel-mug photo was deliberately not used.
 //
 // Held back, not imported: "11oz Sublimation Purple Plated Ceramic Mug" ($149.40, but the page
 // doesn't say how many mugs that buys) and "Pearl Coating Sublimation 6oz White..." (only seen in
