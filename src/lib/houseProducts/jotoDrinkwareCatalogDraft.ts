@@ -103,7 +103,13 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     startingPrice: 81.0,
     printRuleVersion: RULE,
     productOptions: [
-      { name: "Inner colour", values: [], note: "13 colour swatches on Joto's page; colour names not shown — pending confirmation" },
+      {
+        name: "Inner colour",
+        values: ["Black", "Navy", "Blue", "Teal", "Pink", "Red", "Orange", "Lime Green", "Grey", "Light Grey", "Aqua"],
+        note:
+          "Joto's swatches are unlabelled, so names were assigned from each swatch's colour. Joto also shows a " +
+          "Light Green swatch marked unavailable. Owner confirmed every colour is the same price.",
+      },
     ],
     supplierBundlePricing: [
       {
@@ -136,7 +142,13 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     startingPrice: 122.4,
     printRuleVersion: RULE,
     productOptions: [
-      { name: "Inner colour", values: [], note: "7 colour swatches on Joto's page (one shown unavailable); colour names not shown — pending confirmation" },
+      {
+        name: "Inner colour",
+        values: ["Black", "Navy", "Blue", "Pink", "Red", "Yellow"],
+        note:
+          "Joto's swatches are unlabelled, so names were assigned from each swatch's colour. Joto also shows an " +
+          "Orange swatch marked unavailable. Owner confirmed every colour is the same price.",
+      },
     ],
     supplierBundlePricing: [
       {
