@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getProduct } from "@/lib/products";
 import { blankUnitPrice } from "@/lib/studio/pricing";
+import { bundleEntryFor, bundleUnitPrice, isValidBundleOption } from "@/lib/houseProducts/pricing/bundles";
 import type { DesignProjectRecord } from "@/lib/studio/types";
 
 /** The subset of CartItem the browser posts to the checkout endpoints — deliberately NOT the
@@ -122,6 +123,39 @@ export async function priceCartItem(
     }
     const product = getProduct(item.categorySlug, item.subcategorySlug, item.productSlug);
     if (!product) return { ok: false, cartItemId: item.id, reason: "This product could not be found." };
+    if (product.status === "draft") {
+      return { ok: false, cartItemId: item.id, reason: "This product isn't available yet." };
+    }
+    // Supplier-bundle products (cases/packs): quantity is the number of bundles, priced off the
+    // same tier ladder the product page showed (bundles.ts) — never the cart's stored price.
+    if (product.bundlePricing && product.bundlePricing.length > 0) {
+      const option = item.colourName ?? null;
+      if (!isValidBundleOption(product, option)) {
+        return { ok: false, cartItemId: item.id, reason: "The option chosen for this item is no longer available." };
+      }
+      const entry = bundleEntryFor(product, option);
+      const perBundle = entry ? bundleUnitPrice(entry, item.quantity) : null;
+      if (perBundle === null) {
+        return { ok: false, cartItemId: item.id, reason: "This quantity isn't available for this item." };
+      }
+      return {
+        ok: true,
+        line: {
+          cartItemId: item.id,
+          productName: option ? `${product.name} — ${option}` : product.name,
+          categorySlug: product.categorySlug,
+          colourName: option,
+          sizeBreakdown: null,
+          quantity: item.quantity,
+          unitPriceCents: toCents(perBundle),
+          lineTotalCents: toCents(perBundle) * item.quantity,
+          customizationType: "BLANK",
+          designProjectId: null,
+          designFrozenRevision: null,
+          designSnapshot: null,
+        },
+      };
+    }
     // Price-listed print products are ordered by quote until they get real checkout pricing.
     const blank = product.houseProductKind === "price-list" ? null : blankUnitPrice(product);
     if (blank === null) {

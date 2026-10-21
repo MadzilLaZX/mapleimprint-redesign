@@ -504,8 +504,8 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
   // Internal cost/supplier data is intentionally NOT spread in here — see jotoBlanksInternalOnly.ts.
   ...JOTO_BLANKS_CATALOGUE_DRAFT,
 
-  // --- Draft Joto mugs & drinkware (owner's screenshots, exact Joto pricing, no markup yet) ----
-  // See jotoDrinkwareCatalogDraft.ts's header. All status: "draft". Supplier SKUs are
-  // intentionally NOT spread in here — see jotoDrinkwareInternalOnly.ts.
+  // --- Joto mugs & drinkware (36 products, published 2026-10-21, tiered markup applied) -------
+  // See jotoDrinkwareCatalogDraft.ts's header. Supplier SKUs/costs are intentionally NOT spread
+  // in here — see jotoDrinkwareInternalOnly.ts.
   ...JOTO_DRINKWARE_CATALOGUE_DRAFT,
 ];

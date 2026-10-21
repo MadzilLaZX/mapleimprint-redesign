@@ -125,11 +125,11 @@ export interface CatalogueProduct {
   printSpecs?: { sizeLabel: string; size: string; material?: string; printedSides?: string; finish?: string };
   /** Customer (retail) bundle/quantity pricing, markup already applied — set only on
    *  jotoDrinkwareCatalogDraft.ts entries. The supplier cost it was derived from lives in
-   *  jotoDrinkwareInternalOnly.ts. Not read by any UI yet — the bundle/option selector for these
-   *  products is a separate, later step. */
+   *  jotoDrinkwareInternalOnly.ts. Its presence routes the product page to BundleConfigurator and
+   *  checkout to the bundle branch of priceCartItem (both via houseProducts/pricing/bundles.ts). */
   bundlePricing?: SupplierBundlePricing[];
-  /** Selectable options confirmed on the supplier page. `values` is empty with a `note` where the
-   *  page shows swatches but no names — never guessed. Not read by any UI yet. */
+  /** Selectable options confirmed on the supplier page (colour/size/finish), shown as choices by
+   *  BundleConfigurator and validated server-side at checkout. */
   productOptions?: { name: string; values: string[]; note?: string }[];
   /** Optional design-template metadata, set only on src/lib/houseProducts/engravingCatalogDraft.ts
    *  entries, carried over from the xTool M1 Developer Catalog's "Design templates" sheet for

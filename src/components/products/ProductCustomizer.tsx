@@ -22,6 +22,7 @@ import { SignConfigurator } from "@/components/products/SignConfigurator";
 import { PackagingConfigurator } from "@/components/products/PackagingConfigurator";
 import { QuoteOnlyConfigurator } from "@/components/products/QuoteOnlyConfigurator";
 import { PriceListConfigurator } from "@/components/products/PriceListConfigurator";
+import { BundleConfigurator } from "@/components/products/BundleConfigurator";
 import type { DrinkwareKind } from "@/lib/houseProducts/pricing/drinkware";
 import type { PromoKind } from "@/lib/houseProducts/pricing/promo";
 import type { SignKind } from "@/lib/houseProducts/pricing/signs";
@@ -83,6 +84,9 @@ export function ProductCustomizer(props: {
   if (kind === "packaging-product-box" || kind === "packaging-mailer-box" || kind === "packaging-tissue-paper" || kind === "packaging-tape") {
     const packagingKind = (kind === "packaging-tape" ? "packaging-tape" : kind.slice("packaging-".length)) as PackagingKind;
     return <PackagingConfigurator product={product} kind={packagingKind} />;
+  }
+  if (product.bundlePricing && product.bundlePricing.length > 0) {
+    return <BundleConfigurator product={product} categoryName={props.categoryName} onColourChange={props.onColourChange} />;
   }
   if (kind === "price-list") {
     return <PriceListConfigurator product={product} />;

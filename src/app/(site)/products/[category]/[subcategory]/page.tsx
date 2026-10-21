@@ -10,6 +10,7 @@ import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { getProductsBySubcategory, subcategorySlugify } from "@/lib/products";
 import { defaultColourFor, heroImageFor } from "@/lib/productVariant";
+import { priceUnitLabel } from "@/lib/houseProducts/pricing/bundles";
 
 function findSubcategory(categorySlug: string, subcategorySlug: string) {
   const cat = PRODUCT_CATEGORIES.find((c) => c.slug === categorySlug);
@@ -114,7 +115,7 @@ export default async function SubcategoryPage({
                       {product.startingPrice !== null && (
                         <p className="mt-2 text-sm font-semibold text-ink-900">
                           From ${product.startingPrice.toFixed(2)}
-                          <span className="font-normal text-muted"> / unit</span>
+                          <span className="font-normal text-muted"> / {priceUnitLabel(product)}</span>
                         </p>
                       )}
                     </div>

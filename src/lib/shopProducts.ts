@@ -2,6 +2,7 @@ import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { slugify } from "@/lib/slugify";
 import { getProductsBySubcategory } from "@/lib/products";
 import { defaultColourFor, heroImageFor } from "@/lib/productVariant";
+import { priceUnitLabel } from "@/lib/houseProducts/pricing/bundles";
 
 export type ShopProduct = {
   id: string;
@@ -21,6 +22,8 @@ export type ShopProduct = {
   /** Price at the lowest quantity tier, from the client's own print-cost chart — null when no
    *  real catalogue product exists for this subcategory yet (not a guess, an honest "not priced"). */
   startingPrice: number | null;
+  /** What startingPrice buys — "unit" for most products, e.g. "case of 36" for bundle products. */
+  priceUnit: string;
 };
 
 // Where real catalogue data exists (currently: T-shirts, imported from S&S — see
@@ -47,6 +50,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = PRODUCT_CATEGORIES.flatMap((cat) =>
           defaultColour: defaultColour || null,
           href: `/products/${cat.slug}/${subSlug}/${p.slug}`,
           startingPrice: p.startingPrice,
+          priceUnit: priceUnitLabel(p),
         };
       });
     }
@@ -63,6 +67,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = PRODUCT_CATEGORIES.flatMap((cat) =>
         defaultColour: null,
         href: `/products/${cat.slug}`,
         startingPrice: null,
+        priceUnit: "unit",
       },
     ];
   }),

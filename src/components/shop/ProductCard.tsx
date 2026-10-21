@@ -45,7 +45,7 @@ export function ProductCard({ product }: { product: ShopProduct }) {
           {product.startingPrice !== null ? (
             <>
               From {formatUnitPrice(product.startingPrice)}
-              <span className="font-normal text-muted"> / unit</span>
+              <span className="font-normal text-muted"> / {product.priceUnit}</span>
             </>
           ) : (
             <span className="font-normal text-muted">Quote required</span>
