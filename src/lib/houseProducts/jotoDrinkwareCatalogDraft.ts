@@ -71,7 +71,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "Large 15oz white ceramic mug with a glossy sublimation coating for bright, full-colour designs. " +
       "Sold by the case of 36 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-mug-15oz-white-case-36.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -483,7 +485,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "17oz (500ml) white enamel camp cup with a steel rim and a stable flat bottom, ready for sublimation. " +
       "Sold by the pack of 6 cups.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-enamel-camp-cup-17oz-flat-bottom-pack-6.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -547,7 +551,10 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "14oz white stainless steel travel mug with a lid, tapered at the bottom to fit most cup holders. " +
       "Ready for sublimation. Sold by the pack of 6 mugs.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-travel-mug-14oz-stainless-pack-6.webp", colourName: null, imageType: "front" },
+      { url: "/images/products/joto/sublimation-travel-mug-14oz-stainless-pack-6-alt.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -577,7 +584,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "17oz stainless steel travel mug with a handle and a sublimatable white plastic insert for your design. " +
       "Fits a car cup holder. Sold individually, with quantity discounts.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-travel-mug-17oz.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -643,7 +652,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "A mixed pack of 36 assorted 11oz sublimation mugs in different coatings and colours — ideal for testing " +
       "prints and showing customers options before ordering in bulk. Sold as one pack.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-mug-starter-pack-11oz-36.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
@@ -668,7 +679,9 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     description:
       "A mixed pack of 36 assorted 15oz sublimation mugs with different inner colours and handles — ideal for " +
       "testing prints and showing customers options before ordering in bulk. Sold as one pack.",
-    images: [],
+    images: [
+      { url: "/images/products/joto/sublimation-mug-starter-pack-15oz-36.webp", colourName: null, imageType: "front" },
+    ],
     colours: [],
     sizes: [],
     variants: [],
