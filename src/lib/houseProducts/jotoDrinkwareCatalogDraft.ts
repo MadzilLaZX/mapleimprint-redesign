@@ -28,6 +28,11 @@
 import type { CatalogueProduct } from "@/lib/products";
 
 const RULE = "house-v1-joto-exact-2026-10-21";
+const J = (file: string, colourName: string | null = null) => ({
+  url: `/images/products/joto/${file}.webp`,
+  colourName,
+  imageType: "front",
+});
 
 export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
   // --- Ceramic mugs ---------------------------------------------------------------------------
@@ -534,6 +539,7 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
       "13oz (400ml) white stainless steel coffee cup with a handle and clear flat lid, ready for sublimation. " +
       "Durable and rust resistant. Sold by the pack of 5 cups.",
     images: [
+      { url: "/images/products/joto/sublimation-stainless-coffee-cup-13oz-lid-pack-5-o1.webp", colourName: null, imageType: "front" },
       { url: "/images/products/joto/sublimation-stainless-coffee-cup-13oz-lid-pack-5.webp", colourName: null, imageType: "front" },
     ],
     colours: [],
@@ -708,6 +714,513 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
         sellUnit: "pack",
         itemsPerBundle: 36,
         tiers: [{ bundleCount: 1, totalItems: 36, perItemCad: null, totalCad: 139.99 }],
+      },
+    ],
+  },
+
+  // --- Batch 2 (2026-10-21): tumblers, glassware, bottles --------------------------------------
+  {
+    slug: "sublimation-skinny-tumbler-20oz-straw-pack-5",
+    name: "20oz Stainless Steel Sublimation Tumbler with Straw & Lid — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "20oz white stainless steel skinny tumbler with a removable slide-close plastic lid and a stainless steel " +
+      "straw. For hot or cold drinks; sublimate with shrink sleeves and a convection oven. Sold by the pack of 5.",
+    images: [J("sublimation-skinny-tumbler-20oz-straw-pack-5")],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 62.25,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 12.45, totalCad: 62.25 },
+          { bundleCount: 2, totalItems: 10, perItemCad: 11.95, totalCad: 119.5 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 10.95, totalCad: 273.75 },
+          { bundleCount: 15, totalItems: 75, perItemCad: 10.45, totalCad: 783.75 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-glitter-skinny-tumbler-20oz-silver-pack-5",
+    name: "20oz Glitter Silver Sublimation Skinny Tumbler with Straw & Lid — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "20oz (600ml) stainless steel skinny tumbler with a sparkling silver glitter finish, straw and lid, ready " +
+      "for sublimation. Sold by the pack of 5.",
+    images: [
+      J("sublimation-glitter-skinny-tumbler-20oz-silver-pack-5", "Silver"),
+      J("sublimation-glitter-skinny-tumbler-20oz-silver-pack-5-design", "Silver"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 24.75,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Silver"] }],
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        regularPriceCad: 67.96,
+        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 24.75 }],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-travel-tumbler-40oz-handle-pack-5",
+    name: "40oz White Stainless Steel Sublimation Travel Tumbler with Handle — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "40oz (1200ml) white stainless steel travel tumbler with a clear flat lid, straw and comfortable handle, " +
+      "ready for sublimation. Sold by the pack of 5.",
+    images: [J("sublimation-travel-tumbler-40oz-handle-pack-5")],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 64.95,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 12.99, totalCad: 64.95 },
+          { bundleCount: 2, totalItems: 10, perItemCad: 11.99, totalCad: 119.9 },
+          { bundleCount: 4, totalItems: 20, perItemCad: 11.49, totalCad: 229.8 },
+          { bundleCount: 12, totalItems: 60, perItemCad: 10.99, totalCad: 659.4 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-tumbler-20oz-white-pack-5",
+    name: "20oz White Stainless Steel Sublimation Tumbler — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "20oz double-wall vacuum-insulated white stainless steel tumbler with a plastic lid (the lid does not close), " +
+      "ready for sublimation. Its shape is not suited to full-wrap designs in a convection oven. Sold by the pack of 5.",
+    images: [
+      J("sublimation-tumbler-20oz-white-pack-5"),
+      J("sublimation-tumbler-20oz-white-pack-5-o1"),
+      J("sublimation-tumbler-20oz-white-pack-5-o2"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 66.55,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 13.31, totalCad: 66.55 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 13.01, totalCad: 195.15 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 12.79, totalCad: 319.75 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 12.42, totalCad: 621.0 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-tumbler-20oz-silver-pack-5",
+    name: "20oz Silver Stainless Steel Sublimation Tumbler — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "20oz double-wall vacuum-insulated silver stainless steel tumbler with a plastic lid (the lid does not close), " +
+      "ready for sublimation. Its shape is not suited to full-wrap designs in a convection oven. Sold by the pack of 5.",
+    images: [
+      J("sublimation-tumbler-20oz-silver-pack-5"),
+      J("sublimation-tumbler-20oz-silver-pack-5-o1"),
+      J("sublimation-tumbler-20oz-silver-pack-5-o2"),
+      J("sublimation-tumbler-20oz-silver-pack-5-o3"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 66.55,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 13.31, totalCad: 66.55 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 13.01, totalCad: 195.15 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 12.79, totalCad: 319.75 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 12.42, totalCad: 621.0 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-tumbler-16oz-silver-pack-6",
+    name: "16oz Silver Stainless Steel Sublimation Tumbler — Pack of 6",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "16oz silver stainless steel tumbler with a black flip lid — a durable, reusable alternative to disposable " +
+      "cups that keeps drinks hot or cold. Sublimate with a 17oz latte mug wrap on a mug press. Sold by the pack of 6.",
+    images: [
+      J("sublimation-tumbler-16oz-silver-pack-6-o1", "Silver"),
+      J("sublimation-tumbler-16oz-silver-pack-6-o2", "Silver"),
+      J("sublimation-tumbler-16oz-silver-pack-6-o3", "Silver"),
+      J("sublimation-tumbler-16oz-silver-pack-6-o4", "Silver"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 73.32,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Silver"] }],
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 6,
+        tiers: [
+          { bundleCount: 1, totalItems: 6, perItemCad: 12.22, totalCad: 73.32 },
+          { bundleCount: 2, totalItems: 12, perItemCad: 11.87, totalCad: 142.44 },
+          { bundleCount: 4, totalItems: 24, perItemCad: 11.5, totalCad: 276.0 },
+          { bundleCount: 12, totalItems: 72, perItemCad: 10.97, totalCad: 789.84 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-tumbler-20oz-portable-lid-pack-4",
+    name: "20oz White Stainless Steel Sublimation Tumbler with Portable Lid — Pack of 4",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "20oz double-wall vacuum-insulated white stainless steel tumbler with a portable straw lid and carry strap, " +
+      "ready for sublimation. Its shape is not suited to full-wrap designs in a convection oven. Sold by the pack of 4.",
+    images: [
+      J("sublimation-tumbler-20oz-portable-lid-pack-4-o1"),
+      J("sublimation-tumbler-20oz-portable-lid-pack-4-o2"),
+      J("sublimation-tumbler-20oz-portable-lid-pack-4-o3"),
+      J("sublimation-tumbler-20oz-portable-lid-pack-4-o4"),
+      J("sublimation-tumbler-20oz-portable-lid-pack-4-o5"),
+      J("sublimation-tumbler-20oz-portable-lid-pack-4-o6"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 55.96,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 4,
+        tiers: [
+          { bundleCount: 1, totalItems: 4, perItemCad: 13.99, totalCad: 55.96 },
+          { bundleCount: 2, totalItems: 8, perItemCad: 12.99, totalCad: 103.92 },
+          { bundleCount: 6, totalItems: 24, perItemCad: 11.99, totalCad: 287.76 },
+          { bundleCount: 10, totalItems: 40, perItemCad: 11.79, totalCad: 471.6 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-travel-tumbler-25oz-metal-handle-pack-5",
+    name: "25oz Stainless Steel Sublimation Travel Tumbler with Metal Handle — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "tumblers",
+    description:
+      "25oz (750ml) white stainless steel travel tumbler with a clear flat lid and a metal handle, ready for " +
+      "sublimation. Sold by the pack of 5.",
+    images: [J("sublimation-travel-tumbler-25oz-metal-handle-pack-5-o1")],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 77.25,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 77.25 }],
+      },
+    ],
+  },
+  {
+    slug: "engraving-skinny-tumbler-20oz-straw-pack-5",
+    name: "20oz Powder-Coated Stainless Steel Engraving Tumbler with Straw — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "engraved-personalized",
+    description:
+      "20oz (600ml) double-wall 304 stainless steel skinny tumbler with a powder-coated finish, straw and waterproof " +
+      "flip lid — made for laser engraving. Fits most car cup holders. Hand wash recommended. Sold by the pack of 5.",
+    images: [
+      J("engraving-skinny-tumbler-20oz-straw-pack-5-black", "Black"),
+      J("engraving-skinny-tumbler-20oz-straw-pack-5-o1"),
+      J("engraving-skinny-tumbler-20oz-straw-pack-5-white-o1", "White"),
+      J("engraving-skinny-tumbler-20oz-straw-pack-5-mint-green-o1", "Mint Green"),
+      J("engraving-skinny-tumbler-20oz-straw-pack-5-royal-blue-o1", "Royal Blue"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 48.75,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Black", "White", "Mint Green", "Royal Blue"] }],
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 9.75, totalCad: 48.75 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 9.46, totalCad: 141.9 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 9.17, totalCad: 229.25 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 8.9, totalCad: 445.0 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-travel-tumbler-40oz-straw-pack-5",
+    name: "40oz Powder-Coated Stainless Steel Engraving Travel Tumbler with Straw — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "engraved-personalized",
+    description:
+      "40oz (1200ml) double-wall vacuum-insulated powder-coated stainless steel travel tumbler with handle, lid and " +
+      "straw — made for laser engraving or printing. Sold by the pack of 5.",
+    images: [
+      J("engraving-travel-tumbler-40oz-straw-pack-5-black", "Black"),
+      J("engraving-travel-tumbler-40oz-straw-pack-5-black-o1", "Black"),
+      J("engraving-travel-tumbler-40oz-straw-pack-5-black-o2", "Black"),
+      J("engraving-travel-tumbler-40oz-straw-pack-5-white-o2", "White"),
+      J("engraving-travel-tumbler-40oz-straw-pack-5-white-o1", "White"),
+      J("engraving-travel-tumbler-40oz-straw-pack-5-white-o3", "White"),
+      J("engraving-travel-tumbler-40oz-straw-pack-5-white-o4", "White"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 58.2,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Black", "White"] }],
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        regularPriceCad: 63.75,
+        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 58.2 }],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-frosted-glass-skinny-tumbler-20oz-pack-6",
+    name: "20oz Frosted Glass Sublimation Skinny Tumbler with Straw & Bamboo Lid — Pack of 6",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "glassware",
+    description:
+      "20oz frosted glass skinny tumbler with a bamboo lid and straw — an eco-friendly, on-the-go glass ready for " +
+      "sublimation. Sold by the pack of 6.",
+    images: [
+      J("sublimation-frosted-glass-skinny-tumbler-20oz-pack-6-o1"),
+      J("sublimation-frosted-glass-skinny-tumbler-20oz-pack-6-o2"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 20.0,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 6,
+        regularPriceCad: 25.2,
+        tiers: [{ bundleCount: 1, totalItems: 6, perItemCad: null, totalCad: 20.0 }],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-frosted-glass-skinny-tumbler-17oz-pack-12",
+    name: "17oz Frosted Glass Sublimation Skinny Tumbler with Straw & Bamboo Lid — Pack of 12",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "glassware",
+    description:
+      "17oz (500ml) frosted glass skinny tumbler with a straw and bamboo lid, ready for sublimation. Sold by the " +
+      "pack of 12.",
+    images: [J("sublimation-frosted-glass-skinny-tumbler-17oz-pack-12-o1")],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 42.0,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 12,
+        regularPriceCad: 69.6,
+        tiers: [{ bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 42.0 }],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-glass-can-18oz-bamboo-lid-pack-12",
+    name: "18oz Sublimation Glass Can with Bamboo Lid — Pack of 12",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "glassware",
+    description:
+      "18oz (550ml) glass can with a bamboo lid and straw — the perfect size for iced coffee or tea. Available " +
+      "frosted or clear. Not dishwasher or microwave safe. Sold by the pack of 12.",
+    images: [
+      J("sublimation-glass-can-18oz-bamboo-lid-pack-12-frosted-o1", "Frosted"),
+      J("sublimation-glass-can-18oz-bamboo-lid-pack-12-frosted-o2", "Frosted"),
+      J("sublimation-glass-can-18oz-bamboo-lid-pack-12-clear-o1", "Clear"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 41.88,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Finish", values: ["Frosted", "Clear"] }],
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 12,
+        appliesTo: "Frosted",
+        regularPriceCad: 54.0,
+        tiers: [{ bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 41.88 }],
+      },
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 12,
+        appliesTo: "Clear",
+        tiers: [{ bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 54.0 }],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-stainless-coffee-cup-12oz-lid-pack-5",
+    name: "12oz Stainless Steel Sublimation Coffee Cup with Lid — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "mugs",
+    description:
+      "12oz white stainless steel coffee cup with a handle and clear lid — great for outdoor enthusiasts. Approx. " +
+      "4\" tall (without lid) x 3.5\" wide. Ready for sublimation. Sold by the pack of 5.",
+    images: [
+      J("sublimation-stainless-coffee-cup-12oz-lid-pack-5-o2"),
+      J("sublimation-stainless-coffee-cup-12oz-lid-pack-5-o1"),
+      J("sublimation-stainless-coffee-cup-12oz-lid-pack-5-o3"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 63.65,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 63.65 }],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-pop-lid-bottle-17oz-pack-10",
+    name: "17oz White Stainless Steel Sublimation Pop-Lid Bottle — Pack of 10",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "bottles",
+    description:
+      "17oz (500ml) white stainless steel bottle with a push-button pop-up lid, ready for full-wrap sublimation. " +
+      "Sold by the pack of 10.",
+    images: [
+      J("sublimation-pop-lid-bottle-17oz-pack-10"),
+      J("sublimation-pop-lid-bottle-17oz-pack-10-o1"),
+      J("sublimation-pop-lid-bottle-17oz-pack-10-o2"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 137.5,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 10,
+        tiers: [{ bundleCount: 1, totalItems: 10, perItemCad: null, totalCad: 137.5 }],
+      },
+    ],
+  },
+  {
+    slug: "sublimation-bottle-17oz-cup-lid-pack-5",
+    name: "17oz Stainless Steel Sublimation Bottle with Cup Lid — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "bottles",
+    description:
+      "17oz (500ml) double-wall white stainless steel flask with a lid that doubles as a cup, ready for " +
+      "sublimation. Keeps drinks hot or cold for longer. Sold by the pack of 5.",
+    images: [J("sublimation-bottle-17oz-cup-lid-pack-5"), J("sublimation-bottle-17oz-cup-lid-pack-5-o1")],
+    colours: [],
+    sizes: [],
+    variants: [],
+    status: "draft",
+    priceTiers: null,
+    startingPrice: 66.25,
+    printRuleVersion: RULE,
+    supplierBundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [{ bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 66.25 }],
       },
     ],
   },
