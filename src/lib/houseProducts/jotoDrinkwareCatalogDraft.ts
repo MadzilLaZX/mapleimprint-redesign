@@ -105,6 +105,17 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
       "Dishwasher and microwave safe, lead and cadmium free, FDA compliant. Sold by the case of 36 mugs.",
     images: [
       { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36.webp", colourName: "Black", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-navy.webp", colourName: "Navy", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-blue.webp", colourName: "Blue", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-teal.webp", colourName: "Teal", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-lime-green.webp", colourName: "Lime Green", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-pink.webp", colourName: "Pink", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-red.webp", colourName: "Red", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-orange.webp", colourName: "Orange", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-yellow.webp", colourName: "Yellow", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-grey.webp", colourName: "Grey", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-purple.webp", colourName: "Purple", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-11oz-inner-colour-case-36-light-blue.webp", colourName: "Light Blue", imageType: "front" },
     ],
     colours: [],
     sizes: [],
@@ -116,10 +127,8 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     productOptions: [
       {
         name: "Inner colour",
-        values: ["Black", "Navy", "Blue", "Teal", "Pink", "Red", "Orange", "Lime Green", "Grey", "Light Grey", "Aqua"],
-        note:
-          "Joto's swatches are unlabelled, so names were assigned from each swatch's colour. Joto also shows a " +
-          "Light Green swatch marked unavailable. Owner confirmed every colour is the same price.",
+        values: ["Black", "Navy", "Blue", "Teal", "Lime Green", "Pink", "Red", "Orange", "Yellow", "Grey", "Purple", "Light Blue"],
+        note: "Colour names confirmed from Joto's per-colour SKUs. Owner confirmed every colour is the same price.",
       },
     ],
     supplierBundlePricing: [

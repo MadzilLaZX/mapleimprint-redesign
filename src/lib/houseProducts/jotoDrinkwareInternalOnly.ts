@@ -17,7 +17,7 @@ export interface JotoDrinkwareSupplierRecord {
 export const JOTO_DRINKWARE_SUPPLIER_INTERNAL: JotoDrinkwareSupplierRecord[] = [
   { slug: "sublimation-mug-11oz-white-case-36", jotoSku: "B-MUG-PC-11-EGC", jotoTitle: "Pearl Coating™ 11oz Sublimation White Mug - Case of 36" },
   { slug: "sublimation-mug-15oz-white-case-36", jotoSku: "B-MUG-PC-15-EGC", jotoTitle: "Pearl Coating™ 15oz Sublimation White Mug - Case of 36" },
-  { slug: "sublimation-mug-11oz-inner-colour-case-36", jotoSku: "B-MUG-11-BK-EGC", jotoTitle: "Pearl Coating™ 11oz Inner Colored Sublimation Mug - Case of 36" },
+  { slug: "sublimation-mug-11oz-inner-colour-case-36", jotoSku: "B-MUG-11-{BK,BL,LB,GR,LG,PK,RD,OR,YL,GY,PL}-EGC; Light Blue = B-MUG-037-11-LB-EGC", jotoTitle: "Pearl Coating™ 11oz Inner Colored Sublimation Mug - Case of 36" },
   { slug: "sublimation-mug-15oz-inner-colour-case-36", jotoSku: "B-MUG-15-BK-EGC", jotoTitle: "Pearl Coating™ 15oz Inner Colored Sublimation Mug - Case of 36" },
   { slug: "sublimation-mug-15oz-inner-colour-case-6", jotoSku: "CE-MUG-15-BK / CE-MUG-15-RD", jotoTitle: "Pearl Coating™ 15oz Inner Colored Sublimation Mug - Case of 6" },
   // Title says "Case of 48"; the tiers on the same page say 24 mugs per case. Recorded as 24.
