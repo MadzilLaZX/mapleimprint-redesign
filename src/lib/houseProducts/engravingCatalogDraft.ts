@@ -1,7 +1,7 @@
 // Draft engraving-catalog additions sourced from the business owner's xTool M1 Developer
 // Catalog (MapleImprint_xTool_M1_Developer_Catalog.xlsx, "Products" + "Design templates"
 // sheets, 25 rows) -- a genuinely new business line (personalized laser-engraved gifts),
-// separate from the print catalog in printCatalogueDraft.ts. Follows the exact same
+// separate from the print catalog in printCatalogue.ts. Follows the exact same
 // CatalogueProduct shape/pattern as that file.
 //
 // Every entry is `status: "draft"` per the source brief's own "Developer brief" sheet (row
@@ -13,7 +13,7 @@
 // `startingPrice`/no priceTiers: these are single flat prices ("Suggested sell CAD"), not
 // quantity-tiered -- priceTiers is null on every entry (even the "Pack of 25"/"Pack of 10"
 // ones, which are a single price for that pack size, not a multi-tier table). Not run through
-// applyHouseMargin() or any pricing-engine function -- same convention as printCatalogueDraft.ts.
+// applyHouseMargin() or any pricing-engine function -- same convention as printCatalogue.ts.
 //
 // INTERNAL-ONLY DATA EXCLUSION (non-negotiable per the brief): `Blank cost / sale CAD`,
 // `Supplier ID`, `Blank ID`, and anything from the "Blank costs"/"Canadian suppliers" sheets

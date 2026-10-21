@@ -64,7 +64,8 @@ export default async function ProductDetailPage({
         <ProductDetail product={p} categoryName={categoryName} />
       </Section>
 
-      {p.priceTiers && (
+      {/* Price-listed print products show their own tier table in PriceListConfigurator. */}
+      {p.priceTiers && p.houseProductKind !== "price-list" && (
         <Section tone="white">
           <Container className="max-w-2xl">
             <Reveal>

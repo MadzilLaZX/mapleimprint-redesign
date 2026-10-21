@@ -1,7 +1,7 @@
 // Draft catalogue additions: sublimation blanks sourced from Joto Imaging Supplies Canada
 // (jotoimagingsupplies.ca), added beyond the original xTool M1 sheet per the owner's explicit
 // instruction to pull in Joto's full catalog, not just engraving blanks. Follows the same
-// CatalogueProduct shape/draft conventions as printCatalogueDraft.ts / engravingCatalogDraft.ts.
+// CatalogueProduct shape/draft conventions as printCatalogue.ts / engravingCatalogDraft.ts.
 //
 // Every entry is `status: "draft"` — hidden from category/subcategory listings, sitemap, and
 // 404s at its own product URL (src/lib/products.ts / the product detail route), same as every

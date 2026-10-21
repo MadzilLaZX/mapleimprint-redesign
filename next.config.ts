@@ -25,6 +25,21 @@ const SQUARE_CSP = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Retired house products replaced by the client's price-listed versions (printCatalogue.ts).
+  async redirects() {
+    return [
+      {
+        source: "/products/signs-banners/vinyl-banners/vinyl-banner",
+        destination: "/products/signs-banners/vinyl-banners/vinyl-banners",
+        permanent: true,
+      },
+      {
+        source: "/products/drinkware/mugs/ceramic-mugs",
+        destination: "/products/drinkware/mugs/custom-ceramic-mugs",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

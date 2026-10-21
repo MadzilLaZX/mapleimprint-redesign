@@ -17,6 +17,9 @@ export interface ProductPriceTier {
   minQty: number;
   maxQty: number | null;
   pricePerUnit: number;
+  /** The source price list's own order total at exactly minQty units — set only on
+   *  houseProductKind: "price-list" entries (src/lib/houseProducts/printCatalogue.ts). */
+  orderTotal?: number;
 }
 
 export interface ProductVariantSummary {
@@ -83,12 +86,17 @@ export interface CatalogueProduct {
     | "packaging-mailer-box"
     | "packaging-tissue-paper"
     | "packaging-tape"
-    | "quote-only";
+    | "quote-only"
+    | "price-list";
   /** Set only alongside houseProductKind: "quote-only" — real sourced sizes/materials to display
    *  on the product page even though live per-configuration pricing wasn't reliably found (see
    *  QuoteOnlyConfigurator). Never invented copy; always the same real catalogue facts gathered
    *  for every other house product, just without a price attached. */
   quoteOnlyInfo?: { sizes?: string[]; materials?: string[] };
+  /** Set only on houseProductKind: "price-list" entries — the client catalogue's product ID
+   *  (e.g. "MI-001") and its print specs, shown on the product page by PriceListConfigurator. */
+  catalogueId?: string;
+  printSpecs?: { sizeLabel: string; size: string; material?: string; printedSides?: string; finish?: string };
   /** Optional design-template metadata, set only on src/lib/houseProducts/engravingCatalogDraft.ts
    *  entries, carried over from the xTool M1 Developer Catalog's "Design templates" sheet for
    *  whenever the personalization-input UI that sheet describes (character-limited customer text

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ImageBroken } from "@phosphor-icons/react/dist/ssr";
+import { formatUnitPrice } from "@/lib/pricing/formatUnitPrice";
 import type { ShopProduct } from "@/lib/shopProducts";
 
 export function ProductCard({ product }: { product: ShopProduct }) {
@@ -43,7 +44,7 @@ export function ProductCard({ product }: { product: ShopProduct }) {
         <p className="mt-1 text-sm font-semibold text-ink-900">
           {product.startingPrice !== null ? (
             <>
-              From ${product.startingPrice.toFixed(2)}
+              From {formatUnitPrice(product.startingPrice)}
               <span className="font-normal text-muted"> / unit</span>
             </>
           ) : (

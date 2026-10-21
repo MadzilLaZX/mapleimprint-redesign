@@ -13,7 +13,6 @@
 import type { CatalogueProduct } from "@/lib/products";
 import { applyHouseMargin } from "./pricing/margin";
 import { quoteSticker } from "./pricing/stickers";
-import { quotePostcard } from "./pricing/postcards";
 import { quoteLabel } from "./pricing/labels";
 import { quotePoster } from "./pricing/posters";
 import { quoteDrinkware } from "./pricing/drinkware";
@@ -21,7 +20,7 @@ import { quotePromo } from "./pricing/promo";
 import { quoteSign } from "./pricing/signs";
 import { quotePackaging } from "./pricing/packaging";
 import { isQuoteError } from "./pricing/types";
-import { PRINT_CATALOGUE_DRAFT } from "./printCatalogueDraft";
+import { PRINT_CATALOGUE } from "./printCatalogue";
 import { ENGRAVING_CATALOGUE_DRAFT } from "./engravingCatalogDraft";
 import { JOTO_BLANKS_CATALOGUE_DRAFT } from "./jotoBlanksCatalogDraft";
 
@@ -35,26 +34,6 @@ function fromPrice<T extends { unitPriceCents: number }>(quote: T | { error: str
 }
 
 export const HOUSE_PRODUCTS: CatalogueProduct[] = [
-  {
-    slug: "vinyl-banner",
-    name: "Vinyl Banner",
-    brandName: "Maple Imprint",
-    categorySlug: "signs-banners",
-    subcategorySlug: "vinyl-banners",
-    description:
-      "Custom vinyl banners printed and finished in Ottawa, from 1'x2' up to 30' on the long side — " +
-      "horizontal for storefronts and stages, vertical for poles and doorways. Choose your " +
-      "material, add grommets or reinforced edges, and design your artwork right here — the same " +
-      "way you'd design a custom t-shirt.",
-    images: [{ url: "/images/products/subcategories/signs-banners/vinyl-banners.jpg", colourName: null, imageType: "front" }],
-    colours: [],
-    sizes: [],
-    variants: [],
-    priceTiers: null,
-    startingPrice: applyHouseMargin(6.99),
-    printRuleVersion: "house-v1-vistaprint-2026-09-25",
-    houseProductKind: "banner",
-  },
   {
     slug: "business-cards",
     name: "Business Cards",
@@ -90,25 +69,6 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     startingPrice: applyHouseMargin(25.99),
     printRuleVersion: "house-v1-vistaprint-2026-09-25",
     houseProductKind: "flyer",
-  },
-  {
-    slug: "postcards",
-    name: "Postcards",
-    brandName: "Maple Imprint",
-    categorySlug: "business-printing",
-    subcategorySlug: "postcards",
-    description:
-      "Custom 6\" x 4\" postcards on standard or rounded-corner stock, single or double-sided — for " +
-      "mailers, promos and handouts. Design yours right here, from a first draft to a finished, " +
-      "print-ready file.",
-    images: [{ url: "/images/products/subcategories/business-printing/postcards.jpg", colourName: null, imageType: "front" }],
-    colours: [],
-    sizes: [],
-    variants: [],
-    priceTiers: null,
-    startingPrice: fromPrice(quotePostcard({ stock: "standard", quantity: 25, sides: "single" })),
-    printRuleVersion: "house-v1-vistaprint-2026-10-11",
-    houseProductKind: "postcard",
   },
 
   // --- Stickers & Labels ---------------------------------------------------------------------
@@ -234,24 +194,6 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
 
   // --- Signs (Signs & Banners) -----------------------------------------------------------------
   {
-    slug: "yard-signs",
-    name: "Yard Signs",
-    brandName: "Maple Imprint",
-    categorySlug: "signs-banners",
-    subcategorySlug: "outdoor-signs",
-    description:
-      "Corrugated plastic yard signs for real estate, elections and events — 8 sizes from " +
-      "9\"x12\" up to 48\"x96\", weather/fade/UV-resistant. Design yours right here.",
-    images: [{ url: "/images/products/subcategories/signs-banners/outdoor-signs.jpg", colourName: null, imageType: "front" }],
-    colours: [],
-    sizes: [],
-    variants: [],
-    priceTiers: null,
-    startingPrice: fromPrice(quoteSign({ kind: "yard", sizeKey: "9x12", material: "coroplast", quantity: 1 })),
-    printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "sign-yard",
-  },
-  {
     slug: "rigid-signs",
     name: "Rigid & Foam Board Signs",
     brandName: "Maple Imprint",
@@ -289,24 +231,6 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
   },
 
   // --- Drinkware -------------------------------------------------------------------------------
-  {
-    slug: "ceramic-mugs",
-    name: "Ceramic Mugs",
-    brandName: "Maple Imprint",
-    categorySlug: "drinkware",
-    subcategorySlug: "mugs",
-    description:
-      "Custom ceramic coffee mugs from 11oz to 16oz, dishwasher and microwave safe. Design yours " +
-      "right here.",
-    images: [{ url: "/images/products/subcategories/drinkware/mugs.jpg", colourName: null, imageType: "front" }],
-    colours: [],
-    sizes: [],
-    variants: [],
-    priceTiers: null,
-    startingPrice: fromPrice(quoteDrinkware({ kind: "mug", variantKey: "12oz", quantity: 36 })),
-    printRuleVersion: "house-v1-vistaprint-2026-10-06",
-    houseProductKind: "drinkware-mug",
-  },
   {
     slug: "stainless-tumblers",
     name: "Stainless Steel Tumblers",
@@ -563,9 +487,11 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     houseProductKind: "packaging-tape",
   },
 
-  // --- Draft print-catalogue additions (business owner's commissioned spreadsheet) ------------
-  // See printCatalogueDraft.ts's header for the full gap/exclusion rationale. All status: "draft".
-  ...PRINT_CATALOGUE_DRAFT,
+  // --- Client's 50-product print catalogue (MapleImprint_50_Product_Catalog.xlsx) -------------
+  // Live, quote-ordered at the sheet's own tier prices. Its Postcards, Vinyl Banners, Yard Signs
+  // and Custom Ceramic Mugs replace the configurator-priced versions that used to live above.
+  // See printCatalogue.ts's header.
+  ...PRINT_CATALOGUE,
 
   // --- Draft engraving-catalogue additions (xTool M1 Developer Catalog, new business line) ----
   // See engravingCatalogDraft.ts's header for the full rationale. All status: "draft". Internal

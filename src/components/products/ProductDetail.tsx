@@ -19,8 +19,11 @@ export function ProductDetail({ product, categoryName }: { product: CataloguePro
   // calls the exact same functions, so this headline can never drift from it the way the old
   // `product.startingPrice` headline (labelled "custom printed" but missing the design fee the
   // panel correctly added) did. See PROJECT_NOTES.md for that incident's writeup.
-  const blank = blankUnitPrice(product);
-  const customizeFrom = calculateCustomizePrice(product, 1, 1);
+  // Price-listed print products show their own list pricing (PriceListConfigurator) — the apparel
+  // blank/customize split doesn't apply to them.
+  const priceListed = product.houseProductKind === "price-list";
+  const blank = priceListed ? null : blankUnitPrice(product);
+  const customizeFrom = priceListed ? null : calculateCustomizePrice(product, 1, 1);
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">

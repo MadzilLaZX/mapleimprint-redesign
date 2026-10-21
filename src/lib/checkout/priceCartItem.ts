@@ -122,7 +122,8 @@ export async function priceCartItem(
     }
     const product = getProduct(item.categorySlug, item.subcategorySlug, item.productSlug);
     if (!product) return { ok: false, cartItemId: item.id, reason: "This product could not be found." };
-    const blank = blankUnitPrice(product);
+    // Price-listed print products are ordered by quote until they get real checkout pricing.
+    const blank = product.houseProductKind === "price-list" ? null : blankUnitPrice(product);
     if (blank === null) {
       return { ok: false, cartItemId: item.id, reason: "This item requires a custom quote and can't be purchased at checkout yet." };
     }
