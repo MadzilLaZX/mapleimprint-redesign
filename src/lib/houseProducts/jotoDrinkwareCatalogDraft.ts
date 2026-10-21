@@ -155,6 +155,11 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
       "Microwave and dishwasher safe, lead and cadmium free, FDA compliant. Sold by the case of 36 mugs.",
     images: [
       { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-36.webp", colourName: "Black", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-36-navy.webp", colourName: "Navy", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-36-blue.webp", colourName: "Blue", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-36-pink.webp", colourName: "Pink", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-36-red.webp", colourName: "Red", imageType: "front" },
+      { url: "/images/products/joto/sublimation-mug-15oz-inner-colour-case-36-yellow.webp", colourName: "Yellow", imageType: "front" },
     ],
     colours: [],
     sizes: [],
@@ -168,8 +173,8 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
         name: "Inner colour",
         values: ["Black", "Navy", "Blue", "Pink", "Red", "Yellow"],
         note:
-          "Joto's swatches are unlabelled, so names were assigned from each swatch's colour. Joto also shows an " +
-          "Orange swatch marked unavailable. Owner confirmed every colour is the same price.",
+          "Names assigned from Joto's photos/swatches (Joto shows an Orange swatch marked unavailable). " +
+          "Owner confirmed every colour is the same price.",
       },
     ],
     supplierBundlePricing: [
