@@ -1211,4 +1211,104 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
       },
     ],
   },
+
+  // --- Batch 3 (2026-10-21): flasks, wine cup ---------------------------------------------
+  {
+    slug: "sublimation-flask-22oz-wide-mouth-straw-lid-pack-5",
+    name: "22oz Stainless Steel Sublimation Flask with Wide-Mouth Straw Lid & Rotating Handle — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "bottles",
+    description:
+      "22oz (650ml) white stainless steel flask with a wide-mouth straw lid and rotating handle — keeps drinks at the right temperature and is ready for sublimation. Sold by the pack of 5.",
+    images: [
+      J("sublimation-flask-22oz-wide-mouth-straw-lid-pack-5-1"),
+      J("sublimation-flask-22oz-wide-mouth-straw-lid-pack-5-2"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 71.8,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 14.36, totalCad: 71.8 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 13.74, totalCad: 343.5 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 12.49, totalCad: 624.5 },
+          { bundleCount: 20, totalItems: 100, perItemCad: 11.24, totalCad: 1124 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-flask-22oz-straw-lid-handle-pack-5",
+    name: "22oz Powder-Coated Engraving Flask with Wide Mouth, Straw, Lid & Handle — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "engraved-personalized",
+    description:
+      "22oz (650ml) powder-coated stainless steel flask with a wide mouth, straw lid and rotating handle — made for laser engraving, ideal for outdoor activities and daily commutes. Sold by the pack of 5.",
+    images: [
+      J("engraving-flask-22oz-straw-lid-handle-pack-5-1", "Black"),
+      J("engraving-flask-22oz-straw-lid-handle-pack-5-2", "White"),
+      J("engraving-flask-22oz-straw-lid-handle-pack-5-3", "Royal Blue"),
+      J("engraving-flask-22oz-straw-lid-handle-pack-5-4", "Mint Green"),
+      J("engraving-flask-22oz-straw-lid-handle-pack-5-5"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 65.65,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Black", "White", "Royal Blue", "Mint Green"] }],
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 13.13, totalCad: 65.65 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 12.74, totalCad: 191.1 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 12.35, totalCad: 308.75 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 11.98, totalCad: 599 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-wine-cup-12oz-stainless",
+    name: "12oz Powder-Coated Stainless Steel Engraving Wine Cup",
+    brandName: "Maple Imprint",
+    categorySlug: "drinkware",
+    subcategorySlug: "engraved-personalized",
+    description:
+      "12oz (360ml) double-wall 304 stainless steel stemless wine cup with a powder-coated finish and lid — ideal for laser engraving. Available in Royal Blue and Mint Green.",
+    images: [
+      J("engraving-wine-cup-12oz-stainless-1"),
+      J("engraving-wine-cup-12oz-stainless-2", "Royal Blue"),
+      J("engraving-wine-cup-12oz-stainless-3", "Royal Blue"),
+      J("engraving-wine-cup-12oz-stainless-4", "Mint Green"),
+      J("engraving-wine-cup-12oz-stainless-5", "Mint Green"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 60.45,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Royal Blue", "Mint Green"] }],
+    bundlePricing: [
+      {
+        sellUnit: "unit",
+        itemsPerBundle: 1,
+        tiers: [
+          { bundleCount: 1, totalItems: 1, perItemCad: null, totalCad: 60.45 },
+        ],
+      },
+    ],
+  },
 ];
