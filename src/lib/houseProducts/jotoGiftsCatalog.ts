@@ -338,7 +338,7 @@ export const JOTO_GIFTS_CATALOGUE: CatalogueProduct[] = [
     priceTiers: null,
     startingPrice: 54.75,
     printRuleVersion: RULE,
-    productOptions: [{ name: "Colour", values: ["Blue w/ Silver", "Light Grey", "Mint", "Grey", "White"] }],
+    productOptions: [{ name: "Colour", values: ["Blue", "Silver", "Teal", "Black", "Yellow Brown"] }],
     bundlePricing: [
       {
         sellUnit: "pack",
@@ -406,4 +406,297 @@ export const JOTO_GIFTS_CATALOGUE: CatalogueProduct[] = [
         ],
       },
     ],
-  },];
+  },  // --- Batch 4 (2026-10-21): engraving home & décor ------------------------------------------
+  {
+    slug: "engraving-bamboo-cutting-board-wine-bottle-13x7-pack-5",
+    name: "Engravable Wine Bottle-Shaped Bamboo Cutting Board 13\" x 7\" — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "kitchen-gifts",
+    description:
+      "Wine bottle-shaped bamboo cutting board (13.5\" x 7\") with a hanging hole — perfect for wine and cheese parties, appetizers and serving. Made for laser engraving. Sold by the pack of 5.",
+    images: [
+      J("engraving-bamboo-cutting-board-wine-bottle-13x7-pack-5-1"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 30.88,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 30.88 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-bamboo-cutting-board-8x6-pack-5",
+    name: "Engravable Bamboo Cutting Board 8\" x 6\" — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "kitchen-gifts",
+    description:
+      "Sturdy bamboo cutting board, 8\" x 6\" x 0.43\" (20.32 x 15.24 x 1.1cm) — looks great customized with a laser engraving. Sold by the pack of 5.",
+    images: [
+      J("engraving-bamboo-cutting-board-8x6-pack-5-1"),
+      J("engraving-bamboo-cutting-board-8x6-pack-5-2"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 38.35,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 38.35 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-bamboo-cutting-board-13-74x9-74-pack-5",
+    name: "Engravable Bamboo Cutting Board 13.74\" x 9.74\" — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "kitchen-gifts",
+    description:
+      "Large 13.74\" x 9.74\" bamboo cutting board with a handle cut-out — a great gift for family and friends. Made for laser engraving. Sold by the pack of 5.",
+    images: [
+      J("engraving-bamboo-cutting-board-13-74x9-74-pack-5-1"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 41.6,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 8.32, totalCad: 41.6 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 8.07, totalCad: 201.75 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 7.83, totalCad: 391.5 },
+          { bundleCount: 50, totalItems: 250, perItemCad: 7.59, totalCad: 1897.5 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-slate-ornament-round-4in-pack-12",
+    name: "Engravable 4\" Round Slate Ornament, Double-Sided — Pack of 12",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "ornaments",
+    description:
+      "4\" round natural slate ornament with a jute hanging cord, engravable on both sides — a rustic touch for holiday decorating. Sold by the pack of 12.",
+    images: [
+      J("engraving-slate-ornament-round-4in-pack-12-1"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 27.3,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 12,
+        tiers: [
+          { bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 27.3 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-slate-ornament-round-3in-pack-12",
+    name: "Engravable 3\" Round Slate Ornament, Double-Sided — Pack of 12",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "ornaments",
+    description:
+      "3\" round natural slate ornament with a hanging hole, engravable on both sides — a rustic touch for holiday decorating. Sold by the pack of 12.",
+    images: [
+      J("engraving-slate-ornament-round-3in-pack-12-1"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 23.24,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 12,
+        tiers: [
+          { bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 23.24 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-flask-8oz-pu-cover-pack-10",
+    name: "Engravable 8oz Stainless Steel Flask with PU Leather Cover — Pack of 10",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "bar-gifts",
+    description:
+      "8oz stainless steel hip flask wrapped in PU leather, made for laser engraving. Available in Black and Brown. Sold by the pack of 10.",
+    images: [
+      J("engraving-flask-8oz-pu-cover-pack-10-1", "Black"),
+      J("engraving-flask-8oz-pu-cover-pack-10-2", "Brown"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 58.5,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Black", "Brown"] }],
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 10,
+        tiers: [
+          { bundleCount: 1, totalItems: 10, perItemCad: 5.85, totalCad: 58.5 },
+          { bundleCount: 5, totalItems: 50, perItemCad: 5.68, totalCad: 284 },
+          { bundleCount: 10, totalItems: 100, perItemCad: 5.5, totalCad: 550 },
+          { bundleCount: 20, totalItems: 200, perItemCad: 5.34, totalCad: 1068 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-pu-leather-notebook-pack-5",
+    name: "Engravable PU Leather Notebook — Pack of 5",
+    brandName: "Maple Imprint",
+    categorySlug: "gifts-promo",
+    subcategorySlug: "stationery",
+    description:
+      "Soft-cover PU leather notebook with lined pages and a ribbon bookmark — engraves beautifully for a timeless, personal gift. Available Brown / Black or Blue / Black. Sold by the pack of 5.",
+    images: [
+      J("engraving-pu-leather-notebook-pack-5-1", "Brown / Black"),
+      J("engraving-pu-leather-notebook-pack-5-2", "Brown / Black"),
+      J("engraving-pu-leather-notebook-pack-5-3", "Blue / Black"),
+      J("engraving-pu-leather-notebook-pack-5-4"),
+      J("engraving-pu-leather-notebook-pack-5-5"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 54.75,
+    printRuleVersion: RULE,
+    productOptions: [{ name: "Colour", values: ["Brown / Black", "Blue / Black"] }],
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 10.95, totalCad: 54.75 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 10.33, totalCad: 154.95 },
+          { bundleCount: 6, totalItems: 30, perItemCad: 9.78, totalCad: 293.4 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 9.13, totalCad: 456.5 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-wiro-plywood-notebook-a5-pack-6",
+    name: "Engravable Wire-Bound Plywood Cover Notebook A5 — Pack of 6",
+    brandName: "Maple Imprint",
+    categorySlug: "gifts-promo",
+    subcategorySlug: "stationery",
+    description:
+      "A5 wire-bound notebook with a durable plywood cover, designed for engraving — a natural, stylish everyday notebook. Sold by the pack of 6.",
+    images: [
+      J("engraving-wiro-plywood-notebook-a5-pack-6-1"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 54.84,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 6,
+        tiers: [
+          { bundleCount: 1, totalItems: 6, perItemCad: 9.14, totalCad: 54.84 },
+          { bundleCount: 2, totalItems: 12, perItemCad: 8.97, totalCad: 107.64 },
+          { bundleCount: 4, totalItems: 24, perItemCad: 8.49, totalCad: 203.76 },
+          { bundleCount: 8, totalItems: 48, perItemCad: 7.92, totalCad: 380.16 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-wall-slate-rectangle-20x30cm-pack-12",
+    name: "Engravable Hanging Wall Slate, Rectangle 20 x 30cm — Pack of 12",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "signs",
+    description:
+      "20 x 30cm natural slate sign with a jute hanging cord, made for laser engraving. Sold by the pack of 12.",
+    images: [
+      J("engraving-wall-slate-rectangle-20x30cm-pack-12-1"),
+      J("engraving-wall-slate-rectangle-20x30cm-pack-12-2"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 61.62,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 12,
+        tiers: [
+          { bundleCount: 1, totalItems: 12, perItemCad: null, totalCad: 61.62 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-slate-photo-frame-25x19cm-pack-4",
+    name: "Engravable Slate Photo Frame 25 x 19cm — Pack of 4",
+    brandName: "Maple Imprint",
+    categorySlug: "personalized-engraving",
+    subcategorySlug: "home-gifts",
+    description:
+      "25 x 19cm natural slate photo frame with a photo window and space to engrave a message. Sold by the pack of 4.",
+    images: [
+      J("engraving-slate-photo-frame-25x19cm-pack-4-1"),
+      J("engraving-slate-photo-frame-25x19cm-pack-4-2"),
+    ],
+    colours: [],
+    sizes: [],
+    variants: [],
+    priceTiers: null,
+    startingPrice: 25.74,
+    printRuleVersion: RULE,
+    bundlePricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 4,
+        tiers: [
+          { bundleCount: 1, totalItems: 4, perItemCad: null, totalCad: 25.74 },
+        ],
+      },
+    ],
+  },
+];
