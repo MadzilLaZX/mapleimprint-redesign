@@ -24,6 +24,7 @@ import { PRINT_CATALOGUE } from "./printCatalogue";
 import { ENGRAVING_CATALOGUE_DRAFT } from "./engravingCatalogDraft";
 import { JOTO_BLANKS_CATALOGUE_DRAFT } from "./jotoBlanksCatalogDraft";
 import { JOTO_DRINKWARE_CATALOGUE_DRAFT } from "./jotoDrinkwareCatalogDraft";
+import { JOTO_GIFTS_CATALOGUE } from "./jotoGiftsCatalog";
 
 /** Pulls a real "from" unit price out of a quote function at its cheapest realistic configuration,
  *  for the shop-grid tile — same role applyHouseMargin(rawPrice) plays for banner/card/flyer above,
@@ -508,4 +509,8 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
   // See jotoDrinkwareCatalogDraft.ts's header. Supplier SKUs/costs are intentionally NOT spread
   // in here — see jotoDrinkwareInternalOnly.ts.
   ...JOTO_DRINKWARE_CATALOGUE_DRAFT,
+
+  // --- Joto coasters, kitchen & gift blanks (batch 3, published 2026-10-21) — see jotoGiftsCatalog.ts.
+  // Supplier costs/SKUs are intentionally NOT spread in here — see jotoGiftsInternalOnly.ts.
+  ...JOTO_GIFTS_CATALOGUE,
 ];

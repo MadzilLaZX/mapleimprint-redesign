@@ -588,3 +588,56 @@ export const JOTO_DRINKWARE_COSTS_INTERNAL: { slug: string; costPricing: Supplie
     ],
   },
 ];
+
+// Batch 3 (2026-10-21) exact Joto costs + SKUs, same rules as JOTO_DRINKWARE_COSTS_INTERNAL.
+export const JOTO_DRINKWARE_BATCH3_INTERNAL: { slug: string; jotoSku: string; jotoTitle: string; costPricing: SupplierBundlePricing[] }[] = [
+  {
+    slug: "sublimation-flask-22oz-wide-mouth-straw-lid-pack-5",
+    jotoSku: "B-FSK-051-22-WH",
+    jotoTitle: "Pearl Coating™ 22oz Sublimation Stainless Steel Flask with Wide Mouth Straw Lid & Rotating Handle - Pack of 5",
+    costPricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 11.49, totalCad: 57.45 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 10.99, totalCad: 274.75 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 9.99, totalCad: 499.5 },
+          { bundleCount: 20, totalItems: 100, perItemCad: 8.99, totalCad: 899 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-flask-22oz-straw-lid-handle-pack-5",
+    jotoSku: "BE-FSK-013-22-BK / -WH (Black, White, Royal Blue, Mint Green)",
+    jotoTitle: "Engraving 22oz/650ml Flask w/ Wide Mouth, Straw, Lid & Handle - Pack of 5",
+    costPricing: [
+      {
+        sellUnit: "pack",
+        itemsPerBundle: 5,
+        tiers: [
+          { bundleCount: 1, totalItems: 5, perItemCad: 10.5, totalCad: 52.5 },
+          { bundleCount: 3, totalItems: 15, perItemCad: 10.19, totalCad: 152.85 },
+          { bundleCount: 5, totalItems: 25, perItemCad: 9.88, totalCad: 247 },
+          { bundleCount: 10, totalItems: 50, perItemCad: 9.58, totalCad: 479 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "engraving-wine-cup-12oz-stainless",
+    jotoSku: "BE-MUG-014-12-RB (Royal Blue) / Mint Green",
+    jotoTitle: "Engraving Blank 12oz/360ml Stainless Steel Wine Cup",
+    costPricing: [
+      {
+        sellUnit: "unit",
+        itemsPerBundle: 1,
+        regularPriceCad: 54.95,
+        tiers: [
+          { bundleCount: 1, totalItems: 1, perItemCad: null, totalCad: 39.95 },
+        ],
+      },
+    ],
+  },
+];
