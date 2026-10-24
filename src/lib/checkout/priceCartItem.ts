@@ -99,8 +99,11 @@ export async function priceCartItem(
     // Price-listed print products are re-priced from the catalogue's own tiers (pricing/
     // priceList.ts) — the stored snapshot price is never what gets charged for these.
     const listed = getProduct(snapshot.categorySlug, snapshot.subcategorySlug, snapshot.productSlug);
-    if (listed?.houseProductKind === "price-list") {
-      const quote = listed.studioCanvas && listed.status !== "draft" ? quotePriceList(listed, snapshot.totalQuantity) : null;
+    if (!listed || listed.status === "draft") {
+      return { ok: false, cartItemId: item.id, reason: "This product is no longer available." };
+    }
+    if (listed.houseProductKind === "price-list") {
+      const quote = listed.studioCanvas ? quotePriceList(listed, snapshot.totalQuantity) : null;
       if (!quote) {
         return { ok: false, cartItemId: item.id, reason: "This item can't be checked out at this quantity." };
       }

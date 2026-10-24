@@ -31,10 +31,13 @@ export async function POST(request: Request) {
   // Price-listed print products: the price and the canvas both come from the catalogue, never from
   // the request — priceCartItem re-prices these from the same tiers at checkout as well.
   const product = getProduct(input.categorySlug, input.subcategorySlug, input.productSlug);
-  if (product?.houseProductKind === "price-list") {
+  if (!product || product.status === "draft") {
+    return NextResponse.json({ error: "This product isn't available." }, { status: 400 });
+  }
+  if (product.houseProductKind === "price-list") {
     const canvas = product.studioCanvas;
     const quote = quotePriceList(product, input.totalQuantity);
-    if (!canvas || product.status === "draft") {
+    if (!canvas) {
       return NextResponse.json({ error: "This product can't be designed online yet." }, { status: 400 });
     }
     if (!quote) {
