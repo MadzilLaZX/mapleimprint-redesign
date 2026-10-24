@@ -478,7 +478,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
   const selectedObject = activeObjects.find((o) => o.id === selectedId) ?? null;
   const openSides = project?.sides.map((s) => s.sideType) ?? [];
   const hasBackPhoto = Boolean(project?.mockupImages.back);
-  const decorationProfile = project ? decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto) : null;
+  const decorationProfile = project ? decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto, project.productSlug) : null;
   const profile = decorationProfile?.locations ?? [];
   const activeLocation = profile.find((l) => l.id === activeSide) ?? null;
   const zoom = zoomByLocation[activeSide] ?? 1;
@@ -1530,7 +1530,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
               title={{ designs: "Designs", uploads: "Uploads", text: "Text", graphics: "Graphics", shapes: "Shapes", qr: "QR Code", "my-stuff": "My Stuff" }[activeTool]}
               onClose={() => setActiveTool(null)}
             >
-              {activeTool === "designs" && <DesignsPanel family={decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).family} onApplyTemplate={applyTemplate} />}
+              {activeTool === "designs" && <DesignsPanel family={decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto, project.productSlug).family} onApplyTemplate={applyTemplate} />}
               {activeTool === "uploads" && (
                 <UploadsPanel
                   onTriggerUpload={() => fileInputRef.current?.click()}

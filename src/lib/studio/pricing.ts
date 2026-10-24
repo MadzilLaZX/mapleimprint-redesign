@@ -90,7 +90,7 @@ function round2(n: number): number {
 }
 
 function chartFor(product: CatalogueProduct): ChartTier[] | null {
-  const family: ProductFamily = familyFor(product.categorySlug, product.subcategorySlug);
+  const family: ProductFamily = familyFor(product.categorySlug, product.subcategorySlug, product.slug);
   if (family === "headwear") return HEADWEAR_CHART;
   if (family === "mug") return null; // mugs use MUG_CHART's mode-based shape, not this additive-location shape
   if (family === "tee" || family === "hoodie" || family === "joggers" || family === "accessory") return APPAREL_CHART;

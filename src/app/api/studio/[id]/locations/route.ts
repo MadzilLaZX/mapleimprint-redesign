@@ -29,13 +29,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { data: project, error: projectError } = await supabase
     .from("DesignProject")
-    .select("categorySlug, subcategorySlug, mockupImages")
+    .select("categorySlug, subcategorySlug, productSlug, mockupImages")
     .eq("id", id)
     .maybeSingle();
   if (projectError || !project) return NextResponse.json({ error: "Design not found." }, { status: 404 });
 
   const hasBackPhoto = Boolean((project.mockupImages as Record<string, string> | null)?.back);
-  const profile = decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto);
+  const profile = decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto, project.productSlug);
   const location = profile.locations.find((l) => l.id === body.sideType);
   if (!location || location.status === "UNAVAILABLE") {
     return NextResponse.json({ error: "That location isn't available for this product." }, { status: 400 });
@@ -48,6 +48,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .eq("sideType", body.sideType)
     .maybeSingle();
   if (existing) return NextResponse.json({ ok: true, alreadyExists: true });
+
+  // Custom-size sides take their real size from the product at project creation (/api/studio) —
+  // PRINT_AREAS only holds placeholders for them, so they can't be added lazily here.
+  if (body.sideType === "banner-face" || body.sideType === "print-front" || body.sideType === "print-back") {
+    return NextResponse.json({ error: "That location isn't available for this product." }, { status: 400 });
+  }
 
   const area = PRINT_AREAS[body.sideType];
   const { error: insertError } = await supabase.from("DesignSide").insert({

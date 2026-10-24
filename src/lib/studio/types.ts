@@ -42,6 +42,11 @@ export type DesignSideType =
   // dimensions live on this side's own DesignSide row and are threaded through explicitly wherever
   // geometry is computed (see printAreaPixelBox's override param).
   | "banner-face"
+  // Price-listed print products (src/lib/houseProducts/printCatalogue.ts) — the front/back of a
+  // flat piece whose size comes from that product's own studioCanvas, stored on its DesignSide row
+  // exactly like banner-face, so one pair of types covers every card/flyer/label/menu size.
+  | "print-front"
+  | "print-back"
   // Stickers/labels (die-cut, kiss-cut, roll labels) — a real orderable house product
   // (src/lib/houseProducts/catalogue.ts) with no photography involved, same "flat print piece on
   // its own schematic" pattern as card-front/flyer-front/mug-wrap.

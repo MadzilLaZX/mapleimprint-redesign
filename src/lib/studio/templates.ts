@@ -5391,6 +5391,8 @@ const RECOMMENDED_CATEGORY_ORDER: Record<ProductFamily, TemplateCategory[]> = {
   // own template sets were authored.
   banner: ["grand-opening", "sale", "announcement", "qr-cta"],
   sticker: ["business", "minimal", "events", "fundraisers", "streetwear"],
+  // Price-listed print products use the banner set (see templatesFor) — same order.
+  print: ["grand-opening", "sale", "announcement", "qr-cta"],
 };
 
 /** Templates store a Maple asset id in `content` on image seeds (module-load time has no async
@@ -5416,9 +5418,15 @@ export async function resolveTemplateAssets(objects: TemplateObjectSeed[]): Prom
   );
 }
 
+/** The "print" family (price-listed print products on their own custom-size canvas) has no
+ *  templates of its own yet — it borrows the banner set, which is authored centered with generous
+ *  margins precisely so it holds up at any aspect ratio (see the VINYL BANNER section above). */
+const TEMPLATE_FAMILY_FALLBACK: Partial<Record<ProductFamily, ProductFamily>> = { print: "banner" };
+
 export function templatesFor(family: ProductFamily, productSubtype?: string): DesignTemplate[] {
+  const families = [family, TEMPLATE_FAMILY_FALLBACK[family]].filter(Boolean) as ProductFamily[];
   return MAPLE_TEMPLATES.filter((t) => {
-    if (!t.productFamilies.includes(family) || t.status !== "published") return false;
+    if (!t.productFamilies.some((f) => families.includes(f)) || t.status !== "published") return false;
     if (productSubtype && t.productSubtypes && t.productSubtypes.length > 0) return t.productSubtypes.includes(productSubtype);
     return true;
   });

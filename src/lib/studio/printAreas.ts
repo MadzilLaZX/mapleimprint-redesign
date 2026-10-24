@@ -61,6 +61,11 @@ export const PRINT_AREAS: Record<DesignSideType, { widthIn: number; heightIn: nu
   // entry exists only so the Record stays total and the /api/studio route has a sane fallback if a
   // caller somehow omits the override.
   "banner-face": { widthIn: 24, heightIn: 36, safeMarginIn: 0.5, confirmed: false },
+  // Placeholders, same as banner-face — a price-listed print product's real size always comes from
+  // its DesignSide row (its catalogue studioCanvas). 0.125in is the safe inset every one of those
+  // products specifies.
+  "print-front": { widthIn: 8.5, heightIn: 11, safeMarginIn: 0.125, confirmed: false },
+  "print-back": { widthIn: 8.5, heightIn: 11, safeMarginIn: 0.125, confirmed: false },
   // Representative sticker size — a real die-cut/kiss-cut product exists (src/lib/houseProducts/
   // pricing/stickers.ts) across many real shapes/sizes; 3x3in square is the common middle of that
   // range, used only for the editing canvas's own box (the customer's actual chosen size prints
@@ -143,6 +148,9 @@ export const PLACEMENT_GEOMETRY: Record<DesignSideType, PlacementGeometry> = {
   // override is supplied, which it always is for "banner-face"). Kept only so this Record stays
   // total.
   "banner-face": { xFrac: 0.075, yFrac: 0.075, widthFrac: 0.85, heightFrac: 0.85, rotationDeg: 0 },
+  // Placeholders like banner-face — the real box is always computed from the side's own size.
+  "print-front": { xFrac: 0.075, yFrac: 0.075, widthFrac: 0.85, heightFrac: 0.85, rotationDeg: 0 },
+  "print-back": { xFrac: 0.075, yFrac: 0.075, widthFrac: 0.85, heightFrac: 0.85, rotationDeg: 0 },
   // Square box at the sticker-face PRINT_AREAS real aspect ratio (3x3in = 1:1), same centered
   // "generous but bounded" sizing as card-front/poster-front above.
   "sticker-face": { xFrac: 0.075, yFrac: 0.16, widthFrac: 0.85, heightFrac: 0.68, rotationDeg: 0 },
@@ -194,6 +202,8 @@ export type BackgroundKind =
   | "poster-flat"
   | "mug-wrap-flat"
   | "banner-flat"
+  | "print-front-flat"
+  | "print-back-flat"
   | "sticker-face-flat";
 
 /** What kind of background a location's viewType calls for — this is what let Section 20's
@@ -236,6 +246,10 @@ export function backgroundKindFor(viewType: LocationViewType): BackgroundKind {
       return "mug-wrap-flat";
     case "BANNER_FLAT":
       return "banner-flat";
+    case "PRINT_FRONT_FLAT":
+      return "print-front-flat";
+    case "PRINT_BACK_FLAT":
+      return "print-back-flat";
     case "STICKER_FLAT":
       return "sticker-face-flat";
     default:
@@ -255,15 +269,15 @@ export function printAreaPixelBox(
   return { width: g.widthFrac * CANVAS_NATURAL_WIDTH, height: g.heightFrac * CANVAS_NATURAL_HEIGHT };
 }
 
-/** Resolves a project's real per-side dimensions for the one DesignSideType that varies per order
- *  — "banner-face" — or undefined for every other location (which should keep using the fixed
+/** Resolves a project's real per-side dimensions for the DesignSideTypes that vary per order —
+ *  "banner-face" and the price-listed "print-front"/"print-back" — or undefined for every other location (which should keep using the fixed
  *  PRINT_AREAS/PLACEMENT_GEOMETRY constants). Shared by every printAreaPixelBox/CanvasStage caller
  *  that has access to a DesignProjectRecord's `sides`, so the override logic lives in one place. */
 export function printAreaOverrideFor(
   sides: { sideType: DesignSideType; printAreaWidth: number; printAreaHeight: number }[],
   location: DesignSideType,
 ): { widthIn: number; heightIn: number } | undefined {
-  if (location !== "banner-face") return undefined;
+  if (location !== "banner-face" && location !== "print-front" && location !== "print-back") return undefined;
   const side = sides.find((s) => s.sideType === location);
   return side ? { widthIn: side.printAreaWidth, heightIn: side.printAreaHeight } : undefined;
 }
@@ -426,6 +440,10 @@ export function backgroundUrlFor(
       return printPieceSchematicSvg("Mug Wrap");
     case "banner-flat":
       return printPieceSchematicSvg("Vinyl Banner");
+    case "print-front-flat":
+      return printPieceSchematicSvg("Front");
+    case "print-back-flat":
+      return printPieceSchematicSvg("Back");
     case "sticker-face-flat":
       return printPieceSchematicSvg("Custom Sticker");
   }

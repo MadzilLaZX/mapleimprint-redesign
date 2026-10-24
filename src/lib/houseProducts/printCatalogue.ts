@@ -4,9 +4,11 @@
 // verbatim from the sheet, not re-margined. Category/subcategory placement is ours (the sheet's
 // "Category" column is a coarser taxonomy than the site nav).
 //
-// All entries use houseProductKind "price-list" (PriceListConfigurator): orders go through the
-// quote flow, not card checkout — Studio templates and server-side checkout pricing for these
-// are a planned follow-up (see the sheet's Design Tool tab, "developer setup required").
+// All entries use houseProductKind "price-list" (PriceListConfigurator). Entries with a
+// `studioCanvas` (from the sheet's Design Tool tab) can be designed in Studio and paid by card:
+// /api/studio sets their price server-side and priceCartItem re-prices them from these tiers at
+// checkout. The rest are ordered by quote — no price (MI-027), no Design Tool row (MI-045 to 047,
+// MI-049, MI-050), multi-page (MI-036, MI-039) or an unapproved dieline (MI-041).
 //
 // Sheet gaps, handled honestly rather than guessed:
 // - MI-027 Table Tents has no Pricing rows — priceTiers: null, shown as price on request.
@@ -33,6 +35,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3.5\" × 2\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Trim square" },
+    studioCanvas: { kind: "print", widthIn: 3.5, heightIn: 2, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Trim square" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.35, orderTotal: 35 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.29, orderTotal: 58 },
@@ -57,6 +60,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "8.5\" × 11\"", material: "100lb gloss text", printedSides: "Single-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 8.5, heightIn: 11, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.65, orderTotal: 65 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.535, orderTotal: 107 },
@@ -81,6 +85,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "6\" × 4\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 6, heightIn: 4, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.45, orderTotal: 45 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.37, orderTotal: 74 },
@@ -105,6 +110,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "2\" × 2\"", material: "White matte adhesive paper", printedSides: "Single-sided", finish: "Precut circle sheets" },
+    studioCanvas: { kind: "print", widthIn: 2, heightIn: 2, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Circular cut path locked; artwork clipped to circle" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.39, orderTotal: 39 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.32, orderTotal: 64 },
@@ -129,6 +135,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "8.5\" × 11\"", material: "100lb gloss text", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 8.5, heightIn: 11, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.85, orderTotal: 85 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.7, orderTotal: 140 },
@@ -153,6 +160,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "11\" × 8.5\"", material: "100lb gloss text", printedSides: "Double-sided", finish: "Letter fold" },
+    studioCanvas: { kind: "print", widthIn: 11, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Tri-fold: flat 11x8.5; provisional panel widths 3.625 / 3.6875 / 3.6875; confirm tuck panel orientation" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 1.25, orderTotal: 125 },
       { minQty: 200, maxQty: 499, pricePerUnit: 1.03, orderTotal: 206 },
@@ -177,6 +185,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3.5\" × 2\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 3.5, heightIn: 2, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.39, orderTotal: 39 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.32, orderTotal: 64 },
@@ -201,6 +210,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3.5\" × 8.5\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 3.5, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.49, orderTotal: 49 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.405, orderTotal: 81 },
@@ -225,6 +235,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "11\" × 17\"", material: "100lb gloss text", printedSides: "Single-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 11, heightIn: 17, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Flat trim" },
     priceTiers: [
       { minQty: 1, maxQty: 4, pricePerUnit: 12, orderTotal: 12 },
       { minQty: 5, maxQty: 9, pricePerUnit: 9.2, orderTotal: 46 },
@@ -249,6 +260,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "5\" × 7\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "A7 white envelope included" },
+    studioCanvas: { kind: "print", widthIn: 5, heightIn: 7, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "A7 white envelope included" },
     priceTiers: [
       { minQty: 25, maxQty: 49, pricePerUnit: 1.96, orderTotal: 49 },
       { minQty: 50, maxQty: 124, pricePerUnit: 1.62, orderTotal: 81 },
@@ -273,6 +285,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "6\" × 4\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 6, heightIn: 4, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.45, orderTotal: 45 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.37, orderTotal: 74 },
@@ -297,6 +310,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3.5\" × 2\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 3.5, heightIn: 2, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.39, orderTotal: 39 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.32, orderTotal: 64 },
@@ -321,6 +335,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "5.5\" × 8.5\"", material: "100lb gloss text", printedSides: "Single-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 5.5, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.45, orderTotal: 45 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.37, orderTotal: 74 },
@@ -345,6 +360,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3\" × 2\"", material: "White matte adhesive paper", printedSides: "Single-sided", finish: "Precut rectangle sheets" },
+    studioCanvas: { kind: "print", widthIn: 3, heightIn: 2, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Precut rectangle sheets" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.45, orderTotal: 45 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.37, orderTotal: 74 },
@@ -369,6 +385,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "8.5\" × 3.5\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 8.5, heightIn: 3.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.59, orderTotal: 59 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.485, orderTotal: 97 },
@@ -393,6 +410,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "8.5\" × 11\"", material: "24lb uncoated bond", printedSides: "Single-sided", finish: "No bleed" },
+    studioCanvas: { kind: "print", widthIn: 8.5, heightIn: 11, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "No bleed" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.39, orderTotal: 39 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.32, orderTotal: 64 },
@@ -417,6 +435,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "11\" × 8.5\"", material: "100lb gloss text", printedSides: "Double-sided", finish: "Letter fold" },
+    studioCanvas: { kind: "print", widthIn: 11, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Letter fold" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 1.25, orderTotal: 125 },
       { minQty: 200, maxQty: 499, pricePerUnit: 1.03, orderTotal: 206 },
@@ -441,6 +460,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "9.5\" × 4.125\"", material: "White number 10 envelope", printedSides: "Single-sided", finish: "As supplied" },
+    studioCanvas: { kind: "print", widthIn: 9.5, heightIn: 4.125, bleedIn: 0, safeIn: 0.125, surfaces: 1, guide: "As supplied" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.65, orderTotal: 65 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.535, orderTotal: 107 },
@@ -465,6 +485,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "10\" × 7\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "Score fold to 5x7; A7 envelope" },
+    studioCanvas: { kind: "print", widthIn: 10, heightIn: 7, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Score fold to 5x7; A7 envelope" },
     priceTiers: [
       { minQty: 25, maxQty: 49, pricePerUnit: 2.76, orderTotal: 69 },
       { minQty: 50, maxQty: 124, pricePerUnit: 2.28, orderTotal: 114 },
@@ -489,6 +510,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "1.5\" × 1.5\"", material: "White matte adhesive paper", printedSides: "Single-sided", finish: "Precut circles" },
+    studioCanvas: { kind: "print", widthIn: 1.5, heightIn: 1.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Circular cut path locked; artwork clipped to circle" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.29, orderTotal: 29 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.24, orderTotal: 48 },
@@ -513,6 +535,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "2\" × 7\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 2, heightIn: 7, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.49, orderTotal: 49 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.405, orderTotal: 81 },
@@ -537,6 +560,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "11\" × 8.5\"", material: "100lb gloss text", printedSides: "Double-sided", finish: "Half fold to 5.5x8.5" },
+    studioCanvas: { kind: "print", widthIn: 11, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Half fold to 5.5x8.5" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 1.15, orderTotal: 115 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.95, orderTotal: 190 },
@@ -561,6 +585,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "6\" × 4\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 6, heightIn: 4, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.45, orderTotal: 45 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.37, orderTotal: 74 },
@@ -585,6 +610,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "2.625\" × 1\"", material: "White matte adhesive paper", printedSides: "Single-sided", finish: "Precut rectangles" },
+    studioCanvas: { kind: "print", widthIn: 2.625, heightIn: 1, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Precut rectangles" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.25, orderTotal: 25 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.205, orderTotal: 41 },
@@ -609,6 +635,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "5.5\" × 8.5\"", material: "24lb bond; chipboard back", printedSides: "Single-sided", finish: "50 sheets per pad; top glue" },
+    studioCanvas: { kind: "print", widthIn: 5.5, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "50 sheets per pad; top glue" },
     priceTiers: [
       { minQty: 10, maxQty: 19, pricePerUnit: 8.9, orderTotal: 89 },
       { minQty: 20, maxQty: 49, pricePerUnit: 7.35, orderTotal: 147 },
@@ -633,6 +660,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "2\" × 3.5\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "3mm hole; string excluded" },
+    studioCanvas: { kind: "print", widthIn: 2, heightIn: 3.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "3mm hole; string excluded" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.59, orderTotal: 59 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.485, orderTotal: 97 },
@@ -678,6 +706,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "4\" × 9\"", material: "14pt uncoated cardstock", printedSides: "Single-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 4, heightIn: 9, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Flat trim" },
     priceTiers: [
       { minQty: 50, maxQty: 99, pricePerUnit: 1.18, orderTotal: 59 },
       { minQty: 100, maxQty: 249, pricePerUnit: 0.97, orderTotal: 97 },
@@ -702,6 +731,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "5\" × 3.5\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "White response envelope included" },
+    studioCanvas: { kind: "print", widthIn: 5, heightIn: 3.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "White response envelope included" },
     priceTiers: [
       { minQty: 50, maxQty: 99, pricePerUnit: 1.18, orderTotal: 59 },
       { minQty: 100, maxQty: 249, pricePerUnit: 0.97, orderTotal: 97 },
@@ -726,6 +756,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "6\" × 4\"", material: "14pt uncoated cardstock", printedSides: "Double-sided", finish: "A6 white envelope included" },
+    studioCanvas: { kind: "print", widthIn: 6, heightIn: 4, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "A6 white envelope included" },
     priceTiers: [
       { minQty: 50, maxQty: 99, pricePerUnit: 1.3, orderTotal: 65 },
       { minQty: 100, maxQty: 249, pricePerUnit: 1.07, orderTotal: 107 },
@@ -750,6 +781,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3.5\" × 4\"", material: "14pt uncoated cardstock", printedSides: "Single-sided", finish: "Score fold to 3.5x2" },
+    studioCanvas: { kind: "print", widthIn: 3.5, heightIn: 4, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Score fold to 3.5x2" },
     priceTiers: [
       { minQty: 50, maxQty: 99, pricePerUnit: 0.98, orderTotal: 49 },
       { minQty: 100, maxQty: 249, pricePerUnit: 0.81, orderTotal: 81 },
@@ -774,6 +806,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "5.5\" × 2\"", material: "14pt uncoated cardstock", printedSides: "Single-sided", finish: "Flat; sequential number included" },
+    studioCanvas: { kind: "print", widthIn: 5.5, heightIn: 2, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Flat; sequential number included" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.59, orderTotal: 59 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.485, orderTotal: 97 },
@@ -798,6 +831,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "11\" × 8.5\"", material: "80lb uncoated cover", printedSides: "Single-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 11, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Flat trim" },
     priceTiers: [
       { minQty: 25, maxQty: 49, pricePerUnit: 1.8, orderTotal: 45 },
       { minQty: 50, maxQty: 124, pricePerUnit: 1.48, orderTotal: 74 },
@@ -822,6 +856,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3.5\" × 8.5\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Supplier die-cut hole and slit" },
+    studioCanvas: { kind: "print", widthIn: 3.5, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Supplier die-cut hole and slit" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.95, orderTotal: 95 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.785, orderTotal: 157 },
@@ -846,6 +881,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "11\" × 8.5\"", material: "100lb gloss text", printedSides: "Double-sided", finish: "Three equal accordion panels" },
+    studioCanvas: { kind: "print", widthIn: 11, heightIn: 8.5, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Three equal accordion panels" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 1.25, orderTotal: 125 },
       { minQty: 200, maxQty: 499, pricePerUnit: 1.03, orderTotal: 206 },
@@ -894,6 +930,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "17\" × 11\"", material: "70lb uncoated text", printedSides: "Single-sided", finish: "Flat trim" },
+    studioCanvas: { kind: "print", widthIn: 17, heightIn: 11, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Flat trim" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.89, orderTotal: 89 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.735, orderTotal: 147 },
@@ -918,6 +955,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "6\" × 4\"", material: "14pt matte cardstock", printedSides: "Double-sided", finish: "Flat card; stand excluded" },
+    studioCanvas: { kind: "print", widthIn: 6, heightIn: 4, bleedIn: 0.125, safeIn: 0.125, surfaces: 2, guide: "Flat card; stand excluded" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.49, orderTotal: 49 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.405, orderTotal: 81 },
@@ -966,6 +1004,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "8.5\" × 11\"", material: "2-part carbonless white/yellow", printedSides: "Single-sided", finish: "Black print; glued sets" },
+    studioCanvas: { kind: "print", widthIn: 8.5, heightIn: 11, bleedIn: 0, safeIn: 0.125, surfaces: 1, guide: "Black print; glued sets" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.89, orderTotal: 89 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.735, orderTotal: 147 },
@@ -1014,6 +1053,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "3\" × 3\"", material: "White printable vinyl", printedSides: "Single-sided", finish: "Circle die-cut; laminate" },
+    studioCanvas: { kind: "print", widthIn: 3, heightIn: 3, bleedIn: 0.125, safeIn: 0.125, surfaces: 1, guide: "Circle die-cut; laminate" },
     priceTiers: [
       { minQty: 100, maxQty: 199, pricePerUnit: 0.79, orderTotal: 79 },
       { minQty: 200, maxQty: 499, pricePerUnit: 0.65, orderTotal: 130 },
@@ -1038,6 +1078,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "2\" × 2\"", material: "White paper roll stock", printedSides: "Single-sided", finish: "Circle labels; 3-inch core" },
+    studioCanvas: { kind: "print", widthIn: 2, heightIn: 2, bleedIn: 0, safeIn: 0.125, surfaces: 1, guide: "Circular cut path locked; artwork clipped to circle" },
     priceTiers: [
       { minQty: 500, maxQty: 999, pricePerUnit: 0.298, orderTotal: 149 },
       { minQty: 1000, maxQty: 2499, pricePerUnit: 0.246, orderTotal: 246 },
@@ -1062,6 +1103,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "72\" × 24\"", finish: "Hem and grommets; ropes excluded" },
+    studioCanvas: { kind: "banner", widthIn: 72, heightIn: 24, bleedIn: 0.25, safeIn: 0.5, surfaces: 1, guide: "Hem and grommets; ropes excluded" },
     priceTiers: [
       { minQty: 1, maxQty: 4, pricePerUnit: 99, orderTotal: 99 },
       { minQty: 5, maxQty: 9, pricePerUnit: 75.2, orderTotal: 376 },
@@ -1155,6 +1197,7 @@ export const PRINT_CATALOGUE: CatalogueProduct[] = [
     status: "published",
     houseProductKind: "price-list",
     printSpecs: { sizeLabel: "Size", size: "12\" × 12\"", material: "White removable window vinyl", printedSides: "Single-sided", finish: "Square cut; outside applied" },
+    studioCanvas: { kind: "banner", widthIn: 12, heightIn: 12, bleedIn: 0.25, safeIn: 0.5, surfaces: 1, guide: "Square cut; outside applied" },
     priceTiers: [
       { minQty: 1, maxQty: 4, pricePerUnit: 29, orderTotal: 29 },
       { minQty: 5, maxQty: 9, pricePerUnit: 22, orderTotal: 110 },

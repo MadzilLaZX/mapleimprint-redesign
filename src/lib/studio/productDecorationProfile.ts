@@ -16,10 +16,11 @@
 // that hasn't been verified — see printAreas.ts's PLACEMENT_PREVIEW_GEOMETRY comment.
 
 import type { DesignSideType } from "./types";
+import { PRINT_CATALOGUE } from "@/lib/houseProducts/printCatalogue";
 
 export type SupportStatus = "STANDARD" | "REVIEW_REQUIRED" | "UNAVAILABLE";
 
-export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "postcard" | "flyer" | "poster" | "mug" | "banner" | "sticker";
+export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "postcard" | "flyer" | "poster" | "mug" | "banner" | "sticker" | "print";
 
 // Section 20: how a location's editing view is constructed, independent of its SupportStatus.
 // Status answers "can the customer design this, and is it confirmed for production"; viewType
@@ -49,6 +50,8 @@ export type LocationViewType =
   | "POSTER_FLAT"
   | "MUG_WRAP_FLAT"
   | "BANNER_FLAT"
+  | "PRINT_FRONT_FLAT"
+  | "PRINT_BACK_FLAT"
   | "STICKER_FLAT";
 
 export interface DecorationLocation {
@@ -73,7 +76,23 @@ export interface ProductDecorationProfile {
  *  (src/lib/generated/products.json). Anything not explicitly a hoodie/jogger/headwear/accessory
  *  falls back to "tee" — a torso garment with a conventional front/back/chest layout, which is
  *  true for every remaining subcategory (polos, button-ups, sweaters, workwear shirts, etc). */
-export function familyFor(categorySlug: string, subcategorySlug: string): ProductFamily {
+/** Price-listed print products designed on their own custom-size canvas (printCatalogue.ts
+ *  entries with studioCanvas.kind "print"), keyed by category/subcategory/product slug. They share
+ *  subcategories with other products (Standard Business Cards sits beside Business Cards), so the
+ *  product slug — not the subcategory — is what picks the "print" family for them. */
+const PRINT_FAMILY_SURFACES = new Map(
+  PRINT_CATALOGUE.filter((p) => p.studioCanvas?.kind === "print").map((p) => [
+    `${p.categorySlug}/${p.subcategorySlug}/${p.slug}`,
+    p.studioCanvas!.surfaces,
+  ]),
+);
+
+function printSurfacesFor(categorySlug: string, subcategorySlug: string, productSlug?: string): 1 | 2 | undefined {
+  return productSlug ? PRINT_FAMILY_SURFACES.get(`${categorySlug}/${subcategorySlug}/${productSlug}`) : undefined;
+}
+
+export function familyFor(categorySlug: string, subcategorySlug: string, productSlug?: string): ProductFamily {
+  if (printSurfacesFor(categorySlug, subcategorySlug, productSlug)) return "print";
   if (subcategorySlug === "hoodies-sweatshirts" || subcategorySlug === "jackets-outerwear") return "hoodie";
   if (subcategorySlug === "joggers-bottoms") return "joggers";
   if (subcategorySlug === "caps" || subcategorySlug === "beanies-toques") return "headwear";
@@ -242,6 +261,14 @@ const STICKER_LOCATIONS: DecorationLocation[] = [
   { id: "sticker-face", label: "Sticker", group: "core", status: "STANDARD", viewType: "STICKER_FLAT", usesPlacementPreview: true, requiresManualReview: false, productionNotes: "Shape and size confirmed against the customer's order before production." },
 ];
 
+// Price-listed print products: the sheet price covers exactly the sides the product lists, so both
+// are STANDARD and created up front, and decorationProfileFor drops "print-back" for single-sided
+// products — a side the customer didn't pay for is never offered.
+const PRINT_LOCATIONS: DecorationLocation[] = [
+  { id: "print-front", label: "Front", group: "core", status: "STANDARD", viewType: "PRINT_FRONT_FLAT", usesPlacementPreview: true, requiresManualReview: false },
+  { id: "print-back", label: "Back", group: "core", status: "STANDARD", viewType: "PRINT_BACK_FLAT", usesPlacementPreview: true, requiresManualReview: false },
+];
+
 const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   tee: TEE_LOCATIONS,
   hoodie: HOODIE_LOCATIONS,
@@ -255,6 +282,7 @@ const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   mug: MUG_LOCATIONS,
   banner: BANNER_LOCATIONS,
   sticker: STICKER_LOCATIONS,
+  print: PRINT_LOCATIONS,
 };
 
 /** hasBackPhoto lets a specific product drop "back" from STANDARD even where the family default
@@ -262,8 +290,17 @@ const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
  *  only have a front photo). A dropped STANDARD "back" does not reappear as REVIEW_REQUIRED — if
  *  there's genuinely no back photo at all, offering a preview of it would still be a placement
  *  nobody can see mocked up. */
-export function decorationProfileFor(categorySlug: string, subcategorySlug: string, hasBackPhoto: boolean): ProductDecorationProfile {
-  const family = familyFor(categorySlug, subcategorySlug);
+export function decorationProfileFor(
+  categorySlug: string,
+  subcategorySlug: string,
+  hasBackPhoto: boolean,
+  productSlug?: string,
+): ProductDecorationProfile {
+  const family = familyFor(categorySlug, subcategorySlug, productSlug);
+  if (family === "print") {
+    const surfaces = printSurfacesFor(categorySlug, subcategorySlug, productSlug);
+    return { family, locations: surfaces === 2 ? PRINT_LOCATIONS : PRINT_LOCATIONS.filter((l) => l.id === "print-front") };
+  }
   const base = PROFILES[family];
   const locations = hasBackPhoto
     ? base
@@ -271,8 +308,13 @@ export function decorationProfileFor(categorySlug: string, subcategorySlug: stri
   return { family, locations };
 }
 
-export function standardLocationsFor(categorySlug: string, subcategorySlug: string, hasBackPhoto: boolean): DesignSideType[] {
-  return decorationProfileFor(categorySlug, subcategorySlug, hasBackPhoto)
+export function standardLocationsFor(
+  categorySlug: string,
+  subcategorySlug: string,
+  hasBackPhoto: boolean,
+  productSlug?: string,
+): DesignSideType[] {
+  return decorationProfileFor(categorySlug, subcategorySlug, hasBackPhoto, productSlug)
     .locations.filter((l) => l.status === "STANDARD")
     .map((l) => l.id);
 }

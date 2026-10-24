@@ -88,7 +88,7 @@ export function PreviewMode({
   const mockupUrl = primaryProfile ? backgroundUrlFor(primaryProfile.viewType, mockupImages, colourName, primaryProfile.usesPlacementPreview) : null;
 
   const hasBackPhoto = Boolean(mockupImages.back);
-  const family = decorationProfileFor(categorySlug, subcategorySlug, hasBackPhoto).family;
+  const family = decorationProfileFor(categorySlug, subcategorySlug, hasBackPhoto, productSlug).family;
   const canShow3D = Boolean(primaryLocation) && !FAMILIES_WITHOUT_3D.includes(family);
   const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
   const flatPrintAreaIn = primaryLocation

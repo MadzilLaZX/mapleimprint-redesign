@@ -123,6 +123,19 @@ export interface CatalogueProduct {
    *  (e.g. "MI-001") and its print specs, shown on the product page by PriceListConfigurator. */
   catalogueId?: string;
   printSpecs?: { sizeLabel: string; size: string; material?: string; printedSides?: string; finish?: string };
+  /** Set on price-list entries that can be designed in Studio and paid by card — the canvas from
+   *  the client catalogue's Design Tool tab. kind "print" opens Studio's custom-size print-front
+   *  (and print-back when surfaces is 2); kind "banner" reuses the per-order-size banner-face.
+   *  Absent means the product is ordered by quote only. */
+  studioCanvas?: {
+    kind: "print" | "banner";
+    widthIn: number;
+    heightIn: number;
+    bleedIn: number;
+    safeIn: number;
+    surfaces: 1 | 2;
+    guide: string;
+  };
   /** Customer (retail) bundle/quantity pricing, markup already applied — set only on
    *  jotoDrinkwareCatalogDraft.ts entries. The supplier cost it was derived from lives in
    *  jotoDrinkwareInternalOnly.ts. Its presence routes the product page to BundleConfigurator and

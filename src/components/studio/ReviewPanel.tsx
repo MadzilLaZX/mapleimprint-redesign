@@ -78,7 +78,7 @@ export function ReviewPanel({
   // StudioClient's FAMILIES_WITHOUT_3D) — real-garment-photo families (tee/hoodie/joggers/headwear)
   // keep the flat photo-backed preview here too, since a 3D box adds nothing over an actual photo.
   const hasBackPhoto = Boolean(project.mockupImages.back);
-  const family = decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto).family;
+  const family = decorationProfileFor(project.categorySlug, project.subcategorySlug, hasBackPhoto, project.productSlug).family;
   const canShow3D = !FAMILIES_WITHOUT_3D.includes(family);
 
   // One 2D/3D toggle per view group (front/back can each be flipped independently) rather than a

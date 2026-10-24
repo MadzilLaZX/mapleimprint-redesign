@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus } from "@phosphor-icons/react/dist/ssr";
+import { Minus, Plus, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import { QUOTE_PREFILL_KEY } from "@/components/cart/CartProvider";
 import { formatUnitPrice } from "@/lib/pricing/formatUnitPrice";
-import type { CatalogueProduct, ProductPriceTier } from "@/lib/products";
+import { getOrCreateClientSessionToken } from "@/lib/studio/session";
+import { priceListTierFor, quotePriceList } from "@/lib/houseProducts/pricing/priceList";
+import type { CatalogueProduct } from "@/lib/products";
 
 const MONEY = new Intl.NumberFormat("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -14,16 +16,11 @@ function money(n: number): string {
   return `$${MONEY.format(n)}`;
 }
 
-/** Unit price for a quantity is the tier it falls in — the same 1-D tier model the client's price
- *  list uses. Below the first tier's minQty there is no price (that's the minimum order). */
-function tierFor(tiers: ProductPriceTier[], qty: number): ProductPriceTier | null {
-  return tiers.find((t) => qty >= t.minQty && (t.maxQty === null || qty <= t.maxQty)) ?? null;
-}
-
 /** For the client's own price-listed print catalogue (src/lib/houseProducts/printCatalogue.ts):
- *  shows the list's specs and quantity tiers verbatim (MOQ, order total, per-unit price) and sends
- *  the chosen quantity into the quote flow — there's no Studio template or server-side checkout
- *  pricing for these yet, so they're ordered by quote, same handoff QuoteOnlyConfigurator uses. */
+ *  shows the list's specs and quantity tiers verbatim (MOQ, order total, per-unit price). Products
+ *  with a studioCanvas can be designed in Studio and paid by card — /api/studio stores the price
+ *  server-side from the same tiers (pricing/priceList.ts), so the snapshot sent below is only a
+ *  placeholder. Every product can also be ordered through the quote flow. */
 export function PriceListConfigurator({ product }: { product: CatalogueProduct }) {
   const router = useRouter();
   const tiers = product.priceTiers;
@@ -33,8 +30,12 @@ export function PriceListConfigurator({ product }: { product: CatalogueProduct }
   const qty = Math.max(moq, Math.floor(Number(qtyText)) || moq);
   const setQty = (next: number) => setQtyText(String(Math.max(moq, next)));
 
-  const tier = tiers ? tierFor(tiers, qty) : null;
-  const total = tier ? tier.pricePerUnit * qty : null;
+  const tier = tiers ? priceListTierFor(tiers, qty) : null;
+  const total = quotePriceList(product, qty)?.total ?? null;
+  const canvas = product.studioCanvas;
+  const canDesign = Boolean(canvas && total !== null);
+  const [startingStudio, setStartingStudio] = useState(false);
+  const [studioError, setStudioError] = useState<string | null>(null);
   // Tier pricing can make a slightly larger order cheaper overall (e.g. 199 vs 200) — point that out.
   const nextTier = tiers && tier ? tiers[tiers.indexOf(tier) + 1] : undefined;
   const nextTierTotal = nextTier ? nextTier.pricePerUnit * nextTier.minQty : null;
@@ -48,6 +49,56 @@ export function PriceListConfigurator({ product }: { product: CatalogueProduct }
         : `${product.name}${id} — ${qty} units, price on request`;
     window.sessionStorage.setItem(QUOTE_PREFILL_KEY, summary);
     router.push("/contact?type=quote");
+  }
+
+  async function handleDesign() {
+    if (!canvas || !tier || total === null || startingStudio) return;
+    setStartingStudio(true);
+    setStudioError(null);
+    try {
+      getOrCreateClientSessionToken();
+      const size = { widthIn: canvas.widthIn, heightIn: canvas.heightIn };
+      const sides =
+        canvas.kind === "banner"
+          ? [{ type: "banner-face", ...size }]
+          : canvas.surfaces === 2
+            ? [{ type: "print-front", ...size }, { type: "print-back", ...size }]
+            : [{ type: "print-front", ...size }];
+      const res = await fetch("/api/studio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          productSlug: product.slug,
+          categorySlug: product.categorySlug,
+          subcategorySlug: product.subcategorySlug,
+          productName: product.name,
+          brandName: product.brandName,
+          // No colour concept for a print piece — the stock reads sensibly wherever Studio/cart
+          // show "colour" (e.g. "Letter Flyers — 100lb gloss text").
+          colourName: product.printSpecs?.material ?? "Standard",
+          sizeBreakdown: [{ size: product.printSpecs?.printedSides ?? "Printed", qty }],
+          totalQuantity: qty,
+          pricingSnapshot: {
+            unitBasePrice: tier.pricePerUnit,
+            designFee: 0,
+            chartFirstLocationCost: 0,
+            chartAdditionalLocationCost: 0,
+            quantity: qty,
+            total,
+            printRuleVersion: product.printRuleVersion,
+          },
+          mockupImages: {},
+          sides,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Couldn't start your design.");
+      router.push(`/studio/${data.id}`);
+    } catch (err) {
+      setStudioError(err instanceof Error ? err.message : "Couldn't start your design. Please try again.");
+      setStartingStudio(false);
+    }
   }
 
   const specs = product.printSpecs;
@@ -157,19 +208,47 @@ export function PriceListConfigurator({ product }: { product: CatalogueProduct }
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl bg-white p-4">
-        <p className="text-sm text-ink-900/80">
-          Send us your order and artwork — we&apos;ll confirm your proof and final price within one
-          business day.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={handleRequest}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-maple-gradient px-6 py-3.5 text-sm font-semibold text-ink-950"
-      >
-        {tiers ? "Request this order" : "Request a quote"}
-      </button>
+      {canDesign ? (
+        <>
+          {studioError && (
+            <p className="mt-6 rounded-lg bg-crimson/10 px-3 py-2 text-xs font-medium text-crimson">{studioError}</p>
+          )}
+          <button
+            type="button"
+            onClick={handleDesign}
+            disabled={startingStudio}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-maple-gradient px-6 py-3.5 text-sm font-semibold text-ink-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {startingStudio ? <SpinnerGap className="size-4 animate-spin" weight="bold" /> : "Design & Order Online →"}
+          </button>
+          <p className="mt-2 text-center text-xs text-muted">
+            Add your logo, text or artwork in Maple Studio, then check out by card.
+          </p>
+          <button
+            type="button"
+            onClick={handleRequest}
+            className="mt-4 flex w-full items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-900"
+          >
+            Or request a quote with your own files
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="mt-6 rounded-2xl bg-white p-4">
+            <p className="text-sm text-ink-900/80">
+              Send us your order and artwork — we&apos;ll confirm your proof and final price within one
+              business day.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRequest}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-maple-gradient px-6 py-3.5 text-sm font-semibold text-ink-950"
+          >
+            {tiers ? "Request this order" : "Request a quote"}
+          </button>
+        </>
+      )}
     </div>
   );
 }

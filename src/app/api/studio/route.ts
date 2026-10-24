@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { createStudioClient } from "@/lib/studio/supabaseClient";
 import { PRINT_AREAS, PRINT_AREA_TEMPLATE_VERSION } from "@/lib/studio/printAreas";
 import { STUDIO_SESSION_COOKIE } from "@/lib/studio/session";
+import { getProduct } from "@/lib/products";
+import { quotePriceList } from "@/lib/houseProducts/pricing/priceList";
 import type { CreateDesignProjectInput } from "@/lib/studio/types";
 
 export async function POST(request: Request) {
@@ -24,6 +26,40 @@ export async function POST(request: Request) {
   }
   if (input.sides.length === 0) {
     return NextResponse.json({ error: "A design needs at least one side." }, { status: 400 });
+  }
+
+  // Price-listed print products: the price and the canvas both come from the catalogue, never from
+  // the request — priceCartItem re-prices these from the same tiers at checkout as well.
+  const product = getProduct(input.categorySlug, input.subcategorySlug, input.productSlug);
+  if (product?.houseProductKind === "price-list") {
+    const canvas = product.studioCanvas;
+    const quote = quotePriceList(product, input.totalQuantity);
+    if (!canvas || product.status === "draft") {
+      return NextResponse.json({ error: "This product can't be designed online yet." }, { status: 400 });
+    }
+    if (!quote) {
+      return NextResponse.json({ error: "That quantity isn't available for this product." }, { status: 400 });
+    }
+    const size = { widthIn: canvas.widthIn, heightIn: canvas.heightIn };
+    input = {
+      ...input,
+      productName: product.name,
+      brandName: product.brandName,
+      sizeBreakdown: [{ size: product.printSpecs?.printedSides ?? "Printed", qty: input.totalQuantity }],
+      pricingSnapshot: {
+        unitBasePrice: quote.unitPrice,
+        designFee: 0,
+        chartFirstLocationCost: 0,
+        chartAdditionalLocationCost: 0,
+        quantity: input.totalQuantity,
+        total: quote.total,
+        printRuleVersion: product.printRuleVersion,
+      },
+      sides:
+        canvas.kind === "banner"
+          ? [{ type: "banner-face", ...size }]
+          : [{ type: "print-front", ...size }, ...(canvas.surfaces === 2 ? [{ type: "print-back" as const, ...size }] : [])],
+    };
   }
 
   const supabase = createStudioClient(sessionToken);

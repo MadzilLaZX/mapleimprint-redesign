@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getProduct } from "@/lib/products";
 import { blankUnitPrice } from "@/lib/studio/pricing";
 import { bundleEntryFor, bundleUnitPrice, isValidBundleOption } from "@/lib/houseProducts/pricing/bundles";
+import { quotePriceList } from "@/lib/houseProducts/pricing/priceList";
 import type { DesignProjectRecord } from "@/lib/studio/types";
 
 /** The subset of CartItem the browser posts to the checkout endpoints — deliberately NOT the
@@ -93,7 +94,18 @@ export async function priceCartItem(
     const perUnitPrinting = pricing.chartFirstLocationCost + pricing.chartAdditionalLocationCost * (locations - 1);
     const blankSubtotal = pricing.unitBasePrice * snapshot.totalQuantity;
     const printingSubtotal = perUnitPrinting * snapshot.totalQuantity;
-    const total = blankSubtotal + pricing.designFee + printingSubtotal;
+    let total = blankSubtotal + pricing.designFee + printingSubtotal;
+
+    // Price-listed print products are re-priced from the catalogue's own tiers (pricing/
+    // priceList.ts) — the stored snapshot price is never what gets charged for these.
+    const listed = getProduct(snapshot.categorySlug, snapshot.subcategorySlug, snapshot.productSlug);
+    if (listed?.houseProductKind === "price-list") {
+      const quote = listed.studioCanvas && listed.status !== "draft" ? quotePriceList(listed, snapshot.totalQuantity) : null;
+      if (!quote) {
+        return { ok: false, cartItemId: item.id, reason: "This item can't be checked out at this quantity." };
+      }
+      total = quote.total;
+    }
 
     return {
       ok: true,
