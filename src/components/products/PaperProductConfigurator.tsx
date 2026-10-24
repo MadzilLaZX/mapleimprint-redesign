@@ -180,15 +180,8 @@ export function PaperProductConfigurator({
           colourName: stockLabel,
           sizeBreakdown: [{ size: sides === "double" ? "Double-sided" : "Single-sided", qty: quantity }],
           totalQuantity: quantity,
-          pricingSnapshot: {
-            unitBasePrice: quote.unitPriceCents / 100,
-            designFee: 0,
-            chartFirstLocationCost: 0,
-            chartAdditionalLocationCost: 0,
-            quantity,
-            total: quote.totalCents / 100,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: { stock, sides, roundedCorners },
           mockupImages: {},
           sides: sideTypes.map((type) => ({ type })),
         }),

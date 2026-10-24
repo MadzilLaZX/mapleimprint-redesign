@@ -3,6 +3,7 @@ import { getProduct } from "@/lib/products";
 import { blankUnitPrice } from "@/lib/studio/pricing";
 import { bundleEntryFor, bundleUnitPrice, isValidBundleOption } from "@/lib/houseProducts/pricing/bundles";
 import { quotePriceList } from "@/lib/houseProducts/pricing/priceList";
+import { verifyPricing } from "@/lib/studio/pricingSignature";
 import type { DesignProjectRecord } from "@/lib/studio/types";
 
 /** The subset of CartItem the browser posts to the checkout endpoints — deliberately NOT the
@@ -86,6 +87,30 @@ export async function priceCartItem(
     const pricing = snapshot.pricingSnapshot;
     if (!pricing || snapshot.totalQuantity < 1) {
       return { ok: false, cartItemId: item.id, reason: "This design has no valid pricing." };
+    }
+    // Only a price /api/studio computed from the catalogue and signed is ever charged (studio/
+    // serverPricing.ts, pricingSignature.ts). The signature is checked against THIS cart line's
+    // project id, so a signed price can't be edited or copied from another design.
+    const sizedSides = (pricing.sizedSideTypes ?? []).map((type) => {
+      const side = snapshot.sides.find((s) => s.sideType === type);
+      return { sideType: type, widthIn: side?.printAreaWidth ?? NaN, heightIn: side?.printAreaHeight ?? NaN };
+    });
+    const signed = verifyPricing(
+      {
+        projectId: item.designProjectId,
+        productSlug: snapshot.productSlug,
+        categorySlug: snapshot.categorySlug,
+        subcategorySlug: snapshot.subcategorySlug,
+        colourName: snapshot.colourName,
+        sizeBreakdown: snapshot.sizeBreakdown,
+        totalQuantity: snapshot.totalQuantity,
+        sizedSides,
+        pricing,
+      },
+      pricing.signature,
+    );
+    if (!signed || pricing.quantity !== snapshot.totalQuantity) {
+      return { ok: false, cartItemId: item.id, reason: "This design's price needs refreshing — please start it again from the product page." };
     }
     const locations = Math.max(
       1,

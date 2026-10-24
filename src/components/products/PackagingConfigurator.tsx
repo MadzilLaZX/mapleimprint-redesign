@@ -76,15 +76,8 @@ export function PackagingConfigurator({ product, kind }: { product: CataloguePro
           colourName: sizeLabel ?? product.name,
           sizeBreakdown: [{ size: sizeLabel ?? "Standard", qty: quantity }],
           totalQuantity: quantity,
-          pricingSnapshot: {
-            unitBasePrice: quote.unitPriceCents / 100,
-            designFee: 0,
-            chartFirstLocationCost: 0,
-            chartAdditionalLocationCost: 0,
-            quantity,
-            total: quote.totalCents / 100,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: { sizeKey: sizeKey || undefined, rollKey: isTape ? rollKey : undefined, weight: isTissue ? weight : undefined },
           mockupImages: {},
           sides: [{ type: "front" }],
         }),

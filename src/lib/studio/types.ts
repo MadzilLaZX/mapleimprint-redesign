@@ -202,6 +202,12 @@ export interface PricingSnapshot {
    *  the design changes; this is what gets frozen into the cart line at Review/Add to cart. */
   total: number;
   printRuleVersion: string;
+  /** Side types created with an explicit size at project creation — their sizes are covered by
+   *  `signature` (see studio/pricingSignature.ts). */
+  sizedSideTypes?: string[];
+  /** Server HMAC over this price and everything it depends on, set by /api/studio. priceCartItem
+   *  only charges a design whose signature still verifies (studio/pricingSignature.ts). */
+  signature?: string;
 }
 
 export interface SizeQty {
@@ -238,7 +244,9 @@ export interface CreateDesignProjectInput {
   colourName: string;
   sizeBreakdown: SizeQty[];
   totalQuantity: number;
-  pricingSnapshot: PricingSnapshot;
+  /** The customer's choices from the product page (stock, size, material, add-ons) — the price is
+   *  computed from these server-side; any price the browser sends is ignored. */
+  pricingOptions?: Record<string, unknown>;
   mockupImages: Partial<Record<DesignSideType, string>>;
   /** widthIn/heightIn are only meaningful for "banner-face" (its real size varies per order) —
    *  every other DesignSideType ignores them and falls back to PRINT_AREAS[type] server-side. */

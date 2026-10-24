@@ -27,6 +27,7 @@ import type { DrinkwareKind } from "@/lib/houseProducts/pricing/drinkware";
 import type { PromoKind } from "@/lib/houseProducts/pricing/promo";
 import type { SignKind } from "@/lib/houseProducts/pricing/signs";
 import type { PackagingKind } from "@/lib/houseProducts/pricing/packaging";
+import { allowedStickerShapesFor } from "@/lib/houseProducts/pricing/stickers";
 import type { CatalogueProduct } from "@/lib/products";
 
 const VISIBLE_COLOUR_COUNT = 8;
@@ -57,14 +58,9 @@ export function ProductCustomizer(props: {
     // Clear starts on Oval rather than Square/Circle — those two only ever got a White Plastic
     // price ladder (see stickers.ts's pricedMaterialsForShape comment), so defaulting to Square
     // here would silently fall back to White Plastic on load instead of actually showing Clear.
-    const allowedShapes =
-      product.subcategorySlug === "die-cut"
-        ? (["die-cut"] as const)
-        : product.subcategorySlug === "clear"
-          ? (["oval", "rectangle", "square", "circle"] as const)
-          : (["square", "circle", "rectangle", "oval"] as const);
+    const allowedShapes = allowedStickerShapesFor(product.subcategorySlug);
     const defaultMaterial = product.subcategorySlug === "clear" ? "clear-plastic" : undefined;
-    return <StickerConfigurator product={product} allowedShapes={[...allowedShapes]} defaultMaterial={defaultMaterial} />;
+    return <StickerConfigurator product={product} allowedShapes={allowedShapes} defaultMaterial={defaultMaterial} />;
   }
   if (kind === "label") {
     return <LabelConfigurator product={product} />;
@@ -206,15 +202,8 @@ function ApparelCustomizer({
           colourName: selectedColour,
           sizeBreakdown,
           totalQuantity: totalQty,
-          pricingSnapshot: {
-            unitBasePrice: customizePricing.blankUnitPrice,
-            designFee: customizePricing.designFee,
-            chartFirstLocationCost: customizePricing.chartFirstLocationCost,
-            chartAdditionalLocationCost: customizePricing.chartAdditionalLocationCost,
-            quantity: totalQty,
-            total: customizePricing.total,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: {},
           mockupImages,
           sides: sides.map((type) => ({ type })),
         }),

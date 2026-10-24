@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { createStudioClient } from "@/lib/studio/supabaseClient";
 import { STUDIO_SESSION_COOKIE } from "@/lib/studio/session";
 import { loadDesignProjectRecord } from "@/lib/studio/loadProjectRecord";
-import type { DesignObjectRecord, DesignProjectRecord, DesignSideType, PricingSnapshot } from "@/lib/studio/types";
+import type { DesignObjectRecord, DesignProjectRecord, DesignSideType } from "@/lib/studio/types";
 
 async function requireSupabase() {
   const cookieStore = await cookies();
@@ -28,7 +28,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
 interface PatchBody {
   sides?: { sideType: DesignSideType; objects: Omit<DesignObjectRecord, "id">[] }[];
-  pricingSnapshot?: PricingSnapshot;
   status?: DesignProjectRecord["status"];
 }
 
@@ -103,7 +102,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { error: updateError } = await supabase
     .from("DesignProject")
     .update({
-      ...(body.pricingSnapshot ? { pricingSnapshot: body.pricingSnapshot } : {}),
+      // pricingSnapshot is deliberately not patchable — it is set once, server-side, by POST
+      // /api/studio (studio/serverPricing.ts), and checkout only charges server-priced designs.
       ...(body.status ? { status: body.status } : {}),
       // Only a real edit (sides mutation) counts as a new revision — a bare pricing/status touch
       // isn't a design change.

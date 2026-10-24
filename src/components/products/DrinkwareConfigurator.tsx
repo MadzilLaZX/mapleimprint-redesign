@@ -59,15 +59,8 @@ export function DrinkwareConfigurator({ product, kind }: { product: CataloguePro
           colourName: variant.label,
           sizeBreakdown: [{ size: variant.label, qty: quantity }],
           totalQuantity: quantity,
-          pricingSnapshot: {
-            unitBasePrice: quote.unitPriceCents / 100,
-            designFee: 0,
-            chartFirstLocationCost: 0,
-            chartAdditionalLocationCost: 0,
-            quantity,
-            total: quote.totalCents / 100,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: { variantKey },
           mockupImages: {},
           // Every drinkware kind (mug/tumbler/water-bottle/pint-glass) shares the one real
           // "mug-wrap" print area/schematic — a full cylindrical wrap print is the same shape of

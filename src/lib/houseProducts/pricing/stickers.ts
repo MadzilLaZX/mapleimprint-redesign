@@ -231,6 +231,15 @@ export function stickerCell(shape: StickerShape, sizeKey: string, material: Stic
  *  obvious cause. This narrows the advertised list down to materials this module can actually
  *  quote for that shape, checked against its first size (price-cell availability is uniform across
  *  a shape's own sizes, per buildStickerPrices' construction, so one size is representative). */
+/** Which shapes a sticker product's subcategory offers — "Die-Cut Stickers", "Kiss-Cut Stickers"
+ *  and "Clear Stickers" share one configurator and one price table. Shared by ProductCustomizer
+ *  (what the customer can pick) and studio/serverPricing.ts (what the server will price). */
+export function allowedStickerShapesFor(subcategorySlug: string): StickerShape[] {
+  if (subcategorySlug === "die-cut") return ["die-cut"];
+  if (subcategorySlug === "clear") return ["oval", "rectangle", "square", "circle"];
+  return ["square", "circle", "rectangle", "oval"];
+}
+
 export function pricedMaterialsForShape(shape: StickerShape): StickerMaterial[] {
   const firstSize = STICKER_SIZES[shape][0].key;
   return STICKER_MATERIALS_BY_SHAPE[shape].filter((m) => stickerCell(shape, firstSize, m) !== undefined);

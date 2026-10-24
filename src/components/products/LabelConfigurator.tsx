@@ -64,15 +64,8 @@ export function LabelConfigurator({ product }: { product: CatalogueProduct }) {
           colourName: materialLabel,
           sizeBreakdown: [{ size: sizeDef.label, qty: quantity }],
           totalQuantity: quantity,
-          pricingSnapshot: {
-            unitBasePrice: quote.unitPriceCents / 100,
-            designFee: 0,
-            chartFirstLocationCost: 0,
-            chartAdditionalLocationCost: 0,
-            quantity,
-            total: quote.totalCents / 100,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: { sizeKey, material, format },
           mockupImages: {},
           // Reuses the sticker-face print area — same "flat piece, no photography" shape, and
           // labels don't yet have their own dedicated DesignSideType/schematic (see

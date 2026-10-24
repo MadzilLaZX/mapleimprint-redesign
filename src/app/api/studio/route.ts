@@ -4,7 +4,8 @@ import { createStudioClient } from "@/lib/studio/supabaseClient";
 import { PRINT_AREAS, PRINT_AREA_TEMPLATE_VERSION } from "@/lib/studio/printAreas";
 import { STUDIO_SESSION_COOKIE } from "@/lib/studio/session";
 import { getProduct } from "@/lib/products";
-import { quotePriceList } from "@/lib/houseProducts/pricing/priceList";
+import { priceStudioDesign } from "@/lib/studio/serverPricing";
+import { signPricing } from "@/lib/studio/pricingSignature";
 import type { CreateDesignProjectInput } from "@/lib/studio/types";
 
 export async function POST(request: Request) {
@@ -28,20 +29,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "A design needs at least one side." }, { status: 400 });
   }
 
-  // Price-listed print products: the price and the canvas both come from the catalogue, never from
-  // the request — priceCartItem re-prices these from the same tiers at checkout as well.
+  // The price is computed here from the catalogue and the customer's chosen options
+  // (studio/serverPricing.ts) — never taken from the request. Only real, published products.
   const product = getProduct(input.categorySlug, input.subcategorySlug, input.productSlug);
   if (!product || product.status === "draft") {
     return NextResponse.json({ error: "This product isn't available." }, { status: 400 });
   }
   if (product.houseProductKind === "price-list") {
+    // Price-listed print products: the canvas and sides come from the catalogue too.
     const canvas = product.studioCanvas;
-    const quote = quotePriceList(product, input.totalQuantity);
     if (!canvas) {
       return NextResponse.json({ error: "This product can't be designed online yet." }, { status: 400 });
-    }
-    if (!quote) {
-      return NextResponse.json({ error: "That quantity isn't available for this product." }, { status: 400 });
     }
     const size = { widthIn: canvas.widthIn, heightIn: canvas.heightIn };
     input = {
@@ -49,20 +47,15 @@ export async function POST(request: Request) {
       productName: product.name,
       brandName: product.brandName,
       sizeBreakdown: [{ size: product.printSpecs?.printedSides ?? "Printed", qty: input.totalQuantity }],
-      pricingSnapshot: {
-        unitBasePrice: quote.unitPrice,
-        designFee: 0,
-        chartFirstLocationCost: 0,
-        chartAdditionalLocationCost: 0,
-        quantity: input.totalQuantity,
-        total: quote.total,
-        printRuleVersion: product.printRuleVersion,
-      },
       sides:
         canvas.kind === "banner"
           ? [{ type: "banner-face", ...size }]
           : [{ type: "print-front", ...size }, ...(canvas.surfaces === 2 ? [{ type: "print-back" as const, ...size }] : [])],
     };
+  }
+  const priced = priceStudioDesign(product, input.totalQuantity, input.pricingOptions ?? {}, input.sizeBreakdown);
+  if (!priced.ok) {
+    return NextResponse.json({ error: priced.error }, { status: 400 });
   }
 
   const supabase = createStudioClient(sessionToken);
@@ -80,7 +73,7 @@ export async function POST(request: Request) {
       sizeBreakdown: input.sizeBreakdown,
       totalQuantity: input.totalQuantity,
       productTemplateVersion: PRINT_AREA_TEMPLATE_VERSION,
-      pricingSnapshot: input.pricingSnapshot,
+      pricingSnapshot: priced.snapshot,
       mockupImages: input.mockupImages,
     })
     .select("id")
@@ -102,6 +95,36 @@ export async function POST(request: Request) {
   if (sidesError) {
     console.error("[studio] create sides failed:", sidesError);
     return NextResponse.json({ error: "Couldn't set up your design canvas. Please try again." }, { status: 502 });
+  }
+
+  // Sign the price now that the project id and its sized sides exist — see pricingSignature.ts.
+  const sizedSides = sideRows
+    .filter((_, i) => input.sides[i].widthIn !== undefined && input.sides[i].heightIn !== undefined)
+    .map((s) => ({ sideType: s.sideType, widthIn: s.printAreaWidth, heightIn: s.printAreaHeight }));
+  const signature = signPricing({
+    projectId: project.id,
+    productSlug: input.productSlug,
+    categorySlug: input.categorySlug,
+    subcategorySlug: input.subcategorySlug,
+    colourName: input.colourName,
+    sizeBreakdown: input.sizeBreakdown,
+    totalQuantity: input.totalQuantity,
+    sizedSides,
+    pricing: priced.snapshot,
+  });
+  if (!signature) {
+    // No signing key in this environment (checkout can't run here either — it needs the same key
+    // for its admin client). The design still works; it just can't be charged until signed.
+    console.error("[studio] pricing signature unavailable — SUPABASE_SERVICE_ROLE_KEY is not set");
+    return NextResponse.json({ id: project.id });
+  }
+  const { error: signError } = await supabase
+    .from("DesignProject")
+    .update({ pricingSnapshot: { ...priced.snapshot, sizedSideTypes: sizedSides.map((s) => s.sideType), signature } })
+    .eq("id", project.id);
+  if (signError) {
+    console.error("[studio] pricing signature save failed:", signError);
+    return NextResponse.json({ error: "Couldn't start your design. Please try again." }, { status: 502 });
   }
 
   return NextResponse.json({ id: project.id });

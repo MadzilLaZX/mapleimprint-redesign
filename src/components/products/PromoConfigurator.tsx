@@ -58,15 +58,8 @@ export function PromoConfigurator({ product, kind }: { product: CatalogueProduct
           colourName: variant.label,
           sizeBreakdown: [{ size: variant.label, qty: quantity }],
           totalQuantity: quantity,
-          pricingSnapshot: {
-            unitBasePrice: quote.unitPriceCents / 100,
-            designFee: 0,
-            chartFirstLocationCost: 0,
-            chartAdditionalLocationCost: 0,
-            quantity,
-            total: quote.totalCents / 100,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: { variantKey },
           mockupImages: {},
           // Reuses the generic "accessory" family's front location — promo items (bags, pens,
           // notebooks, keychains, magnets, phone stands) are too physically varied to share one

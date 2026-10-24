@@ -79,15 +79,8 @@ export function PriceListConfigurator({ product }: { product: CatalogueProduct }
           colourName: product.printSpecs?.material ?? "Standard",
           sizeBreakdown: [{ size: product.printSpecs?.printedSides ?? "Printed", qty }],
           totalQuantity: qty,
-          pricingSnapshot: {
-            unitBasePrice: tier.pricePerUnit,
-            designFee: 0,
-            chartFirstLocationCost: 0,
-            chartAdditionalLocationCost: 0,
-            quantity: qty,
-            total,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: {},
           mockupImages: {},
           sides,
         }),

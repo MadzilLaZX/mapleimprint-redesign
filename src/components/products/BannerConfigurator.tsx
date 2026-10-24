@@ -259,15 +259,8 @@ export function BannerConfigurator({ product }: { product: CatalogueProduct }) {
           colourName: materialLabel,
           sizeBreakdown: [{ size: orientedLabel(sizeDef, orientation), qty: quantity }],
           totalQuantity: quantity,
-          pricingSnapshot: {
-            unitBasePrice: quote.unitPriceCents / 100,
-            designFee: 0,
-            chartFirstLocationCost: 0,
-            chartAdditionalLocationCost: 0,
-            quantity,
-            total: quote.totalCents / 100,
-            printRuleVersion: product.printRuleVersion,
-          },
+          // Only the choices — /api/studio computes the price from these (studio/serverPricing.ts).
+          pricingOptions: { sizeKey, material, grommets, reinforcedEdges, windFlaps, doubleSided, orientation },
           mockupImages: {},
           // Banners are the one product where the print area varies per order — widthIn/heightIn
           // travel with the side itself rather than coming from a fixed PRINT_AREAS constant.
