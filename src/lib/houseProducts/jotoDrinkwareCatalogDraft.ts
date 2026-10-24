@@ -1281,12 +1281,12 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
   },
   {
     slug: "engraving-wine-cup-12oz-stainless",
-    name: "12oz Powder-Coated Stainless Steel Engraving Wine Cup",
+    name: "12oz Powder-Coated Stainless Steel Engraving Wine Cup — Pack of 5",
     brandName: "Maple Imprint",
     categorySlug: "drinkware",
     subcategorySlug: "engraved-personalized",
     description:
-      "12oz (360ml) double-wall 304 stainless steel stemless wine cup with a powder-coated finish and lid — ideal for laser engraving. Available in Royal Blue and Mint Green.",
+      "12oz (360ml) double-wall 304 stainless steel stemless wine cup with a powder-coated finish and lid — ideal for laser engraving. Available in Royal Blue and Mint Green. Sold by the pack of 5.",
     images: [
       J("engraving-wine-cup-12oz-stainless-1"),
       J("engraving-wine-cup-12oz-stainless-2", "Royal Blue"),
@@ -1298,15 +1298,15 @@ export const JOTO_DRINKWARE_CATALOGUE_DRAFT: CatalogueProduct[] = [
     sizes: [],
     variants: [],
     priceTiers: null,
-    startingPrice: 60.45,
+    startingPrice: 68.69,
     printRuleVersion: RULE,
     productOptions: [{ name: "Colour", values: ["Royal Blue", "Mint Green"] }],
     bundlePricing: [
       {
-        sellUnit: "unit",
-        itemsPerBundle: 1,
+        sellUnit: "pack",
+        itemsPerBundle: 5,
         tiers: [
-          { bundleCount: 1, totalItems: 1, perItemCad: null, totalCad: 60.45 },
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 68.69 },
         ],
       },
     ],

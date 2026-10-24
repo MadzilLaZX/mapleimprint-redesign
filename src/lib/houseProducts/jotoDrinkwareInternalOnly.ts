@@ -631,11 +631,11 @@ export const JOTO_DRINKWARE_BATCH3_INTERNAL: { slug: string; jotoSku: string; jo
     jotoTitle: "Engraving Blank 12oz/360ml Stainless Steel Wine Cup",
     costPricing: [
       {
-        sellUnit: "unit",
-        itemsPerBundle: 1,
+        sellUnit: "pack",
+        itemsPerBundle: 5,
         regularPriceCad: 54.95,
         tiers: [
-          { bundleCount: 1, totalItems: 1, perItemCad: null, totalCad: 39.95 },
+          { bundleCount: 1, totalItems: 5, perItemCad: null, totalCad: 39.95 },
         ],
       },
     ],
