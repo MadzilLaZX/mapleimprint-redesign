@@ -116,7 +116,7 @@ export const PRODUCT_CATEGORIES = [
     name: "Events & Invitations",
     blurb: "Invitations, wedding stationery, tickets and certificates for events worth marking.",
     subcategories: ["Invitations", "Greeting cards", "Wedding stationery", "Tickets", "Certificates & awards"],
-    cover: "/images/products/business-printing.jpg",
+    cover: "/images/products/events-invitations.jpg",
   },
   {
     slug: "personalized-engraving",
@@ -143,7 +143,7 @@ export const PRODUCT_CATEGORIES = [
       "Patches",
       "Teacher gifts",
     ],
-    cover: "/images/products/business-printing.jpg",
+    cover: "/images/products/personalized-engraving.jpg",
   },
 ] as const;
 
