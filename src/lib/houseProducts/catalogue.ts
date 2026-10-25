@@ -165,7 +165,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     description:
       "Circle, square or rounded-square paper labels on a roll — built for applicators and " +
       "high-volume packaging runs, from 1\"x1\" up to 5\"x5\". Design yours right here.",
-    images: [{ url: "/images/products/subcategories/stickers-labels/sheets.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/stickers-labels/roll-labels.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -291,7 +291,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "gifts-promo",
     subcategorySlug: "bags",
     description: "Custom non-woven polypropylene tote bags, screen printed with your logo. Design yours right here.",
-    images: [{ url: "/images/products/gifts-promo.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/gifts-promo/bags.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -339,7 +339,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "gifts-promo",
     subcategorySlug: "keychains",
     description: "Custom engraved metal carabiner keychains. Design yours right here.",
-    images: [{ url: "/images/products/gifts-promo.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/gifts-promo/keychains.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -371,7 +371,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "gifts-promo",
     subcategorySlug: "tech-accessories",
     description: "Custom foldable and slim adjustable phone stands. Design yours right here.",
-    images: [{ url: "/images/products/gifts-promo.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/gifts-promo/tech-accessories.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -430,7 +430,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     description:
       "Reverse tuck product boxes on coated white paperboard, 10 sizes from 2\"x2\"x2\" up to " +
       "6\"x4\"x2.5\". Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/product-boxes.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -448,7 +448,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     description:
       "Custom mailer boxes, full-print inside and out, from 5\"x3\"x1.5\" up to 12\"x9\"x2\". " +
       "Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/mailer-shipping-boxes.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -464,7 +464,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "packaging",
     subcategorySlug: "tissue-paper",
     description: "Branded tissue paper for gift wrapping and unboxing. Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/tissue-paper.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -480,7 +480,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "packaging",
     subcategorySlug: "packaging-tape",
     description: "Branded water-activated packaging tape, in 100ft or 300ft rolls. Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/packaging-tape.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],

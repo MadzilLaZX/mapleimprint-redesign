@@ -109,7 +109,7 @@ export const PRODUCT_CATEGORIES = [
     name: "Packaging",
     blurb: "Product boxes, mailers, tissue paper and tape for shipping and gifting.",
     subcategories: ["Product boxes", "Mailer & shipping boxes", "Tissue paper", "Packaging tape", "Inserts & tags"],
-    cover: "/images/products/business-printing.jpg",
+    cover: "/images/products/packaging.jpg",
   },
   {
     slug: "events-invitations",
