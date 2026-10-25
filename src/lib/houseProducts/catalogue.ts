@@ -273,7 +273,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "drinkware",
     subcategorySlug: "glassware",
     description: "Custom pint, frosted and pilsner glasses from 16oz to 20oz. Design yours right here.",
-    images: [{ url: "/images/products/drinkware.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/drinkware/glassware.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
