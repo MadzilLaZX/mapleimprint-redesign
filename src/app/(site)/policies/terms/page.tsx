@@ -17,8 +17,9 @@ export default function TermsPage() {
       </PolicySection>
       <PolicySection title="Pricing">
         <p>
-          Prices state exactly what they include. Taxes, shipping and any rush or setup fees are shown before
-          payment.
+          Prices state exactly what they include. Any rush or setup fees are shown before payment. Sales tax and
+          shipping charges are not yet itemized at checkout; current order totals do not include separate tax or
+          shipping charges.
         </p>
       </PolicySection>
       <PolicySection title="Proofs and approval">

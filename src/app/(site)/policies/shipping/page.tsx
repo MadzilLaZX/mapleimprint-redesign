@@ -10,7 +10,11 @@ export default function ShippingPolicyPage() {
   return (
     <PolicyLayout title="Shipping Policy" description="Delivery and pickup options, timing and responsibility once an order ships.">
       <PolicySection title="Delivery options">
-        <p>Ottawa pickup and shipping are offered at checkout, with an estimated ready date shown before payment.</p>
+        <p>
+          Ottawa local pickup and shipping delivery options are being finalized. Once available, they will be
+          offered at checkout. In the meantime, delivery arrangements and ready dates are confirmed directly with
+          each order.
+        </p>
       </PolicySection>
       <PolicySection title="Shipping destinations">
         <p>Exact serviceable destinations and carrier options will be confirmed with the client and listed here.</p>
