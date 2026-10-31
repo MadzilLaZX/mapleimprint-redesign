@@ -32,7 +32,9 @@ export async function generateMetadata({
   if (!p || p.status === "draft") return {};
   return {
     title: `${p.name} — ${p.brandName}`,
-    description: p.description ? p.description.slice(0, 155) : `${p.name} from Maple Imprint, custom decorated.`,
+    description: p.description
+      ? p.description.replace(/\s+/g, " ").trim().slice(0, 155)
+      : `${p.name} from Maple Imprint, custom decorated.`,
   };
 }
 

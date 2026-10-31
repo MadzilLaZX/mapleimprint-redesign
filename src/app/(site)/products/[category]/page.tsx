@@ -13,6 +13,7 @@ import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES, PRINT_METHODS, SECONDARY_CTA } from "@/lib/constants";
 import { getProductsBySubcategory } from "@/lib/products";
 import { slugify } from "@/lib/slugify";
+import { resolveSubcategoryImage } from "@/lib/subcategoryImage";
 
 const methodsByCategory: Record<string, string[]> = {
   "custom-apparel": ["dtf-dtg"],
@@ -119,28 +120,33 @@ export default async function CategoryPage({
           {cat.subcategories.map((sub, i) => {
             const subSlug = slugify(sub);
             const subProducts = getProductsBySubcategory(cat.slug, subSlug);
-            // Real branded photography now exists for every subcategory (see
-            // /public/images/products/subcategories) — always use it as the tile image. Only the
-            // link destination depends on whether real backend product data exists yet: subcategories
-            // with real imported products (e.g. T-shirts) go to the priced product listing; everything
-            // else still goes to the general shop view until it has real catalogue data too.
+            // Branded photography exists for most subcategories (see
+            // /public/images/products/subcategories) but not all yet — resolveSubcategoryImage falls
+            // back to a sibling photo from the same category, or omits the image entirely (plain
+            // tile below) rather than linking to a file that doesn't exist. Only the link destination
+            // depends on whether real backend product data exists yet: subcategories with real
+            // imported products (e.g. T-shirts) go to the priced product listing; everything else
+            // still goes to the general shop view until it has real catalogue data too.
             const href = subProducts.length > 0
               ? `/products/${cat.slug}/${subSlug}`
               : `/shop?category=${cat.slug}&subcategory=${subSlug}`;
+            const image = resolveSubcategoryImage(cat.slug, subSlug);
             return (
               <Reveal key={sub} delay={i * 0.04}>
                 <Link
                   href={href}
-                  className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl"
+                  className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl bg-sand"
                 >
-                  <Image
-                    src={`/images/products/subcategories/${cat.slug}/${subSlug}.jpg`}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                    priority={i < 5}
-                    className="object-cover transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
-                  />
+                  {image && (
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                      priority={i < 5}
+                      className="object-cover transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />
                   <div className="relative p-3">
                     <p className="text-sm font-semibold text-white">{sub}</p>

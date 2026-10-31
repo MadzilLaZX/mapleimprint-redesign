@@ -3,6 +3,7 @@ import { slugify } from "@/lib/slugify";
 import { getProductsBySubcategory } from "@/lib/products";
 import { defaultColourFor, heroImageFor } from "@/lib/productVariant";
 import { priceUnitLabel } from "@/lib/houseProducts/pricing/bundles";
+import { resolveSubcategoryImage } from "@/lib/subcategoryImage";
 
 export type ShopProduct = {
   id: string;
@@ -11,7 +12,9 @@ export type ShopProduct = {
   categoryName: string;
   subcategorySlug: string;
   subcategoryName: string;
-  image: string;
+  /** Null when no real product photo and no sibling subcategory photo exists yet for this
+   *  category — an honest "no photo yet", not a link to a file that doesn't exist. */
+  image: string | null;
   /** The colour the card's image actually shows — the product page's own initial colour
    *  (ProductDetail.tsx) is computed by calling the exact same defaultColourFor() on the exact
    *  same product record, so this never needs to travel through the URL to "arrive" correctly;
@@ -46,7 +49,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = PRODUCT_CATEGORIES.flatMap((cat) =>
           categoryName: cat.name,
           subcategorySlug: subSlug,
           subcategoryName: sub,
-          image: hero?.url ?? `/images/products/subcategories/${cat.slug}/${subSlug}.jpg`,
+          image: hero?.url ?? resolveSubcategoryImage(cat.slug, subSlug),
           defaultColour: defaultColour || null,
           href: `/products/${cat.slug}/${subSlug}/${p.slug}`,
           startingPrice: p.startingPrice,
@@ -63,7 +66,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = PRODUCT_CATEGORIES.flatMap((cat) =>
         categoryName: cat.name,
         subcategorySlug: subSlug,
         subcategoryName: sub,
-        image: `/images/products/subcategories/${cat.slug}/${subSlug}.jpg`,
+        image: resolveSubcategoryImage(cat.slug, subSlug),
         defaultColour: null,
         href: `/products/${cat.slug}`,
         startingPrice: null,

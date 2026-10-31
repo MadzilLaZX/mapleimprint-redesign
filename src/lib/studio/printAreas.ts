@@ -2,6 +2,7 @@ import type { DesignSideType } from "./types";
 import type { LocationViewType } from "./productDecorationProfile";
 import type { DrinkwareVesselKind } from "./drinkwareCustomization";
 import { drinkwareWrapIllustrationSvg } from "./drinkwareIllustrations";
+import { stickerIllustrationSvg } from "./stickerIllustration";
 
 // MVP print-area template: one representative geometry per location, applied uniformly rather
 // than per-product-per-size. This is a deliberate simplification, not a real registered
@@ -434,7 +435,7 @@ export function backgroundUrlFor(
     case "banner-flat":
       return printPieceSchematicSvg("Vinyl Banner");
     case "sticker-face-flat":
-      return printPieceSchematicSvg("Custom Sticker");
+      return stickerIllustrationSvg();
   }
   const key: DesignSideType = kind === "back-photo" ? "back" : "front";
   return mockupImages[key] ?? (usesPlacementPreview ? GENERIC_PLACEMENT_MOCKUP : null);

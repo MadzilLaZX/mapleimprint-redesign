@@ -16,7 +16,7 @@ export function ProductCard({ product }: { product: ShopProduct }) {
         href={product.href}
         className="relative block aspect-[4/5] w-full shrink-0 overflow-hidden bg-white"
       >
-        {imageFailed ? (
+        {imageFailed || !product.image ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-canvas text-muted">
             <ImageBroken className="size-8" weight="light" />
             <span className="text-xs">Image coming soon</span>
