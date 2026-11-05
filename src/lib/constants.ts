@@ -109,14 +109,14 @@ export const PRODUCT_CATEGORIES = [
     name: "Packaging",
     blurb: "Product boxes, mailers, tissue paper and tape for shipping and gifting.",
     subcategories: ["Product boxes", "Mailer & shipping boxes", "Tissue paper", "Packaging tape", "Inserts & tags"],
-    cover: "/images/products/business-printing.jpg",
+    cover: "/images/products/packaging.jpg",
   },
   {
     slug: "events-invitations",
     name: "Events & Invitations",
     blurb: "Invitations, wedding stationery, tickets and certificates for events worth marking.",
     subcategories: ["Invitations", "Greeting cards", "Wedding stationery", "Tickets", "Certificates & awards"],
-    cover: "/images/products/business-printing.jpg",
+    cover: "/images/products/events-invitations.jpg",
   },
   {
     slug: "personalized-engraving",
@@ -143,7 +143,7 @@ export const PRODUCT_CATEGORIES = [
       "Patches",
       "Teacher gifts",
     ],
-    cover: "/images/products/business-printing.jpg",
+    cover: "/images/products/personalized-engraving.jpg",
   },
 ] as const;
 

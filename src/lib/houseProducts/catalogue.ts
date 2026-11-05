@@ -24,6 +24,8 @@ import { PRINT_CATALOGUE } from "./printCatalogue";
 import { ENGRAVING_CATALOGUE_DRAFT } from "./engravingCatalogDraft";
 import { JOTO_BLANKS_CATALOGUE_DRAFT } from "./jotoBlanksCatalogDraft";
 import { JOTO_DRINKWARE_CATALOGUE_DRAFT } from "./jotoDrinkwareCatalogDraft";
+import { JOTO_GIFTS_CATALOGUE } from "./jotoGiftsCatalog";
+import { JOTO_IMPORTED_CATALOGUE } from "./jotoImportedCatalog";
 
 /** Pulls a real "from" unit price out of a quote function at its cheapest realistic configuration,
  *  for the shop-grid tile — same role applyHouseMargin(rawPrice) plays for banner/card/flyer above,
@@ -163,7 +165,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     description:
       "Circle, square or rounded-square paper labels on a roll — built for applicators and " +
       "high-volume packaging runs, from 1\"x1\" up to 5\"x5\". Design yours right here.",
-    images: [{ url: "/images/products/subcategories/stickers-labels/sheets.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/stickers-labels/roll-labels.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -271,7 +273,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "drinkware",
     subcategorySlug: "glassware",
     description: "Custom pint, frosted and pilsner glasses from 16oz to 20oz. Design yours right here.",
-    images: [{ url: "/images/products/drinkware.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/drinkware/glassware.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -289,7 +291,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "gifts-promo",
     subcategorySlug: "bags",
     description: "Custom non-woven polypropylene tote bags, screen printed with your logo. Design yours right here.",
-    images: [{ url: "/images/products/gifts-promo.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/gifts-promo/bags.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -337,7 +339,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "gifts-promo",
     subcategorySlug: "keychains",
     description: "Custom engraved metal carabiner keychains. Design yours right here.",
-    images: [{ url: "/images/products/gifts-promo.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/gifts-promo/keychains.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -369,7 +371,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "gifts-promo",
     subcategorySlug: "tech-accessories",
     description: "Custom foldable and slim adjustable phone stands. Design yours right here.",
-    images: [{ url: "/images/products/gifts-promo.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/gifts-promo/tech-accessories.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -428,7 +430,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     description:
       "Reverse tuck product boxes on coated white paperboard, 10 sizes from 2\"x2\"x2\" up to " +
       "6\"x4\"x2.5\". Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/product-boxes.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -446,7 +448,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     description:
       "Custom mailer boxes, full-print inside and out, from 5\"x3\"x1.5\" up to 12\"x9\"x2\". " +
       "Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/mailer-shipping-boxes.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -462,7 +464,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "packaging",
     subcategorySlug: "tissue-paper",
     description: "Branded tissue paper for gift wrapping and unboxing. Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/tissue-paper.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -478,7 +480,7 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
     categorySlug: "packaging",
     subcategorySlug: "packaging-tape",
     description: "Branded water-activated packaging tape, in 100ft or 300ft rolls. Design yours right here.",
-    images: [{ url: "/images/products/business-printing.jpg", colourName: null, imageType: "front" }],
+    images: [{ url: "/images/products/subcategories/packaging/packaging-tape.jpg", colourName: null, imageType: "front" }],
     colours: [],
     sizes: [],
     variants: [],
@@ -508,4 +510,11 @@ export const HOUSE_PRODUCTS: CatalogueProduct[] = [
   // See jotoDrinkwareCatalogDraft.ts's header. Supplier SKUs/costs are intentionally NOT spread
   // in here — see jotoDrinkwareInternalOnly.ts.
   ...JOTO_DRINKWARE_CATALOGUE_DRAFT,
+
+  // --- Joto coasters, kitchen & gift blanks (batch 3, published 2026-10-21) — see jotoGiftsCatalog.ts.
+  // Supplier costs/SKUs are intentionally NOT spread in here — see jotoGiftsInternalOnly.ts.
+  ...JOTO_GIFTS_CATALOGUE,
+
+  // --- Joto products added by the import tool (scripts/joto-import) — generated, see that README.
+  ...JOTO_IMPORTED_CATALOGUE,
 ];
