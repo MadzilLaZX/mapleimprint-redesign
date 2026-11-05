@@ -11,6 +11,7 @@ import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { getProductsBySubcategory, subcategorySlugify } from "@/lib/products";
 import { defaultColourFor, heroImageFor } from "@/lib/productVariant";
 import { priceUnitLabel } from "@/lib/houseProducts/pricing/bundles";
+import { partitionByPriceAvailability } from "@/lib/shopQuery";
 
 function findSubcategory(categorySlug: string, subcategorySlug: string) {
   const cat = PRODUCT_CATEGORIES.find((c) => c.slug === categorySlug);
@@ -50,7 +51,10 @@ export default async function SubcategoryPage({
   if (!found) notFound();
 
   const { cat, subLabel } = found;
-  const products = getProductsBySubcategory(category, subcategory);
+  // Priced (checkout-ready) products first, quote-required products after — this is a static page
+  // built at next build time, so the ordering is baked into the HTML with no client-side reorder.
+  const { priced, quoteRequired } = partitionByPriceAvailability(getProductsBySubcategory(category, subcategory));
+  const products = [...priced, ...quoteRequired];
 
   return (
     <>

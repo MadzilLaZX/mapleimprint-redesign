@@ -27,17 +27,31 @@ export function parseSort(value: string | undefined): ShopSort {
   return value === "price-asc" || value === "price-desc" ? value : "featured";
 }
 
+/** Priced (checkout-ready) items always come before quote-required ones — a customer should never
+ *  have to scroll past "Quote required" cards to reach products they can actually buy right now.
+ *  Generic over any item with a `startingPrice`, so both the live /shop listing (ShopProduct) and
+ *  the statically-built /products/[category]/[subcategory] pages (CatalogueProduct) can share the
+ *  exact same rule instead of drifting into two different implementations. */
+export function partitionByPriceAvailability<T extends { startingPrice: number | null }>(items: T[]): {
+  priced: T[];
+  quoteRequired: T[];
+} {
+  return {
+    priced: items.filter((p) => p.startingPrice !== null),
+    quoteRequired: items.filter((p) => p.startingPrice === null),
+  };
+}
+
+/** Priced products first (see partitionByPriceAvailability above); the requested sort is applied
+ *  only as the secondary key, within each group. Used by every /shop listing (category, search,
+ *  sort, pagination all flow through here) so the rule holds across the whole surface. */
 export function sortProducts(products: ShopProduct[], sort: ShopSort): ShopProduct[] {
-  if (sort === "featured") return products;
-  const direction = sort === "price-asc" ? 1 : -1;
-  return [...products].sort((a, b) => {
-    // Unpriced (quote-required) items have no comparable number — always sort them last,
-    // regardless of direction, rather than letting them land ambiguously at either end.
-    if (a.startingPrice === null && b.startingPrice === null) return 0;
-    if (a.startingPrice === null) return 1;
-    if (b.startingPrice === null) return -1;
-    return (a.startingPrice - b.startingPrice) * direction;
-  });
+  const { priced, quoteRequired } = partitionByPriceAvailability(products);
+  if (sort !== "featured") {
+    const direction = sort === "price-asc" ? 1 : -1;
+    priced.sort((a, b) => (a.startingPrice! - b.startingPrice!) * direction);
+  }
+  return [...priced, ...quoteRequired];
 }
 
 export function searchProducts(products: ShopProduct[], query: string): ShopProduct[] {

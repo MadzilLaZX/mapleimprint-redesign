@@ -1,4 +1,6 @@
 import { Hero } from "@/components/home/Hero";
+import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import { getHomepageFeaturedProducts } from "@/lib/homepageFeatured";
 import { TrustStrip } from "@/components/home/TrustStrip";
 import { ShopByNeed } from "@/components/home/ShopByNeed";
 import { TwoPaths } from "@/components/home/TwoPaths";
@@ -14,6 +16,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <FeaturedProducts products={getHomepageFeaturedProducts()} />
       <TrustStrip />
       <ShopByNeed />
       <TwoPaths />
