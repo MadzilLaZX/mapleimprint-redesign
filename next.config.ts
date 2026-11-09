@@ -61,6 +61,20 @@ const nextConfig: NextConfig = {
     cpus: 2,
   },
   images: {
+    // PRODUCTION BUG FIX (2026-11-06): Vercel's Image Optimization quota for this Hobby-plan
+    // project is exhausted — confirmed via `/_next/image` returning HTTP 402 with
+    // `x-vercel-error: OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED` for EVERY image on the site
+    // (verified against both locally-hosted and remote-supplier images, on both the Preview
+    // deployment and mapleimprint.ca directly). This is what was actually causing "Image coming
+    // soon" placeholders site-wide (e.g. the homepage's Men's Ultimate365 Elevated Hoodie card) —
+    // not a broken URL, mapping bug, or supplier CDN block. `unoptimized: true` serves every
+    // image as-is instead of routing it through Vercel's (quota-limited) optimizer — the
+    // documented fix for this exact error. Trade-off: images are served at their original
+    // file size/format rather than resized/WebP-converted per viewport, which costs more
+    // bandwidth and some LCP performance. The alternative is upgrading off the Hobby plan,
+    // which only the project owner can decide — remove this once that happens, or once the
+    // monthly quota resets, to restore automatic optimization.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
