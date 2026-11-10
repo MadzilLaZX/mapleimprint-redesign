@@ -295400,7 +295400,18 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "100% polyester mesh\nSolid tricot liner\n1 1/2\" covered waistband\nInternal drawcord\nDouble-needle stitched hems",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/70467_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/70467_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Black"
     ],
@@ -295550,7 +295561,18 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "5.3 oz./yd² (US), 8.8 oz/L yd (CA), 100% polyester mesh\nSolid tricot liner\n1 1/2\" covered waistband\nInternal drawcord\nDouble-needle stitched hems",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35742_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/35742_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Black"
     ],
@@ -295948,7 +295970,38 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "9 oz./yd²(US), 15 oz./L yd (CA), 50/50 US cotton/polyester, 24 singles\nMidweight 50% U.S. Cotton, 50% polyester fleece, for a variety of decorating techniques\nRelaxed fit\nElastic waistband with internal drawcord\nDifferential rise\nSide pockets with bartacks\nDouble needle open bottom hem\nWoven label\n\"C\" logo on left hip\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31113_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31115_f_fm.jpg",
+        "colourName": "Light Steel",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31114_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31113_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31115_b_fm.jpg",
+        "colourName": "Light Steel",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/31114_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Black",
       "Light Steel",
@@ -296299,7 +296352,28 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "3.7 oz./yd² (US), 6.1 oz/L yd (CA), 100% polyester mesh\n2.1 oz./yd² (US), 3.1 oz/L yd (CA), 100% polyester tricot liner\n100% polyester lightweight mesh\nRelaxed fit\nMulti-needle stitched elastic waistband\nInternal drawcord\nSide seam pockets\nDouble-needle bottom hem\nWoven label\n“C” logo on left hip (older inventory will have logo on lower hem, this is a rolling change and our inventory is mixed)\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30446_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30447_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30446_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/30447_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Black",
       "Navy"
@@ -296771,7 +296845,18 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "8 oz./yd² (US),13.36 oz./L yd (CA), 50/50 cotton/polyester, 24 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\n\nClassic Fit\nCovered elastic waistband with drawcord\nElasticized cuffs\nPockets\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/137517_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/137517_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Dark Heather",
       "Black",
@@ -297296,7 +297381,38 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "8 oz./yd² (US) 13.3 oz./L yd (CA), 50/50 cotton/polyester, 20 singles\nThe Heavy Blend collection is made with a finer, high-quality face yarn that provides a smoother printing surface and helps reduce pilling.\nClassic fit\nCovered elastic waistband, no drawcord\nElasticized cuffs\nTear away label\nCPSIA Tracking Label Compliant\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21350_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21352_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21354_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21350_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21352_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/21354_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Black",
       "Sport Grey",
@@ -297866,7 +297982,88 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "8.4 oz./yd², 80/20 U.S. ring-spun cotton/polyester, 20 singles\nSport Grey is 75/25 cotton/polyester\nSoftstyle Midweight Fleece features a cozy, brushed interior and a 100% ring-spun cotton face, ideal for a variety of cotton friendly decorating techniques\nClassic fit\nCovered elastic waistband with internal color matched drawcord\nDifferential front and back rise\nTapered legs with elasticized cuffs\nSlanted side pockets\nSide seams\nTear away label\n\nResponsible Supplier: this product was made in a facility that is OEKO-TEX and FLA certified.\nResponsible Materials: contains US grown BCI cotton",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114442_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114449_f_fm.jpg",
+        "colourName": "Brown Savana",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114443_f_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114444_f_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114445_f_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114446_f_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114447_f_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114448_f_fm.jpg",
+        "colourName": "Stone Blue",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114442_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114449_b_fm.jpg",
+        "colourName": "Brown Savana",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114443_b_fm.jpg",
+        "colourName": "Charcoal",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114444_b_fm.jpg",
+        "colourName": "Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114445_b_fm.jpg",
+        "colourName": "Off White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114446_b_fm.jpg",
+        "colourName": "Sand",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114447_b_fm.jpg",
+        "colourName": "Sport Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/114448_b_fm.jpg",
+        "colourName": "Stone Blue",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Off White",
       "Sand",
@@ -298761,7 +298958,28 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "7.4 oz./yd² (US), 12.4 oz./L yd (CA), 80/20 combed ringspun cotton/polyester, 30 singles\nHeather Grey is 60/40 combed ringspun cotton/polyester\nClassic fit\nDyed-to-match drawcord waistband\nSide pockets\nBack patch pocket\nBottom hem with wide double needle topstitch\nTear away label\nResponsible Supplier: this product was made in a facility that is FLA certified.",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108196_f_fm.jpg",
+        "colourName": "Heather Grey",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108197_f_fm.jpg",
+        "colourName": "Midnight Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108196_b_fm.jpg",
+        "colourName": "Heather Grey",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/108197_b_fm.jpg",
+        "colourName": "Midnight Navy",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Heather Grey",
       "Midnight Navy"
@@ -299760,7 +299978,58 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "3.5 oz./yd², 100% polyester interlock\nTeam fit\nCationic dyes for superior brightness and color fastness\nMoisture wicking performance pulls sweat away from the skin to keep you dry and comfortable\nUPF 40+\nElasticized waistband with flat internal drawcord\nSide pockets\n4.5\" inseam\nTransitioning from heat-seal label to tear away label. Inventory may be mixed",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128205_f_fm.jpg",
+        "colourName": "Black",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128206_f_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128207_f_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128208_f_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128209_f_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128205_b_fm.jpg",
+        "colourName": "Black",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128206_b_fm.jpg",
+        "colourName": "Sport Dark Navy",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128207_b_fm.jpg",
+        "colourName": "Sport Graphite",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128208_b_fm.jpg",
+        "colourName": "Sport Red",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/128209_b_fm.jpg",
+        "colourName": "Sport Royal",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Sport Graphite",
       "Black",
@@ -300611,7 +300880,38 @@
     "categorySlug": "custom-apparel",
     "subcategorySlug": "joggers-bottoms",
     "description": "4.51 oz/yd²., 90/10 polyester/elastane\nMoisture-wicking properties, material wicks sweat & dries really fast\nFour-way stretch material moves better in every direction\nNew, innovative NEOLAST™ fibers provide powerful stretch, durability, comfort & improved wicking\nNEOLAST™ is a high-performing alternative to elastane designed to begin addressing sustainability challenges associated with elastane\nLoose fit\nMesh side panels for added breathability\nEncased elastic waistband with internal drawcord\nOpen hand pockets and side-vent hem\nInseam 6\"",
-    "images": [],
+    "images": [
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134779_f_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134780_f_fm.jpg",
+        "colourName": "Castlerock/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134781_f_fm.jpg",
+        "colourName": "Midnight Navy/ White",
+        "imageType": "front"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134779_b_fm.jpg",
+        "colourName": "Black/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134780_b_fm.jpg",
+        "colourName": "Castlerock/ White",
+        "imageType": "back"
+      },
+      {
+        "url": "https://cdn.ssactivewear.com/Images/Color/134781_b_fm.jpg",
+        "colourName": "Midnight Navy/ White",
+        "imageType": "back"
+      }
+    ],
     "colours": [
       "Castlerock/ White",
       "Black/ White",
