@@ -4,6 +4,7 @@ import { createSquareClient, squareLocationId } from "@/lib/server/squareClient"
 import { priceCartItem, type CheckoutCartItemInput } from "@/lib/checkout/priceCartItem";
 import { taxProvider } from "@/lib/checkout/taxProvider";
 import { shippingProvider } from "@/lib/checkout/shippingProvider";
+import { ShippingRateUnavailableError } from "@/lib/checkout/canadaPostShippingProvider";
 import { generateOrderReference } from "@/lib/checkout/generateOrderReference";
 import { humanPaymentError } from "@/lib/checkout/errorMessages";
 import { markOrderPaidAndNotify } from "@/lib/checkout/fulfillOrder";
@@ -82,6 +83,14 @@ export async function POST(request: Request) {
     // A live-rate provider (e.g. CanadaPostShippingProvider once activated) can legitimately fail
     // to quote — never let that crash checkout with an unhandled 500. FreeShippingProvider never
     // throws, so this only ever fires once a real carrier integration is live.
+    //
+    // ShippingRateUnavailableError means the customer can fix this themselves (bad postal code,
+    // non-Canadian address, no live rate configured yet) — its message is already written to be
+    // shown as-is, and 422 signals "your input, not our system." Anything else is an unexpected
+    // failure (network error, Canada Post outage) and gets the generic message + 502.
+    if (err instanceof ShippingRateUnavailableError) {
+      return NextResponse.json({ error: err.message }, { status: 422 });
+    }
     console.error("[checkout] shipping quote failed:", err);
     return NextResponse.json(
       { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },

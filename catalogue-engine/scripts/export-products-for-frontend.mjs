@@ -47,7 +47,16 @@ if (existsSync(envPath)) {
 // catalogue shrink. Pass --force to override deliberately (e.g. a real, intentional mass-hide).
 const MIN_SURVIVING_FRACTION = 0.5;
 
-function stripHtml(html) {
+// Entity list below is not a guess at "common HTML entities" -- it's the complete, exact set
+// found by scanning every live SanMar/S&S fullDescription in the database (2026-11-11), so
+// nothing here is speculative. &reg;/&trade;/&rdquo;/&rsquo; alone accounted for 346/129/99/92
+// occurrences respectively -- before this fix, every one of those rendered as literal entity text
+// (e.g. "WindWall&trade;") to a real customer instead of the intended symbol. &#39; (no leading
+// zero) never matched real data at all -- the supplier's actual encoding is &#39; is written as
+// &#039; (zero-padded); this needs to be a separate, explicit case, not fixed by widening the
+// existing regex, since &amp;#39; sometimes also appears pre-escaped in the wild and the two
+// shouldn't be conflated.
+export function stripHtml(html) {
   if (!html) return '';
   return html
     .replace(/<style[\s\S]*?<\/style>/gi, '')
@@ -55,9 +64,26 @@ function stripHtml(html) {
     .replace(/<\/(p|li|div|br)>/gi, '\n')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&#39;/g, "'")
     .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&rsquo;/g, '’') // '
+    .replace(/&lsquo;/g, '‘') // '
+    .replace(/&rdquo;/g, '”') // "
+    .replace(/&ldquo;/g, '“') // "
+    .replace(/&reg;/g, '®')
+    .replace(/&trade;/g, '™')
+    .replace(/&deg;/g, '°')
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&frac14;/g, '¼')
+    .replace(/&frac12;/g, '½')
+    .replace(/&eacute;/g, 'é')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&') // must run last -- decoding this earlier could double-unescape an
+    // already-escaped entity elsewhere in the string (e.g. "&amp;reg;" is itself how a literal,
+    // intentional "&reg;" string would be supplier-escaped; decoding &amp; first would turn that
+    // into "&reg;" and then wrongly decode it again as the registered-trademark symbol).
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
@@ -291,7 +317,12 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main().catch(async (err) => {
-  console.error('Export failed:', err);
-  process.exit(1);
-});
+// Guarded so this file can be imported for its named exports (e.g. stripHtml, for testing)
+// without immediately opening a real Prisma/DB connection -- only runs when invoked directly
+// (`node export-products-for-frontend.mjs`), exactly as it always has been.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch(async (err) => {
+    console.error('Export failed:', err);
+    process.exit(1);
+  });
+}

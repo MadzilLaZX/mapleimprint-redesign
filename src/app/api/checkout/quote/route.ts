@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/server/supabaseAdmin";
 import { priceCartItem, type CheckoutCartItemInput } from "@/lib/checkout/priceCartItem";
 import { taxProvider } from "@/lib/checkout/taxProvider";
 import { shippingProvider } from "@/lib/checkout/shippingProvider";
+import { ShippingRateUnavailableError } from "@/lib/checkout/canadaPostShippingProvider";
 
 interface QuoteRequestBody {
   items: CheckoutCartItemInput[];
@@ -51,6 +52,9 @@ export async function POST(request: Request) {
   try {
     shippingOptions = await shippingProvider.getOptions(body.shippingAddress, subtotalCents);
   } catch (err) {
+    if (err instanceof ShippingRateUnavailableError) {
+      return NextResponse.json({ error: err.message }, { status: 422 });
+    }
     console.error("[checkout] shipping quote failed:", err);
     return NextResponse.json(
       { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
