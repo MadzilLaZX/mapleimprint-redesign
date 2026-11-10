@@ -21,6 +21,18 @@
 // UPDATE for the whole table, matching this package's existing fetchAllPublishedProducts()
 // cursor-pagination convention (export-products-for-frontend.mjs) for the same reason: bounded
 // query size regardless of how large the catalogue grows.
+//
+// IDEMPOTENT: every field is re-derived from rawPayload (which this script never modifies) and
+// SET to that computed value, never incremented/appended/merged -- running this script twice in
+// a row recomputes and writes the exact same values both times (buildWeightBackfillRows() itself
+// is a pure function with an explicit idempotency test -- see build-weight-backfill-rows.test.ts).
+// A product with no extractable data is skipped on every run, not defaulted, so re-running never
+// changes which products have data vs. remain null.
+//
+// UNTOUCHED BY DESIGN: the Prisma `update` below names exactly the 8 new columns and nothing
+// else -- it cannot touch wholesaleCost, isOrderable, matchStatus, supplierSku, or any other
+// pricing/inventory/mapping field on SupplierProduct, and never references MasterProduct,
+// ProductVariant, SupplierVariantOffer, or any other table at all.
 
 import { PrismaClient } from '@prisma/client';
 import { buildWeightBackfillRows } from '../dist/index.js'; // run `npm run build` first if this is missing

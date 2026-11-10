@@ -29,6 +29,16 @@ const fixtures: SupplierProductForBackfill[] = [
     supplierCode: 'ssactivewear',
     rawPayload: null,
   },
+  {
+    // The real caseWidth=188 anomaly found live in S&S data (Columbia Powder Lite II jacket,
+    // confirmed 2026-11-11) -- must still produce a row (its real, valid weight), but with the
+    // bad dimension rejected, not the whole product skipped.
+    supplierProductId: 'sp-ss-columbia-anomaly',
+    supplierCode: 'ssactivewear',
+    rawPayload: {
+      sampleRow: { unitWeight: 1.2, caseWeight: 14.4, caseQty: 12, caseWidth: 188, caseHeight: 11.5, caseLength: 19 },
+    },
+  },
 ];
 
 describe('buildWeightBackfillRows', () => {
@@ -81,5 +91,57 @@ describe('buildWeightBackfillRows', () => {
     }
     const rows = buildWeightBackfillRows(big);
     expect(rows.length).toBe(671 + 1102);
+  });
+
+  it('rejects the real Columbia jacket dimension anomaly while keeping its valid weight and case qty', () => {
+    const rows = buildWeightBackfillRows(fixtures);
+    const columbia = rows.find((r) => r.supplierProductId === 'sp-ss-columbia-anomaly')!;
+    expect(columbia).toBeDefined(); // still produces a row -- a bad dimension doesn't void the whole product
+    expect(columbia.unitWeightLb).toBe(1.2);
+    expect(columbia.caseWeightLb).toBe(14.4);
+    expect(columbia.caseQty).toBe(12);
+    expect(columbia.caseLengthIn).toBeNull();
+    expect(columbia.caseWidthIn).toBeNull();
+    expect(columbia.caseHeightIn).toBeNull();
+    expect(columbia.dimensionsConfidence).toBeNull();
+  });
+
+  it('is idempotent -- running it twice on the same input produces identical rows', () => {
+    const first = buildWeightBackfillRows(fixtures);
+    const second = buildWeightBackfillRows(fixtures);
+    expect(second).toEqual(first);
+  });
+
+  it('never fabricates a value for a field the supplier payload did not provide -- missing stays null, not 0 or a guess', () => {
+    const rows = buildWeightBackfillRows([
+      { supplierProductId: 'sp-weight-only', supplierCode: 'sanmar', rawPayload: { sampleRow: { weight: 2 } } },
+    ]);
+    const row = rows[0];
+    expect(row.caseWeightLb).toBeNull();
+    expect(row.caseQty).toBeNull();
+    expect(row.caseLengthIn).toBeNull();
+    expect(row.caseWidthIn).toBeNull();
+    expect(row.caseHeightIn).toBeNull();
+    expect(row.dimensionsConfidence).toBeNull();
+  });
+
+  it('every output row touches only weight/dimension fields -- no pricing, inventory, or supplier-mapping field is ever present', () => {
+    const rows = buildWeightBackfillRows(fixtures);
+    const allowedKeys = new Set([
+      'supplierProductId',
+      'unitWeightLb',
+      'caseWeightLb',
+      'caseQty',
+      'caseLengthIn',
+      'caseWidthIn',
+      'caseHeightIn',
+      'weightConfidence',
+      'dimensionsConfidence',
+    ]);
+    for (const row of rows) {
+      for (const key of Object.keys(row)) {
+        expect(allowedKeys.has(key), `unexpected field "${key}" would risk touching unrelated data`).toBe(true);
+      }
+    }
   });
 });

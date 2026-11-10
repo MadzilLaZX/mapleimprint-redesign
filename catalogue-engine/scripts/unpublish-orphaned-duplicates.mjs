@@ -5,7 +5,8 @@
 // or 'blocked' -- see catalogue-engine/src/catalogue/curation.ts's own transition table and
 // comments: 'hidden' is the correct, REVERSIBLE state for "real but not currently shown"; a
 // mistaken hide can always be undone via transitionProductStatus(prisma, id, 'published') again,
-// since hidden -> published is itself a valid transition).
+// since hidden -> published is itself a valid transition -- confirmed by this package's own
+// catalogue-curation.test.ts).
 //
 // WHY these 13 specifically (investigated 2026-11-11, not guessed):
 //   - Each has ZERO SupplierProduct rows linked to it at all (confirmed live) -- no real supplier
@@ -21,40 +22,35 @@
 //     or MapleOrderLine match any of these 13 slugs. Unpublishing cannot orphan a real customer's
 //     saved design, quote, or order.
 //
-// This does NOT delete or merge anything -- the row, its ProductImage rows, and its
-// ProductVariant rows all remain in the database, simply no longer published/orderable. Reversing
-// this is a one-line change (swap 'hidden' for 'published' below) if any of these turn out to be
-// wanted after all.
+// This does NOT delete or merge anything, and does not touch pricing, inventory, or any
+// SupplierProduct/SupplierVariantOffer mapping -- the row, its ProductImage rows, and its
+// ProductVariant rows all remain in the database, simply no longer published/orderable.
+//
+// IDEMPOTENT: transitionProductStatus() only transitions a product currently in a state that
+// legally allows 'hidden' (i.e. 'published' or 'approved' -- see PRODUCT_STATUS_TRANSITIONS).
+// Running this script twice in a row is safe: the second run finds every target already 'hidden',
+// isValidTransition('hidden','hidden') is false by design (see curation.ts), and
+// transitionProductStatus() returns success:false with a clear reason instead of erroring or
+// double-applying anything -- confirmed by the "never allows a same-status transition" test in
+// catalogue-curation.test.ts, not a new assumption made here.
 
 import { PrismaClient } from '@prisma/client';
 import { transitionProductStatus } from '../dist/index.js'; // run `npm run build` first if this is missing
-
-const ORPHAN_MASTER_PRODUCT_IDS = [
-  'cmtum8e1i00hqg5v43c629ic3', // berne-apparel-icecap-insulated-bib-overall-tall-sizes
-  'cmtum838300hkg5v43ljhsoo3', // berne-apparel-men-s-heritage-tall-duck-insulated-coverall
-  'cmtum7nip00hbg5v4v3a283u9', // berne-apparel-tall-acre-unlined-washed-bib-overall
-  'cmtum8o2g002og5i0s5wr8nz8', // c2-sport-men-s-mesh-7-shorts
-  'cmtum8tqp002rg5i052w4khog', // c2-sport-men-s-mesh-9-shorts
-  'cmtum9ezw0033g5i0d7gxioan', // champion-unisex-9-mesh-shorts-with-pockets
-  'cmtum9490002xg5i01rkyizkc', // champion-unisex-powerblend-open-bottom-sweatpants-with-pockets
-  'cmtum9q3z0039g5i02sd7fm3g', // gildan-unisex-heavy-blend-pocket-sweatpants
-  'cmtumaf08003lg5i0zenz3ti2', // gildan-unisex-softstyle-midweight-pocket-sweatpants
-  'cmtuma49x003fg5i0uvndsc18', // gildan-youth-heavy-blend-sweatpants
-  'cmtumbc4d0046g5i0n0btltir', // next-level-unisex-fleece-sweat-shorts
-  'cmtumbspy00iqg5v4k8et83ns', // team-365-women-s-zone-performance-shorts
-  'cmtumcd6u00j2g5v4w75fa7g4', // under-armour-youth-tech-vent-athletic-shorts
-];
+import { planUnpublish } from './orphanedDuplicatesPlan.mjs';
 
 async function main() {
+  const plan = planUnpublish();
+
   if (process.argv[2] !== '--confirm') {
-    console.log(`Dry run only. ${ORPHAN_MASTER_PRODUCT_IDS.length} products would be set to 'hidden'.`);
+    console.log(`Dry run only. ${plan.count} products would be set to '${plan.targetStatus}'.`);
     console.log('Re-run with --confirm to actually apply (requires DATABASE_URL and explicit approval).');
     return;
   }
+
   const prisma = new PrismaClient();
-  for (const id of ORPHAN_MASTER_PRODUCT_IDS) {
-    const result = await transitionProductStatus(prisma, id, 'hidden');
-    console.log(result.success ? `hidden: ${id}` : `SKIPPED (${result.reason}): ${id}`);
+  for (const id of plan.ids) {
+    const result = await transitionProductStatus(prisma, id, plan.targetStatus);
+    console.log(result.success ? `${plan.targetStatus}: ${id}` : `SKIPPED (${result.reason}): ${id}`);
   }
   await prisma.$disconnect();
 }
