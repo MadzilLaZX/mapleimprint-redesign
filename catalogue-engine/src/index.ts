@@ -102,9 +102,12 @@ export { ingestImage, fetchImageBytes, type ImageFetcher, type IngestImageResult
 export {
   normalizeSanMarWeight,
   normalizeSSActivewearWeight,
+  hasAuthoritativeUnitWeight,
+  hasAuthoritativeCaseDimensions,
   type NormalizedPackageData,
   type WeightConfidence,
 } from './shipping/normalizeWeight.js';
+export { buildWeightBackfillRows, type WeightBackfillRow, type SupplierProductForBackfill } from './shipping/buildWeightBackfillRows.js';
 
 export {
   checkOrderAvailability,

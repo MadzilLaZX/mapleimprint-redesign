@@ -6,9 +6,19 @@ import { triggerDesignExport } from "@/lib/studio/exportDesign";
 /**
  * The single place an order is marked PAID and notified — called from BOTH the synchronous
  * /api/checkout/pay response path and the /api/webhooks/square reconciliation path, since either
- * can be the one that first learns a payment succeeded. The conditional update (`neq status PAID`)
- * is what makes calling this twice for the same order safe: whichever call arrives first wins,
- * the other becomes a no-op that skips the email.
+ * can be the one that first learns a payment succeeded.
+ *
+ * The MapleOrder and PaymentAttempt transitions happen inside mark_order_paid_and_sync_attempt(),
+ * a single Postgres function call — not two separate Supabase REST calls. That matters: a real
+ * order was found live (MO-KZULY7SS) correctly PAID with its confirmation email already sent, but
+ * PaymentAttempt still showing FAILED from an earlier synchronous decline that Square later
+ * reversed, because those used to be two independent, non-atomic writes and only one completed.
+ * Wrapping both inside one plpgsql function gives them the function's own implicit transaction —
+ * Postgres's row lock on the first UPDATE's `WHERE status != 'PAID'` also serializes concurrent
+ * callers (verified live against synthetic rows: two simultaneous calls for the same order always
+ * produce exactly one winner), which is what makes calling this twice for the same order safe:
+ * whichever call arrives first wins and transitions both tables together, the other becomes a
+ * no-op that skips the email.
  */
 export async function markOrderPaidAndNotify(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,41 +39,41 @@ export async function markOrderPaidAndNotify(
     rawResponse?: object;
   },
 ): Promise<void> {
-  const { data: transitioned, error: updateError } = await supabaseAdmin
-    .from("MapleOrder")
-    .update({ status: "PAID", squareOrderId, squarePaymentId, updatedAt: new Date().toISOString() })
-    .eq("id", orderId)
-    .neq("status", "PAID")
-    .select("reference, contactName, contactEmail, totalCents, emailSentAt")
-    .maybeSingle();
+  const { data: rows, error: rpcError } = await supabaseAdmin.rpc("mark_order_paid_and_sync_attempt", {
+    p_order_id: orderId,
+    p_square_order_id: squareOrderId,
+    p_square_payment_id: squarePaymentId,
+    p_raw_response: rawResponse ?? null,
+  });
 
-  if (updateError) {
-    console.error("[checkout] failed to mark order paid:", updateError);
+  if (rpcError) {
+    console.error("[checkout] mark_order_paid_and_sync_attempt failed:", rpcError);
     return;
   }
-  // No row returned means either the order didn't exist, or (far more likely) it was already
-  // PAID — the other convergent path (sync response vs. webhook) got there first. Either way,
-  // there's nothing further to do here.
-  if (!transitioned) return;
+  const result = rows?.[0] as
+    | {
+        newly_paid: boolean;
+        order_reference: string | null;
+        contact_name: string | null;
+        contact_email: string | null;
+        total_cents: number | null;
+        already_emailed: boolean | null;
+      }
+    | undefined;
+  // newly_paid false means either the order didn't exist, or (far more likely) it was already
+  // PAID — the other convergent path (sync response vs. webhook, or a duplicate webhook delivery)
+  // got there first and already transitioned both tables together. Either way, there's nothing
+  // further to do here.
+  if (!result?.newly_paid) return;
 
-  // Done here, right after the MapleOrder transition succeeds, rather than as a separate
-  // statement at each call site (as it used to be) — a real order was found in this exact stale
-  // state live: MapleOrder correctly PAID with its confirmation email already sent, but
-  // PaymentAttempt still showing FAILED from an earlier synchronous decline that Square later
-  // reversed, because the two updates were separate, non-atomic calls and only one of them ran to
-  // completion. Keeping both writes inside this one function call doesn't make them a single DB
-  // transaction, but it does mean there is now exactly one place this can go out of sync instead
-  // of two independent call sites each capable of doing it differently.
-  const { error: attemptError } = await supabaseAdmin
-    .from("PaymentAttempt")
-    .update({ status: "SUCCEEDED", squarePaymentId, ...(rawResponse ? { rawResponse } : {}) })
-    .eq("orderId", orderId)
-    .neq("status", "SUCCEEDED");
-  if (attemptError) {
-    console.error("[checkout] failed to mark payment attempt succeeded:", attemptError);
-  }
+  const transitioned = {
+    reference: result.order_reference as string,
+    contactName: result.contact_name as string,
+    contactEmail: result.contact_email as string,
+    totalCents: result.total_cents as number,
+  };
 
-  if (transitioned.emailSentAt) return;
+  if (result.already_emailed) return;
 
   const { data: lines } = await supabaseAdmin
     .from("MapleOrderLine")

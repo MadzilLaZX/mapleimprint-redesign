@@ -56,17 +56,32 @@ function toFiniteNumber(value: unknown): number | null {
   return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : null;
 }
 
+// Sanity bounds, not supplier-documented facts -- a value outside these is far more likely a unit
+// mixup, a decoding bug, or a corrupt upstream row than a real product, so it's rejected (returns
+// null) rather than silently accepted and later charged to a customer. Generous on purpose:
+// observed real data tops out at 16.25 lb/piece (SanMar) and 8 lb/piece (S&S) -- these bounds
+// exist to catch something clearly broken, not to second-guess plausible real values.
+const MAX_PLAUSIBLE_UNIT_WEIGHT_LB = 50;
+const MAX_PLAUSIBLE_CASE_WEIGHT_LB = 150;
+const MAX_PLAUSIBLE_CASE_DIMENSION_IN = 60;
+const MAX_PLAUSIBLE_CASE_QTY = 500;
+
+function toBoundedNumber(value: unknown, max: number): number | null {
+  const n = toFiniteNumber(value);
+  return n !== null && n <= max ? n : null;
+}
+
 /** Reads a SanMar SupplierProduct.rawPayload (shape produced by SanMarConnector.ts — a
  *  `{ sampleRow: {...} }` wrapper, one representative row per style) and extracts weight data. */
 export function normalizeSanMarWeight(rawPayload: unknown): NormalizedPackageData {
   const row = (rawPayload as { sampleRow?: Record<string, unknown> } | null)?.sampleRow;
-  const unitWeightLb = toFiniteNumber(row?.weight);
+  const unitWeightLb = toBoundedNumber(row?.weight, MAX_PLAUSIBLE_UNIT_WEIGHT_LB);
   return {
     supplierCode: 'sanmar',
     unitWeightLb,
     unitWeightConfidence: unitWeightLb !== null ? 'confirmed' : null,
     caseWeightLb: null,
-    caseQty: toFiniteNumber(row?.caseSize),
+    caseQty: toBoundedNumber(row?.caseSize, MAX_PLAUSIBLE_CASE_QTY),
     caseDimensionsIn: null,
     caseDimensionsConfidence: null,
   };
@@ -76,11 +91,11 @@ export function normalizeSanMarWeight(rawPayload: unknown): NormalizedPackageDat
  *  `{ style: {...}, sampleRow: {...} }` wrapper) and extracts weight + case dimension data. */
 export function normalizeSSActivewearWeight(rawPayload: unknown): NormalizedPackageData {
   const row = (rawPayload as { sampleRow?: Record<string, unknown> } | null)?.sampleRow;
-  const unitWeightLb = toFiniteNumber(row?.unitWeight);
-  const caseWeightLb = toFiniteNumber(row?.caseWeight);
-  const length = toFiniteNumber(row?.caseLength);
-  const width = toFiniteNumber(row?.caseWidth);
-  const height = toFiniteNumber(row?.caseHeight);
+  const unitWeightLb = toBoundedNumber(row?.unitWeight, MAX_PLAUSIBLE_UNIT_WEIGHT_LB);
+  const caseWeightLb = toBoundedNumber(row?.caseWeight, MAX_PLAUSIBLE_CASE_WEIGHT_LB);
+  const length = toBoundedNumber(row?.caseLength, MAX_PLAUSIBLE_CASE_DIMENSION_IN);
+  const width = toBoundedNumber(row?.caseWidth, MAX_PLAUSIBLE_CASE_DIMENSION_IN);
+  const height = toBoundedNumber(row?.caseHeight, MAX_PLAUSIBLE_CASE_DIMENSION_IN);
   const caseDimensionsIn = length !== null && width !== null && height !== null ? { length, width, height } : null;
 
   return {
@@ -88,8 +103,26 @@ export function normalizeSSActivewearWeight(rawPayload: unknown): NormalizedPack
     unitWeightLb,
     unitWeightConfidence: unitWeightLb !== null ? 'confirmed' : null,
     caseWeightLb,
-    caseQty: toFiniteNumber(row?.caseQty),
+    caseQty: toBoundedNumber(row?.caseQty, MAX_PLAUSIBLE_CASE_QTY),
     caseDimensionsIn,
     caseDimensionsConfidence: caseDimensionsIn !== null ? 'inferred' : null,
   };
+}
+
+/**
+ * The explicit gate between "we have a number" and "it's safe to charge a customer based on it."
+ * A real Canada Post rate request must never silently fall back to an `inferred`-confidence
+ * measurement as if it were supplier-certain -- that's exactly the kind of quiet downgrade this
+ * function exists to prevent. Today this means: weight can be authoritative (both suppliers'
+ * weight fields are supplier-documented), dimensions cannot (S&S's case dimension unit is not
+ * explicitly documented by S&S -- see this file's header). Callers building a live rate request
+ * should check both independently and handle a false result the same way the rest of this
+ * codebase handles missing shipping data: ask for a quote rather than fabricate one.
+ */
+export function hasAuthoritativeUnitWeight(data: NormalizedPackageData): boolean {
+  return data.unitWeightConfidence === 'confirmed' && data.unitWeightLb !== null;
+}
+
+export function hasAuthoritativeCaseDimensions(data: NormalizedPackageData): boolean {
+  return data.caseDimensionsConfidence === 'confirmed' && data.caseDimensionsIn !== null;
 }
