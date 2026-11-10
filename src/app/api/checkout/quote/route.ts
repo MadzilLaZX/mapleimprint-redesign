@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
 
-  const shippingOptions = await shippingProvider.getOptions(body.shippingAddress);
+  const shippingOptions = await shippingProvider.getOptions(body.shippingAddress, subtotalCents);
   const shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
 
   const { taxCents, breakdown: taxBreakdown } = await taxProvider.calculate({

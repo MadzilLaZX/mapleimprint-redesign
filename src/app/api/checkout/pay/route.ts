@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   }
   const lines = priced.filter((r): r is Extract<(typeof priced)[number], { ok: true }> => r.ok).map((r) => r.line);
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
-  const shippingOptions = await shippingProvider.getOptions(addr);
+  const shippingOptions = await shippingProvider.getOptions(addr, subtotalCents);
   const shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
   const { taxCents } = await taxProvider.calculate({ subtotalCents, shippingAddress: addr });
   const totalCents = subtotalCents + shippingOption.cents + taxCents;

@@ -10,8 +10,11 @@ export interface ShippingOption {
   cents: number;
 }
 
+// subtotalCents is accepted (not yet used by FreeShippingProvider) so CanadaPostShippingProvider
+// can implement this same interface directly -- activating it becomes swapping the export below,
+// not a signature change propagated through every call site. See canadaPostShippingProvider.ts.
 export interface ShippingQuoteProvider {
-  getOptions(address: ShippingAddressInput): Promise<ShippingOption[]>;
+  getOptions(address: ShippingAddressInput, subtotalCents: number): Promise<ShippingOption[]>;
 }
 
 /**
