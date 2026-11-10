@@ -6,6 +6,7 @@
 import rawProducts from "./generated/products.json";
 import { slugify } from "./slugify";
 import { HOUSE_PRODUCTS } from "./houseProducts/catalogue";
+import { resolveHostedImage } from "./images/resolveHostedImage";
 
 export interface ProductImage {
   url: string;
@@ -149,11 +150,20 @@ export interface CatalogueProduct {
   };
 }
 
+// Supplier-sourced images are resolved through resolveHostedImage() here, once, so every existing
+// consumer (shop grid, product pages, homepage rail) transparently gets our own hosted copy of an
+// image the moment one exists in imageManifest.json — no further changes needed anywhere else.
+// A no-op today (manifest is empty): every URL passes through unchanged.
+const SUPPLIER_PRODUCTS: CatalogueProduct[] = (rawProducts as CatalogueProduct[]).map((p) => ({
+  ...p,
+  images: p.images.map((img) => ({ ...img, url: resolveHostedImage(img.url) })),
+}));
+
 // House-produced (Maple's own) products are merged in alongside the supplier-sourced catalogue —
 // every existing consumer (getProduct, getProductsBySubcategory, the product-detail page's
 // generateStaticParams) picks them up automatically with zero catalogue-engine/supplier-sync
 // changes, since CatalogueProduct's shape has no apparel-specific fields baked in.
-export const PRODUCTS: CatalogueProduct[] = [...(rawProducts as CatalogueProduct[]), ...HOUSE_PRODUCTS];
+export const PRODUCTS: CatalogueProduct[] = [...SUPPLIER_PRODUCTS, ...HOUSE_PRODUCTS];
 
 export function getProductsBySubcategory(categorySlug: string, subcategorySlug: string): CatalogueProduct[] {
   return PRODUCTS.filter(
