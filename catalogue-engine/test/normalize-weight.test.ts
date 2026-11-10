@@ -100,6 +100,24 @@ describe('normalizeSSActivewearWeight', () => {
     });
     expect(result.caseDimensionsIn).toBeNull();
   });
+
+  it('rejects the real caseWidth=188 outlier found live in S&S data (Columbia Powder Lite II jacket)', () => {
+    // Found by validating normalizeWeight against every real S&S row in the database
+    // (2026-11-11), not invented: this exact case (12 jackets, caseWidth 188", caseHeight 11.5",
+    // caseLength 19") is the only dimension outlier across all 1,102 S&S products -- a case
+    // measuring 15+ feet in one dimension is not a real folded-jacket carton, almost certainly an
+    // upstream data error in S&S's own feed. Kept as a permanent regression fixture: this is
+    // exactly the real-world case the sanity bound exists to catch, not a hypothetical.
+    const result = normalizeSSActivewearWeight({
+      sampleRow: { unitWeight: 1.2, caseWidth: 188, caseHeight: 11.5, caseLength: 19, caseQty: 12 },
+    });
+    expect(result.caseDimensionsIn).toBeNull();
+    expect(result.caseDimensionsConfidence).toBeNull();
+    // The bad dimension must not poison the (separately real) weight and case quantity on the
+    // same row -- each field is validated independently.
+    expect(result.unitWeightLb).toBe(1.2);
+    expect(result.caseQty).toBe(12);
+  });
 });
 
 describe('hasAuthoritativeUnitWeight / hasAuthoritativeCaseDimensions', () => {
