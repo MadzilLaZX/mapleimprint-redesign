@@ -108,33 +108,45 @@ export function estimateParcelWeightLb(
   return total;
 }
 
+/**
+ * Quotes DELIVERY only -- free shipping above the threshold, or a live Canada Post rate at/below
+ * it. Deliberately does NOT bundle Ottawa pickup into this result (an earlier version of this
+ * file did, catching a delivery-quote failure and silently degrading to a pickup-only list --
+ * that conflated "a choice the customer can always separately make" with "the resolved outcome
+ * of their delivery request," which is exactly backwards: a customer who typed a real shipping
+ * address and wants it delivered must see a clear failure, never a quiet substitution of a
+ * fulfillment method they didn't ask for).
+ *
+ * getOptions() ALWAYS either returns a real delivery option or throws ShippingRateUnavailableError
+ * -- it never returns an empty/degraded array. The caller (checkout API routes) catches that error
+ * and surfaces its message as a 422, which is what "prevent delivery checkout from proceeding"
+ * means in practice: the delivery path is blocked with a clear reason, not silently rerouted.
+ *
+ * Ottawa pickup is a separate, always-available, explicitly-selected fulfillment method with no
+ * documented eligibility requirement beyond "the customer chooses it" (the only pickup policy on
+ * record, in this file's own header, is "always offered regardless of order size" -- no minimum/
+ * maximum order size, item restriction, or notice period is documented anywhere in this codebase,
+ * and none is invented here). It must be offered by the CALLER as its own independent selection
+ * -- e.g. a "Ship to me" / "Pick up in Ottawa" choice the customer makes BEFORE any delivery rate
+ * is even requested -- never as a value returned by this function.
+ */
 export class CanadaPostShippingProvider implements ShippingQuoteProvider {
   async getOptions(address: ShippingAddressInput, subtotalCents: number): Promise<ShippingOption[]> {
-    // Ottawa pickup is always offered regardless of order size -- built first so it's still part
-    // of `options` even if everything below it fails to produce a live rate.
-    const options: ShippingOption[] = [OTTAWA_PICKUP_OPTION];
-
     if (subtotalCents > FREE_SHIPPING_THRESHOLD_CENTS) {
-      options.push({ id: "free", label: "Free Shipping", cents: 0 });
-      return options;
+      return [{ id: "free", label: "Free Shipping", cents: 0 }];
     }
 
-    // A malformed/non-Canadian address is the customer's input to fix, not something to degrade
-    // around silently -- this throws and propagates to the caller (checkout API routes catch
-    // ShippingRateUnavailableError specifically and return a 422 with this exact message), the
-    // same "the server re-validates, never trusts the client" rule as postal code format
-    // elsewhere in checkout.
+    // A malformed/non-Canadian address is the customer's input to fix -- this throws and
+    // propagates to the caller (checkout API routes catch ShippingRateUnavailableError
+    // specifically and return a 422 with this exact message), the same "the server re-validates,
+    // never trusts the client" rule as postal code format elsewhere in checkout.
     assertValidCanadianAddress(address);
 
-    try {
-      const liveRate = await fetchCanadaPostRate(address, subtotalCents);
-      options.push(liveRate);
-    } catch (err) {
-      if (!(err instanceof ShippingRateUnavailableError)) throw err; // a genuinely unexpected failure still propagates
-      // A valid address but no live rate available (not configured yet, missing parcel data, or
-      // a real Canada Post outage once this is live) is not the customer's fault and must not
-      // block checkout entirely -- they can still choose Ottawa pickup.
-    }
-    return options;
+    // Any failure here -- not configured yet, missing parcel data, or a real Canada Post outage
+    // once this is live -- propagates as-is. It is NOT caught and degraded: the customer asked
+    // for delivery, delivery could not be quoted, and that must block checkout with a clear
+    // reason, not quietly become a pickup order they never chose.
+    const liveRate = await fetchCanadaPostRate(address, subtotalCents);
+    return [liveRate];
   }
 }

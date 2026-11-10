@@ -56,4 +56,43 @@ describe('stripHtml', () => {
     expect(output).not.toMatch(/&trade;|&nbsp;/); // no raw entities leak through to the customer
     expect(output).toContain('WindWall™');
   });
+
+  it('is idempotent -- running it twice never re-decodes or further mangles already-clean text', () => {
+    // A real safety property, not just a style preference: fullDescription is read, stripped at
+    // export time, and could in principle be re-processed (e.g. a future re-export of data that
+    // was already exported once). Running stripHtml on its own output must be a no-op.
+    const inputs = [
+      'WindWall&trade; fabric with a DWR&reg; finish',
+      'men&#039;s fit, a &ldquo;modern&rdquo; cut',
+      '<p>Line one</p><p>Line two</p>',
+    ];
+    for (const input of inputs) {
+      const once = stripHtml(input);
+      const twice = stripHtml(once);
+      expect(twice).toBe(once);
+    }
+  });
+
+  it('decodes &lt;/&gt; to literal visible characters without resurrecting a stripped tag', () => {
+    // Order matters here: real <tag> stripping runs BEFORE &lt;/&gt; decoding, so a supplier's
+    // intentional "<old style>" text (entity-encoded so it displays literally, not as a tag)
+    // can never be re-interpreted as an actual tag needing removal, and a real <p> tag is already
+    // gone by the time this decode step runs.
+    const output = stripHtml('<p>Sizes 8&gt;10, compare &lt;old style&gt; vs new</p>');
+    expect(output).toBe('Sizes 8>10, compare <old style> vs new');
+  });
+
+  it('handles a real S&S-style description (nested list/strong/span tags, already-working entities) without regression', () => {
+    // Real rawPayload.description for a Puma Golf polo (S&S Activewear), fetched live
+    // 2026-11-10 -- confirms the newly-added entity decoding doesn't disturb S&S's different
+    // HTML shape (list/strong/span tags vs. SanMar's flatter nbsp-heavy text), which was already
+    // working correctly in production before this fix.
+    const real =
+      '<ul><li>5.6 oz./yd² (US), 9.4 oz./L yd (CA), 85/15 polyester/cotton</li><li>Subtle heather texture</li></ul><strong><span style="text-decoration: underline;">Responsible Manufacturing</span>:</strong>&nbsp;the company that makes this product is Fair Labor Accredited.';
+    const output = stripHtml(real);
+    expect(output).not.toMatch(/<[a-zA-Z/]/); // every tag stripped, including nested strong/span
+    expect(output).toContain('5.6 oz./yd² (US)');
+    expect(output).toContain('Responsible Manufacturing:');
+    expect(output).not.toMatch(/&nbsp;|&quot;/); // S&S's own already-handled entities still decode
+  });
 });
