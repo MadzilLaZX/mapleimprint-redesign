@@ -66,11 +66,6 @@ export async function POST(request: Request) {
           squareOrderId: payment.order_id,
           squarePaymentId: payment.id,
         });
-        await supabaseAdmin
-          .from("PaymentAttempt")
-          .update({ status: "SUCCEEDED", squarePaymentId: payment.id })
-          .eq("orderId", order.id)
-          .neq("status", "SUCCEEDED");
       }
     }
   }

@@ -13,7 +13,21 @@ import { triggerDesignExport } from "@/lib/studio/exportDesign";
 export async function markOrderPaidAndNotify(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabaseAdmin: SupabaseClient<any, any, any>,
-  { orderId, squareOrderId, squarePaymentId }: { orderId: string; squareOrderId: string; squarePaymentId: string },
+  {
+    orderId,
+    squareOrderId,
+    squarePaymentId,
+    rawResponse,
+  }: {
+    orderId: string;
+    squareOrderId: string;
+    squarePaymentId: string;
+    /** The full Square payments.create() response, when this call is the synchronous /pay
+     *  success path — kept on PaymentAttempt as an audit trail. Omitted when called from the
+     *  webhook path, which has no equivalent payments.create() response of its own (the webhook
+     *  event itself is already stored separately in ProcessedWebhookEvent.payload). */
+    rawResponse?: object;
+  },
 ): Promise<void> {
   const { data: transitioned, error: updateError } = await supabaseAdmin
     .from("MapleOrder")
@@ -30,7 +44,26 @@ export async function markOrderPaidAndNotify(
   // No row returned means either the order didn't exist, or (far more likely) it was already
   // PAID — the other convergent path (sync response vs. webhook) got there first. Either way,
   // there's nothing further to do here.
-  if (!transitioned || transitioned.emailSentAt) return;
+  if (!transitioned) return;
+
+  // Done here, right after the MapleOrder transition succeeds, rather than as a separate
+  // statement at each call site (as it used to be) — a real order was found in this exact stale
+  // state live: MapleOrder correctly PAID with its confirmation email already sent, but
+  // PaymentAttempt still showing FAILED from an earlier synchronous decline that Square later
+  // reversed, because the two updates were separate, non-atomic calls and only one of them ran to
+  // completion. Keeping both writes inside this one function call doesn't make them a single DB
+  // transaction, but it does mean there is now exactly one place this can go out of sync instead
+  // of two independent call sites each capable of doing it differently.
+  const { error: attemptError } = await supabaseAdmin
+    .from("PaymentAttempt")
+    .update({ status: "SUCCEEDED", squarePaymentId, ...(rawResponse ? { rawResponse } : {}) })
+    .eq("orderId", orderId)
+    .neq("status", "SUCCEEDED");
+  if (attemptError) {
+    console.error("[checkout] failed to mark payment attempt succeeded:", attemptError);
+  }
+
+  if (transitioned.emailSentAt) return;
 
   const { data: lines } = await supabaseAdmin
     .from("MapleOrderLine")

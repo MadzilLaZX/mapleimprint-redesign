@@ -10,6 +10,12 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    // Lets *.test.ts files import siblings with an explicit .ts extension (e.g. "./validation.ts")
+    // -- required for them to also run directly under `node --test`, which needs the real
+    // extension since it isn't going through Next's bundler. Safe under moduleResolution:
+    // "bundler" + noEmit: true (no emitted output's import paths are affected); every other file
+    // in the codebase keeps using extension-less imports as before.
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,

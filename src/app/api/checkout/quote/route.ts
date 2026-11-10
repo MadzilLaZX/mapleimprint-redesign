@@ -47,7 +47,16 @@ export async function POST(request: Request) {
 
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
 
-  const shippingOptions = await shippingProvider.getOptions(body.shippingAddress, subtotalCents);
+  let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
+  try {
+    shippingOptions = await shippingProvider.getOptions(body.shippingAddress, subtotalCents);
+  } catch (err) {
+    console.error("[checkout] shipping quote failed:", err);
+    return NextResponse.json(
+      { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
+      { status: 502 },
+    );
+  }
   const shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
 
   const { taxCents, breakdown: taxBreakdown } = await taxProvider.calculate({

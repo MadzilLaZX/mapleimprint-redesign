@@ -100,6 +100,13 @@ export { validateImage, isDuplicateImage, type ImageValidationOptions, type Imag
 export { ingestImage, fetchImageBytes, type ImageFetcher, type IngestImageResult, type IngestImageOptions } from './images/ingest.js';
 
 export {
+  normalizeSanMarWeight,
+  normalizeSSActivewearWeight,
+  type NormalizedPackageData,
+  type WeightConfidence,
+} from './shipping/normalizeWeight.js';
+
+export {
   checkOrderAvailability,
   type OrderLineItem,
   type LineAvailability,

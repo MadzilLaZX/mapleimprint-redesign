@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test src/lib/checkout/validation.test.ts src/lib/checkout/canadaPostShippingProvider.test.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.13",

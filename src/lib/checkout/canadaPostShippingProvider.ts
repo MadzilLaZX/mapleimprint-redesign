@@ -23,12 +23,21 @@ import type { ShippingAddressInput, ShippingOption, ShippingQuoteProvider } from
 //    assuming the "Suite 125, 2487 Kaladar Ave, Ottawa, ON K1V 8B9" address already shown in
 //    the site footer is also the ship-from location).
 //
-// 2. Package weight and dimensions. Verified (grepped src/lib/generated/products.json and the
-//    whole houseProducts catalogue) - no product anywhere carries a weight or dimension field.
-//    Canada Post's rating API requires per-package weight and dimensions; without this, no real
-//    quote can be requested regardless of credentials. This needs sourcing from S&S/SanMar/Joto
-//    supplier data, or Maple Imprint's own measurements for house-decorated items, before
-//    fetchCanadaPostRate() below can do anything but throw.
+// 2. Package weight and dimensions — PARTIALLY RESOLVED 2026-11-10. The source data exists:
+//    SupplierProduct.rawPayload already carries a confirmed per-piece weight (pounds) for 671/671
+//    SanMar and 1102/1102 S&S products in the live DB today — it was ingested all along, just
+//    never read. S&S additionally carries confirmed case weight and (lower-confidence, unit not
+//    explicitly documented — see normalizeWeight.ts) case dimensions. See
+//    catalogue-engine/src/shipping/normalizeWeight.ts for the extraction + confidence labelling,
+//    and catalogue-engine/.../006_supplier_product_weight.sql (prepared, not applied) for the
+//    schema this would land in.
+//    What's still missing: (a) that data hasn't been promoted from SupplierProduct.rawPayload
+//    into MasterProduct/ProductVariant/the generated CatalogueProduct shape checkout actually
+//    reads — the migration above is schema-only, population is a separate, not-yet-approved step;
+//    (b) Joto drinkware and all house-produced (banner/sticker/business-card/etc.) products have
+//    no supplier weight source at all and would need Maple's own measurements; (c) no product
+//    anywhere carries a per-unit *dimension*, only S&S's per-case dimensions. estimateParcelWeightLb
+//    below is ready for real cart data the moment any of this lands; it is not wired to checkout.
 
 export const FREE_SHIPPING_THRESHOLD_CENTS = 30000; // CAD $300.00, before tax
 
@@ -48,6 +57,22 @@ async function fetchCanadaPostRate(
   throw new Error(
     "Canada Post live rating is not configured yet - missing API credentials and/or package weight/dimension data. See canadaPostShippingProvider.ts header.",
   );
+}
+
+/** Sums per-line weight for a Canada Post parcel request. Pure and ready to use the moment cart
+ *  lines carry a real unitWeightLb (see header note above) — not called from anywhere yet, since
+ *  no cart line has that field today. Returns null (not 0) when any line is missing a weight,
+ *  so a caller can't silently request a rate against an under-counted parcel. */
+export function estimateParcelWeightLb(
+  lines: { unitWeightLb: number | null; quantity: number }[],
+): number | null {
+  if (lines.length === 0) return null;
+  let total = 0;
+  for (const line of lines) {
+    if (line.unitWeightLb === null || line.quantity < 1) return null;
+    total += line.unitWeightLb * line.quantity;
+  }
+  return total;
 }
 
 export class CanadaPostShippingProvider implements ShippingQuoteProvider {

@@ -7,6 +7,7 @@ import { shippingProvider } from "@/lib/checkout/shippingProvider";
 import { generateOrderReference } from "@/lib/checkout/generateOrderReference";
 import { humanPaymentError } from "@/lib/checkout/errorMessages";
 import { markOrderPaidAndNotify } from "@/lib/checkout/fulfillOrder";
+import { validatePostalCode } from "@/lib/checkout/validation";
 import { SquareError } from "square";
 
 interface DeliveryAddressInput {
@@ -52,6 +53,10 @@ export async function POST(request: Request) {
   if (!addr?.addressLine1 || !addr?.city || !addr?.province || !addr?.postalCode || !addr?.country) {
     return badRequest("Missing delivery address.");
   }
+  // Client-side validation (CheckoutForm) already checks this format, but that's bypassable by
+  // calling this endpoint directly — the authoritative payment path must not trust it unverified.
+  const postalCodeError = validatePostalCode(addr.postalCode, addr.country);
+  if (postalCodeError) return badRequest(postalCodeError);
   if (!body.sourceId || !body.idempotencyKey || !body.sourceType) {
     return badRequest("Missing payment information.");
   }
@@ -70,7 +75,19 @@ export async function POST(request: Request) {
   }
   const lines = priced.filter((r): r is Extract<(typeof priced)[number], { ok: true }> => r.ok).map((r) => r.line);
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
-  const shippingOptions = await shippingProvider.getOptions(addr, subtotalCents);
+  let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
+  try {
+    shippingOptions = await shippingProvider.getOptions(addr, subtotalCents);
+  } catch (err) {
+    // A live-rate provider (e.g. CanadaPostShippingProvider once activated) can legitimately fail
+    // to quote — never let that crash checkout with an unhandled 500. FreeShippingProvider never
+    // throws, so this only ever fires once a real carrier integration is live.
+    console.error("[checkout] shipping quote failed:", err);
+    return NextResponse.json(
+      { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
+      { status: 502 },
+    );
+  }
   const shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
   const { taxCents } = await taxProvider.calculate({ subtotalCents, shippingAddress: addr });
   const totalCents = subtotalCents + shippingOption.cents + taxCents;
@@ -242,12 +259,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: reason }, { status: 202 });
     }
 
-    await markOrderPaidAndNotify(supabaseAdmin, { orderId, squareOrderId, squarePaymentId: payment.id });
-
-    await supabaseAdmin
-      .from("PaymentAttempt")
-      .update({ status: "SUCCEEDED", squarePaymentId: payment.id, rawResponse: paymentResponse as unknown as object })
-      .eq("idempotencyKey", body.idempotencyKey);
+    await markOrderPaidAndNotify(supabaseAdmin, {
+      orderId,
+      squareOrderId,
+      squarePaymentId: payment.id,
+      rawResponse: paymentResponse as unknown as object,
+    });
 
     return NextResponse.json({ ok: true, orderReference });
   } catch (err) {
