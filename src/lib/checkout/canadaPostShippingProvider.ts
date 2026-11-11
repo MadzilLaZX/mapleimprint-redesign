@@ -1,4 +1,4 @@
-import type { ShippingAddressInput, ShippingOption, ShippingQuoteProvider } from "./shippingProvider";
+import type { ShippingAddressInput, ShippingOption, ShippingQuoteLine, ShippingQuoteProvider } from "./shippingProvider";
 // Explicit .ts extension (allowImportingTsExtensions, tsconfig.json) -- unlike this file's other,
 // type-only imports above, this is a real runtime import, and this file's own test needs to run
 // it directly via `node --test` (no bundler to resolve an extension-less specifier).
@@ -14,11 +14,9 @@ import { validatePostalCode } from "./validation.ts";
 //   - Live Canada Post rates on orders CAD $300 or less.
 //   - Free Ottawa local pickup, always offered regardless of order size.
 //
-// NOT READY TO ACTIVATE - two remaining gaps (a third, the getOptions() interface needing the
-// order subtotal, was closed 2026-11-10: ShippingQuoteProvider.getOptions() now takes subtotalCents
-// on every implementation, and both call sites pass it, with zero behavior change to the live
-// FreeShippingProvider -- CanadaPostShippingProvider below implements that same interface
-// directly, so activating this is now a literal one-line export swap):
+// NOT READY TO ACTIVATE - one remaining gap (two others closed since this file was first written:
+// 2026-11-10 added subtotalCents to getOptions(); 2026-11-11 wired real per-line weight all the
+// way from SupplierProduct through to this function's own `lines` parameter -- see below):
 //
 // 1. Canada Post Developer Program credentials. None exist in this codebase (grepped, no
 //    CANADA_POST env var anywhere, unlike SQUARE/RESEND). Needed: a Canada Post
@@ -27,21 +25,25 @@ import { validatePostalCode } from "./validation.ts";
 //    assuming the "Suite 125, 2487 Kaladar Ave, Ottawa, ON K1V 8B9" address already shown in
 //    the site footer is also the ship-from location).
 //
-// 2. Package weight and dimensions — PARTIALLY RESOLVED 2026-11-10. The source data exists:
-//    SupplierProduct.rawPayload already carries a confirmed per-piece weight (pounds) for 671/671
-//    SanMar and 1102/1102 S&S products in the live DB today — it was ingested all along, just
-//    never read. S&S additionally carries confirmed case weight and (lower-confidence, unit not
-//    explicitly documented — see normalizeWeight.ts) case dimensions. See
-//    catalogue-engine/src/shipping/normalizeWeight.ts for the extraction + confidence labelling,
-//    and catalogue-engine/.../006_supplier_product_weight.sql (prepared, not applied) for the
-//    schema this would land in.
-//    What's still missing: (a) that data hasn't been promoted from SupplierProduct.rawPayload
-//    into MasterProduct/ProductVariant/the generated CatalogueProduct shape checkout actually
-//    reads — the migration above is schema-only, population is a separate, not-yet-approved step;
-//    (b) Joto drinkware and all house-produced (banner/sticker/business-card/etc.) products have
-//    no supplier weight source at all and would need Maple's own measurements; (c) no product
-//    anywhere carries a per-unit *dimension*, only S&S's per-case dimensions. estimateParcelWeightLb
-//    below is ready for real cart data the moment any of this lands; it is not wired to checkout.
+// 2. Package weight — RESOLVED 2026-11-11, pending migration 008's approval/application + a
+//    backfill run (both still awaiting separate approval, per standing instructions -- this file's
+//    code does not depend on either having happened). The full chain now exists end to end:
+//    SupplierProduct.rawPayload -> normalizeWeight.ts (extraction + confidence) -> migration 008's
+//    columns (schema prepared, not applied) -> export-products-for-frontend.mjs's
+//    resolveShippingWeightLb() (authoritative-only gate) -> CatalogueProduct.shippingWeightLb ->
+//    priceCartItem.ts's lineShippingWeightLb() -> PricedCartLine.unitWeightLb -> the `lines`
+//    parameter below -> estimateParcelWeightLb(). Every supplier product exports
+//    shippingWeightLb: null today purely because migration 008 + the backfill haven't run yet --
+//    not because any code in this chain is unfinished. getOptions() below already refuses to
+//    request a live rate when that leaves any cart line without a weight (see the gate at the top
+//    of the method), so activating Canada Post later needs no further weight-plumbing work.
+//
+//    Still not solved by any of this, and still a real gap once credentials exist: (a) Joto
+//    drinkware and all house-produced (banner/sticker/business-card/etc.) products have no
+//    supplier weight source at all and would need Maple's own physical measurements --
+//    CatalogueProduct.shippingWeightLb stays undefined for these regardless of migration 008;
+//    (b) no product anywhere carries a per-unit *dimension*, only S&S's per-case dimensions
+//    (and those are 'inferred', not authoritative -- see hasAuthoritativeCaseDimensions()).
 
 export const FREE_SHIPPING_THRESHOLD_CENTS = 30000; // CAD $300.00, before tax
 
@@ -92,10 +94,12 @@ async function fetchCanadaPostRate(
   );
 }
 
-/** Sums per-line weight for a Canada Post parcel request. Pure and ready to use the moment cart
- *  lines carry a real unitWeightLb (see header note above) — not called from anywhere yet, since
- *  no cart line has that field today. Returns null (not 0) when any line is missing a weight,
- *  so a caller can't silently request a rate against an under-counted parcel. */
+/** Sums per-line weight for a Canada Post parcel request. Called from getOptions() below with
+ *  the real cart lines a checkout request carries (PricedCartLine.unitWeightLb, via
+ *  priceCartItem.ts's lineShippingWeightLb()). Returns null (not 0) when any line is missing a
+ *  weight, so a caller can't silently request a rate against an under-counted parcel -- every
+ *  line exports null today since migration 008 + its backfill haven't run yet, so in practice
+ *  this always returns null right now; it is correct and ready the moment real data lands. */
 export function estimateParcelWeightLb(
   lines: { unitWeightLb: number | null; quantity: number }[],
 ): number | null {
@@ -131,7 +135,7 @@ export function estimateParcelWeightLb(
  * is even requested -- never as a value returned by this function.
  */
 export class CanadaPostShippingProvider implements ShippingQuoteProvider {
-  async getOptions(address: ShippingAddressInput, subtotalCents: number): Promise<ShippingOption[]> {
+  async getOptions(address: ShippingAddressInput, subtotalCents: number, lines: ShippingQuoteLine[]): Promise<ShippingOption[]> {
     if (subtotalCents > FREE_SHIPPING_THRESHOLD_CENTS) {
       return [{ id: "free", label: "Free Shipping", cents: 0 }];
     }
@@ -142,10 +146,24 @@ export class CanadaPostShippingProvider implements ShippingQuoteProvider {
     // never trusts the client" rule as postal code format elsewhere in checkout.
     assertValidCanadianAddress(address);
 
-    // Any failure here -- not configured yet, missing parcel data, or a real Canada Post outage
-    // once this is live -- propagates as-is. It is NOT caught and degraded: the customer asked
-    // for delivery, delivery could not be quoted, and that must block checkout with a clear
-    // reason, not quietly become a pickup order they never chose.
+    // Checked before ever attempting a live rate call, same reasoning as the address check above:
+    // a cart containing any item without an authoritative weight (today, that's every item --
+    // migration 008 + its backfill haven't run) cannot be weighed accurately, so requesting a
+    // real Canada Post rate for it would either fail against the API or, worse, under-quote a
+    // real parcel. estimateParcelWeightLb() already returns null for exactly this case; this is
+    // the one place that null gets turned into an honest, specific customer-facing message rather
+    // than a generic failure.
+    const parcelWeightLb = estimateParcelWeightLb(lines);
+    if (parcelWeightLb === null) {
+      throw new ShippingRateUnavailableError(
+        "We don't have a shipping weight for everything in your cart yet — request a quote and we'll confirm shipping manually.",
+      );
+    }
+
+    // Any failure here -- not configured yet, or a real Canada Post outage once this is live --
+    // propagates as-is. It is NOT caught and degraded: the customer asked for delivery, delivery
+    // could not be quoted, and that must block checkout with a clear reason, not quietly become a
+    // pickup order they never chose.
     const liveRate = await fetchCanadaPostRate(address, subtotalCents);
     return [liveRate];
   }

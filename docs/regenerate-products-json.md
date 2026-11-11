@@ -5,9 +5,79 @@ started -- it predates the 669 SanMar description backfill and the `stripHtml()`
 fix (both applied directly to the database; see commit history on `checkout-square-payments`).
 Neither change is visible on the live site until this file is regenerated for real.
 
-This has not been run this session in any environment Claude has access to, because no sandbox
-in this engagement has ever had a real `DATABASE_URL`. Nothing was invented or guessed to work
-around that -- this document is the exact procedure for whoever has real credentials.
+## Update, 2026-11-11: an alternate path was actually built and run against live data this round
+
+No sandbox in this engagement has ever had a real `DATABASE_URL` -- that remains true, and
+`DATABASE_URL` was never exposed, invented, or committed. But `SUPABASE_SERVICE_ROLE_KEY` **was**
+already present in the website's `.env.local` this round (the same key
+`src/lib/server/supabaseAdmin.ts` uses for every checkout/order operation all engagement) -- an
+"existing authorized secure environment," per your own Priority 3 wording. That made it possible
+to actually build and run a real regeneration this round, not just document the Prisma procedure
+for someone else to run later.
+
+**`catalogue-engine/scripts/export-products-via-supabase-rest.mjs`** (new file) authenticates with
+that key against Supabase's REST (PostgREST) API instead of Prisma, paginating through
+`MasterProduct`/`ProductVariant`/`SupplierVariantOffer`/`SupplierProduct`/`ProductImage`/
+`MarkupRule`/`SupplierProductSpec` directly. It reuses the exact same pricing/formatting logic as
+the Prisma script below -- `stripHtml()`, `chartFor()`, `resolveMarkupRule()`,
+`cheapestOrderableOffer()`, `buildPriceTiers()`, `resolveShippingWeightLb()`, and the real
+`calculatePrice()` engine are all imported, none reimplemented. It writes to
+**`src/lib/generated/products.staged-via-rest.json`** -- a new, separate file, never the live
+`products.json` -- per the standing "do not overwrite the production catalog without validation
+and approval" instruction.
+
+**This was actually run against the live database this round.** Results, independently validated
+(not just produced and trusted):
+
+- **1782 published products** exported (the live file currently has 1749 -- 33 more have been
+  published in the DB since the live file was last generated; nothing from the live file is
+  missing in the new export).
+- **669 description diffs** -- exactly matching the known SanMar description-backfill count. This
+  confirms the regeneration genuinely picks up that already-applied database fix, which has never
+  been visible on the live site until a real regeneration runs.
+- **1203 `startingPrice` diffs, all increases, zero decreases** (ratios ranging +2.2% to +52.5%,
+  not uniform). This was investigated before trusting it, not assumed benign: manually recomputing
+  one product (`allpro-men-s-pro-lock-performance-t-shirt`) directly against the live database --
+  its real cheapest wholesale cost ($8.09 CAD) run through the real `calculatePrice()` engine with
+  the live database's one active `MarkupRule` (a global 40% markup, confirmed via a direct query)
+  -- yields **$33.99**, exactly matching the new export, not the live file's stale $31.33. The
+  non-uniform ratio spread is itself expected, not a red flag: printing cost is a fixed add-on
+  (never marked up, per the pricing engine's own documented formula), so a flat markup-percentage
+  change produces a *larger* total-price swing for wholesale-cost-dominated products and a
+  *smaller* swing for printing-cost-dominated ones -- exactly the pattern observed. **Conclusion:
+  the live `products.json` is pricing roughly two-thirds of the priced catalogue below what the
+  real pricing engine would compute today against the live database's current markup rule and
+  wholesale costs** -- a real, concrete, launch-relevant gap this regeneration would fix, not a
+  cosmetic staleness issue.
+- Size specs: 0 rows found (unchanged from the live file -- `sync-specs.mjs` still hasn't been run
+  against real S&S credentials, as already documented elsewhere).
+
+**Not yet done -- your decision, not executed without it:** promoting
+`products.staged-via-rest.json` to replace the live `products.json`. The file is staged, committed
+alongside this round's other changes for your review, and the comparison above is the validation
+this document's own "After running" checklist calls for -- but the actual `mv`/overwrite is a
+production-catalog change and needs your explicit go-ahead, especially given the price increases
+are real and would visibly change what customers see across most of the priced catalogue.
+
+### Running it again later
+
+```bash
+cd catalogue-engine
+npm run build
+node scripts/export-products-via-supabase-rest.mjs
+```
+
+Reads `SUPABASE_SERVICE_ROLE_KEY` from the website's `.env.local` automatically (same lookup
+`supabaseAdmin.ts` uses) -- no extra setup beyond having that file in place, which it already is
+in this repo. Pass `--force` only if you expect the staged count to legitimately fall below 50% of
+the live file's count (mirrors the Prisma script's own safety guard).
+
+## The original Prisma-based procedure (unchanged, remains the primary path if you have a real `DATABASE_URL`)
+
+This has not been run this session via Prisma specifically, because no sandbox in this engagement
+has ever had a real `DATABASE_URL`. Nothing was invented or guessed to work around that -- this
+section is the exact procedure for whoever has real credentials, independent of the REST-based
+path above.
 
 ## What the script does (unchanged, not modified this session)
 

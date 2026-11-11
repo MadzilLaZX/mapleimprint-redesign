@@ -78,7 +78,11 @@ export async function POST(request: Request) {
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
   let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
   try {
-    shippingOptions = await shippingProvider.getOptions(addr, subtotalCents);
+    shippingOptions = await shippingProvider.getOptions(
+      addr,
+      subtotalCents,
+      lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
+    );
   } catch (err) {
     // A live-rate provider (e.g. CanadaPostShippingProvider once activated) can legitimately fail
     // to quote — never let that crash checkout with an unhandled 500. FreeShippingProvider never

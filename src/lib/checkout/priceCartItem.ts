@@ -35,6 +35,19 @@ export interface PricedCartLine {
   designProjectId: string | null;
   designFrozenRevision: number | null;
   designSnapshot: DesignProjectRecord | null;
+  /** Per-unit shipping weight in lb, for estimateParcelWeightLb() (canadaPostShippingProvider.ts).
+   *  Null whenever the underlying CatalogueProduct doesn't carry an authoritative weight yet --
+   *  see lineShippingWeightLb() below, the single source of truth every branch of this function
+   *  uses so a CUSTOM-decorated item and a BLANK purchase of the same product always agree. */
+  unitWeightLb: number | null;
+}
+
+/** A catalogue product's own shippingWeightLb when known, otherwise null -- never a guess, and
+ *  never derived from the item's price/quantity/customization. Decoration (print/embroidery) is
+ *  treated as adding no meaningful weight over the blank garment -- a documented simplification,
+ *  not an attempt at exact precision. */
+export function lineShippingWeightLb(product: { shippingWeightLb?: number | null } | null | undefined): number | null {
+  return product?.shippingWeightLb ?? null;
 }
 
 export type PriceCartItemResult =
@@ -109,6 +122,11 @@ export async function priceCartItem(
     const printingSubtotal = perUnitPrinting * snapshot.totalQuantity;
     const total = blankSubtotal + pricing.designFee + printingSubtotal;
 
+    // The frozen design snapshot carries the same catalogue identity (category/subcategory/slug)
+    // the BLANK branch below looks up directly -- reusing it here means a CUSTOM-decorated item
+    // and a BLANK purchase of the same product always report the same shipping weight.
+    const underlyingProduct = getProduct(snapshot.categorySlug, snapshot.subcategorySlug, snapshot.productSlug);
+
     return {
       ok: true,
       line: {
@@ -124,6 +142,7 @@ export async function priceCartItem(
         designProjectId: item.designProjectId,
         designFrozenRevision: project.frozenRevision,
         designSnapshot: snapshot,
+        unitWeightLb: lineShippingWeightLb(underlyingProduct),
       },
     };
   }
@@ -167,6 +186,7 @@ export async function priceCartItem(
           designProjectId: null,
           designFrozenRevision: null,
           designSnapshot: null,
+          unitWeightLb: lineShippingWeightLb(product),
         },
       };
     }
@@ -191,6 +211,7 @@ export async function priceCartItem(
         designProjectId: null,
         designFrozenRevision: null,
         designSnapshot: null,
+        unitWeightLb: lineShippingWeightLb(product),
       },
     };
   }

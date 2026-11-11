@@ -50,7 +50,11 @@ export async function POST(request: Request) {
 
   let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
   try {
-    shippingOptions = await shippingProvider.getOptions(body.shippingAddress, subtotalCents);
+    shippingOptions = await shippingProvider.getOptions(
+      body.shippingAddress,
+      subtotalCents,
+      lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
+    );
   } catch (err) {
     if (err instanceof ShippingRateUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 422 });

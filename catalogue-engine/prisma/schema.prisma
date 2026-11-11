@@ -196,6 +196,21 @@ model SupplierProduct {
   lastSyncedAt        DateTime
   status              SupplierProductStatus  @default(active)
 
+  // Shipping weight/dimensions -- schema-only mirror of migrations/008_supplier_product_weight.sql
+  // (NOT APPLIED to the live DB as of this writing; see that file's header). Added here so
+  // `npx prisma generate` produces real, typed client fields for normalizeWeight.ts's output to
+  // land in, without requiring a live DB connection (generate is pure schema->client codegen).
+  // Populated by catalogue-engine/scripts/backfill-supplier-weights.mjs once migration 008 is
+  // approved and applied -- every row is null until then.
+  unitWeightLb         Decimal? // per-piece weight, lb (see normalizeWeight.ts for provenance)
+  caseWeightLb         Decimal?
+  caseQty              Int?
+  caseLengthIn         Decimal?
+  caseWidthIn          Decimal?
+  caseHeightIn         Decimal?
+  weightConfidence     String? // 'confirmed' | 'inferred' -- see normalizeWeight.ts's WeightConfidence
+  dimensionsConfidence String? // 'confirmed' | 'inferred'
+
   variantOffers    SupplierVariantOffer[]
   matchCandidates  MatchCandidate[]
   images           ProductImage[]

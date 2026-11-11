@@ -21,7 +21,7 @@ assumes "Suite 125, 2487 Kaladar Ave, Ottawa, ON K1V 8B9" (the address already s
 footer) is also the shipping-origin facility; confirm this explicitly before using it in a real
 rate request.
 
-## Gate 2 -- weight data (partially resolved, not yet promoted to where checkout reads it)
+## Gate 2 -- weight data (full pipeline now built end-to-end; 2 of 3 steps still need your approval to actually run)
 
 | Item | Status |
 |---|---|
@@ -29,15 +29,20 @@ rate request.
 | S&S per-piece + case weight | Confirmed, extractable, 1,102/1,102 products (`normalizeSSActivewearWeight()`) |
 | S&S case dimensions | Extractable but **not authoritative** -- unit not documented by S&S, only inferred from physical plausibility. `hasAuthoritativeCaseDimensions()` returns `false` for every one today, by design. Do not treat these as real until S&S confirms the unit or a sample is physically measured. |
 | Per-unit (not per-case) dimensions | **None exist anywhere**, for any supplier. This is the real remaining gap -- weight is solved, dimensions are not. |
-| Joto drinkware / house products | **Zero weight data of any kind.** No supplier API exists for these (Maple produces them in-house). The only path is physically weighing a sample of each. `CatalogueProduct.shippingWeightLb` (src/lib/products.ts) is the already-built, currently-empty field waiting for those real numbers -- never estimate one from a product's dimensions or material. |
-| Migration 008 (adds the weight columns to `SupplierProduct`) | Prepared, reviewed, validated against the full live dataset (671/671 + 1,101/1,102, one real anomaly correctly rejected) -- **not applied**. |
+| Joto drinkware / house products | **Zero weight data of any kind.** No supplier API exists for these (Maple produces them in-house). The only path is physically weighing a sample of each. `CatalogueProduct.shippingWeightLb` (src/lib/products.ts) is the already-built field waiting for those real numbers -- never estimate one from a product's dimensions or material. |
+| Migration 008 (adds the weight columns to `SupplierProduct`) | Prepared, reviewed, validated against the full live dataset (671/671 + 1,101/1,102, one real anomaly correctly rejected). Its Prisma schema counterpart (`catalogue-engine/prisma/schema.prisma`) was added 2026-11-11 so the client has real typed fields -- schema-only, `prisma generate` run locally with no DB connection, nothing applied to the live database. **SQL migration itself still not applied.** |
 | Backfill script | Prepared, dry-run tested, idempotent, reversible, touches only the 8 new columns -- **not executed**. |
-| Promotion to `MasterProduct`/`ProductVariant`/the generated catalogue shape checkout actually reads | **Not built at all yet.** Migration 008 lands data on `SupplierProduct`; a further step (not yet designed) would need to carry it through to where `priceCartItem.ts`/checkout can read a per-line weight. This is real, not-yet-started work, not just an approval away. |
+| Promotion to the generated catalogue shape checkout reads | **Built and tested 2026-11-11.** `export-products-for-frontend.mjs`'s `cheapestOrderableOffer()` now carries the winning offer's own `unitWeightLb`/`weightConfidence` through, and a new `resolveShippingWeightLb()` gates it on `hasAuthoritativeUnitWeight()` before it ever reaches `CatalogueProduct.shippingWeightLb` -- 8 new tests in `catalogue-engine/test/shipping-weight-export.test.ts`, all passing. |
+| Checkout wiring | **Built and tested 2026-11-11.** `priceCartItem.ts`'s `lineShippingWeightLb()` reads `shippingWeightLb` for every line type (BLANK, bundle, and CUSTOM-decorated -- the last via the frozen design snapshot's own `productSlug`/`categorySlug`/`subcategorySlug`, so a decorated item reports the same weight as the blank product it's made from) onto the new `PricedCartLine.unitWeightLb` field. `ShippingQuoteProvider.getOptions()` now takes a `lines` parameter; `CanadaPostShippingProvider.getOptions()` calls `estimateParcelWeightLb()` on it and throws a specific, honest `ShippingRateUnavailableError` ("We don't have a shipping weight for everything in your cart yet...") before ever attempting a live rate call if any line lacks an authoritative weight. 3 new tests in `canadaPostShippingProvider.test.ts` confirm this gate is a genuinely separate check from the credential-missing failure beneath it, not the same error reused. `FreeShippingProvider` (still the live export) ignores the new parameter -- zero behavior change to the live site. |
 
-**Practical implication:** even with migration 008 approved and the backfill run, Canada Post
-still cannot be activated for apparel until that promotion step exists, and cannot be activated
-for drinkware/house products until real physical measurements are sourced. Approving 008 now is
-useful groundwork, not the last step.
+**Practical implication:** the only steps left for weight are the two database operations above
+(migration 008's SQL + the backfill script), both still awaiting your separate approval per
+standing instructions, and both genuinely reversible/idempotent as documented. The moment both
+run and a fresh `products.json` export is regenerated, every apparel product with a confirmed
+supplier weight will automatically carry a real `shippingWeightLb` all the way into a Canada Post
+rate request -- no further code change is needed for that to happen. Drinkware/house products
+still need Maple's own physical measurements regardless of migration 008, and per-unit dimensions
+(Gate 3 below) remain a separate, unresolved gap for every supplier.
 
 ## Gate 3 -- dimensions strategy (open question, needs your decision, not a technical blocker)
 
@@ -68,19 +73,28 @@ public rate-estimate tool as a sanity check before the first real customer order
   specific error type and surface its message as a 422 ("fix your input") rather than a generic
   502, and this was verified end-to-end on the live Preview deployment.
 - `estimateParcelWeightLb()` -- sums real per-line weights, returns `null` (not a guessed number)
-  the moment any line lacks one, so a request can't silently go out under-weighted.
+  the moment any line lacks one, so a request can't silently go out under-weighted. **As of
+  2026-11-11, actually called from `getOptions()`** with the real cart lines a checkout request
+  carries -- previously written but unreferenced.
 - `hasAuthoritativeUnitWeight()` / `hasAuthoritativeCaseDimensions()` -- the gate a real rate
-  request must check before trusting a value. Wire these in at activation time; do not bypass them.
+  request must check before trusting a value. **As of 2026-11-11, `hasAuthoritativeUnitWeight()`
+  is wired into the export pipeline** (`resolveShippingWeightLb()` in
+  export-products-for-frontend.mjs) so only supplier-confirmed weights ever reach checkout at all.
+  Wire `hasAuthoritativeCaseDimensions()` in too if the chosen rating approach ends up needing
+  dimensions (Gate 3); do not bypass either gate.
+- Per-line weight threading from checkout's cart-line shape into
+  `CanadaPostShippingProvider.getOptions()` -- **done 2026-11-11** (`ShippingQuoteProvider.getOptions()`
+  now takes a `lines` parameter; `priceCartItem.ts` populates `PricedCartLine.unitWeightLb` for
+  every line type). This was previously the plan's step 2; it's no longer separate, scoped work.
 
 ## Activation sequence, when all gates clear
 
 1. Confirm Gates 1-4 above.
-2. Thread per-line weight through from checkout's cart-line shape into
-   `CanadaPostShippingProvider.getOptions()` (today's interface doesn't receive cart lines at
-   all -- this is new, scoped work, not a flag flip).
-3. Replace the body of `fetchCanadaPostRate()` with a real Canada Post API call, gated behind
+2. Replace the body of `fetchCanadaPostRate()` with a real Canada Post API call, gated behind
    `hasAuthoritativeUnitWeight()` (and `hasAuthoritativeCaseDimensions()` if dimensions end up
-   required by the chosen rating approach).
-4. Swap `shippingProvider`'s export from `FreeShippingProvider` to `CanadaPostShippingProvider` --
+   required by the chosen rating approach). The weight gate upstream of this call (see above) is
+   already in place -- `getOptions()` won't even reach `fetchCanadaPostRate()` for a cart missing
+   weight data on any line.
+3. Swap `shippingProvider`'s export from `FreeShippingProvider` to `CanadaPostShippingProvider` --
    this really is the one-line change at the very end, once everything above is real.
-5. Test on Preview with a handful of real addresses before ever touching Production.
+4. Test on Preview with a handful of real addresses before ever touching Production.

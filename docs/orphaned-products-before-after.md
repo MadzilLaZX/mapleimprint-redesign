@@ -1,9 +1,13 @@
 # Orphaned products: before/after report
 
-Exact current state, re-verified live immediately before writing this report (2026-11-11) --
-unchanged from every prior check this engagement, confirming no drift. **Not executed. Requires
-your approval**, then a run of `catalogue-engine/scripts/unpublish-orphaned-duplicates.mjs --confirm`
-with a real `DATABASE_URL`.
+Exact current state, re-verified live a second time (2026-11-11, same day as the original
+investigation but a fresh query pass) -- unchanged, zero drift. This pass also added a third,
+broader reference check (`MapleOrderLine.cartItemId ILIKE` match against each slug, not just an
+exact `productSlug`/`productName` match) specifically to close any gap the earlier checks might
+have missed -- still zero. **Not executed. Awaiting your final approval for the production
+write**, then a run of `catalogue-engine/scripts/unpublish-orphaned-duplicates.mjs --confirm`
+with a real `DATABASE_URL` (see "Exact execution procedure" below) -- or see "Rollback" if it's
+ever run and needs reversing.
 
 ## Why these 13
 

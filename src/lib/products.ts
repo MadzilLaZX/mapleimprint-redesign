@@ -132,15 +132,18 @@ export interface CatalogueProduct {
   /** Selectable options confirmed on the supplier page (colour/size/finish), shown as choices by
    *  BundleConfigurator and validated server-side at checkout. */
   productOptions?: { name: string; values: string[]; note?: string }[];
-  /** Per-unit shipping weight in pounds, for Canada Post rate requests (see
-   *  catalogue-engine/src/shipping/normalizeWeight.ts for the supplier-sourced equivalent on
-   *  apparel). Always undefined today for every house/Joto product -- unlike apparel, these have
-   *  no supplier API to source a weight from at all (Maple Imprint produces/decorates them
-   *  in-house), so a real number here can only come from physically weighing a sample of each
-   *  product. Never estimate one from a product's listed dimensions/material; leave undefined
-   *  (an honest "unknown") until a real measurement exists, same "don't fabricate a shipping
-   *  number" rule as canadaPostShippingProvider.ts. */
-  shippingWeightLb?: number;
+  /** Per-unit shipping weight in pounds, for Canada Post rate requests. For supplier (SanMar/S&S)
+   *  products, populated by export-products-for-frontend.mjs's resolveShippingWeightLb() -- null
+   *  until migration 008 is applied AND the backfill script runs (neither has happened as of this
+   *  writing; every supplier product exports null today), and even then only when the winning
+   *  offer's own supplier confirmed the unit (hasAuthoritativeUnitWeight() in normalizeWeight.ts --
+   *  never an 'inferred' value). For house/Joto products, always undefined -- unlike apparel,
+   *  these have no supplier API to source a weight from at all (Maple Imprint produces/decorates
+   *  them in-house), so a real number here can only come from physically weighing a sample.
+   *  Never estimate one from a product's listed dimensions/material; leave it unset (an honest
+   *  "unknown") until a real measurement exists, same "don't fabricate a shipping number" rule as
+   *  canadaPostShippingProvider.ts. */
+  shippingWeightLb?: number | null;
   /** Optional design-template metadata, set only on src/lib/houseProducts/engravingCatalogDraft.ts
    *  entries, carried over from the xTool M1 Developer Catalog's "Design templates" sheet for
    *  whenever the personalization-input UI that sheet describes (character-limited customer text

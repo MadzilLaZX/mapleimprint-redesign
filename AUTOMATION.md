@@ -47,8 +47,12 @@ One service account covers both the spreadsheet and file uploads — set it up o
    DNS provider). Sending will fail until the domain is verified.
 3. Create an API key under API Keys → `RESEND_API_KEY`.
 4. Set `RESEND_FROM_EMAIL` to an address on the verified domain, e.g. `quotes@mapleimprint.ca`.
-5. Set `OWNER_NOTIFICATION_EMAIL` to whichever inbox should receive new-lead alerts (defaults to
-   `info@mapleimprint.ca` if unset in code, but set it explicitly).
+5. Set `OWNER_NOTIFICATION_EMAIL` to whichever inbox should receive new-lead *and* paid-order
+   alerts. There is no code-level fallback — confirmed by reading `notify.ts` and
+   `fulfillOrder.ts` directly: when this var is unset, the owner-notification branch is simply
+   skipped (`if (!ownerEmail) return;` / `if (ownerEmail) { ... }`), silently and without error.
+   `.env.example`'s `info@mapleimprint.ca` is a documentation placeholder only, not a value the
+   app will use on its own.
 
 ## 3. Telegram (instant owner alerts)
 

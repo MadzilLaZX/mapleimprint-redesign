@@ -10,11 +10,20 @@ export interface ShippingOption {
   cents: number;
 }
 
+/** The minimal per-line shape a shipping quote needs -- a subset of PricedCartLine, so this
+ *  module doesn't need to import checkout's full cart-line type just to read two fields. */
+export interface ShippingQuoteLine {
+  unitWeightLb: number | null;
+  quantity: number;
+}
+
 // subtotalCents is accepted (not yet used by FreeShippingProvider) so CanadaPostShippingProvider
 // can implement this same interface directly -- activating it becomes swapping the export below,
 // not a signature change propagated through every call site. See canadaPostShippingProvider.ts.
+// `lines` was added alongside unitWeightLb landing on PricedCartLine -- CanadaPostShippingProvider
+// needs real per-line weight to call estimateParcelWeightLb(); FreeShippingProvider ignores it.
 export interface ShippingQuoteProvider {
-  getOptions(address: ShippingAddressInput, subtotalCents: number): Promise<ShippingOption[]>;
+  getOptions(address: ShippingAddressInput, subtotalCents: number, lines: ShippingQuoteLine[]): Promise<ShippingOption[]>;
 }
 
 /**

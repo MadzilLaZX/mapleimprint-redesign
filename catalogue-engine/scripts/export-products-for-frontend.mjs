@@ -22,7 +22,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
-import { APPAREL_PRINT_TIERS, HAT_PRINT_TIERS, PRINT_RULE_VERSION, calculatePrice } from '../dist/index.js';
+import { APPAREL_PRINT_TIERS, HAT_PRINT_TIERS, PRINT_RULE_VERSION, calculatePrice, hasAuthoritativeUnitWeight } from '../dist/index.js';
 import { routeFor, APPAREL_PRODUCT_TYPES, HEADWEAR_PRODUCT_TYPE } from './route-map.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -89,7 +89,7 @@ export function stripHtml(html) {
     .trim();
 }
 
-function chartFor(productType) {
+export function chartFor(productType) {
   if (APPAREL_PRODUCT_TYPES.has(productType)) return { tiers: APPAREL_PRINT_TIERS, engineType: 'apparel' };
   if (productType === HEADWEAR_PRODUCT_TYPE) return { tiers: HAT_PRINT_TIERS, engineType: 'hat' };
   return null; // no chart for this productType (e.g. bags, aprons) — quote-required, not a guess
@@ -101,7 +101,7 @@ function chartFor(productType) {
  *  equals the product's value (or is null, i.e. a wildcard for that field) AND cost falls inside
  *  its min/max cost band if set. This is the resolver the DB schema's override columns were
  *  designed for but that nothing previously implemented. */
-function resolveMarkupRule(rules, { supplierId, brandId, categoryId, productType, cost }) {
+export function resolveMarkupRule(rules, { supplierId, brandId, categoryId, productType, cost }) {
   const candidates = rules.filter(
     (r) =>
       (!r.supplierId || r.supplierId === supplierId) &&
@@ -117,20 +117,44 @@ function resolveMarkupRule(rules, { supplierId, brandId, categoryId, productType
 }
 
 /** Cheapest currently-orderable wholesale offer across a product's variants — "the lowest
- *  legitimate purchasable variant," not just the numerically lowest cost regardless of stock. */
-function cheapestOrderableOffer(variants) {
+ *  legitimate purchasable variant," not just the numerically lowest cost regardless of stock.
+ *  Also carries that SAME offer's supplier weight data through, so a product's shipping weight
+ *  is always sourced from the exact supplier its price was actually computed from, never a
+ *  different/unrelated supplier record when more than one happens to exist. */
+export function cheapestOrderableOffer(variants) {
   let best = null;
   for (const v of variants) {
     for (const offer of v.supplierOffers) {
       if (!offer.isOrderable) continue;
       const cost = Number(offer.wholesaleCost);
-      if (best === null || cost < best.cost) best = { cost, currency: offer.currency, supplierId: offer.supplierProduct.supplierId };
+      if (best === null || cost < best.cost) {
+        best = {
+          cost,
+          currency: offer.currency,
+          supplierId: offer.supplierProduct.supplierId,
+          unitWeightLb: offer.supplierProduct.unitWeightLb === null ? null : Number(offer.supplierProduct.unitWeightLb),
+          weightConfidence: offer.supplierProduct.weightConfidence,
+        };
+      }
     }
   }
   return best;
 }
 
-function buildPriceTiers(chart, engineType, cheapest, markupRule) {
+/** Only ever exports a number when the winning offer's own supplier documented the unit
+ *  (`hasAuthoritativeUnitWeight()` — same gate Canada Post activation itself must pass, see
+ *  normalizeWeight.ts). An 'inferred' or missing weight exports as null, never a guess, exactly
+ *  like startingPrice/priceTiers above. */
+export function resolveShippingWeightLb(cheapest) {
+  if (!cheapest) return null;
+  const authoritative = hasAuthoritativeUnitWeight({
+    unitWeightLb: cheapest.unitWeightLb,
+    unitWeightConfidence: cheapest.weightConfidence,
+  });
+  return authoritative ? cheapest.unitWeightLb : null;
+}
+
+export function buildPriceTiers(chart, engineType, cheapest, markupRule) {
   if (!chart || !cheapest || !markupRule) return null;
   const tiers = [];
   for (const tier of chart.tiers) {
@@ -178,7 +202,12 @@ async function fetchAllPublishedProducts(prisma) {
           include: {
             supplierOffers: {
               where: { isOrderable: true },
-              select: { wholesaleCost: true, currency: true, isOrderable: true, supplierProduct: { select: { supplierId: true } } },
+              select: {
+                wholesaleCost: true,
+                currency: true,
+                isOrderable: true,
+                supplierProduct: { select: { supplierId: true, unitWeightLb: true, weightConfidence: true } },
+              },
             },
           },
         },
@@ -260,6 +289,7 @@ async function main() {
       variants: p.variants.map((v) => ({ colourName: v.colourName, size: v.size })),
       priceTiers,
       startingPrice: priceTiers ? priceTiers[0].pricePerUnit : null,
+      shippingWeightLb: resolveShippingWeightLb(cheapest),
       printRuleVersion: PRINT_RULE_VERSION,
     });
   }

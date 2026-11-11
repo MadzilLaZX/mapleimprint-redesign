@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test src/lib/checkout/validation.test.ts src/lib/checkout/canadaPostShippingProvider.test.ts"
+    "test": "node --import ./scripts/register-test-alias-loader.mjs --test src/lib/checkout/validation.test.ts src/lib/checkout/canadaPostShippingProvider.test.ts src/lib/automation/email/templates.test.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.13",
