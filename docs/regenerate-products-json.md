@@ -38,16 +38,18 @@ and approval" instruction.
 - **1203 `startingPrice` diffs, all increases, zero decreases** (ratios ranging +2.2% to +52.5%,
   not uniform). This was investigated before trusting it, not assumed benign: manually recomputing
   one product (`allpro-men-s-pro-lock-performance-t-shirt`) directly against the live database --
-  its real cheapest wholesale cost ($8.09 CAD) run through the real `calculatePrice()` engine with
-  the live database's one active `MarkupRule` (a global 40% markup, confirmed via a direct query)
-  -- yields **$33.99**, exactly matching the new export, not the live file's stale $31.33. The
-  non-uniform ratio spread is itself expected, not a red flag: printing cost is a fixed add-on
-  (never marked up, per the pricing engine's own documented formula), so a flat markup-percentage
-  change produces a *larger* total-price swing for wholesale-cost-dominated products and a
-  *smaller* swing for printing-cost-dominated ones -- exactly the pattern observed. **Conclusion:
-  the live `products.json` is pricing roughly two-thirds of the priced catalogue below what the
-  real pricing engine would compute today against the live database's current markup rule and
-  wholesale costs** -- a real, concrete, launch-relevant gap this regeneration would fix, not a
+  its real current wholesale cost run through the real `calculatePrice()` engine with the live
+  database's one active `MarkupRule` (confirmed via a direct query -- its own value is internal
+  margin data, not repeated here since this doc lives in a public repo; see the `MarkupRule` table
+  directly if you need the figure) -- yields the exact same retail price as the new export, not
+  the live file's stale, lower one. The non-uniform ratio spread is itself expected, not a red
+  flag: printing cost is a fixed add-on (never marked up, per the pricing engine's own documented
+  formula), so a flat markup-percentage change produces a *larger* total-price swing for
+  wholesale-cost-dominated products and a *smaller* swing for printing-cost-dominated ones --
+  exactly the pattern observed. **Conclusion: the live `products.json` is pricing roughly
+  two-thirds of the priced catalogue below what the real pricing engine would compute today
+  against the live database's current markup rule and wholesale costs** -- a real, concrete,
+  launch-relevant gap this regeneration would fix, not a
   cosmetic staleness issue.
 - Size specs: 0 rows found (unchanged from the live file -- `sync-specs.mjs` still hasn't been run
   against real S&S credentials, as already documented elsewhere).
