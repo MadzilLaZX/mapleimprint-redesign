@@ -82,17 +82,26 @@ function assertValidCanadianAddress(address: ShippingAddressInput): void {
   }
 }
 
+/** The real Canada Post API call, once it exists, needs the computed parcel weight (and,
+ *  eventually, dimensions) to build an actual rate request -- `parcelWeightLb` is accepted here
+ *  explicitly so that when this body is replaced, the caller doesn't ALSO need another signature
+ *  change at that point. Exposed as an injectable parameter on the class below (default: this
+ *  function) so a test can verify the real weight is actually threaded through to this call,
+ *  without needing a live Canada Post account to do it. */
+export type CanadaPostRateFetcher = (
+  address: ShippingAddressInput,
+  subtotalCents: number,
+  parcelWeightLb: number,
+) => Promise<ShippingOption>;
+
 // Throws deliberately rather than returning a guessed/flat rate - inventing a shipping fee here
 // would violate the same "never fabricate a charge" rule as taxProvider.ts. Replace this body
 // with a real call to Canada Post's Rating API once prerequisites 1 and 2 above are resolved.
-async function fetchCanadaPostRate(
-  _address: ShippingAddressInput,
-  _subtotalCents: number,
-): Promise<ShippingOption> {
+const fetchCanadaPostRate: CanadaPostRateFetcher = async (_address, _subtotalCents, _parcelWeightLb) => {
   throw new ShippingRateUnavailableError(
     "Live shipping rates aren't available yet for this order — request a quote and we'll confirm shipping manually.",
   );
-}
+};
 
 /** Sums per-line weight for a Canada Post parcel request. Called from getOptions() below with
  *  the real cart lines a checkout request carries (PricedCartLine.unitWeightLb, via
@@ -135,6 +144,16 @@ export function estimateParcelWeightLb(
  * is even requested -- never as a value returned by this function.
  */
 export class CanadaPostShippingProvider implements ShippingQuoteProvider {
+  // Not a TS parameter-property (`private readonly x: T` in the constructor signature) --
+  // plain `node --test`'s type-stripping mode (no real TS compiler) can't parse that syntax,
+  // and this file's own test needs to run directly under it. Assigning in the body instead
+  // is semantically identical and stays strip-only compatible.
+  private readonly rateFetcher: CanadaPostRateFetcher;
+
+  constructor(rateFetcher: CanadaPostRateFetcher = fetchCanadaPostRate) {
+    this.rateFetcher = rateFetcher;
+  }
+
   async getOptions(address: ShippingAddressInput, subtotalCents: number, lines: ShippingQuoteLine[]): Promise<ShippingOption[]> {
     if (subtotalCents > FREE_SHIPPING_THRESHOLD_CENTS) {
       return [{ id: "free", label: "Free Shipping", cents: 0 }];
@@ -164,7 +183,7 @@ export class CanadaPostShippingProvider implements ShippingQuoteProvider {
     // propagates as-is. It is NOT caught and degraded: the customer asked for delivery, delivery
     // could not be quoted, and that must block checkout with a clear reason, not quietly become a
     // pickup order they never chose.
-    const liveRate = await fetchCanadaPostRate(address, subtotalCents);
+    const liveRate = await this.rateFetcher(address, subtotalCents, parcelWeightLb);
     return [liveRate];
   }
 }

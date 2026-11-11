@@ -144,3 +144,22 @@ test("estimateParcelWeightLb handles a large multi-product, multi-quantity cart 
   ]);
   assert.equal(total, 0.35 * 12 + 1.2 * 3 + 0.08 * 50);
 });
+
+test("getOptions() threads the real computed parcel weight through to the rate fetcher -- not just the gate, the actual call", async () => {
+  // Confirms a real fix: estimateParcelWeightLb()'s result was computed but never actually
+  // passed to the function that will eventually build a real Canada Post rate request. An
+  // injected fake fetcher lets this be verified without a live Canada Post account.
+  let receivedWeight: number | null = null;
+  const fakeFetcher = async (_addr: typeof address, _subtotal: number, parcelWeightLb: number) => {
+    receivedWeight = parcelWeightLb;
+    return { id: "live", label: "Canada Post", cents: 1500 };
+  };
+  const provider = new CanadaPostShippingProvider(fakeFetcher);
+  const mixedCartLines = [
+    { unitWeightLb: 0.35, quantity: 2 },
+    { unitWeightLb: 1.2, quantity: 1 },
+  ];
+  const options = await provider.getOptions(address, 1000, mixedCartLines);
+  assert.equal(receivedWeight, 0.35 * 2 + 1.2 * 1);
+  assert.deepEqual(options, [{ id: "live", label: "Canada Post", cents: 1500 }]);
+});

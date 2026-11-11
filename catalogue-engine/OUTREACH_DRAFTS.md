@@ -66,6 +66,50 @@ the exact contact method)
 
 ---
 
+## 2a. S&S Activewear — consolidated image-access request (ready to send)
+
+Combines #2 and #4 above into one email specifically focused on the image problem (our site's
+Shop/homepage currently shows "Image coming soon" for ~78% of the apparel catalogue because
+`cdn.ssactivewear.com` returns a 403 for our hotlinked requests) — send this instead of #2/#4
+separately if image access is the priority, since it covers the same ground in one message.
+
+**To:** via your S&S account rep, or through the contact options at `ssactivewear.com/marketing/edi`
+(a human should open that page directly — our tooling couldn't fetch it automatically to confirm
+the exact contact method)
+**Subject:** Product image access request — Maple Imprint (S&S wholesale account [account number])
+
+> Hi [rep name / S&S team],
+>
+> We're Maple Imprint Ltd. ([account number]), an Ottawa-based custom printing and promotional
+> products company. We're building our product catalogue on our own website using your product
+> data, and we've run into an access issue specifically with product images: requests to
+> `cdn.ssactivewear.com` from our site are currently being blocked (HTTP 403), so none of your
+> product photos are displaying for our customers.
+>
+> Could you help us with:
+>
+> 1. **Official image API or media access** — is there a supported way to request product images
+>    (e.g. through the REST API at `api.ssactivewear.com`, a PromoStandards Media Content service,
+>    or another sanctioned endpoint) rather than hotlinking the CDN directly?
+> 2. **An alternative image delivery method**, if hotlinking isn't the intended access pattern —
+>    a referrer allowlist for our domain, a signed-URL approach, or whatever your preferred
+>    integration method is.
+> 3. **Explicit permission to cache and rehost your product images** on our own
+>    infrastructure/CDN under our wholesale account, so we're not dependent on live hotlinking at
+>    all going forward. We'd of course credit/attribute S&S Activewear however you require, and
+>    we're happy to limit this to images for products we actually carry.
+> 4. While we're in touch — generating an API key for product/pricing/inventory data sync as well
+>    (we understand this is done via "My Account"), if that's a separate step from the above.
+>
+> Happy to hop on a call if that's easier, or to provide our account number/domain for
+> verification. Thanks for your help!
+>
+> [Your name]
+> Maple Imprint Ltd.
+> [phone / email]
+
+---
+
 ## 3. Joto Imaging Supplies — data feed / integration options
 
 **To:** your Joto account contact (their site looks like it doesn't have a public developer API,
@@ -106,6 +150,10 @@ Use this if a supplier's response to the above doesn't already answer it, or sen
 ## Notes for whoever sends these
 
 - These went out as drafts, not sent — nothing has been emailed on your behalf.
+- For S&S specifically: send **2a** (the consolidated image-access version) rather than #2 and #4
+  separately — it covers the same ground in one message and is the one actually referenced as
+  "ready to send" in the launch checklist. #2 and #4 are kept as-is below for reference/reuse with
+  other suppliers, not because they still need sending separately for S&S.
 - Once you get responses (credentials, API docs, confirmed rate limits, image rights answers),
   paste them back and the actual connector implementation can start — see
   `src/integrations/suppliers/_template/README.md` for exactly what happens next once access

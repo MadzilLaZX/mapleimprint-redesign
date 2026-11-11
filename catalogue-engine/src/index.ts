@@ -98,6 +98,8 @@ export {
 
 export { validateImage, isDuplicateImage, type ImageValidationOptions, type ImageValidationResult } from './images/validate.js';
 export { ingestImage, fetchImageBytes, type ImageFetcher, type IngestImageResult, type IngestImageOptions } from './images/ingest.js';
+export { mergeImageManifest, type ManifestUpdate, type ManifestConflict, type MergeManifestResult } from './images/manifest.js';
+export { uploadImageToStorage, PRODUCT_IMAGES_BUCKET, type StorageClient, type StorageBucketClient, type UploadImageResult } from './images/upload.js';
 
 export {
   normalizeSanMarWeight,

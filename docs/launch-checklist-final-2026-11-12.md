@@ -55,20 +55,30 @@ As of commit `30cb9ad` (catalog promoted to development/Preview, not Production)
   `launch-readiness-report.md`) -- this hasn't changed and isn't something I can push forward
   further without your action to actually contact S&S.
 
-**Already ready on our side, waiting only on the above:**
-- The ingest/validation pipeline (`catalogue-engine/src/images/ingest.ts`,
-  `validate.ts`) is fully built and tested -- fetch, content-type check, corruption/dimension
-  validation, checksum-based deduplication. It deliberately stops right before a real
-  cloud-storage upload (by design -- no S3/Cloudflare R2/etc. credentials have ever been
-  configured for this, a separate, smaller gap from the S&S access issue itself).
-- **Important clarification found while compiling this list**: the live catalog export
-  (`export-products-for-frontend.mjs` and its REST-based counterpart) has never actually been
-  wired to use a re-hosted `cachedUrl` at all -- every product's images (SanMar's included) are
-  exported using the supplier's own `sourceUrl` directly, hotlinked at render time. SanMar's CDN
-  simply doesn't block this; S&S's does. Resolving S&S's access (or building out the rehosting
-  pipeline regardless) would require also updating the export script to prefer `cachedUrl` when
-  present -- a real, scoped, not-yet-started code task, separate from the supplier negotiation
-  itself. Flagging this now rather than letting it surface as a surprise once S&S responds.
+**Already ready on our side, waiting only on the above (updated 2026-11-12 -- corrects the prior
+note here, which assumed the catalog export script itself needed to prefer a cached URL):**
+- **The website already resolves every image through a manifest-based override point** --
+  `src/lib/images/resolveHostedImage.ts`, already wired into `products.ts` for every
+  `CatalogueProduct.images` entry, site-wide. It checks `imageManifest.json`
+  (`sourceUrl -> hostedUrl`) and falls back to the supplier's own URL when no entry exists --
+  which is every entry today, since the manifest is still `{}`. This means activating a rehosted
+  image is a **pure data change** (adding entries to that one JSON file) -- no export script or
+  site code needs to change at all, correcting what an earlier round assumed was still a
+  not-started code task.
+- The ingest/validation pipeline (`catalogue-engine/src/images/ingest.ts`, `validate.ts`) is
+  fully built and tested -- fetch, content-type check, corruption/dimension validation,
+  checksum-based deduplication.
+- **New this round**: the two pieces between "validated image bytes" and "a working manifest
+  entry" are now built and tested too -- `catalogue-engine/src/images/upload.ts`
+  (`uploadImageToStorage()`, targeting a `product-images` Supabase Storage bucket that does not
+  exist yet) and `catalogue-engine/src/images/manifest.ts` (`mergeImageManifest()`, which adds new
+  entries, leaves existing ones -- SanMar's included -- untouched, and flags rather than silently
+  overwrites any conflicting remap). Both are tested exclusively against synthetic fixtures (fake
+  URLs, a fake injected storage client) -- no real Supabase Storage call and no real supplier
+  image were touched. **Still not done, and each is its own separate approval/dependency, not
+  bundled together:** creating the real `product-images` bucket (a live infrastructure change),
+  and actually running an upload against a real, authorized S&S image (blocked on S&S's answer
+  regardless of the bucket existing).
 
 ## Must be tested before accepting real payments
 
