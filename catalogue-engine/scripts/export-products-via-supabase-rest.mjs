@@ -80,7 +80,16 @@ async function fetchAll(supabase, table, { select, filters = (q) => q, orderBy =
   const rows = [];
   let from = 0;
   for (;;) {
-    let query = supabase.from(table).select(select).order(orderBy, { ascending: true }).range(from, from + PAGE_SIZE - 1);
+    // Sorting by `orderBy` alone isn't enough to guarantee stable pagination when that column
+    // has duplicate values across rows (e.g. SupplierVariantOffer.productVariantId, which is not
+    // unique -- a variant can have more than one offer row). Without a tiebreaker, Postgres is
+    // free to order tied rows differently between the range(0,999) and range(1000,1999) calls,
+    // which can silently drop or duplicate a row at the page boundary. `id` is this table's real
+    // primary key in every table this script queries, so it's always a safe, unique tiebreaker --
+    // confirmed to matter in practice: this exact gap caused one product's non-orderable offer to
+    // be mistaken for its only offer in a 1310-product reconciliation (2026-11-11), the one
+    // genuine discrepancy out of 1310 independently re-verified.
+    let query = supabase.from(table).select(select).order(orderBy, { ascending: true }).order('id', { ascending: true }).range(from, from + PAGE_SIZE - 1);
     query = filters(query);
     const { data, error } = await query;
     if (error) throw new Error(`Fetching ${table} failed: ${error.message}`);
