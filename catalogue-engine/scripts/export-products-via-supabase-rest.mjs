@@ -22,7 +22,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
-import { APPAREL_PRINT_TIERS, HAT_PRINT_TIERS, PRINT_RULE_VERSION, calculatePrice } from '../dist/index.js';
+import { PRINT_RULE_VERSION } from '../dist/index.js';
 import { routeFor } from './route-map.mjs';
 import {
   stripHtml,
@@ -172,16 +172,12 @@ async function main() {
   console.log(`  ${offers.length} orderable offers.`);
 
   const supplierProductIds = [...new Set(offers.map((o) => o.supplierProductId))];
-  // unitWeightLb/weightConfidence are deliberately NOT selected here -- those columns do not
-  // exist on the live table yet (migration 008 is prepared but not applied; confirmed live via a
-  // direct probe this session: PostgREST returns "column SupplierProduct.unitWeightLb does not
-  // exist"). Selecting them would make this entire regeneration fail with a confusing error for
-  // a reason that has nothing to do with this script. The moment migration 008 + its backfill are
-  // approved and applied, add those two columns back to this select and resolveShippingWeightLb()
-  // below will start producing real values with no other change needed.
+  // unitWeightLb/weightConfidence -- migration 008 was applied and the backfill run 2026-11-11
+  // (see canada-post-activation-plan.md); these columns now carry real data for every sanmar/
+  // ss_activewear SupplierProduct row, so they're selected here for real this time.
   console.log('Fetching supplier ids for those offers...');
   const supplierProducts = await fetchAllIn(supabase, 'SupplierProduct', {
-    select: 'id, supplierId',
+    select: 'id, supplierId, unitWeightLb, weightConfidence',
     idColumn: 'id',
     ids: supplierProductIds,
   });
@@ -193,12 +189,16 @@ async function main() {
   const supplierProductById = new Map(supplierProducts.map((sp) => [sp.id, sp]));
   const offersByVariantId = new Map();
   for (const offer of offers) {
-    const supplierProduct = supplierProductById.get(offer.supplierProductId) ?? { supplierId: null };
+    const supplierProduct = supplierProductById.get(offer.supplierProductId) ?? { supplierId: null, unitWeightLb: null, weightConfidence: null };
     pushTo(offersByVariantId, offer.productVariantId, {
       wholesaleCost: offer.wholesaleCost,
       currency: offer.currency,
       isOrderable: offer.isOrderable,
-      supplierProduct: { supplierId: supplierProduct.supplierId, unitWeightLb: null, weightConfidence: null },
+      supplierProduct: {
+        supplierId: supplierProduct.supplierId,
+        unitWeightLb: supplierProduct.unitWeightLb === null ? null : Number(supplierProduct.unitWeightLb),
+        weightConfidence: supplierProduct.weightConfidence,
+      },
     });
   }
   const variantsByProductId = new Map();

@@ -1,5 +1,8 @@
--- NOT APPLIED. Prepared for review only -- do not run against the live database without
--- explicit approval (per session instruction 2026-11-10).
+-- APPLIED 2026-11-11 to the live maple-imprint-catalogue Supabase project, following explicit
+-- approval. The backfill below was also run the same day -- see
+-- docs/canada-post-activation-plan.md for the full verified results (1773/1773 SupplierProduct
+-- rows now carry a confirmed unitWeightLb; 1101/1102 S&S rows carry inferred-confidence case
+-- dimensions; the one real anomaly is correctly still null, not silently accepted).
 --
 -- Adds nullable shipping-weight columns to SupplierProduct so
 -- normalizeSanMarWeight()/normalizeSSActivewearWeight() output (catalogue-engine/src/shipping/

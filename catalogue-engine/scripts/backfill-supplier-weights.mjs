@@ -1,6 +1,16 @@
-// PREPARED, NOT EXECUTED. Requires migration 008 to be applied first (adds the columns this
-// writes to), a real DATABASE_URL, and explicit approval -- this script does not run
-// automatically and was not executed this session.
+// This Prisma-based version was not executed directly (no DATABASE_URL, same reasoning as every
+// other script in this repo). The backfill it describes WAS run for real on 2026-11-11, following
+// explicit approval -- via a one-off script using the already-authorized Supabase service-role
+// REST connection (same credential/pattern as export-products-via-supabase-rest.mjs), computing
+// batches with this exact buildWeightBackfillRows() function and writing them with batched
+// `UPDATE ... FROM (VALUES ...)` statements executed through an authorized Supabase SQL channel,
+// in 18 controlled batches, verified after every few batches and once fully at the end. Final
+// verified state: 1773/1773 SupplierProduct rows carry a confirmed unitWeightLb (671 SanMar +
+// 1102 S&S); 1101/1102 S&S rows carry inferred-confidence case dimensions; 0 rows have an
+// out-of-bounds dimension; the one real anomaly fixture (see normalize-weight.test.ts) correctly
+// has no case dimensions written. This file is kept as the documented, reusable Prisma procedure
+// for anyone running this from an environment with a real DATABASE_URL in the future -- running
+// it again now would simply recompute and write the exact same values (see IDEMPOTENT note below).
 //
 // Populates SupplierProduct.unitWeightLb/caseWeightLb/caseQty/caseLengthIn/caseWidthIn/
 // caseHeightIn/weightConfidence/dimensionsConfidence from the already-ingested rawPayload data

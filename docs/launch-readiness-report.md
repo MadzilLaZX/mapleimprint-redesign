@@ -34,12 +34,12 @@ As of `checkout-square-payments` @ `2a7bbef` (last Preview-verified commit as of
 
 ## Blocked on a business decision (ready to execute the moment you decide)
 
-| Decision | What happens if you approve | Document |
+| Decision | Status | Document |
 |---|---|---|
-| Unpublish 13 orphaned products | `status`/`isPublished` flip to hidden; fully reversible; zero customer-facing data touched | `orphaned-products-before-after.md` |
-| Apply migration 008 (weight columns) | Purely additive schema change; no data written until a separate backfill step also runs | `canada-post-activation-plan.md` |
-| Regenerate `products.json` | Static catalogue picks up the SanMar description fix; needs a real `DATABASE_URL` | `regenerate-products-json.md` |
-| `OWNER_NOTIFICATION_EMAIL` | Currently unset by deliberate prior decision -- confirm that's still intended before launch | `production-deployment-checklist.md` |
+| Unpublish 13 orphaned products | **Done 2026-11-11.** `status`/`isPublished` flipped to hidden for exactly the 13 approved ids; fully reversible; zero customer-facing data touched. | `orphaned-products-before-after.md` |
+| Apply migration 008 + backfill (weight columns) | **Done 2026-11-11.** 1773/1773 `SupplierProduct` rows now carry a confirmed weight; promotion into the generated catalogue (`products.json`) is the remaining step, still awaiting your approval to promote. | `canada-post-activation-plan.md` |
+| Regenerate `products.json` | Staged (`products.staged-via-rest.json`), not yet promoted -- a fresh run including the new weight data has not been done yet; awaiting your approval on the pricing reconciliation before promoting anything. | `regenerate-products-json.md` |
+| `OWNER_NOTIFICATION_EMAIL` | Confirmed: staying unset per your explicit instruction this round, until you provide a real recipient. | `production-deployment-checklist.md` |
 
 ## The single largest customer-facing gap at today's state
 

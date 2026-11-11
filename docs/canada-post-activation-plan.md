@@ -21,7 +21,7 @@ assumes "Suite 125, 2487 Kaladar Ave, Ottawa, ON K1V 8B9" (the address already s
 footer) is also the shipping-origin facility; confirm this explicitly before using it in a real
 rate request.
 
-## Gate 2 -- weight data (full pipeline now built end-to-end; 2 of 3 steps still need your approval to actually run)
+## Gate 2 -- weight data (RESOLVED end-to-end as of 2026-11-11, except dimensions/house products)
 
 | Item | Status |
 |---|---|
@@ -30,19 +30,19 @@ rate request.
 | S&S case dimensions | Extractable but **not authoritative** -- unit not documented by S&S, only inferred from physical plausibility. `hasAuthoritativeCaseDimensions()` returns `false` for every one today, by design. Do not treat these as real until S&S confirms the unit or a sample is physically measured. |
 | Per-unit (not per-case) dimensions | **None exist anywhere**, for any supplier. This is the real remaining gap -- weight is solved, dimensions are not. |
 | Joto drinkware / house products | **Zero weight data of any kind.** No supplier API exists for these (Maple produces them in-house). The only path is physically weighing a sample of each. `CatalogueProduct.shippingWeightLb` (src/lib/products.ts) is the already-built field waiting for those real numbers -- never estimate one from a product's dimensions or material. |
-| Migration 008 (adds the weight columns to `SupplierProduct`) | Prepared, reviewed, validated against the full live dataset (671/671 + 1,101/1,102, one real anomaly correctly rejected). Its Prisma schema counterpart (`catalogue-engine/prisma/schema.prisma`) was added 2026-11-11 so the client has real typed fields -- schema-only, `prisma generate` run locally with no DB connection, nothing applied to the live database. **SQL migration itself still not applied.** |
-| Backfill script | Prepared, dry-run tested, idempotent, reversible, touches only the 8 new columns -- **not executed**. |
-| Promotion to the generated catalogue shape checkout reads | **Built and tested 2026-11-11.** `export-products-for-frontend.mjs`'s `cheapestOrderableOffer()` now carries the winning offer's own `unitWeightLb`/`weightConfidence` through, and a new `resolveShippingWeightLb()` gates it on `hasAuthoritativeUnitWeight()` before it ever reaches `CatalogueProduct.shippingWeightLb` -- 8 new tests in `catalogue-engine/test/shipping-weight-export.test.ts`, all passing. |
+| Migration 008 (adds the weight columns to `SupplierProduct`) | **APPLIED 2026-11-11**, following your explicit approval. Confirmed purely additive beforehand (re-read the migration file: only `add column if not exists`, no drops/alters of existing columns) and confirmed additive afterward (every pre-existing `SupplierProduct` column and row count unchanged; only the 8 new nullable columns appeared). Applied via an authorized Supabase connection (never `DATABASE_URL`). |
+| Backfill | **EXECUTED 2026-11-11**, following your explicit approval, in 18 controlled batches (sizes 100-450 rows), verified via a count query after several batches and once fully at the end. Final state, independently verified via direct queries (not just trusted from script output): **1773/1773** `SupplierProduct` rows (671 `sanmar` + 1102 `ss_activewear`, confirmed by supplier code) carry a `weightConfidence = 'confirmed'` `unitWeightLb`; **1101/1102** S&S rows carry `dimensionsConfidence = 'inferred'` case dimensions; **0** rows have any dimension over the 60-inch sanity bound (the one real anomaly -- a Columbia jacket case misreporting 188in -- correctly has no case dimensions written, exactly as predicted); **0** rows remain null. `joto`/`conde` supplier rows: none exist in `SupplierProduct` yet, so nothing there was or could be touched. |
+| Promotion to the generated catalogue shape checkout reads | **Built and tested 2026-11-11.** `export-products-for-frontend.mjs`'s `cheapestOrderableOffer()` now carries the winning offer's own `unitWeightLb`/`weightConfidence` through, and a new `resolveShippingWeightLb()` gates it on `hasAuthoritativeUnitWeight()` before it ever reaches `CatalogueProduct.shippingWeightLb` -- 8 new tests in `catalogue-engine/test/shipping-weight-export.test.ts`, all passing. **Not yet re-run against the now-populated live data** -- the staged `products.json` regeneration (see `regenerate-products-json.md`) predates this backfill; re-running it is the next step to actually see real `shippingWeightLb` values flow through, still gated on your separate approval to promote anything to the live file. |
 | Checkout wiring | **Built and tested 2026-11-11.** `priceCartItem.ts`'s `lineShippingWeightLb()` reads `shippingWeightLb` for every line type (BLANK, bundle, and CUSTOM-decorated -- the last via the frozen design snapshot's own `productSlug`/`categorySlug`/`subcategorySlug`, so a decorated item reports the same weight as the blank product it's made from) onto the new `PricedCartLine.unitWeightLb` field. `ShippingQuoteProvider.getOptions()` now takes a `lines` parameter; `CanadaPostShippingProvider.getOptions()` calls `estimateParcelWeightLb()` on it and throws a specific, honest `ShippingRateUnavailableError` ("We don't have a shipping weight for everything in your cart yet...") before ever attempting a live rate call if any line lacks an authoritative weight. 3 new tests in `canadaPostShippingProvider.test.ts` confirm this gate is a genuinely separate check from the credential-missing failure beneath it, not the same error reused. `FreeShippingProvider` (still the live export) ignores the new parameter -- zero behavior change to the live site. |
 
-**Practical implication:** the only steps left for weight are the two database operations above
-(migration 008's SQL + the backfill script), both still awaiting your separate approval per
-standing instructions, and both genuinely reversible/idempotent as documented. The moment both
-run and a fresh `products.json` export is regenerated, every apparel product with a confirmed
-supplier weight will automatically carry a real `shippingWeightLb` all the way into a Canada Post
-rate request -- no further code change is needed for that to happen. Drinkware/house products
-still need Maple's own physical measurements regardless of migration 008, and per-unit dimensions
-(Gate 3 below) remain a separate, unresolved gap for every supplier.
+**Practical implication:** weight data is now live in the database for every apparel product with
+a confirmed supplier weight. The one remaining step to make it visible to checkout is re-running
+the `products.json` regeneration (now that the backfill has real data to pick up) and getting your
+approval to promote that to the live file -- no further code change is needed. Drinkware/house
+products still need Maple's own physical measurements regardless of migration 008, and per-unit
+dimensions (Gate 3 below) remain a separate, unresolved gap for every supplier. **Canada Post
+itself remains fully inactive** -- this round changed database contents, not shipping behavior;
+`shippingProvider` is still `FreeShippingProvider` and no live rate call has been attempted.
 
 ## Gate 3 -- dimensions strategy (open question, needs your decision, not a technical blocker)
 
