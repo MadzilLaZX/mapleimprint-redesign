@@ -10,6 +10,11 @@ import { useCart, QUOTE_PREFILL_KEY, QUOTE_CART_LINES_KEY, type QuoteCartHandoff
 import { PRIMARY_CTA } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 import { unitPriceFor } from "@/lib/pricing/cartItemPrice";
+import { FREE_SHIPPING_THRESHOLD_CENTS } from "@/lib/checkout/chitChatsShippingProvider";
+
+// Dollars, matching chitChatsShippingProvider.ts's own cents constant -- kept derived from the
+// single source of truth rather than a second hardcoded "300" here, so the two can't drift.
+const FREE_SHIPPING_THRESHOLD_DOLLARS = FREE_SHIPPING_THRESHOLD_CENTS / 100;
 
 export function CartView() {
   const { items, removeItem, updateQuantity, totalCount } = useCart();
@@ -163,6 +168,20 @@ export function CartView() {
             </p>
           </div>
         )}
+        {pricedItems.length > 0 &&
+          (estimatedSubtotal > FREE_SHIPPING_THRESHOLD_DOLLARS ? (
+            // A subtotal-only preview -- the cart has no delivery address yet, so true
+            // eligibility (destination + carrier serviceability) is only confirmed at checkout
+            // once a real quote runs. Worded to reflect that, not as a final promise.
+            <p className="mb-4 text-sm font-semibold text-ink-900">
+              ✓ Your order qualifies for free Canada-wide shipping — we&apos;ll confirm this at checkout.
+            </p>
+          ) : (
+            <p className="mb-4 text-sm text-muted">
+              Add ${(FREE_SHIPPING_THRESHOLD_DOLLARS + 0.01 - estimatedSubtotal).toFixed(2)} more to qualify for free
+              shipping anywhere in Canada (orders over ${FREE_SHIPPING_THRESHOLD_DOLLARS.toFixed(2)}).
+            </p>
+          ))}
         <p className="text-sm leading-relaxed text-muted">
           {pricedItems.length > 0
             ? `Based on each item's lowest quantity price, before decoration or rush fees${unpricedCount > 0 ? `. ${unpricedCount} item${unpricedCount === 1 ? "" : "s"} in your cart ${unpricedCount === 1 ? "doesn't" : "don't"} have pricing yet and will be quoted directly.` : ", confirmed exactly in your quote."}`

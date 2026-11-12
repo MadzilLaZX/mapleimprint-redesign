@@ -3,7 +3,9 @@
 As of commit `30cb9ad` (catalog promoted to development/Preview, not Production). **Updated
 2026-11-12 (round 2)**: GST/HST and shipping-provider work below reflects the owner's confirmed
 decision to replace Canada Post with Chit Chats as the planned primary carrier, and the confirmed
-final shipping policy (Canada-wide free shipping over $300, international excluded).
+final shipping policy (Canada-wide free shipping over $300, international excluded). **Updated
+2026-11-12 (round 3)**: free-shipping eligibility is now additionally gated on confirmed carrier
+serviceability, not address format alone -- see "Serviceability-before-free" below.
 
 ## Ready
 
@@ -26,15 +28,36 @@ final shipping policy (Canada-wide free shipping over $300, international exclud
   cover Ontario, BC, Quebec, Alberta, international zero-rating, both pickup overrides, and
   rounding (`src/lib/checkout/taxProvider.test.ts`).
 - Chit Chats shipping integration: `ChitChatsShippingProvider` built and tested against synthetic
-  fixtures (16 tests, `src/lib/checkout/chitChatsShippingProvider.test.ts`) -- real documented API
-  shapes (bearer-token auth, `/clients/<id>/shipments`, package weight/dimensions, `purchase_amount`
-  as the customer-facing rate), reuses the same verified weight pipeline as Canada Post. Not
-  activated -- no Chit Chats credential exists in this codebase. See "Chit Chats integration
-  status" in the final report for the full design/limitations writeup.
-- Shipping-policy bug fix: both `CanadaPostShippingProvider` and the new `ChitChatsShippingProvider`
-  now validate the destination address **before** granting free shipping, not after -- previously
+  fixtures (21 tests, `src/lib/checkout/chitChatsShippingProvider.test.ts`, plus 6 more in
+  `checkoutTotalConsistency.test.ts`) -- real documented API shapes (bearer-token auth,
+  `/clients/<id>/shipments`, package weight/dimensions, `purchase_amount` as the customer-facing
+  rate), reuses the same verified weight pipeline as Canada Post. Not activated -- no Chit Chats
+  credential exists in this codebase. See "Chit Chats integration status" in the final report.
+- **Serviceability-before-free (round 3 revision)**: free shipping is now only granted AFTER a
+  real Chit Chats rate attempt succeeds, never from address format + subtotal alone. Chit Chats
+  has no quote-only endpoint, so a real rate attempt is also the only way this codebase can ever
+  confirm a destination/parcel is actually deliverable -- an oversized parcel, a restricted item,
+  or a destination Chit Chats can't reach now correctly falls through to the existing manual-quote
+  error path (`ShippingRateUnavailableError` → 422) instead of silently getting a $0 label it was
+  never entitled to. Consequence worth knowing: this also means the lightweight `/api/checkout/quote`
+  preview step (province/country/postal only) can no longer determine ANY shipping estimate, free
+  or paid, until the customer's full street address is known -- same category of gap as the
+  pre-existing Chit Chats full-address requirement, just now also covering the free case.
+- Multiple service levels: when Chit Chats quotes more than one deliverable service for a
+  shipment, only the cheapest is zeroed out when free shipping applies -- a pricier
+  expedited/premium option in the same response keeps its own charge, per the owner's "expedited
+  or premium delivery may carry additional charges" requirement. Chit Chats' own API doesn't label
+  a rate as "standard" in the docs reviewed, so "cheapest quoted" is used as the proxy, not an
+  invented carrier-specific label.
+- Shipping-policy bug fix: both `CanadaPostShippingProvider` and `ChitChatsShippingProvider` now
+  validate the destination address **before** granting free shipping, not after -- previously
   `CanadaPostShippingProvider` returned a free-shipping option for any subtotal over $300 without
   checking whether the address was even a valid, supported destination first.
+- Cart-page free-shipping messaging: `/cart` now shows a subtotal-based preview ("add $X more to
+  qualify" / "qualifies for free shipping — confirmed at checkout") once pricing is known. Worded
+  as a preview, not a final promise, since the cart has no delivery address to confirm
+  serviceability against yet -- only `/checkout`'s existing `OrderSummary` label (driven by the
+  real server quote) is the authoritative "Free" statement.
 - Admin auth, order management, design/artwork persistence, mobile responsiveness: verified in
   earlier rounds, unchanged this round.
 - Our own image ingest/validation pipeline (`ingestImage`/`validateImage` in catalogue-engine):
