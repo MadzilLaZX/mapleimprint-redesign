@@ -14,12 +14,16 @@ activation.
   or its own — **this is not documented** (see Finding 1 below). Test this first; if staging
   requires separate credentials, generate them from the staging site's own Settings page, not
   production's.
+- Set `CHIT_CHATS_ENVIRONMENT=staging`, `CHIT_CHATS_API_ACCESS_TOKEN`, and `CHIT_CHATS_CLIENT_ID`
+  in `.env.local` (placeholders already exist in `.env.example`) — `src/lib/server/chitChatsClient.ts`
+  reads these three names exactly; the commands below use the same env var names for consistency,
+  but can equally be run as plain shell exports for a quick manual check before wiring up any code.
 
 ## 1. Authenticate (read-only sanity check)
 
 ```
-curl -s -H "Authorization: $ACCESS_TOKEN" \
-  https://staging.chitchats.com/api/v1/clients/$CLIENT_ID/shipments?limit=1
+curl -s -H "Authorization: $CHIT_CHATS_API_ACCESS_TOKEN" \
+  https://staging.chitchats.com/api/v1/clients/$CHIT_CHATS_CLIENT_ID/shipments?limit=1
 ```
 
 Expect: `200` with a (possibly empty) `shipments` array. A `401` means the token/client ID pair is
@@ -28,8 +32,8 @@ wrong, or staging genuinely needs separate credentials from production (see Find
 ## 2. Create an unpurchased draft shipment
 
 ```
-curl -s -X POST -H "Authorization: $ACCESS_TOKEN" -H "Content-Type: application/json" \
-  https://staging.chitchats.com/api/v1/clients/$CLIENT_ID/shipments \
+curl -s -X POST -H "Authorization: $CHIT_CHATS_API_ACCESS_TOKEN" -H "Content-Type: application/json" \
+  https://staging.chitchats.com/api/v1/clients/$CHIT_CHATS_CLIENT_ID/shipments \
   -d '{
     "name": "Test Recipient",
     "address_1": "123 Test St",
@@ -73,8 +77,8 @@ sane dollar string for a 1 lb domestic parcel (sanity check, not a strict assert
 ## 4. Look up the shipment by `order_id` (the reconciliation mechanism)
 
 ```
-curl -s -H "Authorization: $ACCESS_TOKEN" \
-  "https://staging.chitchats.com/api/v1/clients/$CLIENT_ID/shipments?q=staging-validation-test-001"
+curl -s -H "Authorization: $CHIT_CHATS_API_ACCESS_TOKEN" \
+  "https://staging.chitchats.com/api/v1/clients/$CHIT_CHATS_CLIENT_ID/shipments?q=staging-validation-test-001"
 ```
 
 **This is the step that determines whether `ChitChatsQuoteCoordinator`'s reconciliation hook can
@@ -98,8 +102,8 @@ is below (see "If order_id lookup proves unreliable").
 ## 5. Refresh the draft shipment
 
 ```
-curl -s -X PATCH -H "Authorization: $ACCESS_TOKEN" -H "Content-Type: application/json" \
-  https://staging.chitchats.com/api/v1/clients/$CLIENT_ID/shipments/$SHIPMENT_ID/refresh \
+curl -s -X PATCH -H "Authorization: $CHIT_CHATS_API_ACCESS_TOKEN" -H "Content-Type: application/json" \
+  https://staging.chitchats.com/api/v1/clients/$CHIT_CHATS_CLIENT_ID/shipments/$SHIPMENT_ID/refresh \
   -d '{"weight_unit": "lb", "weight": "1.5"}'
 ```
 
@@ -110,15 +114,15 @@ still `null`).
 ## 6. Delete the unpurchased draft shipment
 
 ```
-curl -s -X DELETE -H "Authorization: $ACCESS_TOKEN" \
-  https://staging.chitchats.com/api/v1/clients/$CLIENT_ID/shipments/$SHIPMENT_ID
+curl -s -X DELETE -H "Authorization: $CHIT_CHATS_API_ACCESS_TOKEN" \
+  https://staging.chitchats.com/api/v1/clients/$CHIT_CHATS_CLIENT_ID/shipments/$SHIPMENT_ID
 ```
 
 Verify: `204 No Content`. Then confirm it's actually gone:
 
 ```
-curl -s -H "Authorization: $ACCESS_TOKEN" \
-  https://staging.chitchats.com/api/v1/clients/$CLIENT_ID/shipments/$SHIPMENT_ID
+curl -s -H "Authorization: $CHIT_CHATS_API_ACCESS_TOKEN" \
+  https://staging.chitchats.com/api/v1/clients/$CHIT_CHATS_CLIENT_ID/shipments/$SHIPMENT_ID
 ```
 
 Expect `404`.

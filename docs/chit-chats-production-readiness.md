@@ -65,12 +65,15 @@ either overclaiming readiness or re-litigating work already done.
 
 In dependency order -- each step assumes the previous ones are done:
 
-1. **Obtain credentials** (Chit Chats token + client ID) and run
-   `docs/chit-chats-staging-validation.md` against them.
+1. **Obtain credentials** (Chit Chats token + client ID), set `CHIT_CHATS_ENVIRONMENT`,
+   `CHIT_CHATS_API_ACCESS_TOKEN`, `CHIT_CHATS_CLIENT_ID` (placeholders already in `.env.example`),
+   and run `docs/chit-chats-staging-validation.md` against them.
 2. **Implement the real `ChitChatsRateFetcher`** (currently `fetchChitChatsRates`, a throwing
-   stub in `chitChatsShippingProvider.ts`) -- the actual `POST /clients/<id>/shipments` call,
-   mapping the response `rates[]` into `ShippingOption[]`, setting `order_id` to
-   `buildQuoteFingerprint()`'s output (or a validated prefix of it, depending on step 1's findings).
+   stub in `chitChatsShippingProvider.ts`) -- the actual `POST /clients/<id>/shipments` call, using
+   `src/lib/server/chitChatsClient.ts`'s already-built URL/auth-header helpers (no network call
+   exists there yet, just the request plumbing), mapping the response `rates[]` into
+   `ShippingOption[]`, setting `order_id` to `buildQuoteFingerprint()`'s output (or a validated
+   prefix of it, depending on step 1's findings).
 3. **If reconciliation via `order_id`/`q` is confirmed reliable**: implement a real
    `ChitChatsShipmentReconciler` (currently always returns `"unknown"`) using
    `GET /shipments?q=<fingerprint>`. If not reliable, no code change is needed -- the existing
