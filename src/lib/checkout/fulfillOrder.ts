@@ -82,12 +82,35 @@ export async function markOrderPaidAndNotify(
     )
     .eq("orderId", orderId);
 
+  // mark_order_paid_and_sync_attempt's return row doesn't carry shippingAddress (it was written
+  // before pickup existed) -- a plain, cheap extra read rather than altering a live Postgres
+  // function, which would need its own separate approval as a database change.
+  const { data: orderAddress } = await supabaseAdmin
+    .from("MapleOrder")
+    .select("shippingAddress")
+    .eq("id", orderId)
+    .maybeSingle();
+  const addressRecord = orderAddress?.shippingAddress as
+    | { fulfillmentMethod?: "delivery" | "pickup"; pickupLocation?: { label: string; addressLine1: string; addressLine2: string; city: string; province: string; postalCode: string; hours: { days: string; time: string }[] } }
+    | null
+    | undefined;
+  const fulfillment =
+    addressRecord?.fulfillmentMethod === "pickup" && addressRecord.pickupLocation
+      ? {
+          method: "pickup" as const,
+          pickupLabel: addressRecord.pickupLocation.label,
+          pickupAddressLine: `${addressRecord.pickupLocation.addressLine1}, ${addressRecord.pickupLocation.addressLine2}, ${addressRecord.pickupLocation.city}, ${addressRecord.pickupLocation.province} ${addressRecord.pickupLocation.postalCode}`,
+          pickupHoursLines: addressRecord.pickupLocation.hours.map((h) => `${h.days}: ${h.time}`),
+        }
+      : { method: "delivery" as const };
+
   const { subject, html, text } = orderConfirmationEmail({
     reference: transitioned.reference,
     contactName: transitioned.contactName,
     contactEmail: transitioned.contactEmail,
     totalCents: transitioned.totalCents,
     lines: lines ?? [],
+    fulfillment,
   });
 
   await sendEmail({ to: transitioned.contactEmail, subject, html, text });
@@ -106,6 +129,7 @@ export async function markOrderPaidAndNotify(
         contactEmail: transitioned.contactEmail,
         totalCents: transitioned.totalCents,
         lines: (lines ?? []).map((l) => ({ productName: l.productName, quantity: l.quantity, colourName: l.colourName })),
+        fulfillment,
       });
       await sendEmail({ to: ownerEmail, ...adminEmail });
     } catch (err) {

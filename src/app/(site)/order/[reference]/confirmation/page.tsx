@@ -52,7 +52,10 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   const linesWithFiles = inventory.filter((line) => line.preview.length > 0 || line.assets.length > 0);
 
   const firstName = order.contactName.split(" ")[0] || order.contactName;
-  const address = order.shippingAddress as { city?: string; province?: string } | null;
+  const address = order.shippingAddress as
+    | { city?: string; province?: string; fulfillmentMethod?: "delivery" | "pickup"; pickupLocation?: { label: string; addressLine1: string; addressLine2: string; city: string; province: string; postalCode: string } }
+    | null;
+  const isPickup = address?.fulfillmentMethod === "pickup";
 
   if (order.status !== "PAID") {
     return (
@@ -81,11 +84,17 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
         <br />
         Confirmation sent to {order.contactEmail}.
       </p>
-      {address?.city && (
+      {isPickup && address?.pickupLocation ? (
         <p className="mt-1 text-sm text-muted">
-          Shipping to {address.city}
-          {address.province ? `, ${address.province}` : ""}
+          Pickup at {address.pickupLocation.label} — {address.pickupLocation.addressLine1}, {address.pickupLocation.city}
         </p>
+      ) : (
+        address?.city && (
+          <p className="mt-1 text-sm text-muted">
+            Shipping to {address.city}
+            {address.province ? `, ${address.province}` : ""}
+          </p>
+        )
       )}
 
       <div className="mt-8 rounded-[24px] bg-white p-6 text-left">
@@ -149,7 +158,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           <li>✓ Payment received</li>
           <li className="text-muted">Preparing for production</li>
           <li className="text-muted">Printing</li>
-          <li className="text-muted">Shipping</li>
+          <li className="text-muted">{isPickup ? "Ready for pickup — we'll email you" : "Shipping"}</li>
         </ol>
       </div>
 

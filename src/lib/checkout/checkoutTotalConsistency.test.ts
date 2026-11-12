@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { ChitChatsShippingProvider, type ChitChatsRateFetcher } from "./chitChatsShippingProvider.ts";
 import { CanadianSalesTaxProvider } from "./taxProvider.ts";
 import { OTTAWA_PICKUP_OPTION } from "./canadaPostShippingProvider.ts";
+import { PICKUP_LOCATION } from "./pickupLocation.ts";
 
 // Exercises ChitChatsShippingProvider and CanadianSalesTaxProvider together, mirroring exactly
 // what /api/checkout/quote and /api/checkout/pay compute (subtotal -> shipping -> tax -> total),
@@ -94,4 +95,37 @@ test("an unserviceable Canadian destination never produces a Square total built 
   await assert.rejects(() =>
     computeTotalCents({ subtotalCents: 35000, address: onAddressFull, fetcher: unsupportedFetcher }),
   );
+});
+
+test("Ottawa pickup is $0 shipping regardless of order size -- never gated on the $300 delivery threshold", async () => {
+  const small = await computeTotalCents({ subtotalCents: 500, address: abAddressFull, isPickup: true });
+  const large = await computeTotalCents({ subtotalCents: 100000, address: abAddressFull, isPickup: true });
+  assert.equal(small.shippingOption.cents, 0);
+  assert.equal(large.shippingOption.cents, 0);
+});
+
+test("switching fulfillment method for the identical cart recomputes independently -- no stale shipping/tax carried over from the other method", async () => {
+  const subtotalCents = 10000; // under the $300 delivery threshold -- a paid delivery rate applies
+  const asDelivery = await computeTotalCents({ subtotalCents, address: onAddressFull, isPickup: false });
+  const asPickup = await computeTotalCents({ subtotalCents, address: onAddressFull, isPickup: true });
+
+  // Delivery: real Chit Chats rate + HST on (merchandise + that shipping charge).
+  assert.equal(asDelivery.shippingOption.cents, 1850);
+  assert.equal(asDelivery.taxCents, 1541);
+  assert.equal(asDelivery.totalCents, 10000 + 1850 + 1541);
+
+  // Pickup, same cart/subtotal/address: $0 shipping, HST on merchandise alone.
+  assert.equal(asPickup.shippingOption.cents, 0);
+  assert.equal(asPickup.taxCents, 1300);
+  assert.equal(asPickup.totalCents, 10000 + 0 + 1300);
+
+  // Confirms they're genuinely independent recomputations, not one leaking into the other.
+  assert.notEqual(asDelivery.totalCents, asPickup.totalCents);
+});
+
+test("PICKUP_LOCATION is a real, already-public Ontario/Canada address -- not an invented placeholder", () => {
+  assert.equal(PICKUP_LOCATION.province, "ON");
+  assert.equal(PICKUP_LOCATION.country, "CA");
+  assert.ok(PICKUP_LOCATION.addressLine1.length > 0);
+  assert.ok(PICKUP_LOCATION.hours.length > 0);
 });

@@ -5,6 +5,7 @@ import Script from "next/script";
 import { WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import type { CheckoutCartItemInput } from "@/lib/checkout/priceCartItem";
 import { ExpressCheckoutButtons } from "@/components/checkout/payment/ExpressCheckoutButtons";
+import { PICKUP_LOCATION } from "@/lib/checkout/pickupLocation";
 
 const ENVIRONMENT = process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT === "production" ? "production" : "sandbox";
 const SQUARE_JS_SRC =
@@ -13,7 +14,8 @@ const SQUARE_JS_SRC =
 interface PayPayload {
   items: CheckoutCartItemInput[];
   contact: { fullName: string; email: string; phone: string };
-  shippingAddress: {
+  /** Absent for pickup -- a pickup order has no delivery address to pass through. */
+  shippingAddress?: {
     addressLine1: string;
     addressLine2?: string;
     city: string;
@@ -21,6 +23,7 @@ interface PayPayload {
     postalCode: string;
     country: string;
   };
+  fulfillmentMethod: "delivery" | "pickup";
 }
 
 export function SquarePaymentSection({
@@ -61,7 +64,10 @@ export function SquarePaymentSection({
     let cancelled = false;
 
     payments
-      .card({ postalCode: payload.shippingAddress.postalCode })
+      // Pickup has no customer-entered postal code -- seeds the card form with the pickup
+      // location's own (only used to pre-fill the embedded iframe's optional zip hint, never
+      // stored or charged against).
+      .card({ postalCode: payload.shippingAddress?.postalCode ?? PICKUP_LOCATION.postalCode })
       .then((card) => card.attach("#square-card-container").then(() => card))
       .then((card) => {
         if (cancelled) {
@@ -138,13 +144,17 @@ export function SquarePaymentSection({
         familyName: familyNameParts.join(" ") || undefined,
         email: payload.contact.email,
         phone: payload.contact.phone,
-        addressLines: [payload.shippingAddress.addressLine1, payload.shippingAddress.addressLine2].filter(
-          (line): line is string => Boolean(line),
-        ),
-        city: payload.shippingAddress.city,
-        state: payload.shippingAddress.province,
-        countryCode: payload.shippingAddress.country,
-        postalCode: payload.shippingAddress.postalCode,
+        // Pickup has no customer-entered address to use for AVS -- falls back to the pickup
+        // location's own real, confirmed address rather than dropping AVS data entirely or
+        // inventing a billing address field this checkout has never collected.
+        addressLines: [
+          payload.shippingAddress?.addressLine1 ?? PICKUP_LOCATION.addressLine1,
+          payload.shippingAddress?.addressLine2 ?? PICKUP_LOCATION.addressLine2,
+        ].filter((line): line is string => Boolean(line)),
+        city: payload.shippingAddress?.city ?? PICKUP_LOCATION.city,
+        state: payload.shippingAddress?.province ?? PICKUP_LOCATION.province,
+        countryCode: payload.shippingAddress?.country ?? PICKUP_LOCATION.country,
+        postalCode: payload.shippingAddress?.postalCode ?? PICKUP_LOCATION.postalCode,
       },
     });
     if (tokenResult.status !== "OK" || !tokenResult.token) {

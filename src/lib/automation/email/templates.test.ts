@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { adminOrderPaidEmail } from "./templates.ts";
+import { adminOrderPaidEmail, orderConfirmationEmail } from "./templates.ts";
 
 const BASE_ORDER = {
   reference: "MI-1042",
@@ -51,4 +51,47 @@ test("adminOrderPaidEmail: omits colour suffix when colourName is null", () => {
   const { text } = adminOrderPaidEmail(BASE_ORDER);
   const mugLine = text.split("\n").find((l) => l.includes("Mug"));
   assert.equal(mugLine, "- Mug × 1");
+});
+
+test("adminOrderPaidEmail: a pickup order is clearly flagged in subject, text, and html", () => {
+  const pickupOrder = {
+    ...BASE_ORDER,
+    fulfillment: { method: "pickup" as const, pickupLabel: "Maple Imprint — Ottawa" },
+  };
+  const { subject, text, html } = adminOrderPaidEmail(pickupOrder);
+  assert.match(subject, /PICKUP/);
+  assert.match(text, /PICKUP — Maple Imprint — Ottawa/);
+  assert.match(html, /PICKUP/);
+  assert.match(html, /Maple Imprint — Ottawa/);
+});
+
+test("adminOrderPaidEmail: a delivery order (no fulfillment field) does not mention pickup at all", () => {
+  const { subject, text, html } = adminOrderPaidEmail(BASE_ORDER);
+  assert.doesNotMatch(subject, /PICKUP/);
+  assert.match(text, /Fulfillment: Delivery/);
+  assert.doesNotMatch(html, /PICKUP/);
+});
+
+test("orderConfirmationEmail: a pickup order shows the pickup location and collection next-step, not shipping", () => {
+  const pickupOrder = {
+    ...BASE_ORDER,
+    fulfillment: {
+      method: "pickup" as const,
+      pickupLabel: "Maple Imprint — Ottawa",
+      pickupAddressLine: "Suite 125, 2487 Kaladar Ave, Ottawa, ON K1V 8B9",
+      pickupHoursLines: ["Monday, Wednesday, Thursday: 11am to 7pm"],
+    },
+  };
+  const { text, html } = orderConfirmationEmail(pickupOrder);
+  assert.match(text, /Pickup: Maple Imprint — Ottawa/);
+  assert.match(text, /Suite 125, 2487 Kaladar Ave/);
+  assert.match(text, /ready for pickup/);
+  assert.doesNotMatch(text, /then shipping/);
+  assert.match(html, /Maple Imprint — Ottawa/);
+});
+
+test("orderConfirmationEmail: a delivery order (no fulfillment field) mentions shipping as the next step, not pickup", () => {
+  const { text } = orderConfirmationEmail(BASE_ORDER);
+  assert.match(text, /then shipping/);
+  assert.doesNotMatch(text, /Pickup:/);
 });

@@ -9,6 +9,7 @@ import { generateOrderReference } from "@/lib/checkout/generateOrderReference";
 import { humanPaymentError } from "@/lib/checkout/errorMessages";
 import { markOrderPaidAndNotify } from "@/lib/checkout/fulfillOrder";
 import { validatePostalCode } from "@/lib/checkout/validation";
+import { PICKUP_LOCATION } from "@/lib/checkout/pickupLocation";
 import { SquareError } from "square";
 
 interface DeliveryAddressInput {
@@ -23,15 +24,15 @@ interface DeliveryAddressInput {
 interface PayRequestBody {
   items: CheckoutCartItemInput[];
   contact: { fullName: string; email: string; phone: string };
-  shippingAddress: DeliveryAddressInput;
+  /** Required for "delivery", absent/ignored for "pickup" -- a pickup customer is never asked to
+   *  type a delivery address at all (see CheckoutClient.tsx's fulfillment selector). */
+  shippingAddress?: DeliveryAddressInput;
   sourceId: string;
   sourceType: "CARD" | "APPLE_PAY" | "GOOGLE_PAY";
   idempotencyKey: string;
   /** Defaults to "delivery" -- existing callers that don't send this field are unaffected.
-   *  "pickup" means Ottawa local pickup: $0 shipping and Ontario's point-of-sale HST rate
-   *  regardless of shippingAddress's own province. A full shippingAddress is still required even
-   *  for pickup today (used for the order record/contact purposes) -- no frontend selector sends
-   *  "pickup" yet (see final report); this only wires up the backend contract. */
+   *  "pickup" means Ottawa local pickup: $0 shipping, Ontario's point-of-sale HST rate regardless
+   *  of any address, a Square PICKUP fulfillment (not SHIPMENT), and no delivery address required. */
   fulfillmentMethod?: "delivery" | "pickup";
 }
 
@@ -56,14 +57,19 @@ export async function POST(request: Request) {
   if (!body.contact?.fullName || !body.contact?.email || !body.contact?.phone) {
     return badRequest("Missing contact information.");
   }
+  const isPickup = body.fulfillmentMethod === "pickup";
   const addr = body.shippingAddress;
-  if (!addr?.addressLine1 || !addr?.city || !addr?.province || !addr?.postalCode || !addr?.country) {
-    return badRequest("Missing delivery address.");
+  // A pickup order is never required to supply a delivery address -- it isn't being shipped
+  // anywhere, it's collected in person at PICKUP_LOCATION (see below).
+  if (!isPickup) {
+    if (!addr?.addressLine1 || !addr?.city || !addr?.province || !addr?.postalCode || !addr?.country) {
+      return badRequest("Missing delivery address.");
+    }
+    // Client-side validation (CheckoutForm) already checks this format, but that's bypassable by
+    // calling this endpoint directly — the authoritative payment path must not trust it unverified.
+    const postalCodeError = validatePostalCode(addr.postalCode, addr.country);
+    if (postalCodeError) return badRequest(postalCodeError);
   }
-  // Client-side validation (CheckoutForm) already checks this format, but that's bypassable by
-  // calling this endpoint directly — the authoritative payment path must not trust it unverified.
-  const postalCodeError = validatePostalCode(addr.postalCode, addr.country);
-  if (postalCodeError) return badRequest(postalCodeError);
   if (!body.sourceId || !body.idempotencyKey || !body.sourceType) {
     return badRequest("Missing payment information.");
   }
@@ -82,7 +88,6 @@ export async function POST(request: Request) {
   }
   const lines = priced.filter((r): r is Extract<(typeof priced)[number], { ok: true }> => r.ok).map((r) => r.line);
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
-  const isPickup = body.fulfillmentMethod === "pickup";
 
   let shippingOption: { id: string; label: string; cents: number };
   if (isPickup) {
@@ -92,7 +97,8 @@ export async function POST(request: Request) {
     let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
     try {
       shippingOptions = await shippingProvider.getOptions(
-        addr,
+        // Non-null: validated above when !isPickup (the only way this branch runs).
+        addr!,
         subtotalCents,
         lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
       );
@@ -120,10 +126,20 @@ export async function POST(request: Request) {
   const { taxCents } = await taxProvider.calculate({
     subtotalCents,
     shippingCents: shippingOption.cents,
-    shippingAddress: addr,
+    // PICKUP_LOCATION, not addr -- isPickup forces the Ontario point-of-sale rate regardless of
+    // the address passed here, but this is also the semantically correct address for a pickup
+    // order: the sale is physically completed at PICKUP_LOCATION, not wherever the customer lives.
+    shippingAddress: isPickup ? PICKUP_LOCATION : addr!,
     isPickup,
   });
   const totalCents = subtotalCents + shippingOption.cents + taxCents;
+
+  // What MapleOrder.shippingAddress (jsonb, not a fixed schema) stores for either fulfillment
+  // method -- no migration needed, this column already accepts any JSON shape. fulfillmentMethod
+  // is the field the confirmation page, admin order view, and email templates all branch on.
+  const orderAddressRecord = isPickup
+    ? { fulfillmentMethod: "pickup" as const, pickupLocation: PICKUP_LOCATION }
+    : { fulfillmentMethod: "delivery" as const, ...addr! };
 
   // Idempotency: if this exact attempt was already submitted (retry after a lost response,
   // accidental double-click with the same key), reuse the existing order/attempt rather than
@@ -167,7 +183,7 @@ export async function POST(request: Request) {
         contactName: body.contact.fullName,
         contactEmail: body.contact.email,
         contactPhone: body.contact.phone,
-        shippingAddress: addr,
+        shippingAddress: orderAddressRecord,
         subtotalCents,
         taxCents,
         shippingCents: shippingOption.cents,
@@ -230,26 +246,46 @@ export async function POST(request: Request) {
           quantity: String(l.quantity),
           basePriceMoney: { amount: BigInt(l.unitPriceCents), currency: "CAD" },
         })),
-        fulfillments: [
-          {
-            type: "SHIPMENT",
-            shipmentDetails: {
-              recipient: {
-                displayName: body.contact.fullName,
-                phoneNumber: body.contact.phone,
-                emailAddress: body.contact.email,
-                address: {
-                  addressLine1: addr.addressLine1,
-                  addressLine2: addr.addressLine2 || undefined,
-                  locality: addr.city,
-                  administrativeDistrictLevel1: addr.province,
-                  postalCode: addr.postalCode,
-                  country: addr.country as never,
+        fulfillments: isPickup
+          ? [
+              {
+                type: "PICKUP",
+                pickupDetails: {
+                  recipient: {
+                    displayName: body.contact.fullName,
+                    phoneNumber: body.contact.phone,
+                    emailAddress: body.contact.email,
+                  },
+                  // ASAP, not a specific scheduled pickupAt window -- no confirmed prep-time or
+                  // appointment-slot system exists for pickup orders (see pickupLocation.ts's own
+                  // caveat on BUSINESS.hours), so this doesn't invent a pickup time; Square
+                  // computes pickup_at itself for ASAP fulfillments. The note surfaces the real,
+                  // already-public hours to Square Point of Sale / staff, not a fabricated window.
+                  scheduleType: "ASAP",
+                  note: `Local pickup — ${PICKUP_LOCATION.label}. Hours: ${PICKUP_LOCATION.hours.map((h) => `${h.days} ${h.time}`).join("; ")}`,
                 },
               },
-            },
-          },
-        ],
+            ]
+          : [
+              {
+                type: "SHIPMENT",
+                shipmentDetails: {
+                  recipient: {
+                    displayName: body.contact.fullName,
+                    phoneNumber: body.contact.phone,
+                    emailAddress: body.contact.email,
+                    address: {
+                      addressLine1: addr!.addressLine1,
+                      addressLine2: addr!.addressLine2 || undefined,
+                      locality: addr!.city,
+                      administrativeDistrictLevel1: addr!.province,
+                      postalCode: addr!.postalCode,
+                      country: addr!.country as never,
+                    },
+                  },
+                },
+              },
+            ],
         // Short, non-sensitive references only — never PII or design JSON in Square metadata.
         metadata: { mapleOrderReference: orderReference },
       },

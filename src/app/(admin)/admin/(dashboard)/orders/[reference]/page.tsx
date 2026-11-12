@@ -24,7 +24,17 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
     .eq("orderId", order.id);
 
   const inventory = await buildFileInventory(supabaseAdmin, lines ?? []);
-  const address = order.shippingAddress as { line1?: string; city?: string; province?: string; postalCode?: string } | null;
+  const address = order.shippingAddress as
+    | {
+        addressLine1?: string;
+        city?: string;
+        province?: string;
+        postalCode?: string;
+        fulfillmentMethod?: "delivery" | "pickup";
+        pickupLocation?: { label: string; addressLine1: string; addressLine2: string; city: string; province: string; postalCode: string };
+      }
+    | null;
+  const isPickup = address?.fulfillmentMethod === "pickup";
 
   return (
     <div>
@@ -35,12 +45,21 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             {order.contactName} · {order.contactEmail}
             {order.contactPhone ? ` · ${order.contactPhone}` : ""}
           </p>
-          {address?.city && (
-            <p className="mt-1 text-sm text-muted">
-              Shipping to {address.line1 ? `${address.line1}, ` : ""}
-              {address.city}
-              {address.province ? `, ${address.province}` : ""} {address.postalCode ?? ""}
+          {isPickup && address?.pickupLocation ? (
+            <p className="mt-1 text-sm font-semibold text-ink-900">
+              🏬 Pickup — {address.pickupLocation.label}, {address.pickupLocation.addressLine1}, {address.pickupLocation.city}
             </p>
+          ) : (
+            address?.city && (
+              <p className="mt-1 text-sm text-muted">
+                {/* addressLine1, not the previous "line1" -- that key was never actually written
+                    by /api/checkout/pay (which stores DeliveryAddressInput's addressLine1), so
+                    this line always rendered without a street address for every real order. */}
+                Shipping to {address.addressLine1 ? `${address.addressLine1}, ` : ""}
+                {address.city}
+                {address.province ? `, ${address.province}` : ""} {address.postalCode ?? ""}
+              </p>
+            )
           )}
         </div>
         <div className="text-right">

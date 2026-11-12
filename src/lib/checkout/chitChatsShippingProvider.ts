@@ -3,16 +3,25 @@ import type { ShippingAddressInput, ShippingOption, ShippingQuoteLine, ShippingQ
 // directly), matching the convention already used in canadaPostShippingProvider.ts.
 import { ShippingRateUnavailableError, estimateParcelWeightLb } from "./canadaPostShippingProvider.ts";
 import { validatePostalCode } from "./validation.ts";
+import { ChitChatsRateCache } from "./chitChatsRateCache.ts";
 
 // Architecture for the owner-confirmed shipping policy, NOT wired in as the live `shippingProvider`
 // export (see shippingProvider.ts) -- Chit Chats replaces Canada Post as the PLANNED primary
 // carrier, but no live rate call is ever made in this codebase today: no CHIT_CHATS_* credential
 // exists anywhere (verified by grep), and Chit Chats' own API has no quote-only endpoint --
-// POST /shipments always creates a persistent shipment record, even for a rate check. Treating any
-// live call to that endpoint as equivalent to "creating a real shipment" means it must never be
-// called outside of an injected test fixture this round, consistent with the standing "no real
+// POST /shipments always creates a persistent shipment record, even for a rate check (confirmed
+// directly against https://chitchats.com/docs/api/v1: set postage_type: "unknown" to create one
+// without buying postage; it can be deleted via DELETE /shipments/{id} as long as it hasn't been
+// paid for or received; a staging sandbox exists at https://staging.chitchats.com for real
+// integration testing once credentials exist; rate limit is 2,000 requests/5 minutes). Treating
+// any live call to that endpoint as equivalent to "creating a real shipment" means it must never
+// be called outside of an injected test fixture this round, consistent with the standing "no real
 // shipments without approval" instruction and the fact that no real credentials exist to call it
-// with anyway.
+// with anyway. getOptions() below caches successful quotes (chitChatsRateCache.ts) specifically to
+// keep repeated identical requests from creating repeated real shipment records once this is live
+// -- see that file's header for the full caching design, including how a cached quote's shipment
+// id is meant to be reused at payment time (PATCH /shipments/{id}/buy on the SAME id) rather than
+// purchasing postage against a brand-new shipment the customer never actually saw a rate for.
 //
 // Confirmed owner policy, "CANADAWIDE FREE SHIPPING POLICY" (2026-11-12, round 3):
 //   1. All 10 provinces and 3 territories are geographically eligible, SUBJECT TO ACTUAL CARRIER
@@ -162,9 +171,18 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
   // `node --test`'s strip-only mode can't parse that syntax, and this file's own test needs to
   // run under it directly.
   private readonly rateFetcher: ChitChatsRateFetcher;
+  private readonly cache: ChitChatsRateCache;
 
-  constructor(rateFetcher: ChitChatsRateFetcher = fetchChitChatsRates) {
+  // `cache` defaults to a FRESH instance per provider instance (not a shared module-level
+  // singleton) -- see chitChatsRateCache.ts's header. That means every `new
+  // ChitChatsShippingProvider()` call, including the one default-constructed for every test in
+  // this file, gets its own isolated cache: tests never see stale results left behind by an
+  // earlier test's fake fetcher, and the real activated singleton (shippingProvider.ts's eventual
+  // export) still gets one persistent cache for its whole process lifetime, since it's
+  // constructed exactly once.
+  constructor(rateFetcher: ChitChatsRateFetcher = fetchChitChatsRates, cache: ChitChatsRateCache = new ChitChatsRateCache()) {
     this.rateFetcher = rateFetcher;
+    this.cache = cache;
   }
 
   async getOptions(address: ShippingAddressInput, subtotalCents: number, lines: ShippingQuoteLine[]): Promise<ShippingOption[]> {
@@ -184,15 +202,31 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
       );
     }
 
-    // Any failure here -- not configured yet, a real outage, an unsupported destination, or an
-    // oversized/restricted parcel once this is live -- propagates as-is. This is also how
-    // serviceability is validated: a destination/parcel this call can't quote is, by definition,
-    // not eligible for the free-shipping override below, because this line never returns for it.
-    const liveRates = await this.rateFetcher(address, subtotalCents, { weightLb: parcelWeightLb, dimensionsIn: null });
-    if (liveRates.length === 0) {
-      throw new ShippingRateUnavailableError(
-        "Chit Chats has no delivery service available for this address — request a quote and we'll confirm shipping manually.",
-      );
+    const pkg: ChitChatsPackageInput = { weightLb: parcelWeightLb, dimensionsIn: null };
+    const cacheKeyInput = { address, subtotalCents, pkg };
+
+    // Cache hit: reuses a prior real quote for the identical address/subtotal/parcel instead of
+    // creating another Chit Chats shipment record for a cart that hasn't actually changed (see
+    // chitChatsRateCache.ts's header for exactly why this matters -- there's no quote-only
+    // endpoint, so every miss is a real shipment creation). A cache hit never calls the fetcher.
+    const cached = this.cache.get(cacheKeyInput);
+    let liveRates: ShippingOption[];
+    if (cached) {
+      liveRates = cached.rates;
+    } else {
+      // Any failure here -- not configured yet, a real outage, an unsupported destination, or an
+      // oversized/restricted parcel once this is live -- propagates as-is and is NEVER cached
+      // (see chitChatsRateCache.ts's set() note): a transient failure must be retried on the next
+      // request, never remembered as a false, stale answer. This is also how serviceability is
+      // validated -- a destination/parcel this call can't quote is, by definition, not eligible
+      // for the free-shipping override below, because this line never returns for it.
+      liveRates = await this.rateFetcher(address, subtotalCents, pkg);
+      if (liveRates.length === 0) {
+        throw new ShippingRateUnavailableError(
+          "Chit Chats has no delivery service available for this address — request a quote and we'll confirm shipping manually.",
+        );
+      }
+      this.cache.set(cacheKeyInput, liveRates);
     }
 
     // Free shipping is Canada-only and threshold-gated, per the owner's explicit confirmation --

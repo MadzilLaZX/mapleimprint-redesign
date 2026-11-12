@@ -71,12 +71,23 @@ export function customerConfirmationEmail(
   return { subject, html, text };
 }
 
+interface OrderFulfillmentInfo {
+  method: "delivery" | "pickup";
+  /** Only present when method is "pickup" -- see pickupLocation.ts, the single source for this
+   *  address/hours text. Not re-imported here to keep templates.ts free of app-specific config
+   *  imports; the caller (fulfillOrder.ts) passes the already-formatted strings through. */
+  pickupLabel?: string;
+  pickupAddressLine?: string;
+  pickupHoursLines?: string[];
+}
+
 interface OrderConfirmationInput {
   reference: string;
   contactName: string;
   contactEmail: string;
   totalCents: number;
   lines: { productName: string; quantity: number; colourName: string | null }[];
+  fulfillment?: OrderFulfillmentInfo;
 }
 
 export function orderConfirmationEmail(order: OrderConfirmationInput): { subject: string; html: string; text: string } {
@@ -84,8 +95,18 @@ export function orderConfirmationEmail(order: OrderConfirmationInput): { subject
   const total = `$${(order.totalCents / 100).toFixed(2)}`;
   const subject = `Order confirmed — ${order.reference}`;
   const confirmationUrl = `${SITE_URL}/order/${order.reference}/confirmation`;
+  const isPickup = order.fulfillment?.method === "pickup";
 
   const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}`);
+
+  const pickupTextLines = isPickup
+    ? [
+        "",
+        `Pickup: ${order.fulfillment?.pickupLabel ?? ""}`,
+        order.fulfillment?.pickupAddressLine ?? "",
+        ...(order.fulfillment?.pickupHoursLines ?? []),
+      ].filter(Boolean)
+    : [];
 
   const text = [
     `Hi ${firstName},`,
@@ -94,11 +115,14 @@ export function orderConfirmationEmail(order: OrderConfirmationInput): { subject
     "",
     `Order: ${order.reference}`,
     `Total paid: ${total}`,
+    ...pickupTextLines,
     "",
     "Items:",
     ...itemLines.map((l) => `- ${l}`),
     "",
-    "What happens next: your design(s) move into production preparation, then printing, then shipping.",
+    isPickup
+      ? "What happens next: your design(s) move into production preparation, then printing, then we'll email you when it's ready for pickup."
+      : "What happens next: your design(s) move into production preparation, then printing, then shipping.",
     "We'll be in touch if we need anything from you.",
     "",
     `View your order & files: ${confirmationUrl}`,
@@ -109,6 +133,10 @@ export function orderConfirmationEmail(order: OrderConfirmationInput): { subject
     BUSINESS_ADDRESS_ONE_LINE,
   ].join("\n");
 
+  const pickupHtmlRow = isPickup
+    ? `<tr><td style="font-weight:600;white-space:nowrap;vertical-align:top;">Pickup</td><td>${escapeHtml(order.fulfillment?.pickupLabel ?? "")}<br/>${escapeHtml(order.fulfillment?.pickupAddressLine ?? "")}</td></tr>`
+    : "";
+
   const html = `
     <div style="font-family:Arial,sans-serif;color:#1a1a1a;max-width:520px;margin:0 auto;">
       <p>Hi ${escapeHtml(firstName)},</p>
@@ -116,10 +144,14 @@ export function orderConfirmationEmail(order: OrderConfirmationInput): { subject
       <table cellpadding="6" cellspacing="0" style="width:100%;background:#f7f4ef;border-radius:8px;margin:16px 0;">
         <tr><td style="font-weight:600;white-space:nowrap;">Order</td><td>${escapeHtml(order.reference)}</td></tr>
         <tr><td style="font-weight:600;white-space:nowrap;">Total paid</td><td>${escapeHtml(total)}</td></tr>
+        ${pickupHtmlRow}
         <tr><td style="font-weight:600;white-space:nowrap;vertical-align:top;">Items</td><td>${itemLines.map(escapeHtml).join("<br/>")}</td></tr>
       </table>
-      <p>What happens next: your design(s) move into production preparation, then printing, then shipping. We'll
-        be in touch if we need anything from you.</p>
+      <p>${
+        isPickup
+          ? "What happens next: your design(s) move into production preparation, then printing, then we'll email you when it's ready for pickup."
+          : "What happens next: your design(s) move into production preparation, then printing, then shipping."
+      } We'll be in touch if we need anything from you.</p>
       <p><a href="${confirmationUrl}">View your order &amp; files</a></p>
       <p style="margin-top:24px;">
         ${escapeHtml(BUSINESS.name)}<br/>
@@ -139,6 +171,7 @@ interface AdminOrderPaidInput {
   contactEmail: string;
   totalCents: number;
   lines: { productName: string; quantity: number; colourName: string | null }[];
+  fulfillment?: OrderFulfillmentInfo;
 }
 
 /** Staff-facing counterpart to orderConfirmationEmail above — until now, a paid order notified
@@ -146,7 +179,8 @@ interface AdminOrderPaidInput {
  *  directly. Links to the new /admin/orders/[reference] detail page. */
 export function adminOrderPaidEmail(order: AdminOrderPaidInput): { subject: string; html: string; text: string } {
   const total = `$${(order.totalCents / 100).toFixed(2)}`;
-  const subject = `New paid order — ${order.reference} (${order.contactName})`;
+  const isPickup = order.fulfillment?.method === "pickup";
+  const subject = `New paid order — ${order.reference} (${order.contactName})${isPickup ? " [PICKUP]" : ""}`;
   const adminUrl = `${SITE_URL}/admin/orders/${order.reference}`;
   const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}`);
 
@@ -154,6 +188,7 @@ export function adminOrderPaidEmail(order: AdminOrderPaidInput): { subject: stri
     `New paid order: ${order.reference}`,
     `Customer: ${order.contactName} (${order.contactEmail})`,
     `Total: ${total}`,
+    `Fulfillment: ${isPickup ? `PICKUP — ${order.fulfillment?.pickupLabel ?? ""}` : "Delivery"}`,
     "",
     "Items:",
     ...itemLines.map((l) => `- ${l}`),
@@ -163,11 +198,12 @@ export function adminOrderPaidEmail(order: AdminOrderPaidInput): { subject: stri
 
   const html = `
     <div style="font-family:Arial,sans-serif;color:#1a1a1a;max-width:560px;margin:0 auto;">
-      <h2 style="margin-bottom:12px;">New paid order</h2>
+      <h2 style="margin-bottom:12px;">New paid order${isPickup ? " — PICKUP" : ""}</h2>
       <table cellpadding="6" cellspacing="0" style="width:100%;">
         <tr><td style="font-weight:600;white-space:nowrap;">Reference</td><td>${escapeHtml(order.reference)}</td></tr>
         <tr><td style="font-weight:600;white-space:nowrap;">Customer</td><td>${escapeHtml(order.contactName)} (${escapeHtml(order.contactEmail)})</td></tr>
         <tr><td style="font-weight:600;white-space:nowrap;">Total</td><td>${escapeHtml(total)}</td></tr>
+        <tr><td style="font-weight:600;white-space:nowrap;">Fulfillment</td><td>${isPickup ? `<strong>PICKUP</strong> — ${escapeHtml(order.fulfillment?.pickupLabel ?? "")}` : "Delivery"}</td></tr>
         <tr><td style="font-weight:600;white-space:nowrap;vertical-align:top;">Items</td><td>${itemLines.map(escapeHtml).join("<br/>")}</td></tr>
       </table>
       <p style="margin-top:16px;"><a href="${adminUrl}">View order & files</a></p>

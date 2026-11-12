@@ -4,13 +4,16 @@ import { priceCartItem, type CheckoutCartItemInput } from "@/lib/checkout/priceC
 import { taxProvider } from "@/lib/checkout/taxProvider";
 import { shippingProvider } from "@/lib/checkout/shippingProvider";
 import { ShippingRateUnavailableError, OTTAWA_PICKUP_OPTION } from "@/lib/checkout/canadaPostShippingProvider";
+import { PICKUP_LOCATION } from "@/lib/checkout/pickupLocation";
 
 interface QuoteRequestBody {
   items: CheckoutCartItemInput[];
-  shippingAddress: { province: string; country: string; postalCode: string };
+  /** Required for "delivery", absent/ignored for "pickup" -- the fulfillment selector never
+   *  collects a delivery address when pickup is chosen. */
+  shippingAddress?: { province: string; country: string; postalCode: string };
   /** Defaults to "delivery" -- existing callers that don't send this field are unaffected.
    *  "pickup" means Ottawa local pickup: free, and taxed at Ontario's point-of-sale rate
-   *  regardless of shippingAddress. No frontend selector sends "pickup" yet (see final report). */
+   *  regardless of shippingAddress. */
   fulfillmentMethod?: "delivery" | "pickup";
 }
 
@@ -58,6 +61,9 @@ export async function POST(request: Request) {
     // No carrier rate needed for pickup -- never call the shipping provider at all.
     shippingOption = OTTAWA_PICKUP_OPTION;
   } else {
+    if (!body.shippingAddress) {
+      return NextResponse.json({ error: "A delivery address is required to calculate shipping." }, { status: 400 });
+    }
     let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
     try {
       shippingOptions = await shippingProvider.getOptions(
@@ -81,7 +87,9 @@ export async function POST(request: Request) {
   const { taxCents, breakdown: taxBreakdown } = await taxProvider.calculate({
     subtotalCents,
     shippingCents: shippingOption.cents,
-    shippingAddress: body.shippingAddress,
+    // PICKUP_LOCATION for pickup -- same reasoning as /api/checkout/pay: the sale is physically
+    // completed there, and isPickup forces Ontario regardless of whatever this value is anyway.
+    shippingAddress: isPickup ? PICKUP_LOCATION : body.shippingAddress!,
     isPickup,
   });
 
