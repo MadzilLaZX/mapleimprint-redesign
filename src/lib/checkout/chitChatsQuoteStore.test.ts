@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { InMemoryChitChatsQuoteStore, buildQuoteFingerprint, type ChitChatsPersistedQuoteKey } from "./chitChatsQuoteStore.ts";
+import { InMemoryChitChatsQuoteStore, buildQuoteFingerprint, generateOwnerToken, type ChitChatsPersistedQuoteKey } from "./chitChatsQuoteStore.ts";
 
 const keyInput: ChitChatsPersistedQuoteKey = {
   address: { province: "ON", country: "CA", postalCode: "K1V 8B9", name: "Jamie", addressLine1: "123 Main St", city: "Ottawa" },
@@ -9,7 +9,8 @@ const keyInput: ChitChatsPersistedQuoteKey = {
 };
 const fingerprint = buildQuoteFingerprint(keyInput);
 const now = new Date("2026-11-13T00:00:00Z");
-const expiresAt = new Date("2026-11-13T00:10:00Z");
+const quoteExpiresAt = new Date("2026-11-13T00:10:00Z");
+const leaseExpiresAt = new Date("2026-11-13T00:00:30Z");
 
 test("buildQuoteFingerprint: identical inputs produce an identical fingerprint", () => {
   assert.equal(buildQuoteFingerprint(keyInput), buildQuoteFingerprint({ ...keyInput }));
@@ -24,126 +25,200 @@ test("buildQuoteFingerprint: a SHA-256 hex digest, not the raw JSON -- fixed len
   assert.match(buildQuoteFingerprint(keyInput), /^[0-9a-f]{64}$/);
 });
 
-test("claim(): the first caller for a fingerprint wins the claim", async () => {
-  const store = new InMemoryChitChatsQuoteStore();
-  const result = await store.claim(keyInput, fingerprint, now, expiresAt);
-  assert.equal(result.claimed, true);
-  assert.equal(result.existing, null);
+test("generateOwnerToken: two calls never produce the same token", () => {
+  assert.notEqual(generateOwnerToken(), generateOwnerToken());
 });
 
-test("claim(): a concurrent second caller for the SAME fingerprint loses the race (this IS the duplicate-shipment prevention)", async () => {
+test("claimOrInspect(): the first caller for a fingerprint becomes the owner", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  const first = await store.claim(keyInput, fingerprint, now, expiresAt);
-  const second = await store.claim(keyInput, fingerprint, now, expiresAt);
-  assert.equal(first.claimed, true);
-  assert.equal(second.claimed, false);
+  const token = generateOwnerToken();
+  const outcome = await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  assert.deepEqual(outcome, { kind: "owner", ownerToken: token });
 });
 
-test("claim(): a loser sees the winner's quote as 'existing' once it's been filled in (ready), reusing it rather than calling Chit Chats again", async () => {
+test("claimOrInspect(): a concurrent second caller while the lease is still live gets 'wait', never 'owner'", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
-  const loser = await store.claim(keyInput, fingerprint, now, expiresAt);
-  assert.equal(loser.claimed, false);
-  assert.deepEqual(loser.existing?.rates, [{ id: "cc", label: "Chit Chats", cents: 1850 }]);
-  assert.equal(loser.existing?.chitChatsShipmentId, "ship_abc123");
+  await store.claimOrInspect(keyInput, fingerprint, now, generateOwnerToken(), quoteExpiresAt, leaseExpiresAt);
+  const second = await store.claimOrInspect(keyInput, fingerprint, now, generateOwnerToken(), quoteExpiresAt, leaseExpiresAt);
+  assert.equal(second.kind, "wait");
 });
 
-test("claim(): a loser sees 'existing: null' while the winner's row is still pending -- falls through to fetch itself rather than blocking", async () => {
+test("claimOrInspect(): once filled, a later caller gets 'ready' with the real rates -- never re-claims or re-fetches", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  // Deliberately never fill()ed -- simulates the winner's real Chit Chats call still in flight.
-  const loser = await store.claim(keyInput, fingerprint, now, expiresAt);
-  assert.equal(loser.claimed, false);
-  assert.equal(loser.existing, null, "a still-pending row must never be handed back as a usable quote");
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  await store.fill(fingerprint, token, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
+
+  const outcome = await store.claimOrInspect(keyInput, fingerprint, now, generateOwnerToken(), quoteExpiresAt, leaseExpiresAt);
+  assert.equal(outcome.kind, "ready");
+  if (outcome.kind === "ready") {
+    assert.deepEqual(outcome.quote.rates, [{ id: "cc", label: "Chit Chats", cents: 1850 }]);
+    assert.equal(outcome.quote.chitChatsShipmentId, "ship_abc123");
+  }
 });
 
-test("findReady(): returns null before fill() -- a pending claim is never mistaken for a usable quote", async () => {
+test("claimOrInspect(): a pending row whose lease has expired is reported as 'stale' with wasPending=true, not silently re-claimable", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
+  const priorToken = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, priorToken, quoteExpiresAt, leaseExpiresAt);
+  const afterLease = new Date(leaseExpiresAt.getTime() + 1);
+  const outcome = await store.claimOrInspect(keyInput, fingerprint, afterLease, generateOwnerToken(), quoteExpiresAt, leaseExpiresAt);
+  assert.deepEqual(outcome, { kind: "stale", priorOwnerToken: priorToken, wasPending: true });
+});
+
+test("claimOrInspect(): a ready row whose quote freshness has expired is 'stale' with wasPending=false -- ordinary expiry, not a crash signal", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const priorToken = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, priorToken, quoteExpiresAt, leaseExpiresAt);
+  await store.fill(fingerprint, priorToken, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
+  const afterExpiry = new Date(quoteExpiresAt.getTime() + 1);
+  const outcome = await store.claimOrInspect(keyInput, fingerprint, afterExpiry, generateOwnerToken(), quoteExpiresAt, leaseExpiresAt);
+  assert.deepEqual(outcome, { kind: "stale", priorOwnerToken: priorToken, wasPending: false });
+});
+
+test("takeOver(): succeeds when the row is still owned by the expected token AND still genuinely stale", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const priorToken = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, priorToken, quoteExpiresAt, leaseExpiresAt);
+  const afterLease = new Date(leaseExpiresAt.getTime() + 1);
+  const newToken = generateOwnerToken();
+  const tookOver = await store.takeOver(fingerprint, priorToken, newToken, afterLease, quoteExpiresAt, new Date(afterLease.getTime() + 30_000));
+  assert.equal(tookOver, true);
+  assert.equal(store.peek(fingerprint)?.ownerToken, newToken);
+});
+
+test("takeOver(): fails (CAS rejected) if the token no longer matches -- someone else already took over", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const priorToken = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, priorToken, quoteExpiresAt, leaseExpiresAt);
+  const wrongToken = generateOwnerToken();
+  const tookOver = await store.takeOver(fingerprint, wrongToken, generateOwnerToken(), now, quoteExpiresAt, leaseExpiresAt);
+  assert.equal(tookOver, false);
+});
+
+test("takeOver(): fails if the row is no longer actually stale (the original owner filled it in the meantime) -- never overwrites a newer result", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const priorToken = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, priorToken, quoteExpiresAt, leaseExpiresAt);
+  // The "slow but not actually crashed" owner finishes late, but BEFORE the recovery attempt --
+  // fill() keeps the same ownerToken (it's filling its OWN claim), so a naive token-only CAS
+  // would wrongly let a takeover proceed and clobber this real result.
+  await store.fill(fingerprint, priorToken, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_real123");
+
+  const afterLease = new Date(leaseExpiresAt.getTime() + 1);
+  const tookOver = await store.takeOver(fingerprint, priorToken, generateOwnerToken(), afterLease, quoteExpiresAt, leaseExpiresAt);
+  assert.equal(tookOver, false, "a row that became ready must never be overwritten by a takeover based on a stale read");
+  assert.deepEqual(store.peek(fingerprint)?.rates, [{ id: "cc", label: "Chit Chats", cents: 1850 }]);
+});
+
+test("fill(): rejected (returns false) once the lease has been taken over by someone else -- the stale worker's late result is never applied", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const staleToken = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, staleToken, quoteExpiresAt, leaseExpiresAt);
+  const newToken = generateOwnerToken();
+  await store.takeOver(fingerprint, staleToken, newToken, new Date(leaseExpiresAt.getTime() + 1), quoteExpiresAt, new Date(leaseExpiresAt.getTime() + 60_000));
+
+  // The ORIGINAL (now-stale) worker finally finishes and tries to report its result using its
+  // OLD token -- this must be rejected, not silently accepted.
+  const applied = await store.fill(fingerprint, staleToken, [{ id: "cc", label: "STALE WORKER RESULT", cents: 9999 }], "ship_stale");
+  assert.equal(applied, false);
+  assert.notEqual(store.peek(fingerprint)?.rates?.[0]?.label, "STALE WORKER RESULT");
+});
+
+test("fill(): succeeds for the current legitimate owner", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  const applied = await store.fill(fingerprint, token, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc");
+  assert.equal(applied, true);
+});
+
+test("release(): succeeds for the current owner, freeing the fingerprint for a fresh claim", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  const released = await store.release(fingerprint, token);
+  assert.equal(released, true);
+
+  const next = await store.claimOrInspect(keyInput, fingerprint, now, generateOwnerToken(), quoteExpiresAt, leaseExpiresAt);
+  assert.equal(next.kind, "owner", "release() must free the fingerprint for a genuine retry, not leave it permanently stuck");
+});
+
+test("release(): rejected (returns false) if the lease was already taken over -- a stale worker's failure cannot delete a newer claim", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const staleToken = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, staleToken, quoteExpiresAt, leaseExpiresAt);
+  const newToken = generateOwnerToken();
+  await store.takeOver(fingerprint, staleToken, newToken, new Date(leaseExpiresAt.getTime() + 1), quoteExpiresAt, new Date(leaseExpiresAt.getTime() + 60_000));
+
+  const released = await store.release(fingerprint, staleToken);
+  assert.equal(released, false);
+  assert.ok(store.peek(fingerprint), "the new owner's claim must survive the stale worker's release() attempt");
+});
+
+test("release(): never removes an already-purchased row, even if (incorrectly) called with the right token", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  await store.fill(fingerprint, token, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc");
+  await store.markPurchased(fingerprint, now);
+  const released = await store.release(fingerprint, token);
+  assert.equal(released, false);
+});
+
+test("findReady(): returns null before fill()", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  await store.claimOrInspect(keyInput, fingerprint, now, generateOwnerToken(), quoteExpiresAt, leaseExpiresAt);
   assert.equal(await store.findReady(fingerprint, now), null);
-});
-
-test("findReady(): returns the quote after fill()", async () => {
-  const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
-  const found = await store.findReady(fingerprint, now);
-  assert.deepEqual(found?.rates, [{ id: "cc", label: "Chit Chats", cents: 1850 }]);
 });
 
 test("findReady(): returns null once past expiresAt -- an expired quote is never reused for payment", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
-  const afterExpiry = new Date(expiresAt.getTime() + 1);
-  assert.equal(await store.findReady(fingerprint, afterExpiry), null);
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  await store.fill(fingerprint, token, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
+  assert.equal(await store.findReady(fingerprint, new Date(quoteExpiresAt.getTime() + 1)), null);
 });
 
-test("release(): removes a pending claim, allowing the NEXT request to claim it fresh instead of being stuck forever", async () => {
+test("deleteExpiredUnpurchased(): removes an expired, never-purchased, non-leased quote", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.release(fingerprint); // simulates the real rate fetch failing
-  const next = await store.claim(keyInput, fingerprint, now, expiresAt);
-  assert.equal(next.claimed, true, "release() must free the fingerprint for a genuine retry, not leave it permanently stuck");
-});
-
-test("release(): never removes a row that has already been purchased, even if called", async () => {
-  const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
-  await store.markPurchased(fingerprint, now);
-  await store.release(fingerprint);
-  assert.ok(await store.findReady(fingerprint, now), "a purchased quote must survive release() -- it backs a real paid shipment");
-});
-
-test("deleteExpiredUnpurchased(): removes an expired, never-purchased quote", async () => {
-  const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
-  const removed = await store.deleteExpiredUnpurchased(new Date(expiresAt.getTime() + 1));
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  await store.fill(fingerprint, token, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
+  const removed = await store.deleteExpiredUnpurchased(new Date(quoteExpiresAt.getTime() + 1));
   assert.equal(removed, 1);
   assert.equal(store.size(), 0);
 });
 
-test("deleteExpiredUnpurchased(): NEVER removes a purchased quote, even if expired -- mirrors Chit Chats' own 'cannot delete a purchased shipment' rule", async () => {
+test("deleteExpiredUnpurchased(): NEVER removes a purchased quote, even if expired", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  await store.fill(fingerprint, token, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc");
   await store.markPurchased(fingerprint, now);
-  const removed = await store.deleteExpiredUnpurchased(new Date(expiresAt.getTime() + 1));
+  const removed = await store.deleteExpiredUnpurchased(new Date(quoteExpiresAt.getTime() + 1));
   assert.equal(removed, 0);
+  assert.equal(store.size(), 1);
+});
+
+test("deleteExpiredUnpurchased(): never races an ACTIVELY-leased row, even if its expiresAt has already passed", async () => {
+  const store = new InMemoryChitChatsQuoteStore();
+  // A pending claim with a lease that outlives the quote's own (unusual, but the safety check
+  // must not assume this can't happen) expiresAt.
+  const shortQuoteExpiry = new Date(now.getTime() + 1000);
+  const longerLease = new Date(now.getTime() + 60_000);
+  await store.claimOrInspect(keyInput, fingerprint, now, generateOwnerToken(), shortQuoteExpiry, longerLease);
+  const removed = await store.deleteExpiredUnpurchased(new Date(shortQuoteExpiry.getTime() + 1));
+  assert.equal(removed, 0, "cleanup must never delete a row while its lease is still live, regardless of expiresAt");
   assert.equal(store.size(), 1);
 });
 
 test("deleteExpiredUnpurchased(): does not remove a quote that hasn't expired yet", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
-  const removed = await store.deleteExpiredUnpurchased(new Date(expiresAt.getTime() - 1));
+  const token = generateOwnerToken();
+  await store.claimOrInspect(keyInput, fingerprint, now, token, quoteExpiresAt, leaseExpiresAt);
+  await store.fill(fingerprint, token, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
+  const removed = await store.deleteExpiredUnpurchased(new Date(quoteExpiresAt.getTime() - 1));
   assert.equal(removed, 0);
   assert.equal(store.size(), 1);
-});
-
-test("deleteExpiredUnpurchased(): cleans up multiple expired quotes at once, leaving fresh and purchased ones alone", async () => {
-  const store = new InMemoryChitChatsQuoteStore();
-  const keyB = { ...keyInput, address: { ...keyInput.address, city: "Toronto", postalCode: "M5V 2T6" } };
-  const fpB = buildQuoteFingerprint(keyB);
-  const keyC = { ...keyInput, address: { ...keyInput.address, city: "Montreal", postalCode: "H2Y 1C6" } };
-  const fpC = buildQuoteFingerprint(keyC);
-
-  await store.claim(keyInput, fingerprint, now, expiresAt); // will expire, never purchased -> removed
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
-
-  await store.claim(keyB, fpB, now, new Date(now.getTime() + 60 * 60 * 1000)); // far future -> kept
-  await store.fill(fpB, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null);
-
-  await store.claim(keyC, fpC, now, expiresAt); // expires, but purchased -> kept
-  await store.fill(fpC, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_c");
-  await store.markPurchased(fpC, now);
-
-  const removed = await store.deleteExpiredUnpurchased(new Date(expiresAt.getTime() + 1));
-  assert.equal(removed, 1);
-  assert.equal(store.size(), 2);
-  assert.ok(await store.findReady(fpB, new Date(expiresAt.getTime() + 1)));
 });

@@ -1,7 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { purchasePostageForQuote, type ChitChatsPostagePurchaser } from "./chitChatsPostagePurchase.ts";
-import { InMemoryChitChatsQuoteStore, buildQuoteFingerprint, type ChitChatsPersistedQuoteKey } from "./chitChatsQuoteStore.ts";
+import {
+  InMemoryChitChatsQuoteStore,
+  buildQuoteFingerprint,
+  generateOwnerToken,
+  type ChitChatsPersistedQuoteKey,
+} from "./chitChatsQuoteStore.ts";
+import type { ShippingOption } from "./shippingProvider";
 
 const keyInput: ChitChatsPersistedQuoteKey = {
   address: { province: "ON", country: "CA", postalCode: "K1V 8B9", name: "Jamie", addressLine1: "123 Main St", city: "Ottawa" },
@@ -11,6 +17,17 @@ const keyInput: ChitChatsPersistedQuoteKey = {
 const fingerprint = buildQuoteFingerprint(keyInput);
 const now = new Date("2026-11-13T00:00:00Z");
 const expiresAt = new Date("2026-11-13T00:10:00Z");
+const leaseExpiresAt = new Date("2026-11-13T00:00:30Z");
+
+/** Test-only setup helper -- claims then fills a quote, mirroring what
+ *  ChitChatsQuoteCoordinator.getOrCreateQuote() does for real, so these tests exercise
+ *  purchasePostageForQuote() against a realistically-shaped 'ready' row. */
+async function claimAndFill(store: InMemoryChitChatsQuoteStore, rates: ShippingOption[], shipmentId: string | null) {
+  const ownerToken = generateOwnerToken();
+  const outcome = await store.claimOrInspect(keyInput, fingerprint, now, ownerToken, expiresAt, leaseExpiresAt);
+  if (outcome.kind !== "owner") throw new Error("test setup assumption violated: expected to win the claim");
+  await store.fill(fingerprint, outcome.ownerToken, rates, shipmentId);
+}
 
 test("purchasePostageForQuote: throws if the quote doesn't exist (expired, never completed, or wrong fingerprint)", async () => {
   const store = new InMemoryChitChatsQuoteStore();
@@ -19,15 +36,13 @@ test("purchasePostageForQuote: throws if the quote doesn't exist (expired, never
 
 test("purchasePostageForQuote: throws if the quote has no associated Chit Chats shipment id", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null); // no shipment id
+  await claimAndFill(store, [{ id: "cc", label: "Chit Chats", cents: 1850 }], null); // no shipment id
   await assert.rejects(() => purchasePostageForQuote(store, fingerprint, "chit_chats_select", now), /nothing to purchase postage for/);
 });
 
 test("purchasePostageForQuote: a successful purchase calls the purchaser with the real shipment id and marks the quote purchased", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
+  await claimAndFill(store, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
 
   let receivedId: string | null = null;
   let receivedPostageType: string | null = null;
@@ -46,8 +61,7 @@ test("purchasePostageForQuote: a successful purchase calls the purchaser with th
 
 test("purchasePostageForQuote: calling it twice is a safe no-op the second time -- never purchases postage twice", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
+  await claimAndFill(store, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
 
   let purchaseCalls = 0;
   const countingPurchaser: ChitChatsPostagePurchaser = async () => {
@@ -62,7 +76,6 @@ test("purchasePostageForQuote: calling it twice is a safe no-op the second time 
 
 test("purchasePostageForQuote: the default purchaser (no real credentials) throws rather than silently succeeding", async () => {
   const store = new InMemoryChitChatsQuoteStore();
-  await store.claim(keyInput, fingerprint, now, expiresAt);
-  await store.fill(fingerprint, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
+  await claimAndFill(store, [{ id: "cc", label: "Chit Chats", cents: 1850 }], "ship_abc123");
   await assert.rejects(() => purchasePostageForQuote(store, fingerprint, "chit_chats_select", now), /not implemented/);
 });

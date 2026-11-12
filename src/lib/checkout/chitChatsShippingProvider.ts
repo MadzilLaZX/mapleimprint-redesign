@@ -4,7 +4,7 @@ import type { ShippingAddressInput, ShippingOption, ShippingQuoteLine, ShippingQ
 import { ShippingRateUnavailableError, estimateParcelWeightLb } from "./canadaPostShippingProvider.ts";
 import { validatePostalCode } from "./validation.ts";
 import { ChitChatsRateCache } from "./chitChatsRateCache.ts";
-import { buildQuoteFingerprint, QUOTE_PERSIST_TTL_MS, type ChitChatsQuoteStore } from "./chitChatsQuoteStore.ts";
+import { ChitChatsQuoteCoordinator } from "./chitChatsQuoteCoordinator.ts";
 
 // Architecture for the owner-confirmed shipping policy, NOT wired in as the live `shippingProvider`
 // export (see shippingProvider.ts) -- Chit Chats replaces Canada Post as the PLANNED primary
@@ -18,11 +18,14 @@ import { buildQuoteFingerprint, QUOTE_PERSIST_TTL_MS, type ChitChatsQuoteStore }
 // any live call to that endpoint as equivalent to "creating a real shipment" means it must never
 // be called outside of an injected test fixture this round, consistent with the standing "no real
 // shipments without approval" instruction and the fact that no real credentials exist to call it
-// with anyway. getOptions() below caches successful quotes (chitChatsRateCache.ts) specifically to
-// keep repeated identical requests from creating repeated real shipment records once this is live
-// -- see that file's header for the full caching design, including how a cached quote's shipment
-// id is meant to be reused at payment time (PATCH /shipments/{id}/buy on the SAME id) rather than
-// purchasing postage against a brand-new shipment the customer never actually saw a rate for.
+// with anyway. getOptions() below caches successful quotes in two tiers: an in-process cache
+// (chitChatsRateCache.ts, single instance) and, when a ChitChatsQuoteCoordinator is supplied, a
+// persistent, cross-instance tier (chitChatsQuoteCoordinator.ts + chitChatsQuoteStore.ts) that
+// coordinates concurrent requests via ownership tokens and leases rather than letting a losing
+// request independently call Chit Chats -- see that pair of files' headers for the full
+// claim/wait/takeover/reconcile design, including how a cached quote's shipment id is meant to be
+// reused at payment time (PATCH /shipments/{id}/buy on the SAME id) rather than purchasing postage
+// against a brand-new shipment the customer never actually saw a rate for.
 //
 // Confirmed owner policy, "CANADAWIDE FREE SHIPPING POLICY" (2026-11-12, round 3):
 //   1. All 10 provinces and 3 territories are geographically eligible, SUBJECT TO ACTUAL CARRIER
@@ -173,8 +176,7 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
   // run under it directly.
   private readonly rateFetcher: ChitChatsRateFetcher;
   private readonly cache: ChitChatsRateCache;
-  private readonly quoteStore: ChitChatsQuoteStore | undefined;
-  private readonly now: () => Date;
+  private readonly coordinator: ChitChatsQuoteCoordinator | undefined;
 
   // `cache` defaults to a FRESH instance per provider instance (not a shared module-level
   // singleton) -- see chitChatsRateCache.ts's header. That means every `new
@@ -184,22 +186,18 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
   // export) still gets one persistent cache for its whole process lifetime, since it's
   // constructed exactly once.
   //
-  // `quoteStore` defaults to undefined -- NOT auto-constructed against a real Supabase client,
-  // unlike `cache`. The table it would query (ChitChatsShippingQuote) doesn't exist until
-  // supabase/migrations/010_chit_chats_shipping_quotes.sql is reviewed and applied; passing one in
-  // is an explicit, separate activation step a caller takes once that's approved, not a default
-  // this class should ever silently assume. Without it, behavior is unchanged from before this
-  // round: in-memory-only caching, single-instance.
-  constructor(
-    rateFetcher: ChitChatsRateFetcher = fetchChitChatsRates,
-    cache: ChitChatsRateCache = new ChitChatsRateCache(),
-    quoteStore?: ChitChatsQuoteStore,
-    now: () => Date = () => new Date(),
-  ) {
+  // `coordinator` defaults to undefined -- NOT auto-constructed against a real Supabase-backed
+  // store, unlike `cache`. The table its underlying store would query (ChitChatsShippingQuote)
+  // doesn't exist until supabase/migrations/010_chit_chats_shipping_quotes.sql is reviewed and
+  // applied; passing one in is an explicit, separate activation step a caller takes once that's
+  // approved, not a default this class should ever silently assume. Without it, behavior is
+  // identical to before cross-instance persistence existed: in-memory-only caching, single-instance.
+  // See chitChatsQuoteCoordinator.ts for the full claim/wait/takeover/reconcile algorithm this
+  // delegates to -- this class no longer talks to a ChitChatsQuoteStore directly at all.
+  constructor(rateFetcher: ChitChatsRateFetcher = fetchChitChatsRates, cache: ChitChatsRateCache = new ChitChatsRateCache(), coordinator?: ChitChatsQuoteCoordinator) {
     this.rateFetcher = rateFetcher;
     this.cache = cache;
-    this.quoteStore = quoteStore;
-    this.now = now;
+    this.coordinator = coordinator;
   }
 
   async getOptions(address: ShippingAddressInput, subtotalCents: number, lines: ShippingQuoteLine[]): Promise<ShippingOption[]> {
@@ -230,10 +228,13 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
     let liveRates: ShippingOption[];
     if (cached) {
       liveRates = cached.rates;
-    } else if (this.quoteStore) {
-      // Tier 2: persistent, cross-serverless-instance (see chitChatsQuoteStore.ts's header for the
-      // full claim/fill/release concurrency design). Only reached on a tier-1 miss.
-      liveRates = await this.fetchViaQuoteStore(this.quoteStore, cacheKeyInput, address, subtotalCents, pkg);
+    } else if (this.coordinator) {
+      // Tier 2: persistent, cross-serverless-instance -- delegates the full claim/wait/takeover/
+      // reconcile algorithm to ChitChatsQuoteCoordinator (see that file's header). Only reached on
+      // a tier-1 miss. The coordinator itself decides whether this call actually reaches the real
+      // rate fetcher (only if it wins or safely recovers a claim) or waits/reuses another
+      // in-flight or already-completed quote -- this class has no concurrency logic of its own.
+      liveRates = await this.coordinator.getOrCreateQuote(cacheKeyInput, this.rateFetcher);
       this.cache.set(cacheKeyInput, liveRates);
     } else {
       // No persistent store configured -- identical behavior to before this round.
@@ -271,55 +272,5 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
     // Sorted cheapest-first so a caller that naively takes options[0] (today, both checkout API
     // routes do) keeps picking the free option by default, not an untouched pricier one.
     return withFreeStandard.sort((a, b) => a.cents - b.cents);
-  }
-
-  /** Tier 2 of getOptions()'s cache lookup -- see chitChatsQuoteStore.ts's header for the full
-   *  claim/fill/release design this implements. Only called on a tier-1 (in-memory) miss. */
-  private async fetchViaQuoteStore(
-    quoteStore: ChitChatsQuoteStore,
-    cacheKeyInput: { address: ShippingAddressInput; subtotalCents: number; pkg: ChitChatsPackageInput },
-    address: ShippingAddressInput,
-    subtotalCents: number,
-    pkg: ChitChatsPackageInput,
-  ): Promise<ShippingOption[]> {
-    const now = this.now();
-    const fingerprint = buildQuoteFingerprint(cacheKeyInput);
-    const expiresAt = new Date(now.getTime() + QUOTE_PERSIST_TTL_MS);
-    const claimResult = await quoteStore.claim(cacheKeyInput, fingerprint, now, expiresAt);
-
-    if (!claimResult.claimed && claimResult.existing?.rates) {
-      // Another instance already has a fresh, ready quote for this exact fingerprint -- reuse it,
-      // no Chit Chats call made by this request at all.
-      return claimResult.existing.rates;
-    }
-
-    // Either this request claimed the fingerprint (and must now produce the real answer), or it
-    // lost the race but the winner's row is still 'pending' -- rather than polling/blocking (see
-    // chitChatsQuoteStore.ts's header "CONCURRENCY DESIGN" note on why), this request calls the
-    // real fetcher itself too. `claimResult.claimed` gates whether THIS request is responsible for
-    // filling/releasing the row it owns -- a non-owning request must never fill() or release() a
-    // row another request is responsible for.
-    try {
-      const liveRates = await this.rateFetcher(address, subtotalCents, pkg);
-      if (liveRates.length === 0) {
-        throw new ShippingRateUnavailableError(
-          "Chit Chats has no delivery service available for this address — request a quote and we'll confirm shipping manually.",
-        );
-      }
-      // chitChatsShipmentId: null -- the current ChitChatsRateFetcher signature only returns
-      // ShippingOption[], not the real shipment id Chit Chats would have created alongside those
-      // rates. A real (non-stub) fetcher implementation will need its own return-shape update to
-      // surface that id so it can be persisted and later reused for PATCH /shipments/{id}/buy --
-      // deferred until that real fetcher exists, rather than widening this type for a shape no
-      // implementation produces yet.
-      if (claimResult.claimed) await quoteStore.fill(fingerprint, liveRates, null);
-      return liveRates;
-    } catch (err) {
-      // A failed fetch must never leave a permanently-stuck 'pending' row blocking every future
-      // request for this fingerprint -- only the owning request releases it; a non-owning request
-      // that also failed has nothing of its own to release.
-      if (claimResult.claimed) await quoteStore.release(fingerprint);
-      throw err;
-    }
   }
 }
