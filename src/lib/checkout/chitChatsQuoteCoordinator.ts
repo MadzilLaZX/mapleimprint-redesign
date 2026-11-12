@@ -29,15 +29,19 @@ import {
 // after the external call returned, etc.). In that case, blindly letting a recovering worker call
 // Chit Chats again WOULD create a real duplicate shipment -- the exact outcome this whole system
 // exists to prevent. The only correct fix is to check, before creating anything new, whether the
-// presumed-crashed worker's shipment actually exists. Chit Chats' documented request fields
-// include `order_id` (caller-supplied, shipment-level metadata) and `GET /shipments` is described
-// as paginated/filterable -- the natural design is to set `order_id` to this quote's fingerprint
-// on every real creation call, so a later lookup can search for it. **This has NOT been verified
-// against a live Chit Chats account** (no credentials exist in this codebase, and their public
-// docs page reviewed this engagement didn't enumerate GET /shipments's exact filter fields) -- so
-// the `reconciler` parameter below defaults to a stub that honestly reports "cannot confirm"
-// rather than asserting a lookup mechanism that hasn't been confirmed to work. Per the explicit
-// requirement that drove this design: if duplicate prevention can't be guaranteed, this
+// presumed-crashed worker's shipment actually exists.
+//
+// UPDATE (re-reviewed against the docs, see docs/chit-chats-staging-validation.md): `order_id` is
+// a real, documented field on shipment creation, AND `GET /shipments` documents a `q` parameter
+// as "full text searching of shipments by id, to_name, or order_id" -- so a real lookup mechanism
+// genuinely exists (setting `order_id` to this quote's fingerprint at creation, then querying
+// `?q=<fingerprint>` to recover it). What's still NOT verified is whether full-text search matches
+// a long, high-entropy 64-character SHA-256 hex string reliably (exact match vs. tokenized partial
+// matches vs. no match) -- that requires a real staging account to test (see the validation doc's
+// step 4), which doesn't exist in this codebase. Until that's confirmed, the `reconciler`
+// parameter below defaults to a stub that honestly reports "cannot confirm" rather than wiring up
+// a lookup whose real-world matching behavior is unverified. Per the explicit requirement that
+// drove this design: if duplicate prevention can't be guaranteed, this
 // coordinator does NOT proceed to create a new shipment -- it surfaces a clear, retryable error
 // instead. A real reconciler implementation (once credentials exist and the real filter behavior
 // is confirmed) is a drop-in replacement, not a redesign.
