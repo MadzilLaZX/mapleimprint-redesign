@@ -3,11 +3,15 @@ import { createAdminClient } from "@/lib/server/supabaseAdmin";
 import { priceCartItem, type CheckoutCartItemInput } from "@/lib/checkout/priceCartItem";
 import { taxProvider } from "@/lib/checkout/taxProvider";
 import { shippingProvider } from "@/lib/checkout/shippingProvider";
-import { ShippingRateUnavailableError } from "@/lib/checkout/canadaPostShippingProvider";
+import { ShippingRateUnavailableError, OTTAWA_PICKUP_OPTION } from "@/lib/checkout/canadaPostShippingProvider";
 
 interface QuoteRequestBody {
   items: CheckoutCartItemInput[];
   shippingAddress: { province: string; country: string; postalCode: string };
+  /** Defaults to "delivery" -- existing callers that don't send this field are unaffected.
+   *  "pickup" means Ottawa local pickup: free, and taxed at Ontario's point-of-sale rate
+   *  regardless of shippingAddress. No frontend selector sends "pickup" yet (see final report). */
+  fulfillmentMethod?: "delivery" | "pickup";
 }
 
 /**
@@ -47,29 +51,38 @@ export async function POST(request: Request) {
     .map((r) => r.line);
 
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
+  const isPickup = body.fulfillmentMethod === "pickup";
 
-  let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
-  try {
-    shippingOptions = await shippingProvider.getOptions(
-      body.shippingAddress,
-      subtotalCents,
-      lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
-    );
-  } catch (err) {
-    if (err instanceof ShippingRateUnavailableError) {
-      return NextResponse.json({ error: err.message }, { status: 422 });
+  let shippingOption: { id: string; label: string; cents: number };
+  if (isPickup) {
+    // No carrier rate needed for pickup -- never call the shipping provider at all.
+    shippingOption = OTTAWA_PICKUP_OPTION;
+  } else {
+    let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
+    try {
+      shippingOptions = await shippingProvider.getOptions(
+        body.shippingAddress,
+        subtotalCents,
+        lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
+      );
+    } catch (err) {
+      if (err instanceof ShippingRateUnavailableError) {
+        return NextResponse.json({ error: err.message }, { status: 422 });
+      }
+      console.error("[checkout] shipping quote failed:", err);
+      return NextResponse.json(
+        { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
+        { status: 502 },
+      );
     }
-    console.error("[checkout] shipping quote failed:", err);
-    return NextResponse.json(
-      { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
-      { status: 502 },
-    );
+    shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
   }
-  const shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
 
   const { taxCents, breakdown: taxBreakdown } = await taxProvider.calculate({
     subtotalCents,
+    shippingCents: shippingOption.cents,
     shippingAddress: body.shippingAddress,
+    isPickup,
   });
 
   const totalCents = subtotalCents + shippingOption.cents + taxCents;

@@ -69,6 +69,15 @@ test("a non-Canadian address is rejected clearly (Maple ships within Canada only
   await assert.rejects(() => provider.getOptions(us, 1000, weighedLines), /Canadian addresses/);
 });
 
+test("an invalid address does NOT qualify for free shipping just because the subtotal is high enough -- address validation runs first", async () => {
+  const provider = new CanadaPostShippingProvider();
+  const us = { province: "NY", country: "US", postalCode: "10001" };
+  await assert.rejects(
+    () => provider.getOptions(us, FREE_SHIPPING_THRESHOLD_CENTS + 1, []),
+    /Canadian addresses/,
+  );
+});
+
 test("an empty province is rejected", async () => {
   const provider = new CanadaPostShippingProvider();
   const noProvince = { province: "", country: "CA", postalCode: "K1V 8B9" };

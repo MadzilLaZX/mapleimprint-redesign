@@ -4,12 +4,19 @@ import type { ShippingAddressInput, ShippingOption, ShippingQuoteLine, ShippingQ
 // it directly via `node --test` (no bundler to resolve an extension-less specifier).
 import { validatePostalCode } from "./validation.ts";
 
-// Architecture for the confirmed shipping policy, NOT wired in (see shippingProvider.ts, whose
+// Architecture for the shipping policy below, NOT wired in (see shippingProvider.ts, whose
 // `shippingProvider` export is still FreeShippingProvider). This file exists so the real
 // implementation is a configuration/activation change, not something built from scratch under
 // launch pressure later.
 //
-// Confirmed policy:
+// STATUS UPDATE (2026-11-12): the owner has replaced Canada Post with Chit Chats as the PLANNED
+// PRIMARY carrier (see chitChatsShippingProvider.ts). This file is kept, unchanged in behavior,
+// as a documented, built, tested FALLBACK only -- not deleted, per the standing instruction to
+// keep it available for future use. Its Canada-only free-shipping check below reflects the
+// *previous* policy statement; the current owner-confirmed policy (Canada-only free shipping,
+// paid Chit Chats rate otherwise) is implemented in ChitChatsShippingProvider instead.
+//
+// Confirmed policy (as it applied to this file when it was the planned primary):
 //   - Free shipping on orders over CAD $300 before tax.
 //   - Live Canada Post rates on orders CAD $300 or less.
 //   - Free Ottawa local pickup, always offered regardless of order size.
@@ -155,15 +162,15 @@ export class CanadaPostShippingProvider implements ShippingQuoteProvider {
   }
 
   async getOptions(address: ShippingAddressInput, subtotalCents: number, lines: ShippingQuoteLine[]): Promise<ShippingOption[]> {
+    // Validated BEFORE the free-shipping shortcut below, deliberately -- a large order to an
+    // invalid/unsupported address must still be rejected, not waved through with a free-shipping
+    // label slapped on an address that was never actually eligible or fulfillable. "Free" means
+    // the customer pays $0 for a real, deliverable order, never a skipped eligibility check.
+    assertValidCanadianAddress(address);
+
     if (subtotalCents > FREE_SHIPPING_THRESHOLD_CENTS) {
       return [{ id: "free", label: "Free Shipping", cents: 0 }];
     }
-
-    // A malformed/non-Canadian address is the customer's input to fix -- this throws and
-    // propagates to the caller (checkout API routes catch ShippingRateUnavailableError
-    // specifically and return a 422 with this exact message), the same "the server re-validates,
-    // never trusts the client" rule as postal code format elsewhere in checkout.
-    assertValidCanadianAddress(address);
 
     // Checked before ever attempting a live rate call, same reasoning as the address check above:
     // a cart containing any item without an authoritative weight (today, that's every item --

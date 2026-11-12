@@ -4,7 +4,7 @@ import { createSquareClient, squareLocationId } from "@/lib/server/squareClient"
 import { priceCartItem, type CheckoutCartItemInput } from "@/lib/checkout/priceCartItem";
 import { taxProvider } from "@/lib/checkout/taxProvider";
 import { shippingProvider } from "@/lib/checkout/shippingProvider";
-import { ShippingRateUnavailableError } from "@/lib/checkout/canadaPostShippingProvider";
+import { ShippingRateUnavailableError, OTTAWA_PICKUP_OPTION } from "@/lib/checkout/canadaPostShippingProvider";
 import { generateOrderReference } from "@/lib/checkout/generateOrderReference";
 import { humanPaymentError } from "@/lib/checkout/errorMessages";
 import { markOrderPaidAndNotify } from "@/lib/checkout/fulfillOrder";
@@ -27,6 +27,12 @@ interface PayRequestBody {
   sourceId: string;
   sourceType: "CARD" | "APPLE_PAY" | "GOOGLE_PAY";
   idempotencyKey: string;
+  /** Defaults to "delivery" -- existing callers that don't send this field are unaffected.
+   *  "pickup" means Ottawa local pickup: $0 shipping and Ontario's point-of-sale HST rate
+   *  regardless of shippingAddress's own province. A full shippingAddress is still required even
+   *  for pickup today (used for the order record/contact purposes) -- no frontend selector sends
+   *  "pickup" yet (see final report); this only wires up the backend contract. */
+  fulfillmentMethod?: "delivery" | "pickup";
 }
 
 function badRequest(message: string) {
@@ -76,33 +82,47 @@ export async function POST(request: Request) {
   }
   const lines = priced.filter((r): r is Extract<(typeof priced)[number], { ok: true }> => r.ok).map((r) => r.line);
   const subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0);
-  let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
-  try {
-    shippingOptions = await shippingProvider.getOptions(
-      addr,
-      subtotalCents,
-      lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
-    );
-  } catch (err) {
-    // A live-rate provider (e.g. CanadaPostShippingProvider once activated) can legitimately fail
-    // to quote — never let that crash checkout with an unhandled 500. FreeShippingProvider never
-    // throws, so this only ever fires once a real carrier integration is live.
-    //
-    // ShippingRateUnavailableError means the customer can fix this themselves (bad postal code,
-    // non-Canadian address, no live rate configured yet) — its message is already written to be
-    // shown as-is, and 422 signals "your input, not our system." Anything else is an unexpected
-    // failure (network error, Canada Post outage) and gets the generic message + 502.
-    if (err instanceof ShippingRateUnavailableError) {
-      return NextResponse.json({ error: err.message }, { status: 422 });
+  const isPickup = body.fulfillmentMethod === "pickup";
+
+  let shippingOption: { id: string; label: string; cents: number };
+  if (isPickup) {
+    // No carrier rate needed for pickup -- never call the shipping provider at all.
+    shippingOption = OTTAWA_PICKUP_OPTION;
+  } else {
+    let shippingOptions: Awaited<ReturnType<typeof shippingProvider.getOptions>>;
+    try {
+      shippingOptions = await shippingProvider.getOptions(
+        addr,
+        subtotalCents,
+        lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
+      );
+    } catch (err) {
+      // A live-rate provider (e.g. CanadaPostShippingProvider once activated) can legitimately fail
+      // to quote — never let that crash checkout with an unhandled 500. FreeShippingProvider never
+      // throws, so this only ever fires once a real carrier integration is live.
+      //
+      // ShippingRateUnavailableError means the customer can fix this themselves (bad postal code,
+      // non-Canadian address, no live rate configured yet) — its message is already written to be
+      // shown as-is, and 422 signals "your input, not our system." Anything else is an unexpected
+      // failure (network error, Chit Chats/Canada Post outage) and gets the generic message + 502.
+      if (err instanceof ShippingRateUnavailableError) {
+        return NextResponse.json({ error: err.message }, { status: 422 });
+      }
+      console.error("[checkout] shipping quote failed:", err);
+      return NextResponse.json(
+        { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
+        { status: 502 },
+      );
     }
-    console.error("[checkout] shipping quote failed:", err);
-    return NextResponse.json(
-      { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
-      { status: 502 },
-    );
+    shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
   }
-  const shippingOption = shippingOptions[0] ?? { id: "free", label: "Free Shipping", cents: 0 };
-  const { taxCents } = await taxProvider.calculate({ subtotalCents, shippingAddress: addr });
+
+  const { taxCents } = await taxProvider.calculate({
+    subtotalCents,
+    shippingCents: shippingOption.cents,
+    shippingAddress: addr,
+    isPickup,
+  });
   const totalCents = subtotalCents + shippingOption.cents + taxCents;
 
   // Idempotency: if this exact attempt was already submitted (retry after a lost response,
