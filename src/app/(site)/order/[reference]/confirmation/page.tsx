@@ -22,7 +22,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
   const { data: order } = await supabaseAdmin
     .from("MapleOrder")
-    .select("id, reference, status, contactName, contactEmail, shippingAddress, totalCents, currency")
+    .select("id, reference, status, contactName, contactEmail, shippingAddress, subtotalCents, taxCents, shippingCents, totalCents, currency")
     .eq("reference", reference)
     .maybeSingle();
 
@@ -111,7 +111,25 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
             </li>
           ))}
         </ul>
-        <div className="mt-3 flex justify-between border-t border-sand pt-3 font-display text-base font-semibold text-ink-900">
+        <div className="mt-3 space-y-1 border-t border-sand pt-3 text-sm text-ink-900/70">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>${(order.subtotalCents / 100).toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>{isPickup ? "Pickup" : "Shipping"}</span>
+            <span>{order.shippingCents === 0 ? "Free" : `$${(order.shippingCents / 100).toFixed(2)}`}</span>
+          </div>
+          {/* Only shown once non-zero -- avoids implying tax was charged on orders placed before
+              activation, or on any future order where it genuinely doesn't apply (e.g. export). */}
+          {order.taxCents > 0 && (
+            <div className="flex justify-between">
+              <span>Tax</span>
+              <span>${(order.taxCents / 100).toFixed(2)}</span>
+            </div>
+          )}
+        </div>
+        <div className="mt-2 flex justify-between border-t border-sand pt-3 font-display text-base font-semibold text-ink-900">
           <span>Total paid</span>
           <span>${(order.totalCents / 100).toFixed(2)}</span>
         </div>

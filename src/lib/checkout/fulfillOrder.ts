@@ -82,15 +82,16 @@ export async function markOrderPaidAndNotify(
     )
     .eq("orderId", orderId);
 
-  // mark_order_paid_and_sync_attempt's return row doesn't carry shippingAddress (it was written
-  // before pickup existed) -- a plain, cheap extra read rather than altering a live Postgres
-  // function, which would need its own separate approval as a database change.
-  const { data: orderAddress } = await supabaseAdmin
+  // mark_order_paid_and_sync_attempt's return row doesn't carry shippingAddress or the
+  // subtotal/shipping/tax breakdown (it was written before pickup and tax display existed) -- a
+  // plain, cheap extra read rather than altering a live Postgres function, which would need its
+  // own separate approval as a database change.
+  const { data: orderDetails } = await supabaseAdmin
     .from("MapleOrder")
-    .select("shippingAddress")
+    .select("shippingAddress, subtotalCents, shippingCents, taxCents")
     .eq("id", orderId)
     .maybeSingle();
-  const addressRecord = orderAddress?.shippingAddress as
+  const addressRecord = orderDetails?.shippingAddress as
     | { fulfillmentMethod?: "delivery" | "pickup"; pickupLocation?: { label: string; addressLine1: string; addressLine2: string; city: string; province: string; postalCode: string; hours: { days: string; time: string }[] } }
     | null
     | undefined;
@@ -103,6 +104,14 @@ export async function markOrderPaidAndNotify(
           pickupHoursLines: addressRecord.pickupLocation.hours.map((h) => `${h.days}: ${h.time}`),
         }
       : { method: "delivery" as const };
+  const amountBreakdown =
+    orderDetails?.subtotalCents != null
+      ? {
+          subtotalCents: orderDetails.subtotalCents as number,
+          shippingCents: (orderDetails.shippingCents as number) ?? 0,
+          taxCents: (orderDetails.taxCents as number) ?? 0,
+        }
+      : undefined;
 
   const { subject, html, text } = orderConfirmationEmail({
     reference: transitioned.reference,
@@ -111,6 +120,7 @@ export async function markOrderPaidAndNotify(
     totalCents: transitioned.totalCents,
     lines: lines ?? [],
     fulfillment,
+    amountBreakdown,
   });
 
   await sendEmail({ to: transitioned.contactEmail, subject, html, text });
@@ -130,6 +140,7 @@ export async function markOrderPaidAndNotify(
         totalCents: transitioned.totalCents,
         lines: (lines ?? []).map((l) => ({ productName: l.productName, quantity: l.quantity, colourName: l.colourName })),
         fulfillment,
+        amountBreakdown,
       });
       await sendEmail({ to: ownerEmail, ...adminEmail });
     } catch (err) {

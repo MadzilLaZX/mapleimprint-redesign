@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-// CanadianSalesTaxProvider is exported for direct testing -- the live `taxProvider` singleton
-// stays ZeroTaxProvider (see taxProvider.ts) until Production tax activation is separately
-// approved; this test suite exercises the real calculation directly rather than through it.
-import { CanadianSalesTaxProvider } from "./taxProvider.ts";
+// CanadianSalesTaxProvider is exported for direct testing. resolveTaxProvider is the pure,
+// directly-testable gating function the live `taxProvider` singleton is built from (see
+// taxProvider.ts) -- Production always gets ZeroTaxProvider regardless of this file's own
+// deployment environment; development/Preview get the real calculation with PST/QST withheld.
+import { CanadianSalesTaxProvider, resolveTaxProvider } from "./taxProvider.ts";
 
 const ON = { province: "ON", country: "CA", postalCode: "K1V 8B9" };
 const BC = { province: "BC", country: "CA", postalCode: "V6B 1A1" };
@@ -38,8 +39,8 @@ test("Ontario: HST also applies to a non-zero shipping charge, combined with mer
   assert.equal(result.taxCents, 1430);
 });
 
-test("BC: 5% GST + 7% PST, itemized separately", async () => {
-  const provider = new CanadianSalesTaxProvider();
+test("BC with PST explicitly enabled (requires separate BC registration, not activated by default): 5% GST + 7% PST, itemized separately", async () => {
+  const provider = new CanadianSalesTaxProvider(true);
   const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: BC });
   assert.equal(result.taxCents, 1200);
   assert.deepEqual(result.breakdown, [
@@ -48,14 +49,44 @@ test("BC: 5% GST + 7% PST, itemized separately", async () => {
   ]);
 });
 
-test("Quebec: 5% GST + 9.975% QST, itemized separately", async () => {
-  const provider = new CanadianSalesTaxProvider();
+test("Quebec with QST explicitly enabled (requires separate Revenu Québec registration, not activated by default): 5% GST + 9.975% QST, itemized separately", async () => {
+  const provider = new CanadianSalesTaxProvider(true);
   const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: QC });
   assert.equal(result.taxCents, 500 + Math.round(10000 * 0.09975));
   assert.deepEqual(result.breakdown, [
     { label: "GST", cents: 500 },
     { label: "QST", cents: Math.round(10000 * 0.09975) },
   ]);
+});
+
+test("BC by default (PST not yet confirmed): charges GST only, withholding PST until separately registered", async () => {
+  const provider = new CanadianSalesTaxProvider();
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: BC });
+  assert.equal(result.taxCents, 500);
+  assert.deepEqual(result.breakdown, [{ label: "GST", cents: 500 }]);
+});
+
+test("Quebec by default (QST not yet confirmed): charges GST only, withholding QST until separately registered", async () => {
+  const provider = new CanadianSalesTaxProvider();
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: QC });
+  assert.equal(result.taxCents, 500);
+  assert.deepEqual(result.breakdown, [{ label: "GST", cents: 500 }]);
+});
+
+test("Manitoba by default (RST not yet confirmed): charges GST only, same policy as BC/QC", async () => {
+  const provider = new CanadianSalesTaxProvider();
+  const MB = { province: "MB", country: "CA", postalCode: "R3C 0V8" };
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: MB });
+  assert.equal(result.taxCents, 500);
+  assert.deepEqual(result.breakdown, [{ label: "GST", cents: 500 }]);
+});
+
+test("Saskatchewan by default (PST not yet confirmed): charges GST only, same policy as BC/QC", async () => {
+  const provider = new CanadianSalesTaxProvider();
+  const SK = { province: "SK", country: "CA", postalCode: "S7K 0J5" };
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: SK });
+  assert.equal(result.taxCents, 500);
+  assert.deepEqual(result.breakdown, [{ label: "GST", cents: 500 }]);
 });
 
 test("Alberta: GST only, no provincial sales tax", async () => {
@@ -110,7 +141,7 @@ test("rounding: HST rounds to the nearest cent rather than truncating", async ()
 });
 
 test("rounding: GST+PST round independently, not as a single combined rate", async () => {
-  const provider = new CanadianSalesTaxProvider();
+  const provider = new CanadianSalesTaxProvider(true);
   // 101 cents: GST 5% = 5.05 -> 5, PST 7% = 7.07 -> 7
   const result = await provider.calculate({ subtotalCents: 101, shippingCents: 0, shippingAddress: BC });
   assert.deepEqual(result.breakdown, [
@@ -127,4 +158,44 @@ test("an unrecognized province code returns zero tax rather than guessing a rate
     shippingAddress: { province: "XX", country: "CA", postalCode: "A1A 1A1" },
   });
   assert.equal(result.taxCents, 0);
+});
+
+// --- resolveTaxProvider: the Production-safety gate itself ---
+
+test("resolveTaxProvider('production') always charges $0 tax, regardless of province -- the Production safety gate", async () => {
+  const provider = resolveTaxProvider("production");
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: ON });
+  assert.equal(result.taxCents, 0);
+  assert.deepEqual(result.breakdown, []);
+});
+
+test("resolveTaxProvider('preview') charges real Ontario HST", async () => {
+  const provider = resolveTaxProvider("preview");
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: ON });
+  assert.equal(result.taxCents, 1300);
+});
+
+test("resolveTaxProvider(undefined) (local dev / npm test, no VERCEL_ENV set) charges real Ontario HST", async () => {
+  const provider = resolveTaxProvider(undefined);
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: ON });
+  assert.equal(result.taxCents, 1300);
+});
+
+test("resolveTaxProvider('development') (vercel dev) charges real Ontario HST, not just 'preview' specifically", async () => {
+  const provider = resolveTaxProvider("development");
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: ON });
+  assert.equal(result.taxCents, 1300);
+});
+
+test("resolveTaxProvider's non-Production providers withhold PST/QST by default, matching the live taxProvider export's policy", async () => {
+  const provider = resolveTaxProvider("preview");
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: BC });
+  assert.equal(result.taxCents, 500);
+  assert.deepEqual(result.breakdown, [{ label: "GST", cents: 500 }]);
+});
+
+test("a string that merely contains 'production' but isn't exactly it does not trigger the Production gate (no loose matching)", async () => {
+  const provider = resolveTaxProvider("pre-production");
+  const result = await provider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: ON });
+  assert.equal(result.taxCents, 1300, "only an exact 'production' string should ever zero out tax");
 });

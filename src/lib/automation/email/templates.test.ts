@@ -95,3 +95,43 @@ test("orderConfirmationEmail: a delivery order (no fulfillment field) mentions s
   assert.match(text, /then shipping/);
   assert.doesNotMatch(text, /Pickup:/);
 });
+
+test("orderConfirmationEmail: an amountBreakdown with tax shows Subtotal, Shipping, and Tax as separate lines", () => {
+  const taxedOrder = {
+    ...BASE_ORDER,
+    amountBreakdown: { subtotalCents: 10000, shippingCents: 1850, taxCents: 1541 },
+  };
+  const { text, html } = orderConfirmationEmail(taxedOrder);
+  assert.match(text, /Subtotal: \$100\.00/);
+  assert.match(text, /Shipping: \$18\.50/);
+  assert.match(text, /Tax: \$15\.41/);
+  assert.match(html, /Subtotal/);
+  assert.match(html, /\$15\.41/);
+});
+
+test("orderConfirmationEmail: an amountBreakdown with zero shipping shows 'Free', and zero tax omits the Tax line entirely", () => {
+  const freeShippingOrder = {
+    ...BASE_ORDER,
+    amountBreakdown: { subtotalCents: 35000, shippingCents: 0, taxCents: 0 },
+  };
+  const { text } = orderConfirmationEmail(freeShippingOrder);
+  assert.match(text, /Shipping: Free/);
+  assert.doesNotMatch(text, /Tax:/);
+});
+
+test("orderConfirmationEmail: no amountBreakdown (older/unactivated-tax order) shows no Subtotal/Tax lines at all", () => {
+  const { text } = orderConfirmationEmail(BASE_ORDER);
+  assert.doesNotMatch(text, /Subtotal:/);
+  assert.doesNotMatch(text, /Tax:/);
+});
+
+test("adminOrderPaidEmail: an amountBreakdown with tax shows Subtotal, Shipping, and Tax as separate lines", () => {
+  const taxedOrder = {
+    ...BASE_ORDER,
+    amountBreakdown: { subtotalCents: 10000, shippingCents: 1850, taxCents: 1541 },
+  };
+  const { text, html } = adminOrderPaidEmail(taxedOrder);
+  assert.match(text, /Subtotal: \$100\.00/);
+  assert.match(text, /Tax: \$15\.41/);
+  assert.match(html, /\$15\.41/);
+});

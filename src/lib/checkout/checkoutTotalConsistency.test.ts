@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ChitChatsShippingProvider, type ChitChatsRateFetcher } from "./chitChatsShippingProvider.ts";
-import { CanadianSalesTaxProvider } from "./taxProvider.ts";
+import { CanadianSalesTaxProvider, taxProvider } from "./taxProvider.ts";
 import { OTTAWA_PICKUP_OPTION } from "./canadaPostShippingProvider.ts";
 import { PICKUP_LOCATION } from "./pickupLocation.ts";
 
@@ -128,4 +128,51 @@ test("PICKUP_LOCATION is a real, already-public Ontario/Canada address -- not an
   assert.equal(PICKUP_LOCATION.country, "CA");
   assert.ok(PICKUP_LOCATION.addressLine1.length > 0);
   assert.ok(PICKUP_LOCATION.hours.length > 0);
+});
+
+// --- The LIVE taxProvider singleton, not a freshly-constructed CanadianSalesTaxProvider ---
+// This is the exact object /api/checkout/quote and /api/checkout/pay import and call -- proving
+// the activation (taxProvider.ts's resolveTaxProvider swap) actually took effect end-to-end, not
+// just that the underlying class is correct in isolation.
+
+test("the live taxProvider singleton charges real Ontario HST in this (non-Production) test environment", async () => {
+  const result = await taxProvider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: onAddressFull });
+  assert.equal(result.taxCents, 1300);
+  assert.deepEqual(result.breakdown, [{ label: "HST", cents: 1300 }]);
+});
+
+test("the live taxProvider singleton reproduces the launch spec's exact two scenarios end-to-end", async () => {
+  const hundred = await taxProvider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: onAddressFull });
+  assert.equal(hundred.taxCents, 1300); // $13.00 HST on a $100 Ontario order
+
+  const threeFifty = await taxProvider.calculate({ subtotalCents: 35000, shippingCents: 0, shippingAddress: onAddressFull });
+  assert.equal(threeFifty.taxCents, 4550); // $45.50 HST on a $350 Ontario order
+});
+
+test("the live taxProvider singleton still withholds PST/QST by default (not separately confirmed)", async () => {
+  const result = await taxProvider.calculate({ subtotalCents: 10000, shippingCents: 0, shippingAddress: abAddressFull });
+  // Alberta is GST-only by rate type, not by the pstQstEnabled flag -- use BC to prove the flag.
+  const bc = await taxProvider.calculate({
+    subtotalCents: 10000,
+    shippingCents: 0,
+    shippingAddress: { ...onAddressFull, province: "BC", postalCode: "V6B 1A1" },
+  });
+  assert.equal(result.taxCents, 500);
+  assert.equal(bc.taxCents, 500);
+  assert.deepEqual(bc.breakdown, [{ label: "GST", cents: 500 }]);
+});
+
+test("Square total consistency through the live taxProvider singleton: Ontario $350 order, free shipping, real HST on merchandise only", async () => {
+  const shippingProvider = new ChitChatsShippingProvider(okFetcher);
+  const subtotalCents = 35000;
+  const shippingOption = (await shippingProvider.getOptions(onAddressFull, subtotalCents, weighedLines))[0];
+  const { taxCents } = await taxProvider.calculate({
+    subtotalCents,
+    shippingCents: shippingOption.cents,
+    shippingAddress: onAddressFull,
+  });
+  const totalCents = subtotalCents + shippingOption.cents + taxCents;
+  assert.equal(shippingOption.cents, 0);
+  assert.equal(taxCents, 4550);
+  assert.equal(totalCents, 39550);
 });

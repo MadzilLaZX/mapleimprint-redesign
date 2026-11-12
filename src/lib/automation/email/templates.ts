@@ -81,6 +81,12 @@ interface OrderFulfillmentInfo {
   pickupHoursLines?: string[];
 }
 
+interface OrderAmountBreakdown {
+  subtotalCents: number;
+  shippingCents: number;
+  taxCents: number;
+}
+
 interface OrderConfirmationInput {
   reference: string;
   contactName: string;
@@ -88,11 +94,18 @@ interface OrderConfirmationInput {
   totalCents: number;
   lines: { productName: string; quantity: number; colourName: string | null }[];
   fulfillment?: OrderFulfillmentInfo;
+  /** Optional so existing callers that only ever had a total keep working -- when present, shows
+   *  tax as its own itemized line rather than silently folding it into "Total paid". */
+  amountBreakdown?: OrderAmountBreakdown;
+}
+
+function money(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
 }
 
 export function orderConfirmationEmail(order: OrderConfirmationInput): { subject: string; html: string; text: string } {
   const firstName = order.contactName.split(" ")[0] || order.contactName;
-  const total = `$${(order.totalCents / 100).toFixed(2)}`;
+  const total = money(order.totalCents);
   const subject = `Order confirmed — ${order.reference}`;
   const confirmationUrl = `${SITE_URL}/order/${order.reference}/confirmation`;
   const isPickup = order.fulfillment?.method === "pickup";
@@ -108,12 +121,24 @@ export function orderConfirmationEmail(order: OrderConfirmationInput): { subject
       ].filter(Boolean)
     : [];
 
+  // Only shown when the tax provider actually charged something -- never implies tax was
+  // collected on an order where it wasn't (e.g. before activation, or a zero-rated export).
+  const b = order.amountBreakdown;
+  const amountTextLines = b
+    ? [
+        `Subtotal: ${money(b.subtotalCents)}`,
+        `${isPickup ? "Pickup" : "Shipping"}: ${b.shippingCents === 0 ? "Free" : money(b.shippingCents)}`,
+        ...(b.taxCents > 0 ? [`Tax: ${money(b.taxCents)}`] : []),
+      ]
+    : [];
+
   const text = [
     `Hi ${firstName},`,
     "",
     `Thanks — we've received your order and payment.`,
     "",
     `Order: ${order.reference}`,
+    ...amountTextLines,
     `Total paid: ${total}`,
     ...pickupTextLines,
     "",
@@ -137,12 +162,19 @@ export function orderConfirmationEmail(order: OrderConfirmationInput): { subject
     ? `<tr><td style="font-weight:600;white-space:nowrap;vertical-align:top;">Pickup</td><td>${escapeHtml(order.fulfillment?.pickupLabel ?? "")}<br/>${escapeHtml(order.fulfillment?.pickupAddressLine ?? "")}</td></tr>`
     : "";
 
+  const amountHtmlRows = b
+    ? `<tr><td style="white-space:nowrap;">Subtotal</td><td>${escapeHtml(money(b.subtotalCents))}</td></tr>
+       <tr><td style="white-space:nowrap;">${isPickup ? "Pickup" : "Shipping"}</td><td>${escapeHtml(b.shippingCents === 0 ? "Free" : money(b.shippingCents))}</td></tr>
+       ${b.taxCents > 0 ? `<tr><td style="white-space:nowrap;">Tax</td><td>${escapeHtml(money(b.taxCents))}</td></tr>` : ""}`
+    : "";
+
   const html = `
     <div style="font-family:Arial,sans-serif;color:#1a1a1a;max-width:520px;margin:0 auto;">
       <p>Hi ${escapeHtml(firstName)},</p>
       <p>Thanks — we've received your order and payment.</p>
       <table cellpadding="6" cellspacing="0" style="width:100%;background:#f7f4ef;border-radius:8px;margin:16px 0;">
         <tr><td style="font-weight:600;white-space:nowrap;">Order</td><td>${escapeHtml(order.reference)}</td></tr>
+        ${amountHtmlRows}
         <tr><td style="font-weight:600;white-space:nowrap;">Total paid</td><td>${escapeHtml(total)}</td></tr>
         ${pickupHtmlRow}
         <tr><td style="font-weight:600;white-space:nowrap;vertical-align:top;">Items</td><td>${itemLines.map(escapeHtml).join("<br/>")}</td></tr>
@@ -172,21 +204,30 @@ interface AdminOrderPaidInput {
   totalCents: number;
   lines: { productName: string; quantity: number; colourName: string | null }[];
   fulfillment?: OrderFulfillmentInfo;
+  amountBreakdown?: OrderAmountBreakdown;
 }
 
 /** Staff-facing counterpart to orderConfirmationEmail above — until now, a paid order notified
  *  *only* the customer; staff had no signal a new order existed at all short of checking Square
  *  directly. Links to the new /admin/orders/[reference] detail page. */
 export function adminOrderPaidEmail(order: AdminOrderPaidInput): { subject: string; html: string; text: string } {
-  const total = `$${(order.totalCents / 100).toFixed(2)}`;
+  const total = money(order.totalCents);
   const isPickup = order.fulfillment?.method === "pickup";
   const subject = `New paid order — ${order.reference} (${order.contactName})${isPickup ? " [PICKUP]" : ""}`;
   const adminUrl = `${SITE_URL}/admin/orders/${order.reference}`;
   const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}`);
+  const b = order.amountBreakdown;
 
   const text = [
     `New paid order: ${order.reference}`,
     `Customer: ${order.contactName} (${order.contactEmail})`,
+    ...(b
+      ? [
+          `Subtotal: ${money(b.subtotalCents)}`,
+          `${isPickup ? "Pickup" : "Shipping"}: ${b.shippingCents === 0 ? "Free" : money(b.shippingCents)}`,
+          ...(b.taxCents > 0 ? [`Tax: ${money(b.taxCents)}`] : []),
+        ]
+      : []),
     `Total: ${total}`,
     `Fulfillment: ${isPickup ? `PICKUP — ${order.fulfillment?.pickupLabel ?? ""}` : "Delivery"}`,
     "",
@@ -196,12 +237,19 @@ export function adminOrderPaidEmail(order: AdminOrderPaidInput): { subject: stri
     `Manage: ${adminUrl}`,
   ].join("\n");
 
+  const amountHtmlRows = b
+    ? `<tr><td style="white-space:nowrap;">Subtotal</td><td>${escapeHtml(money(b.subtotalCents))}</td></tr>
+       <tr><td style="white-space:nowrap;">${isPickup ? "Pickup" : "Shipping"}</td><td>${escapeHtml(b.shippingCents === 0 ? "Free" : money(b.shippingCents))}</td></tr>
+       ${b.taxCents > 0 ? `<tr><td style="white-space:nowrap;">Tax</td><td>${escapeHtml(money(b.taxCents))}</td></tr>` : ""}`
+    : "";
+
   const html = `
     <div style="font-family:Arial,sans-serif;color:#1a1a1a;max-width:560px;margin:0 auto;">
       <h2 style="margin-bottom:12px;">New paid order${isPickup ? " — PICKUP" : ""}</h2>
       <table cellpadding="6" cellspacing="0" style="width:100%;">
         <tr><td style="font-weight:600;white-space:nowrap;">Reference</td><td>${escapeHtml(order.reference)}</td></tr>
         <tr><td style="font-weight:600;white-space:nowrap;">Customer</td><td>${escapeHtml(order.contactName)} (${escapeHtml(order.contactEmail)})</td></tr>
+        ${amountHtmlRows}
         <tr><td style="font-weight:600;white-space:nowrap;">Total</td><td>${escapeHtml(total)}</td></tr>
         <tr><td style="font-weight:600;white-space:nowrap;">Fulfillment</td><td>${isPickup ? `<strong>PICKUP</strong> — ${escapeHtml(order.fulfillment?.pickupLabel ?? "")}` : "Delivery"}</td></tr>
         <tr><td style="font-weight:600;white-space:nowrap;vertical-align:top;">Items</td><td>${itemLines.map(escapeHtml).join("<br/>")}</td></tr>

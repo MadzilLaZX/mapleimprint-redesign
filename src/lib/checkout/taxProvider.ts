@@ -41,23 +41,29 @@ class ZeroTaxProvider implements TaxProvider {
 }
 
 /**
- * Real GST/HST/PST calculation, built and ready — NOT ACTIVATED (see `taxProvider` export below,
- * still `ZeroTaxProvider`). Rates come from canadianTaxRates.ts, sourced from the CRA's published
- * rate table, not invented. Destination-based on the shipping province for delivery orders, with
- * an Ontario point-of-sale override for Ottawa local pickup (isPickup) — both the standard CRA
- * place-of-supply rules. Tax is computed on subtotal + shipping together, since a vendor-supplied
- * shipping charge is taxed the same way as the goods it delivers, not as a separate supply.
+ * Real GST/HST/PST calculation. Rates come from canadianTaxRates.ts, sourced from the CRA's
+ * published rate table, not invented. Destination-based on the shipping province for delivery
+ * orders, with an Ontario point-of-sale override for Ottawa local pickup (isPickup) — both the
+ * standard CRA place-of-supply rules. Tax is computed on subtotal + shipping together, since a
+ * vendor-supplied shipping charge is taxed the same way as the goods it delivers, not as a
+ * separate supply.
  *
- * BEFORE enabling this (swapping the `taxProvider` export below), confirm with Maple/an
- * accountant:
- *   1. Is the business GST/HST-registered at all? A small supplier under the $30,000/year
- *      revenue threshold is NOT required to register and must NOT charge GST/HST until they do.
- *   2. Re-verify every rate in canadianTaxRates.ts against the current CRA table — provincial
- *      rates change (Nova Scotia's HST dropped 15%→14% in April 2025, as one example).
- *   3. Confirm whether Maple needs to separately register for QST (Revenu Québec) to sell to
- *      Quebec customers — a different regime from GST/HST registration.
+ * `pstQstEnabled` (default false): the owner has confirmed the 13% Ontario HST rate and
+ * authorized GST/HST activation, but GST/HST registration covers HST (ON/NB/NL/NS/PE) and GST-only
+ * provinces/territories (AB/YT/NT/NU) under ONE federal registration -- it does NOT cover BC/SK/MB's
+ * provincial PST or Quebec's QST, each of which needs ITS OWN separate registration with that
+ * province/Revenu Québec. Until that separate confirmation happens, a GST_PST-type province is
+ * charged GST only (PST/QST withheld) rather than a tax the business has no confirmed authority to
+ * collect. This is intentionally NOT the same gate as the Production/Preview one below — even in
+ * an environment where GST/HST is active, PST/QST stays off until separately approved.
  */
 export class CanadianSalesTaxProvider implements TaxProvider {
+  private readonly pstQstEnabled: boolean;
+
+  constructor(pstQstEnabled: boolean = false) {
+    this.pstQstEnabled = pstQstEnabled;
+  }
+
   async calculate({ subtotalCents, shippingCents, shippingAddress, isPickup }: TaxCalculationInput): Promise<TaxCalculationResult> {
     const taxableCents = subtotalCents + shippingCents;
 
@@ -77,6 +83,9 @@ export class CanadianSalesTaxProvider implements TaxProvider {
     }
     if (rate.type === "GST_PST") {
       const gstCents = Math.round(taxableCents * rate.gstRate);
+      if (!this.pstQstEnabled) {
+        return { taxCents: gstCents, breakdown: [{ label: "GST", cents: gstCents }] };
+      }
       const pstCents = Math.round(taxableCents * (rate.pstRate as number));
       return {
         taxCents: gstCents + pstCents,
@@ -91,7 +100,26 @@ export class CanadianSalesTaxProvider implements TaxProvider {
   }
 }
 
-// Exported above (for direct unit testing and the eventual one-line swap, see class comment) but
-// not the live singleton below — activating it in Production needs the business confirmations
-// listed on CanadianSalesTaxProvider's own comment first.
-export const taxProvider: TaxProvider = new ZeroTaxProvider();
+/**
+ * Production stays on ZeroTaxProvider regardless of how this code is deployed -- confirming the
+ * 13% Ontario HST *rate* is not the same as confirming the business is GST/HST-registered and
+ * obligated/authorized to actually collect it, and that registration status has NOT been
+ * confirmed. `vercelEnv` should always be `process.env.VERCEL_ENV` in real use (a plain parameter,
+ * not read internally, specifically so this decision is unit-testable without mocking
+ * process.env or re-importing the module) -- Vercel's own system variable that is "production"
+ * only for the Production domain, "preview" for every other deployment, and unset for local
+ * dev/`npm test`. Deliberately NOT NODE_ENV, which Next.js sets to "production" for every built
+ * deployment INCLUDING Preview and would not create the needed distinction.
+ *
+ * PST/QST stays disabled (see CanadianSalesTaxProvider's own comment) until Maple separately
+ * confirms BC/SK/MB/QC registration -- only the federal GST/HST decision has been confirmed so far.
+ *
+ * Flipping Production on for real requires a deliberate, separate code change once registration
+ * is confirmed -- not a config/env-var toggle, so it can't be flipped by mistake via Vercel
+ * project settings.
+ */
+export function resolveTaxProvider(vercelEnv: string | undefined): TaxProvider {
+  return vercelEnv === "production" ? new ZeroTaxProvider() : new CanadianSalesTaxProvider(false);
+}
+
+export const taxProvider: TaxProvider = resolveTaxProvider(process.env.VERCEL_ENV);

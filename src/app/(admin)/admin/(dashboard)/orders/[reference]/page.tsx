@@ -11,7 +11,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const { data: order } = await supabaseAdmin
     .from("MapleOrder")
     .select(
-      "id, reference, status, contactName, contactEmail, contactPhone, shippingAddress, totalCents, currency, createdAt",
+      "id, reference, status, contactName, contactEmail, contactPhone, shippingAddress, subtotalCents, taxCents, shippingCents, totalCents, currency, createdAt",
     )
     .eq("reference", reference)
     .maybeSingle();
@@ -68,6 +68,11 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           </span>
           <p className="mt-2 font-display text-lg font-semibold text-ink-900">
             ${(order.totalCents / 100).toFixed(2)} {order.currency}
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Subtotal ${(order.subtotalCents / 100).toFixed(2)} · {isPickup ? "Pickup" : "Shipping"}{" "}
+            {order.shippingCents === 0 ? "Free" : `$${(order.shippingCents / 100).toFixed(2)}`}
+            {order.taxCents > 0 && ` · Tax $${(order.taxCents / 100).toFixed(2)}`}
           </p>
           <a
             href={`/api/admin/orders/${order.reference}/zip`}
