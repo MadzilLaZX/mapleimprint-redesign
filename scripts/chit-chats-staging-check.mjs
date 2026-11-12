@@ -2,24 +2,26 @@
 // Manual, human-run verification script -- NOT wired into the app, NOT run by `npm test`, NOT
 // run by any build/CI step, and NOT executed by Claude in this session. This makes REAL Chit
 // Chats API calls the moment it's actually run with real credentials -- it must only be invoked
-// deliberately, by a person, once CHIT_CHATS_API_ACCESS_TOKEN and CHIT_CHATS_CLIENT_ID hold real
-// values. Refuses to run at all if either is missing or empty -- never substitutes a placeholder.
+// deliberately, by a person, once real credentials AND an explicitly approved test destination
+// are configured. Refuses to run at all if any of those are missing -- never substitutes a
+// placeholder or an address this script invented on its own.
 //
-// Usage once credentials exist:
+// Usage once credentials and an approved test destination exist:
 //   node --env-file=.env.local scripts/chit-chats-staging-check.mjs
 //
 // Covers exactly the "first objective" sequence from docs/chit-chats-staging-validation.md:
 // authenticate, create an unpurchased draft shipment, print the real rates returned, look the
-// shipment up again by its order_id, then delete it (confirmed safe per the docs: deletion is
-// only blocked once postage is purchased or the shipment is received -- neither happens here,
-// since postage_type "unknown" never purchases anything and this script never calls
-// PATCH /shipments/{id}/buy).
+// shipment up again by its order_id, then delete it.
+//
+// NEVER PURCHASES POSTAGE: there is no call to PATCH /shipments/{id}/buy anywhere in this file,
+// deliberately -- the only shipment-mutating calls below are POST /shipments (with
+// postage_type: "unknown", which creates a record without buying postage) and
+// DELETE /shipments/{id}. Confirmed safe per the docs: deletion is only blocked once postage is
+// purchased or the shipment is received -- neither happens here.
 //
 // Deliberately duplicates (rather than imports) the tiny amount of URL/header logic also in
 // src/lib/server/chitChatsClient.ts -- that file has `import "server-only"`, which throws
-// unconditionally outside Next.js's bundler (confirmed: every other file in src/lib/server/ has
-// the same issue, which is why none of them have a plain-Node test either). Keep the two in sync
-// if either changes.
+// unconditionally outside Next.js's bundler. Keep the two in sync if either changes.
 
 const token = process.env.CHIT_CHATS_API_ACCESS_TOKEN;
 const clientId = process.env.CHIT_CHATS_CLIENT_ID;
@@ -42,9 +44,52 @@ if (environment === "production") {
   process.exit(1);
 }
 
+// Approved test destination -- no hardcoded default. An earlier version of this script used an
+// address I (Claude) invented without business sign-off; this version requires the person running
+// it to explicitly provide one via env vars instead, so "approved" is a real property of the
+// configuration, not an assumption baked into the script.
+const destination = {
+  name: process.env.CHIT_CHATS_TEST_RECIPIENT_NAME,
+  address_1: process.env.CHIT_CHATS_TEST_ADDRESS_1,
+  city: process.env.CHIT_CHATS_TEST_CITY,
+  province_code: process.env.CHIT_CHATS_TEST_PROVINCE,
+  postal_code: process.env.CHIT_CHATS_TEST_POSTAL_CODE,
+  country_code: process.env.CHIT_CHATS_TEST_COUNTRY || "CA",
+};
+const missingDestinationFields = ["name", "address_1", "city", "province_code", "postal_code"].filter((k) => !destination[k]);
+if (missingDestinationFields.length > 0) {
+  console.error(
+    `No approved test destination configured -- missing: ${missingDestinationFields.join(", ")}.\n` +
+      "Set CHIT_CHATS_TEST_RECIPIENT_NAME, CHIT_CHATS_TEST_ADDRESS_1, CHIT_CHATS_TEST_CITY, " +
+      "CHIT_CHATS_TEST_PROVINCE, CHIT_CHATS_TEST_POSTAL_CODE (and optionally CHIT_CHATS_TEST_COUNTRY, " +
+      "default CA) to an address you've approved for this test before running this script. This is " +
+      "a real shipment-creation API call once it runs -- it must use an address you chose, not one " +
+      "this script invents.",
+  );
+  process.exit(1);
+}
+
+// Shipping ORIGIN is Chit Chats account-level configuration (Settings > Returns in their
+// dashboard), not a field this request can set -- there is nothing for this script to configure
+// or approve here. Whatever origin address is on file for the account is what's used; confirm
+// that's the intended one directly in the Chit Chats dashboard before running this script for the
+// first time, since no code anywhere in this repo can see or override it.
+console.log(
+  "NOTE: shipping origin is whatever is configured in the Chit Chats account's own Settings > " +
+    "Returns page -- confirm that's correct there before proceeding; this script cannot see or set it.",
+);
+
 const baseUrl = `https://staging.chitchats.com/api/v1/clients/${clientId}`;
 const headers = { Authorization: token, "Content-Type": "application/json" };
 const testOrderId = `staging-check-${Date.now()}`;
+
+/** Never prints the real token. Client ID isn't the secret itself, but is still partially masked
+ *  here as defense-in-depth -- nothing in this script's console output should let a copy-pasted
+ *  terminal transcript leak account-identifying values in full. */
+function redact(value) {
+  if (!value || value.length <= 8) return "****";
+  return `${value.slice(0, 4)}…${value.slice(-4)}`;
+}
 
 async function step(label, fn) {
   process.stdout.write(`\n--- ${label} ---\n`);
@@ -54,8 +99,9 @@ async function step(label, fn) {
 }
 
 async function main() {
-  console.log(`Chit Chats staging check -- environment: ${environment}, client: ${clientId}`);
+  console.log(`Chit Chats staging check -- environment: ${environment}, client: ${redact(clientId)}`);
   console.log(`Test order_id marker: ${testOrderId}`);
+  console.log(`Approved test destination: ${destination.name}, ${destination.city}, ${destination.province_code}`);
 
   await step("1. Authenticate (GET /shipments?limit=1)", async () => {
     const res = await fetch(`${baseUrl}/shipments?limit=1`, { headers });
@@ -70,12 +116,7 @@ async function main() {
         method: "POST",
         headers,
         body: JSON.stringify({
-          name: "Staging Check Recipient",
-          address_1: "123 Test St",
-          city: "Toronto",
-          province_code: "ON",
-          postal_code: "M5V 2T6",
-          country_code: "CA",
+          ...destination,
           value: "10.00",
           value_currency: "cad",
           package_type: "parcel",
@@ -86,13 +127,12 @@ async function main() {
           size_y: "10",
           size_z: "10",
           description: "Staging validation test parcel -- safe to delete",
-          postage_type: "unknown",
+          postage_type: "unknown", // never purchases postage -- see this file's header
           order_id: testOrderId,
         }),
       });
       if (!res.ok) throw new Error(`Shipment creation failed: ${res.status} ${await res.text()}`);
-      const body = await res.json();
-      return body;
+      return res.json();
     });
     shipmentId = created.id;
 
@@ -113,11 +153,31 @@ async function main() {
       return body;
     });
   } finally {
+    // Always attempted if a shipment was created, even if an earlier step (e.g. the lookup) threw
+    // -- and the delete attempt's own success/failure is handled separately from whatever error
+    // triggered this finally block, so a cleanup failure is never silently swallowed by, or
+    // allowed to mask, the original error.
     if (shipmentId) {
-      await step(`5. Delete draft shipment (DELETE /shipments/${shipmentId})`, async () => {
+      try {
         const res = await fetch(`${baseUrl}/shipments/${shipmentId}`, { method: "DELETE", headers });
-        return { status: res.status, expectedNoContent: res.status === 204 };
-      });
+        if (res.status === 204) {
+          console.log(`\n--- 5. Delete draft shipment ${shipmentId} ---\nDeleted successfully (204 No Content).`);
+        } else {
+          console.error(
+            `\n!!! MANUAL CLEANUP NEEDED !!!\n` +
+              `DELETE /shipments/${shipmentId} returned ${res.status} (expected 204): ${await res.text()}\n` +
+              `Shipment ID ${shipmentId} (order_id: ${testOrderId}) was NOT confirmed deleted -- ` +
+              `delete it manually in the Chit Chats dashboard or retry: ` +
+              `curl -X DELETE -H "Authorization: $CHIT_CHATS_API_ACCESS_TOKEN" ${baseUrl}/shipments/${shipmentId}`,
+          );
+        }
+      } catch (err) {
+        console.error(
+          `\n!!! MANUAL CLEANUP NEEDED !!!\n` +
+            `DELETE /shipments/${shipmentId} failed with a network/unexpected error: ${err.message}\n` +
+            `Shipment ID ${shipmentId} (order_id: ${testOrderId}) was NOT confirmed deleted -- delete it manually.`,
+        );
+      }
     }
   }
 
