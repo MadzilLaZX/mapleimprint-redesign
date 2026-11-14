@@ -17,8 +17,10 @@ import { ShippingRateUnavailableError } from "./canadaPostShippingProvider.ts";
 export type ChitChatsPostagePurchaser = (chitChatsShipmentId: string, postageType: string) => Promise<void>;
 
 // Throws rather than silently no-op-ing or fabricating success -- consistent with every other
-// "not wired to real credentials yet" stub in this codebase (fetchChitChatsRates,
-// fetchCanadaPostRate). Replace this body with the real PATCH call above once approved.
+// "not wired to real credentials yet" stub in this codebase (fetchCanadaPostRate; fetchChitChatsRates
+// in chitChatsShippingProvider.ts is now a real implementation, but postage purchasing is a
+// separate, still-unimplemented step -- see this file's header for why it stays dormant). Replace
+// this body with the real PATCH call above once approved.
 const purchasePostageViaChitChats: ChitChatsPostagePurchaser = async (_chitChatsShipmentId, _postageType) => {
   throw new Error("Postage purchasing is not implemented -- no Chit Chats credentials exist in this codebase.");
 };

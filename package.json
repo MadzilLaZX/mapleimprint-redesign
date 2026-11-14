@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import ./scripts/register-test-alias-loader.mjs --test src/lib/checkout/validation.test.ts src/lib/checkout/canadaPostShippingProvider.test.ts src/lib/checkout/chitChatsShippingProvider.test.ts src/lib/checkout/chitChatsRateCache.test.ts src/lib/checkout/chitChatsQuoteStore.test.ts src/lib/checkout/chitChatsQuoteCoordinator.test.ts src/lib/checkout/chitChatsShippingProviderPersistentCache.test.ts src/lib/checkout/chitChatsPostagePurchase.test.ts src/lib/checkout/taxProvider.test.ts src/lib/checkout/checkoutTotalConsistency.test.ts src/lib/automation/email/templates.test.ts src/lib/images/resolveHostedImage.test.ts"
+    "test": "node --import ./scripts/register-test-alias-loader.mjs --test src/lib/checkout/validation.test.ts src/lib/checkout/canadaPostShippingProvider.test.ts src/lib/checkout/chitChatsShippingProvider.test.ts src/lib/checkout/chitChatsRateFetcher.test.ts src/lib/checkout/chitChatsShipmentReconciler.test.ts src/lib/checkout/chitChatsRateCache.test.ts src/lib/checkout/chitChatsQuoteStore.test.ts src/lib/checkout/chitChatsQuoteCoordinator.test.ts src/lib/checkout/chitChatsShippingProviderPersistentCache.test.ts src/lib/checkout/chitChatsPostagePurchase.test.ts src/lib/checkout/taxProvider.test.ts src/lib/checkout/checkoutTotalConsistency.test.ts src/lib/automation/email/templates.test.ts src/lib/images/resolveHostedImage.test.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.13",

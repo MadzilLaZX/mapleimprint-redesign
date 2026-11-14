@@ -5,6 +5,8 @@ import { ShippingRateUnavailableError, estimateParcelWeightLb } from "./canadaPo
 import { validatePostalCode } from "./validation.ts";
 import { ChitChatsRateCache } from "./chitChatsRateCache.ts";
 import { ChitChatsQuoteCoordinator } from "./chitChatsQuoteCoordinator.ts";
+import { buildQuoteFingerprint } from "./chitChatsQuoteStore.ts";
+import { chitChatsShipmentsUrl, chitChatsRequestHeaders } from "../server/chitChatsClient.ts";
 
 // Architecture for the owner-confirmed shipping policy, NOT wired in as the live `shippingProvider`
 // export (see shippingProvider.ts) -- Chit Chats replaces Canada Post as the PLANNED primary
@@ -149,14 +151,117 @@ export type ChitChatsRateFetcher = (
   pkg: ChitChatsPackageInput,
 ) => Promise<ShippingOption[]>;
 
-// Throws deliberately rather than returning a guessed/flat rate -- inventing a shipping fee here
-// would violate the same "never fabricate a charge" rule as taxProvider.ts and
-// canadaPostShippingProvider.ts. Replace this body with a real call to Chit Chats'
-// POST /clients/<id>/shipments once an API access token and client ID exist.
-const fetchChitChatsRates: ChitChatsRateFetcher = async (_address, _subtotalCents, _pkg) => {
-  throw new ShippingRateUnavailableError(
-    "Live shipping rates aren't available yet for this order — request a quote and we'll confirm shipping manually.",
-  );
+/** One entry of Chit Chats' `rates` array, per https://chitchats.com/docs/api/v1 -- only the
+ *  fields this mapping actually reads are declared; the real response carries more. Exported so
+ *  chitChatsShipmentReconciler.ts's GET /shipments?q= lookup (whose results carry the same `rates`
+ *  shape) can map a recovered shipment's rates identically rather than duplicating this logic. */
+export interface ChitChatsRateApiEntry {
+  postage_type?: string;
+  postage_description?: string;
+  purchase_amount?: string;
+}
+
+interface ChitChatsCreateShipmentResponse {
+  id?: string;
+  rates?: ChitChatsRateApiEntry[];
+}
+
+/** Shared mapping from Chit Chats' raw `rates[]` shape to this codebase's ShippingOption[] --
+ *  used both by the real POST /shipments response (fetchChitChatsRates below) and by
+ *  chitChatsShipmentReconciler.ts's GET /shipments?q= lookup, so a recovered shipment's rates are
+ *  interpreted identically to a freshly-created one. Silently drops any entry missing the two
+ *  fields it actually needs rather than crashing or guessing a price for it. */
+export function mapChitChatsRateEntries(rates: ChitChatsRateApiEntry[]): ShippingOption[] {
+  return rates
+    .filter((rate): rate is ChitChatsRateApiEntry & { postage_type: string; purchase_amount: string } =>
+      typeof rate.postage_type === "string" && typeof rate.purchase_amount === "string",
+    )
+    .map((rate) => ({
+      id: `chitchats-${rate.postage_type}`,
+      label: rate.postage_description ?? rate.postage_type,
+      cents: Math.round(parseFloat(rate.purchase_amount) * 100),
+    }));
+}
+
+/** `POST /clients/<id>/shipments` with `postage_type: "unknown"` -- per this file's header, this
+ *  is Chit Chats' only way to get a real rate (there is no quote-only endpoint); the resulting
+ *  shipment is left unpurchased (no postage bought) and can be deleted, consistent with the
+ *  "no real shipments without approval" rule since this round still never calls the delete OR buy
+ *  endpoints and only ever runs under mocked fetch in tests. `order_id` is set to this request's
+ *  own quote fingerprint (the same value `ChitChatsQuoteCoordinator` persists under) purely so a
+ *  future reconciliation lookup (`GET /shipments?q=<fingerprint>`) has something stable to search
+ *  for -- see chitChatsShipmentReconciler.ts. */
+export const fetchChitChatsRates: ChitChatsRateFetcher = async (address, subtotalCents, pkg) => {
+  // Missing CHIT_CHATS_CLIENT_ID / CHIT_CHATS_API_ACCESS_TOKEN -- not yet activated in this
+  // environment (chitChatsClient.ts throws a plain Error for either). Same honest message the
+  // stub this replaces always gave, so every existing "not configured" test keeps passing
+  // unchanged in an environment (like this codebase's own test run) with no real credentials set.
+  let shipmentsUrl: string;
+  let headers: Record<string, string>;
+  try {
+    shipmentsUrl = chitChatsShipmentsUrl();
+    headers = chitChatsRequestHeaders();
+  } catch {
+    throw new ShippingRateUnavailableError(
+      "Live shipping rates aren't available yet for this order — request a quote and we'll confirm shipping manually.",
+    );
+  }
+
+  const fingerprint = buildQuoteFingerprint({ address, subtotalCents, pkg });
+  const body: Record<string, unknown> = {
+    name: address.name,
+    address_1: address.addressLine1,
+    city: address.city,
+    province_code: address.province,
+    postal_code: address.postalCode,
+    country_code: address.country,
+    value: (subtotalCents / 100).toFixed(2),
+    value_currency: "cad",
+    package_type: "parcel",
+    weight_unit: "lb",
+    weight: pkg.weightLb.toFixed(2),
+    description: "Maple Imprint custom order",
+    postage_type: "unknown",
+    order_id: fingerprint,
+  };
+  if (address.addressLine2?.trim()) body.address_2 = address.addressLine2;
+  if (pkg.dimensionsIn) {
+    body.size_unit = "in";
+    body.size_x = pkg.dimensionsIn.length.toFixed(2);
+    body.size_y = pkg.dimensionsIn.width.toFixed(2);
+    body.size_z = pkg.dimensionsIn.height.toFixed(2);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(shipmentsUrl, { method: "POST", headers, body: JSON.stringify(body) });
+  } catch {
+    // Network failure reaching Chit Chats itself (outage, DNS, timeout) -- never silently
+    // downgraded to a fabricated rate, see this file's header.
+    throw new ShippingRateUnavailableError(
+      "We couldn't reach our shipping carrier right now — request a quote and we'll confirm shipping manually.",
+    );
+  }
+
+  if (!response.ok) {
+    // A 4xx here is how Chit Chats reports an unsupported destination or an oversized/restricted
+    // parcel for THIS specific request -- propagated as the same "no fabricated rate" error every
+    // other rejection path in this provider uses, never guessed at or retried as something else.
+    throw new ShippingRateUnavailableError(
+      "Chit Chats couldn't quote this shipment — request a quote and we'll confirm shipping manually.",
+    );
+  }
+
+  let data: ChitChatsCreateShipmentResponse;
+  try {
+    data = (await response.json()) as ChitChatsCreateShipmentResponse;
+  } catch {
+    throw new ShippingRateUnavailableError(
+      "We received an unexpected response from our shipping carrier — request a quote and we'll confirm shipping manually.",
+    );
+  }
+
+  return mapChitChatsRateEntries(data.rates ?? []);
 };
 
 /**
