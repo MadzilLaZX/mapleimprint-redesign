@@ -83,3 +83,52 @@ No isolated test environment was exercised this round. Everything in
 `docs/chit-chats-production-readiness.md` is validated only against the hand-written in-memory
 fake, not real Postgres/PostgREST — a meaningfully different thing from "tested," since the fake
 can only be as correct as my own understanding of PostgREST's behavior, which is unverified here.
+
+## Migration 010 deployment checklist (once you decide to apply it)
+
+Written this round, not executed — applying any migration requires your explicit approval, per
+standing instructions. In dependency order:
+
+1. **Run this doc's integration-test procedure against an isolated target first** (local Supabase
+   CLI + Docker, or an explicitly-approved throwaway cloud project — see "Isolated test
+   environment" above) and resolve every item in "What specifically needs confirming" above.
+   Applying directly to the live `maple-imprint-catalogue` project without this step means finding
+   out about a PostgREST behavior mismatch (if any) in Production instead of in an isolated one.
+2. **Apply migration 010 to the live project** (`supabase db push` or the Supabase dashboard's SQL
+   editor, whichever this project's existing migration-application process uses — migrations
+   001-009 are already live, so there's an established precedent to follow, not a new process to
+   invent).
+3. **Verify immediately after applying, before any code change depends on it**:
+   - `ChitChatsShippingQuote` table exists with RLS enabled and zero policies (deny-all) — same
+     verification pattern already used for `MapleOrder`/`PaymentAttempt` (see
+     `production-deployment-checklist.md`'s existing RLS checks).
+   - The new `chit_chats_quote_purchased_implies_ready` check constraint and the
+     `ChitChatsShippingQuote_cleanup_idx` partial index are both present (`\d
+     "ChitChatsShippingQuote"` in `psql`, or the Supabase dashboard's table editor).
+4. **Only then**, construct a real `SupabaseChitChatsQuoteStore` + `ChitChatsQuoteCoordinator` and
+   wire them into `ChitChatsShippingProvider` as `shippingProvider.ts`'s live export (step 6 in
+   `chit-chats-production-readiness.md`'s "Minimum remaining engineering work") — applying the
+   migration does not itself activate anything; the table existing and the code reading from it
+   are two separate, independently-approvable steps.
+5. **Optionally**, add a Vercel Cron entry calling the already-built (not yet scheduled)
+   `POST /api/admin/chit-chats-quotes/cleanup` route — a separate, small activation step, not
+   required for the table or the quote-coordinator to function correctly in the meantime (an
+   unapplied cleanup job just means expired rows accumulate until it's added, not that anything
+   breaks).
+
+### Rollback
+
+Migration 010 is purely additive — one new table, two indexes, RLS enablement, no change to any
+existing table/column/data. Rollback is a clean removal, never a restore-from-backup scenario,
+matching every other migration's rollback note in `production-deployment-checklist.md`:
+
+```sql
+drop table if exists "ChitChatsShippingQuote";
+```
+
+Safe to run at any point **as long as `shippingProvider.ts`'s live export is still
+`FreeShippingProvider`** (true today) — nothing reads from this table yet. If step 4 above has
+already happened (a real `ChitChatsShippingProvider` is live), rolling back the table first would
+break every in-flight shipping quote request; roll back the code (revert `shippingProvider.ts`'s
+export to `FreeShippingProvider`) before dropping the table, same "code rollback before schema
+rollback" order as any other active-dependency rollback.
