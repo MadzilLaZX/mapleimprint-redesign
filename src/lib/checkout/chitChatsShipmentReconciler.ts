@@ -1,6 +1,7 @@
 import type { ChitChatsShipmentReconciler } from "./chitChatsQuoteCoordinator.ts";
+import type { ChitChatsPersistedQuoteKey } from "./chitChatsQuoteStore.ts";
 import { chitChatsShipmentsUrl, chitChatsRequestHeaders } from "../server/chitChatsClient.ts";
-import { mapChitChatsRateEntries, type ChitChatsRateApiEntry } from "./chitChatsShippingProvider.ts";
+import { mapChitChatsRateEntries, CHIT_CHATS_REQUEST_TIMEOUT_MS, type ChitChatsRateApiEntry } from "./chitChatsShippingProvider.ts";
 
 // Real (non-stub) GET /clients/<id>/shipments?q=<fingerprint> lookup -- see
 // chitChatsQuoteCoordinator.ts's header for why reconciliation exists at all (a presumed-crashed
@@ -33,18 +34,57 @@ import { mapChitChatsRateEntries, type ChitChatsRateApiEntry } from "./chitChats
 // codebase's established "build it, test it against mocks, wire it in as an explicit later step"
 // pattern (see SupabaseChitChatsQuoteStore's own header for the same pattern applied to the quote
 // store).
+//
+// SECOND VERIFICATION LAYER (destination fields, not just order_id): even though `order_id` is a
+// 64-char SHA-256 fingerprint -- astronomically unlikely to collide by chance -- this additionally
+// cross-checks the matched shipment's `to_name`/`to_address_1`/`to_city`/`to_province_code`/
+// `to_postal_code`/`to_country_code` (all present on GET /shipments list items, confirmed against
+// the live OpenAPI spec) against the ORIGINAL request's own address, which the quote key always
+// carries in full by the time a fingerprint exists (ChitChatsShippingProvider.getOptions() already
+// requires name/addressLine1/city before ever computing one -- see assertFullChitChatsAddress()).
+// This guards against a scenario an order_id match alone can't: Chit Chats' own `q` search
+// returning a shipment whose order_id happens to equal this fingerprint for some reason unrelated
+// to this request (a replay, a data issue on their side) but whose actual destination doesn't
+// match what this request is trying to confirm. A mismatch here is treated exactly like any other
+// unconfirmed case -- "unknown", never a hard failure -- since it's an extra safety check layered
+// on top of the order_id match, not a new way to positively prove anything.
 
 interface ChitChatsShipmentSummary {
   id?: string;
   order_id?: string;
   rates?: ChitChatsRateApiEntry[];
+  to_name?: string;
+  to_address_1?: string;
+  to_city?: string;
+  to_province_code?: string;
+  to_postal_code?: string;
+  to_country_code?: string;
 }
 
-interface ChitChatsShipmentsListResponse {
-  shipments?: ChitChatsShipmentSummary[];
+/** Case/whitespace-insensitive comparison -- Chit Chats may normalize casing (e.g. postal codes,
+ *  province codes) differently than how this codebase stores them; an honest match shouldn't fail
+ *  over "ON" vs "on" or incidental surrounding whitespace. */
+function normalizedEquals(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) return false;
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-export const chitChatsOrderIdReconciler: ChitChatsShipmentReconciler = async (fingerprint) => {
+/** True only if every destination field this codebase can check actually matches. Any field
+ *  Chit Chats didn't return (undefined) counts as a mismatch, not a free pass -- a partial
+ *  response is not grounds for extra trust. */
+function destinationMatches(shipment: ChitChatsShipmentSummary, key: ChitChatsPersistedQuoteKey): boolean {
+  const { address } = key;
+  return (
+    normalizedEquals(shipment.to_name, address.name) &&
+    normalizedEquals(shipment.to_address_1, address.addressLine1) &&
+    normalizedEquals(shipment.to_city, address.city) &&
+    normalizedEquals(shipment.to_province_code, address.province) &&
+    normalizedEquals(shipment.to_postal_code, address.postalCode) &&
+    normalizedEquals(shipment.to_country_code, address.country)
+  );
+}
+
+export const chitChatsOrderIdReconciler: ChitChatsShipmentReconciler = async (fingerprint, key) => {
   let url: string;
   let headers: Record<string, string>;
   try {
@@ -56,23 +96,31 @@ export const chitChatsOrderIdReconciler: ChitChatsShipmentReconciler = async (fi
 
   let response: Response;
   try {
-    response = await fetch(url, { headers });
+    // Same bounded timeout as fetchChitChatsRates -- a stalled lookup must never hang the
+    // coordinator's claim/wait/takeover loop indefinitely.
+    response = await fetch(url, { headers, signal: AbortSignal.timeout(CHIT_CHATS_REQUEST_TIMEOUT_MS) });
   } catch {
-    return { outcome: "unknown" }; // network failure -- cannot confirm either way
+    return { outcome: "unknown" }; // network failure or timeout -- cannot confirm either way
   }
   if (!response.ok) return { outcome: "unknown" };
 
-  let data: ChitChatsShipmentsListResponse;
+  // GET /shipments returns a bare JSON array -- CONFIRMED against the live OpenAPI spec's own
+  // response schema, 2026-11-15, NOT `{ shipments: [...] }` as an earlier round assumed (never
+  // verified against the actual response schema, only prose examples). That earlier assumption
+  // would have made `data.shipments` always `undefined`, so every real lookup would have silently
+  // found zero matches regardless of whether a shipment actually existed.
+  let data: unknown;
   try {
-    data = (await response.json()) as ChitChatsShipmentsListResponse;
+    data = await response.json();
   } catch {
     return { outcome: "unknown" };
   }
+  const shipments: ChitChatsShipmentSummary[] = Array.isArray(data) ? data : [];
 
   // Exact-match filter on `order_id` -- `q` is a full-text search, not an exact filter, so this
   // client-side check guards against the tokenized/partial-match false positives the staging
   // validation doc specifically flags as unconfirmed for a long hex string.
-  const exactMatches = (data.shipments ?? []).filter(
+  const exactMatches = shipments.filter(
     (s): s is ChitChatsShipmentSummary & { id: string; order_id: string } =>
       s.order_id === fingerprint && typeof s.id === "string",
   );
@@ -81,6 +129,11 @@ export const chitChatsOrderIdReconciler: ChitChatsShipmentReconciler = async (fi
   // ambiguous result that should never happen for a 64-char fingerprint; treated the same way
   // rather than guessing which match (if any) is the right one.
   if (exactMatches.length !== 1) return { outcome: "unknown" };
+
+  // Second verification layer -- see this file's header. A match on order_id alone is not
+  // sufficient; the destination on file for the matched shipment must also agree with what this
+  // request is actually trying to confirm.
+  if (!destinationMatches(exactMatches[0], key)) return { outcome: "unknown" };
 
   const rates = mapChitChatsRateEntries(exactMatches[0].rates ?? []);
   // A found shipment with no usable rates (e.g. this listing endpoint doesn't echo `rates` for
