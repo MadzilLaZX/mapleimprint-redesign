@@ -218,6 +218,9 @@ export async function POST(request: Request) {
     );
     if (linesError) {
       console.error("[checkout] order line creation failed:", linesError);
+      // Same orphaned-order concern as the PaymentAttempt race below -- a MapleOrder with no
+      // lines and no PaymentAttempt would otherwise sit in the admin orders list forever.
+      await supabaseAdmin.from("MapleOrder").delete().eq("id", orderId);
       return NextResponse.json({ error: "Couldn't start your order. Please try again." }, { status: 502 });
     }
 
@@ -229,6 +232,17 @@ export async function POST(request: Request) {
     });
     if (attemptError) {
       console.error("[checkout] payment attempt creation failed:", attemptError);
+      // A near-simultaneous duplicate submission (same idempotencyKey -- a double-click, or a
+      // retried request racing the original before either's PaymentAttempt existed yet) can lose
+      // PaymentAttempt.idempotencyKey's unique-constraint race: both requests found no
+      // existingAttempt above, both inserted their own MapleOrder/MapleOrderLine, but only one can
+      // ever win this insert. Without this cleanup, the loser leaves an orphaned
+      // PENDING_PAYMENT MapleOrder behind forever -- no PaymentAttempt will ever reference it, so
+      // it would never transition to PAID or FAILED, just sit in the admin orders list
+      // indefinitely. Deleting it here (cascades to MapleOrderLine, see migration 002) means the
+      // race fails cleanly instead of littering the orders table; the other, winning request's own
+      // order and payment proceed completely unaffected.
+      await supabaseAdmin.from("MapleOrder").delete().eq("id", orderId);
       return NextResponse.json({ error: "Couldn't process your payment. Please try again." }, { status: 502 });
     }
   }
