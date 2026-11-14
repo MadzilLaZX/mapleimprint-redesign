@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       shippingOptions = await shippingProvider.getOptions(
         body.shippingAddress,
         subtotalCents,
-        lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
+        lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity, productId: l.productId })),
       );
     } catch (err) {
       if (err instanceof ShippingRateUnavailableError) {

@@ -22,10 +22,17 @@ export interface ShippingOption {
 }
 
 /** The minimal per-line shape a shipping quote needs -- a subset of PricedCartLine, so this
- *  module doesn't need to import checkout's full cart-line type just to read two fields. */
+ *  module doesn't need to import checkout's full cart-line type just to read these fields. */
 export interface ShippingQuoteLine {
   unitWeightLb: number | null;
   quantity: number;
+  /** Stable catalogue identifier (see packagingProfiles.ts's `buildProductId()`), for looking up
+   *  a real, owner-measured packaging profile. Optional -- existing callers/tests that don't
+   *  supply it behave exactly as before (ChitChatsShippingProvider treats a missing id on any
+   *  line the same as "packaging can't be determined for this cart," never a crash). Null for a
+   *  line whose underlying catalogue product can no longer be resolved (e.g. a CUSTOM design
+   *  frozen against a product since removed) -- same "unknown, don't guess" meaning as null. */
+  productId?: string | null;
 }
 
 // subtotalCents is accepted (not yet used by FreeShippingProvider) so a real carrier provider can

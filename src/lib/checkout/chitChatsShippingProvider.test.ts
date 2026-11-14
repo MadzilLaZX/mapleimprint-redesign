@@ -198,7 +198,7 @@ test("getOptions() threads the real computed parcel weight through to the rate f
   assert.deepEqual(options, [{ id: "live", label: "Chit Chats", cents: 1850 }]);
 });
 
-test("getOptions() passes dimensionsIn as null -- no per-product dimension data exists anywhere in the catalogue today", async () => {
+test("getOptions() passes dimensionsIn as null when no line carries a productId -- no per-product dimension data exists anywhere in the catalogue today", async () => {
   let receivedDimensions: unknown = "not called";
   const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg: ChitChatsPackageInput) => {
     receivedDimensions = pkg.dimensionsIn;
@@ -207,6 +207,116 @@ test("getOptions() passes dimensionsIn as null -- no per-product dimension data 
   const provider = new ChitChatsShippingProvider(fakeFetcher);
   await provider.getOptions(caAddressFull, 1000, weighedLines);
   assert.equal(receivedDimensions, null);
+});
+
+test("getOptions() resolves a real owner-measured package once a fixture packaging profile is assigned, and sends the tare-adjusted weight", async () => {
+  const { PACKAGING_PROFILES, PRODUCT_PACKAGING_ASSIGNMENTS } = await import("./packagingProfiles.ts");
+  const PROFILE_ID = "test-fixture-box-shippingprovider";
+  const PRODUCT_ID = "test-fixture-product-shippingprovider";
+  PACKAGING_PROFILES[PROFILE_ID] = {
+    id: PROFILE_ID,
+    label: "TEST FIXTURE ONLY",
+    outerDimensionsIn: { length: 12, width: 9, height: 6 },
+    emptyWeightLb: 0.4,
+    maxUnitsPerPackage: 10,
+    maxWeightLbPerPackage: 20,
+  };
+  PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID] = PROFILE_ID;
+
+  try {
+    let receivedPkg: ChitChatsPackageInput | undefined;
+    const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg) => {
+      receivedPkg = pkg;
+      return [{ id: "live", label: "Chit Chats", cents: 1850 }];
+    };
+    const provider = new ChitChatsShippingProvider(fakeFetcher);
+    const linesWithProductId = [{ unitWeightLb: 2, quantity: 3, productId: PRODUCT_ID }];
+    await provider.getOptions(caAddressFull, 1000, linesWithProductId);
+
+    assert.deepEqual(receivedPkg?.dimensionsIn, { length: 12, width: 9, height: 6 });
+    assert.equal(receivedPkg?.weightLb, 6.4); // 2 * 3 product weight + 0.4 tare
+  } finally {
+    delete PACKAGING_PROFILES[PROFILE_ID];
+    delete PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID];
+  }
+});
+
+test("getOptions() stays at dimensionsIn: null when a line's productId has no assigned profile -- never fabricates one", async () => {
+  let receivedDimensions: unknown = "not called";
+  const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg) => {
+    receivedDimensions = pkg.dimensionsIn;
+    return [{ id: "live", label: "Chit Chats", cents: 1850 }];
+  };
+  const provider = new ChitChatsShippingProvider(fakeFetcher);
+  const linesWithUnassignedProductId = [{ unitWeightLb: 1, quantity: 1, productId: "no-such-assignment" }];
+  await provider.getOptions(caAddressFull, 1000, linesWithUnassignedProductId);
+  assert.equal(receivedDimensions, null);
+});
+
+test("getOptions() stays at dimensionsIn: null for a mixed-product cart even when both products have assigned profiles", async () => {
+  const { PACKAGING_PROFILES, PRODUCT_PACKAGING_ASSIGNMENTS } = await import("./packagingProfiles.ts");
+  const PROFILE_ID = "test-fixture-box-mixed";
+  const PRODUCT_A = "test-fixture-product-a";
+  const PRODUCT_B = "test-fixture-product-b";
+  PACKAGING_PROFILES[PROFILE_ID] = {
+    id: PROFILE_ID,
+    label: "TEST FIXTURE ONLY",
+    outerDimensionsIn: { length: 12, width: 9, height: 6 },
+    emptyWeightLb: 0.4,
+    maxUnitsPerPackage: 10,
+    maxWeightLbPerPackage: 20,
+  };
+  PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_A] = PROFILE_ID;
+  PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_B] = PROFILE_ID;
+
+  try {
+    let receivedDimensions: unknown = "not called";
+    const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg) => {
+      receivedDimensions = pkg.dimensionsIn;
+      return [{ id: "live", label: "Chit Chats", cents: 1850 }];
+    };
+    const provider = new ChitChatsShippingProvider(fakeFetcher);
+    const mixedLines = [
+      { unitWeightLb: 1, quantity: 1, productId: PRODUCT_A },
+      { unitWeightLb: 1, quantity: 1, productId: PRODUCT_B },
+    ];
+    await provider.getOptions(caAddressFull, 1000, mixedLines);
+    assert.equal(receivedDimensions, null);
+  } finally {
+    delete PACKAGING_PROFILES[PROFILE_ID];
+    delete PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_A];
+    delete PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_B];
+  }
+});
+
+test("getOptions() stays at dimensionsIn: null when quantity would need more than one package -- never under-counts the parcel", async () => {
+  const { PACKAGING_PROFILES, PRODUCT_PACKAGING_ASSIGNMENTS } = await import("./packagingProfiles.ts");
+  const PROFILE_ID = "test-fixture-box-overflow";
+  const PRODUCT_ID = "test-fixture-product-overflow";
+  PACKAGING_PROFILES[PROFILE_ID] = {
+    id: PROFILE_ID,
+    label: "TEST FIXTURE ONLY",
+    outerDimensionsIn: { length: 12, width: 9, height: 6 },
+    emptyWeightLb: 0.4,
+    maxUnitsPerPackage: 2,
+    maxWeightLbPerPackage: 20,
+  };
+  PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID] = PROFILE_ID;
+
+  try {
+    let receivedDimensions: unknown = "not called";
+    const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg) => {
+      receivedDimensions = pkg.dimensionsIn;
+      return [{ id: "live", label: "Chit Chats", cents: 1850 }];
+    };
+    const provider = new ChitChatsShippingProvider(fakeFetcher);
+    const overflowLines = [{ unitWeightLb: 1, quantity: 5, productId: PRODUCT_ID }];
+    await provider.getOptions(caAddressFull, 1000, overflowLines);
+    assert.equal(receivedDimensions, null);
+  } finally {
+    delete PACKAGING_PROFILES[PROFILE_ID];
+    delete PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID];
+  }
 });
 
 test("a simulated Chit Chats API failure propagates as a clear, catchable error rather than crashing or defaulting to a flat rate", async () => {

@@ -32,27 +32,51 @@
  *      chitChatsShippingProvider.ts) stops refusing real rate requests for that product the moment
  *      a real profile exists for it.
  *
+ * WIRED (this round): ShippingQuoteLine (shippingProvider.ts) now carries an optional productId,
+ * populated end to end from priceCartItem.ts (via buildProductId(), using the real underlying
+ * CatalogueProduct) through both checkout API routes. ChitChatsShippingProvider.getOptions() calls
+ * resolvePackaging() below and uses its result when available, falling back to the existing
+ * weight-only/no-dimensions behavior otherwise -- see that file's ChitChatsPackageInput.dimensionsIn
+ * doc comment for the exact wiring. Zero behavioral change today because PACKAGING_PROFILES/
+ * PRODUCT_PACKAGING_ASSIGNMENTS are still empty; real profiles take effect automatically the
+ * moment they exist, no further code change needed.
+ *
+ * MULTI-PARCEL ARCHITECTURE -- conservative and deliberately NOT built out further than this:
+ * Chit Chats' real API creates exactly one package per shipment request (confirmed against the
+ * live spec -- there is no multi-box-per-shipment field anywhere in it), and this codebase has no
+ * flow for splitting one paid order across several Chit Chats shipments. Given that hard
+ * constraint, there are exactly two honest outcomes resolvePackaging() can produce for "this cart
+ * needs more than one box": (a) actually build a second real Chit Chats shipment for the overflow
+ * -- which would require real multi-shipment-per-order support in checkout, fulfillment, and the
+ * quote-coordinator's one-fingerprint-per-cart model, none of which exists today and is NOT
+ * invented here; or (b) refuse and route to a manual quote. This file always takes (b): a quantity
+ * exceeding `maxUnitsPerPackage`, or a resulting weight exceeding `maxWeightLbPerPackage`, resolves
+ * to null exactly like a missing profile does -- never an under-counted single box, and never a
+ * second box this codebase can't actually ship. The architecture IS extensible without a redesign
+ * if (b) is ever revisited: `PackagingProfile` already carries the two independent caps a real
+ * multi-parcel split would need to divide a quantity across N boxes, and `ResolvedPackaging` could
+ * grow an array instead of a single box the day real multi-shipment support exists -- that's a
+ * localized change to this file and its one call site, not a new design.
+ *
  * SCOPE, DELIBERATELY LIMITED -- read before assuming this handles every cart:
  *   - Only a cart containing a SINGLE distinct product is ever resolved. Combining several
  *     DIFFERENT physical boxes (or several different products sharing one box) into one accurate
  *     outer dimension is a real 3D bin-packing problem this codebase has no authoritative way to
  *     solve -- guessing a "combined box" would be exactly the kind of fabricated dimension this
- *     file exists to prevent. A mixed-product cart routes to a manual quote until a real
- *     multi-parcel-per-order flow exists (Chit Chats shipments are one package each -- confirmed
- *     against the live spec -- and nothing in this codebase splits an order across several
- *     shipments today).
- *   - A quantity that wouldn't fit in one box (exceeds `maxUnitsPerPackage`, or the resulting
- *     weight exceeds `maxWeightLbPerPackage`) also routes to a manual quote, for the same reason --
- *     needing multiple packages is a real limitation, not something to paper over by returning an
- *     under-counted single box.
- *   - NOT wired into ChitChatsShippingProvider.getOptions() yet: that requires `ShippingQuoteLine`
- *     (shippingProvider.ts) to carry a stable product identifier, which it doesn't today (only
- *     `unitWeightLb`/`quantity`) -- threading one through touches the checkout pricing pipeline
- *     (priceCartItem.ts) and both checkout API routes, a wider change than building this module
- *     itself warrants while PACKAGING_PROFILES is still empty (see below) and would have zero
- *     behavioral effect either way. This file is the tested, ready-to-integrate piece; wiring it
- *     in is the next, separate, small step once real profiles exist.
+ *     file exists to prevent. A mixed-product cart routes to a manual quote, same reasoning as the
+ *     multi-parcel case above.
+ *   - A quantity that wouldn't fit in one box also routes to a manual quote -- see "MULTI-PARCEL
+ *     ARCHITECTURE" above.
  */
+
+/** The stable identifier this file (and ChitChatsShippingProvider) key packaging data by --
+ *  src/lib/products.ts's CatalogueProduct has no single global id field, only a `slug` unique
+ *  within its own categorySlug/subcategorySlug, the same compound key getProduct() itself takes.
+ *  Built here once so every caller (priceCartItem.ts, PRODUCT_PACKAGING_ASSIGNMENTS' own keys)
+ *  uses an identical, unambiguous string rather than each inventing its own join format. */
+export function buildProductId(categorySlug: string, subcategorySlug: string, productSlug: string): string {
+  return `${categorySlug}/${subcategorySlug}/${productSlug}`;
+}
 
 export interface PackagingProfile {
   id: string;

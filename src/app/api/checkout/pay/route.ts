@@ -100,7 +100,7 @@ export async function POST(request: Request) {
         // Non-null: validated above when !isPickup (the only way this branch runs).
         addr!,
         subtotalCents,
-        lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity })),
+        lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity, productId: l.productId })),
       );
     } catch (err) {
       // A live-rate provider (e.g. CanadaPostShippingProvider once activated) can legitimately fail

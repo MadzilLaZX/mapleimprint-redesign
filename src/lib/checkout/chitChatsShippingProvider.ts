@@ -7,6 +7,7 @@ import { ChitChatsRateCache } from "./chitChatsRateCache.ts";
 import { ChitChatsQuoteCoordinator } from "./chitChatsQuoteCoordinator.ts";
 import { buildQuoteFingerprint } from "./chitChatsQuoteStore.ts";
 import { chitChatsShipmentsUrl, chitChatsRequestHeaders } from "../server/chitChatsClient.ts";
+import { resolvePackaging } from "./packagingProfiles.ts";
 
 // Architecture for the owner-confirmed shipping policy, NOT wired in as the live `shippingProvider`
 // export (see shippingProvider.ts) -- Chit Chats replaces Canada Post as the PLANNED primary
@@ -139,20 +140,22 @@ function assertFullChitChatsAddress(address: ShippingAddressInput): void {
 
 export interface ChitChatsPackageInput {
   weightLb: number;
-  /** Always null today -- see this file's header note on packaging/parcelization. CONFIRMED
-   *  required by the real Chit Chats API (`size_x`/`size_y`/`size_z` are in the OpenAPI spec's own
-   *  `required` array, not merely documented as recommended) -- `fetchChitChatsRates` below throws
-   *  a clear error rather than attempting a doomed request when this is null, which it always is
-   *  today. Accepted as nullable here (rather than required at the type level) so getOptions()
-   *  can still thread a real weight through to a destination/serviceability check without this
-   *  codebase inventing a box size just to satisfy the type system.
+  /** Null today for virtually every real cart -- see this file's header note on packaging/
+   *  parcelization. CONFIRMED required by the real Chit Chats API (`size_x`/`size_y`/`size_z` are
+   *  in the OpenAPI spec's own `required` array, not merely documented as recommended) --
+   *  `fetchChitChatsRates` below throws a clear error rather than attempting a doomed request
+   *  when this is null. Accepted as nullable here (rather than required at the type level) so
+   *  getOptions() can still thread a real weight through to a destination/serviceability check
+   *  without this codebase inventing a box size just to satisfy the type system.
    *
-   *  THE DESIGNED (NOT YET WIRED) FIX: packagingProfiles.ts's `resolvePackaging()` computes a real,
-   *  owner-measured box for a single-product cart once real profiles exist there (none do yet --
-   *  see that file's header). It isn't called from getOptions() below yet because doing so needs
-   *  `lines` (ShippingQuoteLine[], shippingProvider.ts) to carry a stable product identifier, which
-   *  it doesn't today -- that's a small, separate, deliberately-deferred integration step, not an
-   *  unexamined gap. */
+   *  WIRED (this round): getOptions() below calls packagingProfiles.ts's `resolvePackaging()`,
+   *  which only ever returns real, owner-measured dimensions for a single-distinct-product cart
+   *  with a real assigned profile -- see that file's header for exactly when it applies and why
+   *  it stays conservative (mixed-product carts, quantity/weight overflow needing multiple
+   *  packages, and a missing assignment all correctly fall through to null here). Stays null for
+   *  every cart today because PACKAGING_PROFILES/PRODUCT_PACKAGING_ASSIGNMENTS are still empty --
+   *  this becomes real dimensions automatically the moment the owner fills one in, no further
+   *  code change needed. */
   dimensionsIn: { length: number; width: number; height: number } | null;
 }
 
@@ -389,7 +392,29 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
       );
     }
 
-    const pkg: ChitChatsPackageInput = { weightLb: parcelWeightLb, dimensionsIn: null };
+    // Real, owner-measured packaging (packagingProfiles.ts) -- only attempted when EVERY line
+    // resolved to a real catalogue product id; a single missing id makes the cart's true
+    // composition unknowable (a line that's silently dropped from the lookup could hide a second
+    // distinct product), so this intentionally bails to the no-dimensions fallback below rather
+    // than resolving packaging against a partial, possibly-misleading view of the cart.
+    const everyLineIdentified = lines.every((line) => typeof line.productId === "string");
+    const resolvedPackaging = everyLineIdentified
+      ? resolvePackaging(
+          lines.map((line) => ({ productId: line.productId as string, quantity: line.quantity })),
+          parcelWeightLb,
+        )
+      : null;
+
+    // Falls back to weight-only/no-dimensions when no real profile applies yet (no assigned
+    // profile, a mixed-product cart, or a quantity/weight that would need multiple packages --
+    // see resolvePackaging()'s own header for exactly which). fetchChitChatsRates' own preflight
+    // check turns a null dimensionsIn into the honest "no package dimensions yet" refusal rather
+    // than ever attempting a doomed request -- this is the single integration point that makes a
+    // real owner-entered profile take effect the moment one exists, with zero behavior change
+    // while PACKAGING_PROFILES stays empty.
+    const pkg: ChitChatsPackageInput = resolvedPackaging
+      ? { weightLb: resolvedPackaging.weightLb, dimensionsIn: resolvedPackaging.dimensionsIn }
+      : { weightLb: parcelWeightLb, dimensionsIn: null };
     const cacheKeyInput = { address, subtotalCents, pkg };
 
     // Tier 1: in-memory, this provider instance only. Reuses a prior real quote for the identical

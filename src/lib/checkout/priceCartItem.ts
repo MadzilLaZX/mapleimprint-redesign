@@ -3,6 +3,7 @@ import { getProduct } from "@/lib/products";
 import { blankUnitPrice } from "@/lib/studio/pricing";
 import { bundleEntryFor, bundleUnitPrice, isValidBundleOption } from "@/lib/houseProducts/pricing/bundles";
 import type { DesignProjectRecord } from "@/lib/studio/types";
+import { buildProductId } from "./packagingProfiles";
 
 /** The subset of CartItem the browser posts to the checkout endpoints — deliberately NOT the
  *  full CartItem type, since price-bearing fields (startingPrice, priceTiers) are read here only
@@ -40,6 +41,11 @@ export interface PricedCartLine {
    *  see lineShippingWeightLb() below, the single source of truth every branch of this function
    *  uses so a CUSTOM-decorated item and a BLANK purchase of the same product always agree. */
   unitWeightLb: number | null;
+  /** buildProductId()'s output (packagingProfiles.ts) for the underlying catalogue product, for
+   *  real-packaging-profile lookups -- null only when that product can no longer be resolved
+   *  (e.g. a CUSTOM design frozen against a product since removed from the catalogue), the same
+   *  case lineShippingWeightLb() above already handles by returning null rather than guessing. */
+  productId: string | null;
 }
 
 /** A catalogue product's own shippingWeightLb when known, otherwise null -- never a guess, and
@@ -143,6 +149,7 @@ export async function priceCartItem(
         designFrozenRevision: project.frozenRevision,
         designSnapshot: snapshot,
         unitWeightLb: lineShippingWeightLb(underlyingProduct),
+        productId: underlyingProduct ? buildProductId(snapshot.categorySlug, snapshot.subcategorySlug, snapshot.productSlug) : null,
       },
     };
   }
@@ -187,6 +194,7 @@ export async function priceCartItem(
           designFrozenRevision: null,
           designSnapshot: null,
           unitWeightLb: lineShippingWeightLb(product),
+          productId: buildProductId(product.categorySlug, product.subcategorySlug, product.slug),
         },
       };
     }
@@ -212,6 +220,7 @@ export async function priceCartItem(
         designFrozenRevision: null,
         designSnapshot: null,
         unitWeightLb: lineShippingWeightLb(product),
+        productId: buildProductId(product.categorySlug, product.subcategorySlug, product.slug),
       },
     };
   }
