@@ -15,6 +15,16 @@ import { SupabaseChitChatsQuoteStore } from "@/lib/checkout/chitChatsQuoteStore"
  *
  * Protected the same way every other /api/admin/* route is: src/proxy.ts's matcher requires a
  * valid staff session cookie before this handler ever runs -- no separate auth check needed here.
+ * Idempotent and safe to call repeatedly (no rate-limiting infra exists anywhere in this repo to
+ * add here consistently) -- deleteExpiredUnpurchased() only ever removes rows that are already
+ * expired, unpurchased, and not actively leased, so a spammed call is wasted work, not a
+ * correctness or data-safety risk.
+ *
+ * CAVEAT for whoever adds the Vercel Cron entry later: Cron invocations don't carry a staff
+ * session cookie, so this route as written would reject them too (proxy.ts has no exemption for
+ * Vercel's own Cron requests). Wiring that in -- typically checking Vercel's documented
+ * `Authorization: Bearer $CRON_SECRET` convention for cron-triggered requests -- is part of that
+ * same future activation step, not something to add speculatively here before a schedule exists.
  */
 export async function POST() {
   const supabaseAdmin = createAdminClient();

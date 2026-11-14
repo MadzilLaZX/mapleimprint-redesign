@@ -60,6 +60,13 @@ test("a resulting weight exceeding maxWeightLbPerPackage resolves to null, even 
   });
 });
 
+test("a single oversized unit (quantity 1, but its own weight alone exceeds the box's weight cap) resolves to null -- never squeezed into an undersized box", () => {
+  withFixtureProfile(() => {
+    const result = resolvePackaging([{ productId: FIXTURE_PRODUCT_ID, quantity: 1 }], 20); // 20 + 0.5 tare > 15 lb cap
+    assert.equal(result, null);
+  });
+});
+
 test("a mixed-product cart (more than one distinct productId) always resolves to null -- combining boxes is not attempted", () => {
   withFixtureProfile(() => {
     PACKAGING_PROFILES["other-fixture-box"] = { ...fixtureProfile, id: "other-fixture-box" };
