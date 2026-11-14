@@ -138,11 +138,23 @@ export async function POST(request: Request) {
 
     if (data) {
       quoteRequest = data;
+    } else if (insertError?.code === "23505" && insertError.message?.includes("idempotencyKey")) {
+      // A concurrent duplicate submission (same idempotencyKey) won the race between this
+      // request's own lookup above and this insert -- NOT a reference collision, so retrying
+      // with a fresh reference would only fail the same way 3 times in a row and surface a
+      // confusing error for what is actually a successful, already-handled submission. Re-fetch
+      // and return the winner's reference instead, same outcome as the idempotency check at the
+      // top of this handler would have given if it had run a moment later.
+      const { data: winner } = await admin.from("QuoteRequest").select("reference").eq("idempotencyKey", idempotencyKey).maybeSingle();
+      if (winner) return NextResponse.json({ reference: winner.reference });
+      // Winner's row vanished between the failed insert and this read (shouldn't happen in
+      // practice) -- fall through to the generic failure below rather than retrying forever.
+      break;
     } else if (insertError?.code !== "23505") {
       console.error("[quote] QuoteRequest insert failed:", insertError);
       return NextResponse.json({ error: "Couldn't submit your quote request. Please try again." }, { status: 502 });
     }
-    // code === "23505": reference collision — loop and try a fresh one.
+    // code === "23505" on the reference column specifically: collision — loop and try a fresh one.
   }
 
   if (!quoteRequest) {
