@@ -86,12 +86,16 @@ test("with credentials and dimensions set: POSTs to the real shipments URL with 
     capturedUrl = url;
     capturedInit = init;
     return new Response(
+      // The real response wraps the created shipment under a `shipment` key -- CONFIRMED against
+      // the live OpenAPI spec's response schema (2026-11-15), not a flat `{ id, rates }` body.
       JSON.stringify({
-        id: "ship_123",
-        rates: [
-          { postage_type: "ddp", postage_description: "Chit Chats Standard", purchase_amount: "18.50" },
-          { postage_type: "ddp_exp", postage_description: "Chit Chats Expedited", purchase_amount: "42.00" },
-        ],
+        shipment: {
+          id: "ship_123",
+          rates: [
+            { postage_type: "ddp", postage_description: "Chit Chats Standard", purchase_amount: "18.50" },
+            { postage_type: "ddp_exp", postage_description: "Chit Chats Expedited", purchase_amount: "42.00" },
+          ],
+        },
       }),
       { status: 201 },
     );
@@ -161,17 +165,71 @@ test("rate entries missing postage_type or purchase_amount are dropped rather th
   globalThis.fetch = (async () =>
     new Response(
       JSON.stringify({
-        rates: [
-          { postage_type: "ddp", purchase_amount: "18.50" },
-          { postage_description: "Missing postage_type", purchase_amount: "5.00" },
-          { postage_type: "no-amount" },
-        ],
+        shipment: {
+          rates: [
+            { postage_type: "ddp", purchase_amount: "18.50" },
+            { postage_description: "Missing postage_type", purchase_amount: "5.00" },
+            { postage_type: "no-amount" },
+          ],
+        },
       }),
       { status: 201 },
     )) as typeof fetch;
   try {
     const options = await fetchChitChatsRates(address, 1000, pkgWithDimensions);
     assert.deepEqual(options, [{ id: "chitchats-ddp", label: "ddp", cents: 1850 }]);
+  } finally {
+    restoreEnv();
+  }
+});
+
+test("a rate entry with a non-numeric or negative purchase_amount is dropped, never surfaced as NaN/negative cents", async () => {
+  setFakeCredentials();
+  globalThis.fetch = (async () =>
+    new Response(
+      JSON.stringify({
+        shipment: {
+          rates: [
+            { postage_type: "ddp", purchase_amount: "18.50" },
+            { postage_type: "garbled", purchase_amount: "not-a-number" },
+            { postage_type: "negative", purchase_amount: "-5.00" },
+          ],
+        },
+      }),
+      { status: 201 },
+    )) as typeof fetch;
+  try {
+    const options = await fetchChitChatsRates(address, 1000, pkgWithDimensions);
+    assert.deepEqual(options, [{ id: "chitchats-ddp", label: "ddp", cents: 1850 }]);
+    assert.ok(options.every((o) => Number.isFinite(o.cents) && o.cents >= 0));
+  } finally {
+    restoreEnv();
+  }
+});
+
+test("every request carries a bounded AbortSignal, so a non-responding carrier can never hang checkout indefinitely", async () => {
+  setFakeCredentials();
+  let capturedSignal: AbortSignal | null | undefined;
+  globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+    capturedSignal = init?.signal;
+    return new Response(JSON.stringify({ shipment: { rates: [] } }), { status: 201 });
+  }) as typeof fetch;
+  try {
+    await fetchChitChatsRates(address, 1000, pkgWithDimensions);
+    assert.ok(capturedSignal instanceof AbortSignal, "fetch must be called with an AbortSignal");
+    assert.equal(capturedSignal?.aborted, false, "the signal must not already be aborted at call time");
+  } finally {
+    restoreEnv();
+  }
+});
+
+test("an aborted/timed-out request surfaces as the same 'network failure' error as any other unreachable-carrier case", async () => {
+  setFakeCredentials();
+  globalThis.fetch = (async () => {
+    throw new DOMException("The operation was aborted.", "AbortError");
+  }) as typeof fetch;
+  try {
+    await assert.rejects(() => fetchChitChatsRates(address, 1000, pkgWithDimensions), /couldn't reach our shipping carrier/);
   } finally {
     restoreEnv();
   }

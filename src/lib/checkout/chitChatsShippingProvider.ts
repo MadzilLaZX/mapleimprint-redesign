@@ -145,9 +145,25 @@ export interface ChitChatsPackageInput {
    *  a clear error rather than attempting a doomed request when this is null, which it always is
    *  today. Accepted as nullable here (rather than required at the type level) so getOptions()
    *  can still thread a real weight through to a destination/serviceability check without this
-   *  codebase inventing a box size just to satisfy the type system. */
+   *  codebase inventing a box size just to satisfy the type system.
+   *
+   *  THE DESIGNED (NOT YET WIRED) FIX: packagingProfiles.ts's `resolvePackaging()` computes a real,
+   *  owner-measured box for a single-product cart once real profiles exist there (none do yet --
+   *  see that file's header). It isn't called from getOptions() below yet because doing so needs
+   *  `lines` (ShippingQuoteLine[], shippingProvider.ts) to carry a stable product identifier, which
+   *  it doesn't today -- that's a small, separate, deliberately-deferred integration step, not an
+   *  unexamined gap. */
   dimensionsIn: { length: number; width: number; height: number } | null;
 }
+
+/** Shared bound on how long any single Chit Chats API call (rate request or reconciliation
+ *  lookup) is allowed to take before this codebase gives up and treats it as a failure -- without
+ *  this, a stalled carrier response could hang a checkout request indefinitely. 15s is generous
+ *  relative to Chit Chats' own documented expectation that shipment creation/rate lookups are
+ *  fast (unlike postage *purchase*, which their docs say can legitimately take a few seconds and
+ *  needs polling -- not relevant here, this file never calls buy). Exported so
+ *  chitChatsShipmentReconciler.ts's lookup uses the identical bound rather than inventing its own. */
+export const CHIT_CHATS_REQUEST_TIMEOUT_MS = 15_000;
 
 /** The real Chit Chats API call, once credentials and a confirmed request shape exist. Returns
  *  every quotable service level Chit Chats offers for this shipment (its own `rates` array), not
@@ -171,16 +187,26 @@ export interface ChitChatsRateApiEntry {
   purchase_amount?: string;
 }
 
+/** The real `POST /shipments` response wraps the created shipment under a `shipment` key --
+ *  CONFIRMED against the live OpenAPI spec's own response schema, 2026-11-15 -- it is NOT a flat
+ *  `{ id, rates }` object at the top level. An earlier round of this file assumed the flat shape
+ *  (never verified against the actual response schema, only prose examples), which would have
+ *  made `data.rates` always `undefined` on every real call -- silently returning zero rates and
+ *  throwing "no delivery service available" even on a successful creation. */
 interface ChitChatsCreateShipmentResponse {
-  id?: string;
-  rates?: ChitChatsRateApiEntry[];
+  shipment?: {
+    id?: string;
+    rates?: ChitChatsRateApiEntry[];
+  };
 }
 
 /** Shared mapping from Chit Chats' raw `rates[]` shape to this codebase's ShippingOption[] --
  *  used both by the real POST /shipments response (fetchChitChatsRates below) and by
  *  chitChatsShipmentReconciler.ts's GET /shipments?q= lookup, so a recovered shipment's rates are
  *  interpreted identically to a freshly-created one. Silently drops any entry missing the two
- *  fields it actually needs rather than crashing or guessing a price for it. */
+ *  fields it actually needs, OR whose `purchase_amount` doesn't parse to a finite, non-negative
+ *  number -- a malformed/unexpected value string must never become `NaN`/`Infinity` cents and
+ *  reach a customer as a broken or nonsensical displayed price. */
 export function mapChitChatsRateEntries(rates: ChitChatsRateApiEntry[]): ShippingOption[] {
   return rates
     .filter((rate): rate is ChitChatsRateApiEntry & { postage_type: string; purchase_amount: string } =>
@@ -190,7 +216,8 @@ export function mapChitChatsRateEntries(rates: ChitChatsRateApiEntry[]): Shippin
       id: `chitchats-${rate.postage_type}`,
       label: rate.postage_description ?? rate.postage_type,
       cents: Math.round(parseFloat(rate.purchase_amount) * 100),
-    }));
+    }))
+    .filter((option) => Number.isFinite(option.cents) && option.cents >= 0);
 }
 
 /** `POST /clients/<id>/shipments` with `postage_type: "unknown"` -- per this file's header, this
@@ -266,7 +293,15 @@ export const fetchChitChatsRates: ChitChatsRateFetcher = async (address, subtota
 
   let response: Response;
   try {
-    response = await fetch(shipmentsUrl, { method: "POST", headers, body: JSON.stringify(body) });
+    // A bounded timeout so a stalled/non-responding carrier call can never hang checkout
+    // indefinitely -- `AbortSignal.timeout()` rejects the fetch with an AbortError, caught by the
+    // same catch block as any other network failure below (no special-casing needed).
+    response = await fetch(shipmentsUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(CHIT_CHATS_REQUEST_TIMEOUT_MS),
+    });
   } catch {
     // Network failure reaching Chit Chats itself (outage, DNS, timeout) -- never silently
     // downgraded to a fabricated rate, see this file's header.
@@ -293,7 +328,7 @@ export const fetchChitChatsRates: ChitChatsRateFetcher = async (address, subtota
     );
   }
 
-  return mapChitChatsRateEntries(data.rates ?? []);
+  return mapChitChatsRateEntries(data.shipment?.rates ?? []);
 };
 
 /**
