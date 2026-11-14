@@ -1,14 +1,81 @@
 # Chit Chats production-readiness review
 
-As of this round (following `c4c388c`): the real (non-stub) `ChitChatsRateFetcher` and a real,
-deliberately conservative `ChitChatsShipmentReconciler` were implemented and mocked-tested -- see
-"This round's changes" below. No real Chit Chats account, staging credentials, Supabase migration
-application, or postage purchase happened -- only code, exercised exclusively against mocked
-`fetch`. This file distinguishes exactly what's actually been verified from what's only been
-exercised against a stand-in, to avoid either overclaiming readiness or re-litigating work already
-done.
+As of the latest round (following `797c862`): real production credentials now exist locally
+(`.env.local`), confirmed to work against `https://chitchats.com` (a read-only `GET /shipments`
+returned 200) -- `https://staging.chitchats.com` returned 404 for this account, so **production is
+the only reachable environment**; see "Round 2" below for what that round changed and found,
+including a confirmed real bug in the request shape the previous round shipped. No real shipment
+has been created, refreshed, deleted, or had postage purchased in either round -- only code,
+exercised exclusively against mocked `fetch`, plus one documentation-research pass against the
+live OpenAPI spec (a public, unauthenticated page -- no credentials involved). This file
+distinguishes exactly what's actually been verified from what's only been exercised against a
+stand-in, to avoid either overclaiming readiness or re-litigating work already done.
 
-## This round's changes
+## Round 2 changes (production test preparation, no real shipment created)
+
+- **Confirmed, via the real OpenAPI spec embedded in https://chitchats.com/docs/api/v1 (not just
+  its prose examples), that `size_x`/`size_y`/`size_z` are top-level-`required` fields on
+  `POST /shipments`.** Round 1's `fetchChitChatsRates` assumed otherwise ("the docs don't show
+  them as strictly required") and omitted them whenever `pkg.dimensionsIn` was null -- which it
+  always is today (no product in the catalogue carries a per-unit dimension). **This means every
+  real call Round 1's fetcher would have made was guaranteed to fail Chit Chats' own validation.**
+  Fixed: `fetchChitChatsRates` now throws a clear `ShippingRateUnavailableError` ("We don't have
+  package dimensions for this order yet...") before ever reaching the network when dimensions are
+  missing, rather than sending a doomed request -- and, per the standing "never fabricate a
+  business fact" rule, this is NOT fixed by inventing a default box size. **No real Chit Chats
+  rate can succeed for any product today until real per-product (or per-shipment-class)
+  dimensions exist somewhere in this codebase** -- a harder blocker than previously documented.
+- **Confirmed the same spec types `weight`/`size_x`/`size_y`/`size_z` as `number`, not `string`.**
+  Round 1's fetcher sent all four as `.toFixed(2)` strings. Fixed to send real JSON numbers.
+  `scripts/chit-chats-staging-check.mjs` had the same issue; fixed there too for consistency.
+- Updated `chitChatsRateFetcher.test.ts` to cover the new dimensions-required preflight and
+  assert numeric (not string) body fields. 179/179 tests still passing; `tsc --noEmit` and
+  `eslint` clean.
+- **New `scripts/chit-chats-production-rate-check.mjs`** -- the production equivalent of
+  `chit-chats-staging-check.mjs`, since staging is unreachable for this account. Stricter gating
+  than its staging sibling: refuses outright unless `CHIT_CHATS_ENVIRONMENT=production`; always
+  runs the one safe read-only `GET /shipments?limit=1` auth check; then, if destination/parcel
+  fields aren't all configured, reports exactly which are missing and stops; otherwise defaults to
+  a **dry run** (prints the exact request body it would send, sends nothing) unless both
+  `--execute` and `CHIT_CHATS_PRODUCTION_TEST_APPROVED` (an exact required phrase) are supplied,
+  in which case it runs the same create → inspect rates → look up by `order_id` → delete sequence
+  as the staging script, never calling `PATCH /shipments/{id}/buy`. **Not run this round, in any
+  mode, including the dry run** -- see this doc's "Exact approval needed" section for why.
+  New `.env.example` placeholders: `CHIT_CHATS_TEST_WEIGHT_LB`, `_WEIGHT_UNIT`, `_SIZE_X/Y/Z`,
+  `_SIZE_UNIT`, `_VALUE_CAD`, `_DESCRIPTION`, and `CHIT_CHATS_PRODUCTION_TEST_APPROVED` -- all
+  unset; none invented.
+- Re-confirmed (this round, against the live spec, not just prior rounds' prose-doc reading): the
+  `Authorization` header is the raw token with no `Bearer ` prefix (already what
+  `chitChatsClient.ts` sends); there is still no quote-only endpoint (`POST /shipments` is the only
+  way to get a real rate); `DELETE /shipments/{id}` returns `204` and is blocked only by purchased
+  postage or `received` status; `GET /shipments?q=` searches `id`/`to_name`/`order_id` but its
+  exact-vs-fuzzy matching behavior is still not documented (unchanged from Round 1's finding).
+
+## Exact approval needed before any real shipment is created
+
+A single real, deletable, unpurchased draft shipment against the PRODUCTION account requires, from
+the business owner, ALL of the following -- none of which this codebase will ever invent:
+
+1. **A real parcel to test with**: its actual weight and length/width/height. There is no
+   per-product dimension data anywhere in this codebase (confirmed, see Round 2 above) -- pick one
+   real product (or a representative box) and measure it.
+2. **A real, approved test destination**: recipient name, street address, city, province, postal
+   code (country defaults to CA). Should be an address you control (e.g. the business's own, or a
+   staff member's) so a stray real draft shipment is traceable and easy to clean up.
+3. **A declared customs/insurance value** (CAD) and a **shipment description** for that parcel --
+   both required fields on `POST /shipments`.
+4. **Confirmation of the Chit Chats account's Settings > Returns origin address** -- this is
+   account-level configuration no API call or script here can see or override; confirm directly in
+   the Chit Chats dashboard that it's the correct ship-from address before running anything.
+5. **Explicit go-ahead to run `scripts/chit-chats-production-rate-check.mjs --execute`** with
+   `CHIT_CHATS_PRODUCTION_TEST_APPROVED` set to the exact phrase in that script's header, after
+   setting items 1-3 as env vars and confirming item 4.
+
+Once all five exist, the procedure is: run the script in its default dry-run mode first (shows the
+exact request without sending it, using the real values from 1-3) to review, then re-run with
+`--execute` and the approval phrase set to actually create, inspect, and delete the one real draft.
+
+## Round 1 changes
 
 - **`fetchChitChatsRates` (`chitChatsShippingProvider.ts`) is now a real implementation**, not the
   throwing stub: a real `POST /clients/<id>/shipments` call via `fetch`, using
@@ -61,11 +128,12 @@ done.
 
 - **`ChitChatsShippingProvider`'s rate-fetching, caching, and free-shipping logic** — 21+ tests,
   all against an injected fake `ChitChatsRateFetcher`, never a real Chit Chats call.
-- **The real `fetchChitChatsRates` implementation itself** (request shape, response mapping,
-  error handling) — 7 tests against a mocked `global.fetch`, and **the real
-  `chitChatsOrderIdReconciler` implementation** (exact-match filtering, the "never return false"
-  rule) — 7 more tests against a mocked `global.fetch`. Neither has ever been exercised against
-  `staging.chitchats.com` or production -- see "Unverified external API behavior".
+- **The real `fetchChitChatsRates` implementation itself** (request shape, numeric field types,
+  the dimensions-required preflight, response mapping, error handling) — 6 tests against a mocked
+  `global.fetch`, and **the real `chitChatsOrderIdReconciler` implementation** (exact-match
+  filtering, the "never return false" rule) — 8 more tests against a mocked `global.fetch`.
+  Neither has ever been exercised against a real `fetch` to `chitchats.com` or
+  `staging.chitchats.com` -- see "Unverified external API behavior".
 - **`ChitChatsQuoteStore` / `ChitChatsQuoteCoordinator`'s entire concurrency model** (claim/wait/
   takeover/reconcile, CAS token rejection, lease expiration, cleanup safeguards) — 37 tests, all
   against `InMemoryChitChatsQuoteStore`, a hand-written fake of the intended Postgres semantics,
@@ -74,31 +142,45 @@ done.
 - **The postage-purchase stub** (`chitChatsPostagePurchase.ts`) — 5 tests, all against the same
   in-memory fake; the real `PATCH /shipments/{id}/buy` call is a throwing stub, never implemented.
 
-## Unverified external API behavior (documented, but not exercised against a live account)
+## Confirmed this round (via the live OpenAPI spec + the owner's own production probe)
 
-- Exact `Authorization` header format (bearer prefix vs. raw token) — docs show an example without
-  stating the rule explicitly.
-- Whether staging (`staging.chitchats.com`) uses the same credentials as production, or its own.
+- `Authorization` header: raw token, no `Bearer ` prefix. (Matches `chitChatsClient.ts`'s existing
+  implementation -- no code change needed.)
+- `staging.chitchats.com` is simply unreachable for this account (404) -- not an ambiguous
+  "maybe needs separate credentials" question anymore. `chitchats.com` (production) is confirmed
+  reachable with the real credentials now in `.env.local` (a read-only `GET /shipments` returned
+  200).
+- `size_x`/`size_y`/`size_z` are schema-`required` on `POST /shipments`, typed `number` (not
+  `string`) -- see "Round 2" above. This was previously assumed optional; that was wrong.
+- `weight` is also typed `number`, not `string`.
+- `DELETE /shipments/{id}` returns `204`; blocked only by purchased postage or `received` status.
+- There is still no quote-only endpoint -- `POST /shipments` with `postage_type: "unknown"` remains
+  the only way to see a real rate.
+
+## Still unverified (not resolved by this round's documentation research)
+
 - Whether `order_id`-via-`q`-full-text-search reliably matches a 64-character SHA-256 fingerprint
-  (the field and parameter are confirmed to exist in the docs; matching behavior against a string
-  that long/high-entropy is not confirmed) -- see the staging validation doc's step 4.
-- The real shape of a `rates[]` entry in practice (field names are documented; real-world values
-  for a specific parcel/destination are not).
-- `DELETE /shipments/{id}`'s exact success-path documentation is thin (only failure preconditions
-  are spelled out) -- the 204 response itself is standard but worth confirming empirically.
+  (the field and parameter are confirmed to exist; matching behavior against a string that
+  long/high-entropy is not confirmed by the spec itself) -- only a real request against the
+  production account can resolve this, which has not happened.
+- The real shape/values of a `rates[]` entry for an ACTUAL parcel/destination (field names are now
+  schema-confirmed; real-world values are not, since no real rate request has been made).
 - `SupabaseChitChatsQuoteStore.takeOver()`'s two-separate-conditional-UPDATE approach, and the
   `.upsert(..., { ignoreDuplicates: true })` / `.delete({ count: "exact" })` calls elsewhere in
   that file -- written against documented PostgREST/Supabase-js behavior, never run against a real
-  Postgres instance.
+  Postgres instance. Unrelated to this round's Chit Chats work.
 
-## Business information or credentials required (unchanged from prior rounds, not re-litigated)
+## Business information or credentials required
 
-- Chit Chats API access token + client ID (no account exists).
+- ~~Chit Chats API access token + client ID~~ -- **now exist**, configured locally in `.env.local`,
+  confirmed working against production. What's still needed: see "Exact approval needed" above
+  (a real parcel's weight/dimensions, an approved test destination, a declared value/description,
+  and confirmation of the account's Settings > Returns origin address) before the first real rate
+  request can be attempted.
 - Confirmed GST/HST registration status (only the 13% Ontario rate has been confirmed; separate
   from registration, which gates Production tax activation).
 - Separate BC/SK/MB PST and Quebec QST registration confirmation (gates the `pstQstEnabled` flag).
 - `OWNER_NOTIFICATION_EMAIL`.
-- Ship-from address confirmation for whichever carrier is activated.
 - Confirmation that Maple's general business hours (shown in `pickupLocation.ts`) are also valid
   specifically for order pickup, not just walk-in/showroom hours.
 
@@ -106,26 +188,29 @@ done.
 
 In dependency order -- each step assumes the previous ones are done:
 
-1. **Obtain credentials** (Chit Chats token + client ID), set `CHIT_CHATS_ENVIRONMENT`,
-   `CHIT_CHATS_API_ACCESS_TOKEN`, `CHIT_CHATS_CLIENT_ID` (placeholders already in `.env.example`),
-   and run `docs/chit-chats-staging-validation.md` against them.
+1. **DONE** -- real Chit Chats token + client ID exist locally and are confirmed working against
+   production. `docs/chit-chats-staging-validation.md`'s procedure targets
+   `staging.chitchats.com`, which is confirmed UNREACHABLE for this account (404) -- use
+   `scripts/chit-chats-production-rate-check.mjs` against production instead (see "Exact approval
+   needed" above); that doc's step-by-step expectations (response shapes, status codes) remain
+   valid, just against the other host.
 2. **DONE this round** (code only, never run against a real account) -- `fetchChitChatsRates` in
-   `chitChatsShippingProvider.ts` is now the real `POST /clients/<id>/shipments` call. What's left
-   before this can actually run for real: run `docs/chit-chats-staging-validation.md` step 1-3
-   against real credentials to confirm the request shape this implementation sends is accepted
-   as-is (field names/formats were built from docs, never round-tripped against a live account),
-   and construct an actual `ChitChatsShippingProvider(fetchChitChatsRates, ...)` somewhere once
-   step 1's credentials exist (nothing calls it with the real fetcher today).
+   `chitChatsShippingProvider.ts` is now the real `POST /clients/<id>/shipments` call, with
+   Round 2's dimensions-required/numeric-type fixes applied. What's left before this can actually
+   run for real: run `scripts/chit-chats-production-rate-check.mjs` (dry run first) against real
+   values to confirm the request shape is accepted as-is (built from the official spec, never
+   round-tripped against a live account), and construct an actual
+   `ChitChatsShippingProvider(fetchChitChatsRates, ...)` somewhere once that's confirmed (nothing
+   calls it with the real fetcher today).
 3. **PARTIALLY DONE this round** -- `chitChatsOrderIdReconciler` in the new
    `chitChatsShipmentReconciler.ts` implements the safe direction only (a confirmed exact match ->
    adopt it) using `GET /shipments?q=<fingerprint>` with a client-side exact-`order_id` filter; it
    never returns `"false"`, so it's safe to wire in as `ChitChatsQuoteCoordinator`'s `reconciler`
-   option as-is without staging validation (it can only ever make things safer than the default
-   `"unknown"`, never less safe). What's still gated on step 1 + the staging doc's step 4: deciding
+   option as-is without further validation (it can only ever make things safer than the default
+   `"unknown"`, never less safe). What's still gated on a real request succeeding: deciding
    whether zero exact matches can ever safely become `"false"` instead of `"unknown"` -- that
-   requires confirming `q`'s real-world miss rate against a 64-char hex string, which still hasn't
-   happened (no staging credentials exist; a prior read-only probe against
-   `staging.chitchats.com` returned 404).
+   requires confirming `q`'s real-world miss rate against a 64-char hex string against production
+   (staging is unreachable), which still hasn't happened.
 4. **Implement the real postage-purchase call** (`chitChatsPostagePurchase.ts`'s
    `purchasePostageViaChitChats`, currently a throwing stub) -- `PATCH /shipments/{id}/buy`.
 5. **Review and apply migration 010**, after running the procedure in

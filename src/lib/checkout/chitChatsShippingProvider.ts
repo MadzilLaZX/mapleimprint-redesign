@@ -74,19 +74,25 @@ import { chitChatsShipmentsUrl, chitChatsRequestHeaders } from "../server/chitCh
 //
 // Packaging / parcelization, as researched against the real Chit Chats API docs
 // (https://chitchats.com/docs/api/v1):
-//   - A Chit Chats shipment carries ONE package per request (weight, weight_unit, and optional
+//   - A Chit Chats shipment carries ONE package per request (weight, weight_unit, size_unit, and
 //     size_x/size_y/size_z dimensions). This provider treats an entire cart as a single logical
 //     parcel -- summing weight across every line via estimateParcelWeightLb() (the same verified
 //     weight pipeline CanadaPostShippingProvider uses, reused rather than duplicated). True
 //     multi-parcel splitting is NOT implemented -- it would require a per-product maximum-parcel
 //     weight/dimension rule that doesn't exist anywhere in this codebase and is not invented here.
 //   - Dimensions (size_x/size_y/size_z): no product in the catalogue carries a per-unit dimension
-//     today (same confirmed gap documented in canadaPostShippingProvider.ts). This provider does
-//     NOT hard-block a quote on missing dimensions -- the docs don't show them as strictly
-//     required, and a fabricated box size would be worse than an approximate weight-only rate.
-//     "Oversized" per item 10 is NOT pre-emptively guessed from a weight/size threshold invented
-//     here -- it is expected to surface as a real rejection from the live rate fetcher once
-//     active, which this provider propagates as-is.
+//     today (same confirmed gap documented in canadaPostShippingProvider.ts). CORRECTION (verified
+//     directly against the live OpenAPI spec, 2026-11-15, not just prose docs): size_x/size_y/
+//     size_z ARE strictly required by the real API -- an earlier round of this file assumed
+//     otherwise. fetchChitChatsRates now hard-refuses (ShippingRateUnavailableError) rather than
+//     attempting a request guaranteed to fail Chit Chats' own validation when dimensionsIn is
+//     null, which it always is today -- a fabricated box size would be worse than a clear refusal.
+//     This means NO real Chit Chats rate can succeed for ANY product today until real per-product
+//     (or per-shipment-class) dimensions exist somewhere in this codebase -- a harder blocker than
+//     the "oversized parcel" rejection this file previously anticipated as the only real-world
+//     failure mode. "Oversized" per item 10 is NOT pre-emptively guessed from a weight/size
+//     threshold invented here -- once real dimensions exist, it's expected to surface as a real
+//     rejection from the live rate fetcher, which this provider propagates as-is.
 //   - Origin/ship-from address is Chit Chats account-level configuration (Settings > Returns), not
 //     a per-request field -- not something this provider needs to supply.
 //
@@ -133,9 +139,13 @@ function assertFullChitChatsAddress(address: ShippingAddressInput): void {
 
 export interface ChitChatsPackageInput {
   weightLb: number;
-  /** Always null today -- see this file's header note on packaging/parcelization. Accepted here
-   *  (rather than omitted entirely) so the real rate fetcher, once built, doesn't need another
-   *  signature change the moment per-product dimensions exist. */
+  /** Always null today -- see this file's header note on packaging/parcelization. CONFIRMED
+   *  required by the real Chit Chats API (`size_x`/`size_y`/`size_z` are in the OpenAPI spec's own
+   *  `required` array, not merely documented as recommended) -- `fetchChitChatsRates` below throws
+   *  a clear error rather than attempting a doomed request when this is null, which it always is
+   *  today. Accepted as nullable here (rather than required at the type level) so getOptions()
+   *  can still thread a real weight through to a destination/serviceability check without this
+   *  codebase inventing a box size just to satisfy the type system. */
   dimensionsIn: { length: number; width: number; height: number } | null;
 }
 
@@ -190,7 +200,18 @@ export function mapChitChatsRateEntries(rates: ChitChatsRateApiEntry[]): Shippin
  *  endpoints and only ever runs under mocked fetch in tests. `order_id` is set to this request's
  *  own quote fingerprint (the same value `ChitChatsQuoteCoordinator` persists under) purely so a
  *  future reconciliation lookup (`GET /shipments?q=<fingerprint>`) has something stable to search
- *  for -- see chitChatsShipmentReconciler.ts. */
+ *  for -- see chitChatsShipmentReconciler.ts.
+ *
+ *  REQUEST FIELD TYPES -- confirmed directly against the live OpenAPI spec embedded in
+ *  https://chitchats.com/docs/api/v1 (not just the prose examples), 2026-11-15: `name`,
+ *  `address_1`, `city`, `country_code`, `value`, `value_currency`, `package_type`, `weight_unit`,
+ *  `weight`, `size_unit`, `size_x`, `size_y`, `size_z` are ALL top-level-required -- `size_x`/
+ *  `size_y`/`size_z` are NOT optional as an earlier round of this file assumed ("the docs don't
+ *  show them as strictly required" -- that was wrong; the schema's own `required` array lists
+ *  them explicitly). `weight`/`size_x`/`size_y`/`size_z` are typed `number` in the schema (the
+ *  example payload sends bare `10`, `5`, `2.5`, never a quoted string) -- sent as real JSON
+ *  numbers below, not `.toFixed()` strings (an earlier version of this function sent them as
+ *  strings, which the confirmed schema makes clear is a type mismatch, not just a style choice). */
 export const fetchChitChatsRates: ChitChatsRateFetcher = async (address, subtotalCents, pkg) => {
   // Missing CHIT_CHATS_CLIENT_ID / CHIT_CHATS_API_ACCESS_TOKEN -- not yet activated in this
   // environment (chitChatsClient.ts throws a plain Error for either). Same honest message the
@@ -207,6 +228,19 @@ export const fetchChitChatsRates: ChitChatsRateFetcher = async (address, subtota
     );
   }
 
+  // size_x/size_y/size_z are confirmed-required by the real API (see this function's header) --
+  // `pkg.dimensionsIn` is always null today (no product in the catalogue carries a per-unit
+  // dimension, see ChitChatsPackageInput's own note), so every real call would otherwise be
+  // guaranteed to fail Chit Chats' own validation. Failing clearly here, before ever reaching the
+  // network, is strictly better than sending a doomed request and surfacing whatever 4xx body
+  // Chit Chats happens to return for it -- and it must NOT be "fixed" by inventing a box size,
+  // per this codebase's standing "never fabricate a business fact" rule.
+  if (!pkg.dimensionsIn) {
+    throw new ShippingRateUnavailableError(
+      "We don't have package dimensions for this order yet — request a quote and we'll confirm shipping manually.",
+    );
+  }
+
   const fingerprint = buildQuoteFingerprint({ address, subtotalCents, pkg });
   const body: Record<string, unknown> = {
     name: address.name,
@@ -219,18 +253,16 @@ export const fetchChitChatsRates: ChitChatsRateFetcher = async (address, subtota
     value_currency: "cad",
     package_type: "parcel",
     weight_unit: "lb",
-    weight: pkg.weightLb.toFixed(2),
+    weight: pkg.weightLb,
+    size_unit: "in",
+    size_x: pkg.dimensionsIn.length,
+    size_y: pkg.dimensionsIn.width,
+    size_z: pkg.dimensionsIn.height,
     description: "Maple Imprint custom order",
     postage_type: "unknown",
     order_id: fingerprint,
   };
   if (address.addressLine2?.trim()) body.address_2 = address.addressLine2;
-  if (pkg.dimensionsIn) {
-    body.size_unit = "in";
-    body.size_x = pkg.dimensionsIn.length.toFixed(2);
-    body.size_y = pkg.dimensionsIn.width.toFixed(2);
-    body.size_z = pkg.dimensionsIn.height.toFixed(2);
-  }
 
   let response: Response;
   try {

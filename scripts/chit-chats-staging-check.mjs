@@ -20,8 +20,15 @@
 // purchased or the shipment is received -- neither happens here.
 //
 // Deliberately duplicates (rather than imports) the tiny amount of URL/header logic also in
-// src/lib/server/chitChatsClient.ts -- that file has `import "server-only"`, which throws
-// unconditionally outside Next.js's bundler. Keep the two in sync if either changes.
+// src/lib/server/chitChatsClient.ts -- that file no longer has `import "server-only"` (removed
+// once chitChatsShippingProvider.ts started using it for real; see that file's header), but this
+// script still stays standalone/zero-dependency on purpose, since it's meant to be run directly
+// with no build step. Keep the two in sync if either changes.
+//
+// weight/size_x/size_y/size_z are sent as real JSON numbers below, not strings -- confirmed
+// against the live OpenAPI spec embedded in https://chitchats.com/docs/api/v1 (2026-11-15): both
+// fields are typed `number`, and size_x/size_y/size_z are in the schema's own top-level `required`
+// array (not merely documented as recommended, as an earlier round of this codebase assumed).
 
 const token = process.env.CHIT_CHATS_API_ACCESS_TOKEN;
 const clientId = process.env.CHIT_CHATS_CLIENT_ID;
@@ -121,11 +128,11 @@ async function main() {
           value_currency: "cad",
           package_type: "parcel",
           weight_unit: "lb",
-          weight: "1.0",
+          weight: 1.0, // number, not a string -- confirmed by the live OpenAPI spec's `weight` type
           size_unit: "in",
-          size_x: "10",
-          size_y: "10",
-          size_z: "10",
+          size_x: 10, // number, not a string -- same confirmation for size_x/size_y/size_z
+          size_y: 10,
+          size_z: 10,
           description: "Staging validation test parcel -- safe to delete",
           postage_type: "unknown", // never purchases postage -- see this file's header
           order_id: testOrderId,
