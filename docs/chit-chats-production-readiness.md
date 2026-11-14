@@ -1,15 +1,58 @@
 # Chit Chats production-readiness review
 
-As of the latest round (following `797c862`): real production credentials now exist locally
-(`.env.local`), confirmed to work against `https://chitchats.com` (a read-only `GET /shipments`
-returned 200) -- `https://staging.chitchats.com` returned 404 for this account, so **production is
-the only reachable environment**; see "Round 2" below for what that round changed and found,
-including a confirmed real bug in the request shape the previous round shipped. No real shipment
-has been created, refreshed, deleted, or had postage purchased in either round -- only code,
-exercised exclusively against mocked `fetch`, plus one documentation-research pass against the
-live OpenAPI spec (a public, unauthenticated page -- no credentials involved). This file
-distinguishes exactly what's actually been verified from what's only been exercised against a
-stand-in, to avoid either overclaiming readiness or re-litigating work already done.
+As of the latest round (following `cf8b866`): the packaging-profile architecture built last round
+is now actually wired into `ChitChatsShippingProvider.getOptions()` -- see "Round 3" below. Real
+production credentials exist locally (`.env.local`), confirmed to work against
+`https://chitchats.com` (a read-only `GET /shipments` returned 200) --
+`https://staging.chitchats.com` returned 404 for this account, so **production is the only
+reachable environment**. No real shipment has been created, refreshed, deleted, or had postage
+purchased in any round -- only code, exercised exclusively against mocked `fetch`, plus
+documentation-research passes against the live OpenAPI spec (a public, unauthenticated page -- no
+credentials involved). This file distinguishes exactly what's actually been verified from what's
+only been exercised against a stand-in, to avoid either overclaiming readiness or re-litigating
+work already done.
+
+## Round 3 changes (packaging integration + checkout/quote-store hardening)
+
+- **Threaded a stable product identifier through the real checkout pricing pipeline.**
+  `PricedCartLine` (`priceCartItem.ts`) and `ShippingQuoteLine` (`shippingProvider.ts`) now carry
+  `productId` (`packagingProfiles.ts`'s `buildProductId()`, built from the same
+  categorySlug/subcategorySlug/slug triplet `getProduct()` already uses -- the catalogue has no
+  single global id field). Populated for every real `BLANK`/bundle/`CUSTOM` line; `null` only when
+  the underlying catalogue product can no longer be resolved. Both `/api/checkout/quote` and
+  `/api/checkout/pay` pass it through. `ShippingQuoteLine.productId` is optional specifically so
+  this didn't require touching every existing test fixture.
+- **`ChitChatsShippingProvider.getOptions()` now calls `packagingProfiles.ts`'s
+  `resolvePackaging()`** when every cart line resolved to a real product id, and uses its real
+  dimensions/tare-adjusted weight when it returns one. Falls back to the prior weight-only/
+  no-dimensions behavior (routing to the existing "no package dimensions yet" refusal) for every
+  other case -- any line missing an id, a mixed-product cart, no assigned profile, or a quantity/
+  weight that would need more than one package. Zero behavioral change today, since
+  `PACKAGING_PROFILES`/`PRODUCT_PACKAGING_ASSIGNMENTS` are still empty -- this is the wiring that
+  makes a real owner-entered profile take effect automatically the moment one exists. 4 new mocked
+  tests cover: a real fixture profile resolving real dimensions, no assigned profile, a
+  mixed-product cart, and quantity overflow needing multiple packages.
+- **Multi-parcel handling stays a documented limitation, not a build-out**: Chit Chats creates one
+  package per shipment (confirmed against the live spec) and this codebase has no
+  multi-shipment-per-order flow, so a cart needing more than one box routes to manual quote --
+  `packagingProfiles.ts`'s header now explains exactly why, and what would need to exist (real
+  multi-shipment-per-order support in checkout/fulfillment/the quote coordinator) before that
+  could ever change, rather than inventing partial support for it now.
+- **Added a documented, executable (not scheduled) cleanup route**:
+  `POST /api/admin/chit-chats-quotes/cleanup`, gated by the same staff-session proxy every other
+  `/api/admin/*` route uses, calls the real `deleteExpiredUnpurchased()` query. Nothing calls it
+  automatically -- no cron entry exists -- it exists so a future Vercel Cron (or a manual admin
+  action) has something real to hit once migration 010 is applied. Calling it before that will
+  fail cleanly (the table doesn't exist yet), which is expected.
+- Re-verified (did not change): the orphaned-`MapleOrder`-on-race fix, the response-envelope fixes,
+  the destination cross-check, and the dimensions-required preflight from the prior two rounds are
+  all still in place and covered by the existing suite.
+- Verified via Vercel's own API (not assumed): the GitHub App integration is installed for the
+  `MadzilLaZX` namespace, but zero Vercel projects exist under the connected account across every
+  filter tried (by repo URL, by name, unfiltered, across the one connected team) -- there is
+  nothing to connect this branch to yet.
+- 197/197 tests passing (193 prior + 4 new); `tsc --noEmit`, `eslint`, and `next build` (2040+
+  static pages) all clean.
 
 ## Round 2 changes (production test preparation, no real shipment created)
 
@@ -211,6 +254,13 @@ In dependency order -- each step assumes the previous ones are done:
    round-tripped against a live account), and construct an actual
    `ChitChatsShippingProvider(fetchChitChatsRates, ...)` somewhere once that's confirmed (nothing
    calls it with the real fetcher today).
+2b. **DONE this round (wiring); BLOCKED on real data** -- `getOptions()` now resolves real
+   packaging via `packagingProfiles.ts` end to end (see "Round 3" above), but
+   `PACKAGING_PROFILES`/`PRODUCT_PACKAGING_ASSIGNMENTS` are empty, and `size_x/y/z` are
+   confirmed-required, so **no real rate can succeed for any product until the owner measures at
+   least one real shipping box and adds a profile** (see that file's header for exactly how).
+   This is the actual, current blocker on step 2 above ever producing a real rate response, not a
+   remaining code task.
 3. **PARTIALLY DONE this round** -- `chitChatsOrderIdReconciler` in the new
    `chitChatsShipmentReconciler.ts` implements the safe direction only (a confirmed exact match ->
    adopt it) using `GET /shipments?q=<fingerprint>` with a client-side exact-`order_id` filter; it
@@ -230,9 +280,9 @@ In dependency order -- each step assumes the previous ones are done:
    `ChitChatsQuoteCoordinator` and pass it into the `ChitChatsShippingProvider` that becomes
    `shippingProvider.ts`'s live export (currently `FreeShippingProvider`) -- a one-line swap once
    everything above exists, consistent with this codebase's established activation pattern.
-7. **Decide on and implement a real cleanup job** for `deleteExpiredUnpurchased()` -- today it's
-   only a documented SQL query in the migration's own comment, with no scheduled job calling it.
-   A Vercel Cron hitting a small API route is the natural fit, not built this round (no code
-   change was in scope without evidence it's needed yet).
+7. **DONE this round (route); not scheduled** -- `POST /api/admin/chit-chats-quotes/cleanup`
+   calls the real `deleteExpiredUnpurchased()` query, gated by the existing staff-session proxy.
+   What's left: a `vercel.json` Cron entry (or equivalent) actually calling it on a schedule, once
+   migration 010 is applied -- a small, separate, explicit activation step.
 8. **Separate Production-activation approval** once 1-7 are done and verified -- unchanged from
    every prior round's stop condition.
