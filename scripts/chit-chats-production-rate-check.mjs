@@ -208,7 +208,10 @@ async function main() {
     const created = await step("2. Create unpurchased draft shipment (POST /shipments)", async () => {
       const res = await fetch(`${baseUrl}/shipments`, { method: "POST", headers, body: JSON.stringify(requestBody) });
       if (!res.ok) throw new Error(`Shipment creation failed: ${res.status} ${await res.text()}`);
-      return res.json();
+      // POST /shipments wraps the created record under a `shipment` key -- CONFIRMED against the
+      // live OpenAPI spec's response schema (2026-11-15), not a flat `{ id, rates }` body.
+      const body = await res.json();
+      return body.shipment;
     });
     shipmentId = created.id;
 
@@ -223,10 +226,12 @@ async function main() {
     await step(`4. Look up by order_id via q= (GET /shipments?q=${testOrderId})`, async () => {
       const res = await fetch(`${baseUrl}/shipments?q=${encodeURIComponent(testOrderId)}`, { headers });
       if (!res.ok) throw new Error(`Lookup failed: ${res.status} ${await res.text()}`);
-      const body = await res.json();
-      const matches = (body.shipments ?? []).filter((s) => s.order_id === testOrderId);
-      console.log(`\n${matches.length} exact order_id match(es) out of ${body.shipments?.length ?? 0} result(s) for this query.`);
-      return body;
+      // GET /shipments returns a bare JSON array -- CONFIRMED against the live OpenAPI spec's
+      // response schema (2026-11-15), not `{ shipments: [...] }`.
+      const shipments = await res.json();
+      const matches = (Array.isArray(shipments) ? shipments : []).filter((s) => s.order_id === testOrderId);
+      console.log(`\n${matches.length} exact order_id match(es) out of ${Array.isArray(shipments) ? shipments.length : 0} result(s) for this query.`);
+      return shipments;
     });
   } finally {
     if (shipmentId) {
