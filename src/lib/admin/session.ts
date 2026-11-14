@@ -36,13 +36,24 @@ export function createSessionCookieValue(): string {
 
 export function isValidSessionCookie(value: string | undefined | null): boolean {
   if (!value) return false;
-  const [expiresAtRaw, signature] = value.split(".");
-  if (!expiresAtRaw || !signature) return false;
-  const expiresAt = Number(expiresAtRaw);
-  if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) return false;
+  // Wrapped in try/catch -- hmac() throws if ADMIN_SESSION_SECRET isn't set, and this function is
+  // called directly from proxy.ts's middleware on every /admin and /api/admin request with NO
+  // try/catch of its own there. An unset secret plus any leftover/malformed cookie that merely
+  // matches the "number.hexstring" shape (not a real valid session -- that check happens below)
+  // would otherwise throw uncaught inside middleware, 500ing the entire admin section for every
+  // visitor instead of cleanly redirecting to login. Any exception here must mean "cannot
+  // validate this cookie" -- fail closed (treat as invalid), never fail open.
+  try {
+    const [expiresAtRaw, signature] = value.split(".");
+    if (!expiresAtRaw || !signature) return false;
+    const expiresAt = Number(expiresAtRaw);
+    if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) return false;
 
-  const expected = hmac(expiresAtRaw);
-  const actual = Buffer.from(signature, "hex");
-  if (actual.length !== expected.length) return false;
-  return crypto.timingSafeEqual(actual, expected);
+    const expected = hmac(expiresAtRaw);
+    const actual = Buffer.from(signature, "hex");
+    if (actual.length !== expected.length) return false;
+    return crypto.timingSafeEqual(actual, expected);
+  } catch {
+    return false;
+  }
 }
