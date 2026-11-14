@@ -177,6 +177,15 @@ exact request without sending it, using the real values from 1-3) to review, the
   (a real parcel's weight/dimensions, an approved test destination, a declared value/description,
   and confirmation of the account's Settings > Returns origin address) before the first real rate
   request can be attempted.
+- **NEW (owner-reported 2026-11-15): the Chit Chats account profile's on-file Ottawa address
+  DIFFERS from `BUSINESS.addressLine1`/`addressLine2` in `src/lib/constants.ts`** (the address the
+  website already publishes for Ottawa pickup, via `pickupLocation.ts`). Account details on file:
+  Client ID `208241`, region Ontario and Manitoba, dimension preference cm, weight preference lb,
+  Canadian shipping preference "Fully Tracked", insurance auto-included, no shipment presets.
+  Neither address has been changed to match the other -- this is an unresolved business question
+  (which address is correct for pickup? for Chit Chats ship-from/returns? are they supposed to be
+  the same address at all?), not something this codebase will silently reconcile. See
+  `pickupLocation.ts`'s header for where this is flagged in code.
 - Confirmed GST/HST registration status (only the 13% Ontario rate has been confirmed; separate
   from registration, which gates Production tax activation).
 - Separate BC/SK/MB PST and Quebec QST registration confirmation (gates the `pstQstEnabled` flag).

@@ -2,6 +2,14 @@
 -- convention in this repo. Do not run this against the live `maple-imprint-catalogue` Supabase
 -- project without explicit approval.
 --
+-- REVIEWED AGAIN (2026-11-15, still not applied, no live database touched): added the
+-- "chit_chats_quote_purchased_implies_ready" check constraint and the
+-- "ChitChatsShippingQuote_cleanup_idx" partial index, both reviewed against
+-- chitChatsQuoteStore.ts's actual query shapes (see each one's own comment below for why). No
+-- other change -- the claim/lease/CAS design from the prior revision already covers atomic
+-- claims, lease expiration, concurrent requests, crash recovery, quote expiration, fingerprint-
+-- based invalidation, purchased-shipment protection, and RLS; nothing there needed changing.
+--
 -- REVISED (same round, before ever being applied): the first version of this table only had a
 -- 'pending'/'ready' status with no ownership/lease concept, which meant a request that lost the
 -- unique-constraint race while another request's row was still 'pending' would fall through and
@@ -73,7 +81,14 @@ create table if not exists "ChitChatsShippingQuote" (
   -- Full quote freshness window (minutes), distinct from the much shorter leaseExpiresAt above.
   "expiresAt" timestamptz not null,
   "createdAt" timestamptz not null default now(),
-  "updatedAt" timestamptz not null default now()
+  "updatedAt" timestamptz not null default now(),
+  -- Reviewed this round (not yet applied, same as the rest of this file): a purchased shipment
+  -- must have actually been quoted first -- mirrors Chit Chats' own real rule that only a
+  -- 'ready' shipment (postage purchased or provided) can exist, and defends against a future bug
+  -- in purchasePostageForQuote() (chitChatsPostagePurchase.ts) marking a still-'pending' row
+  -- purchased, which the application layer already prevents (findReady() only ever returns a
+  -- 'ready' row) but is cheap to also guarantee at the data layer.
+  constraint "chit_chats_quote_purchased_implies_ready" check ("purchasedAt" is null or status = 'ready')
 );
 
 -- Supports the cleanup query below (range scan on expiresAt) and "is this fingerprint still
@@ -82,6 +97,14 @@ create index if not exists "ChitChatsShippingQuote_expiresAt_idx" on "ChitChatsS
 -- Supports the coordinator's "is the current pending claim's lease still live" check without a
 -- full table scan.
 create index if not exists "ChitChatsShippingQuote_leaseExpiresAt_idx" on "ChitChatsShippingQuote" ("leaseExpiresAt");
+-- Reviewed this round: a partial index matching deleteExpiredUnpurchased()'s exact WHERE clause
+-- (chitChatsQuoteStore.ts) -- as this table grows, a future cleanup job's query benefits from one
+-- index built for its actual access pattern rather than relying on the planner combining the two
+-- single-column indexes above. Partial (WHERE "purchasedAt" is null) because a purchased row is
+-- permanently excluded from that query and from this index, keeping it small regardless of how
+-- many historical purchased quotes accumulate.
+create index if not exists "ChitChatsShippingQuote_cleanup_idx" on "ChitChatsShippingQuote" ("expiresAt", "leaseExpiresAt")
+  where "purchasedAt" is null;
 
 alter table "ChitChatsShippingQuote" enable row level security;
 -- Deliberately no policies for anon/authenticated -- deny-all, the same model as

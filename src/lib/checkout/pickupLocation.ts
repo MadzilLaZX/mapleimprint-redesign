@@ -10,6 +10,17 @@ import { BUSINESS } from "@/lib/constants";
  * site-wide) -- the owner has not separately confirmed these are also the hours during which a
  * paid order can actually be collected (e.g. "by appointment only" days might not suit walk-in
  * pickup). Flagged in the launch checklist; do not treat this as pickup-specific confirmation.
+ *
+ * SECOND, SEPARATE caveat (owner-reported 2026-11-15, not yet resolved): the Chit Chats account
+ * profile has an Ottawa address on file that the owner says DIFFERS from BUSINESS.addressLine1/2
+ * above. Nothing here has been changed to match either address -- PICKUP_LOCATION still reflects
+ * only the site's existing, previously-published BUSINESS constant, which is deliberately NOT
+ * assumed to be the Chit Chats account's configured ship-from/return address (that's account-level
+ * config under Settings > Returns, invisible to this codebase -- see chitChatsShippingProvider.ts's
+ * header). Do not silently reconcile the two addresses in either direction; which one is actually
+ * correct for pickup vs. for Chit Chats shipments is a business decision only the owner can make.
+ * See docs/chit-chats-production-readiness.md's "Business information or credentials required"
+ * section.
  */
 export const PICKUP_LOCATION = {
   label: "Maple Imprint — Ottawa",
