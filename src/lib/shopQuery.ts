@@ -23,6 +23,33 @@ export type ShopSearchParams = {
   page?: string;
 };
 
+/** Hosts CONFIRMED (not assumed) to reject direct/hotlinked image requests -- verified via a
+ *  live, read-only request returning `HTTP 403` / Cloudflare error code 1009 from
+ *  cdn.ssactivewear.com on 2026-11-17, the same supplier-side block documented in
+ *  `docs/launch-checklist-final-2026-11-12.md` and `next.config.ts`'s own `images.unoptimized`
+ *  comment. Used ONLY to influence /shop's default "featured" sort order (see
+ *  `isKnownUnreliableImageHost` below) -- it does not skip rendering the real image, fake a
+ *  substitute photo, or touch anything about how the request is actually made. The catalogue's
+ *  natural import order happens to cluster this supplier's products together, which meant the
+ *  entire first page of `/shop?category=custom-apparel` could be 100% S&S-sourced images with
+ *  zero chance of a real photo loading -- confirmed by rendering that exact page locally and
+ *  finding 24/24 first-page images on this host. Surfacing products with a likely-to-load image
+ *  first means a customer sees at least some real photos before any placeholder, without ever
+ *  pretending the blocked ones have loaded.
+ *
+ *  Remove an entry once that supplier's CDN access is actually resolved -- don't leave it here
+ *  "just in case." An individual image gets treated as reliable automatically, with no code
+ *  change needed here, the moment `resolveHostedImage()` resolves it to a real rehosted override
+ *  in `imageManifest.json` (that resolution already happens before `ShopProduct.image` is ever
+ *  set -- see `shopProducts.ts`), since this function only ever sees the final, already-resolved
+ *  URL. */
+const KNOWN_UNRELIABLE_IMAGE_HOSTS = ["cdn.ssactivewear.com"];
+
+export function isKnownUnreliableImageHost(url: string | null): boolean {
+  if (!url) return false;
+  return KNOWN_UNRELIABLE_IMAGE_HOSTS.some((host) => url.includes(host));
+}
+
 export function parseSort(value: string | undefined): ShopSort {
   return value === "price-asc" || value === "price-desc" ? value : "featured";
 }
@@ -44,10 +71,21 @@ export function partitionByPriceAvailability<T extends { startingPrice: number |
 
 /** Priced products first (see partitionByPriceAvailability above); the requested sort is applied
  *  only as the secondary key, within each group. Used by every /shop listing (category, search,
- *  sort, pagination all flow through here) so the rule holds across the whole surface. */
+ *  sort, pagination all flow through here) so the rule holds across the whole surface.
+ *
+ *  Within "featured" (the default -- what a customer sees with no sort/search applied, including
+ *  the very first page load of any category) specifically: products with a likely-to-load image
+ *  come before ones from a known-unreliable host (see isKnownUnreliableImageHost() above) --
+ *  Array.prototype.sort's guaranteed stability means this never reorders within either group, it
+ *  only interleaves the two groups so the first screenful isn't all placeholders purely because
+ *  of catalogue import order. A customer explicitly sorting by price gets exactly that order --
+ *  this reordering is deliberately NOT applied there, since overriding an explicit price sort
+ *  with an image-reliability tiebreaker would defeat the point of asking for it. */
 export function sortProducts(products: ShopProduct[], sort: ShopSort): ShopProduct[] {
   const { priced, quoteRequired } = partitionByPriceAvailability(products);
-  if (sort !== "featured") {
+  if (sort === "featured") {
+    priced.sort((a, b) => Number(isKnownUnreliableImageHost(a.image)) - Number(isKnownUnreliableImageHost(b.image)));
+  } else {
     const direction = sort === "price-asc" ? 1 : -1;
     priced.sort((a, b) => (a.startingPrice! - b.startingPrice!) * direction);
   }
