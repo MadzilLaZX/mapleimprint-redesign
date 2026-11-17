@@ -67,6 +67,42 @@ test("a single oversized unit (quantity 1, but its own weight alone exceeds the 
   });
 });
 
+test("REGRESSION: two cart lines of the SAME product (e.g. separate colour/size variants) are summed, not just the first line's quantity", () => {
+  withFixtureProfile(() => {
+    // Two variants of the identical style/product -- same productId, different lines, as this
+    // codebase's real checkout pipeline produces for e.g. a red AND a blue order of one T-shirt.
+    // 12 + 12 = 24 total units, over the 20-unit cap -- must resolve to null. Using only the
+    // first line's quantity (12) would incorrectly report "fits."
+    const result = resolvePackaging(
+      [
+        { productId: FIXTURE_PRODUCT_ID, quantity: 12 },
+        { productId: FIXTURE_PRODUCT_ID, quantity: 12 },
+      ],
+      20,
+    );
+    assert.equal(result, null);
+  });
+});
+
+test("REGRESSION: two same-product variant lines whose SUMMED quantity fits the box resolve correctly", () => {
+  withFixtureProfile(() => {
+    // 8 + 8 = 16 total units, within the 20-unit cap. Using only the first line's quantity (8)
+    // would also happen to "fit," so this test alone wouldn't catch the bug -- paired with the
+    // test above (where under-counting matters) to cover both directions.
+    const result = resolvePackaging(
+      [
+        { productId: FIXTURE_PRODUCT_ID, quantity: 8 },
+        { productId: FIXTURE_PRODUCT_ID, quantity: 8 },
+      ],
+      10,
+    );
+    assert.deepEqual(result, {
+      dimensionsIn: { length: 10, width: 8, height: 4 },
+      weightLb: 10.5,
+    });
+  });
+});
+
 test("a mixed-product cart (more than one distinct productId) always resolves to null -- combining boxes is not attempted", () => {
   withFixtureProfile(() => {
     PACKAGING_PROFILES["other-fixture-box"] = { ...fixtureProfile, id: "other-fixture-box" };

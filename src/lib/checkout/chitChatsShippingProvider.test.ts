@@ -241,6 +241,76 @@ test("getOptions() resolves a real owner-measured package once a fixture packagi
   }
 });
 
+test("a real packaging profile and free-shipping eligibility combine correctly: real dimensions are sent, AND the cheapest rate still becomes free above the threshold", async () => {
+  const { PACKAGING_PROFILES, PRODUCT_PACKAGING_ASSIGNMENTS } = await import("./packagingProfiles.ts");
+  const PROFILE_ID = "test-fixture-box-freeship";
+  const PRODUCT_ID = "test-fixture-product-freeship";
+  PACKAGING_PROFILES[PROFILE_ID] = {
+    id: PROFILE_ID,
+    label: "TEST FIXTURE ONLY",
+    outerDimensionsIn: { length: 12, width: 9, height: 6 },
+    emptyWeightLb: 0.4,
+    maxUnitsPerPackage: 10,
+    maxWeightLbPerPackage: 20,
+  };
+  PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID] = PROFILE_ID;
+
+  try {
+    let receivedPkg: ChitChatsPackageInput | undefined;
+    const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg) => {
+      receivedPkg = pkg;
+      return [{ id: "cc-standard", label: "Chit Chats Standard", cents: 1850 }];
+    };
+    const provider = new ChitChatsShippingProvider(fakeFetcher);
+    const lines = [{ unitWeightLb: 2, quantity: 3, productId: PRODUCT_ID }];
+    const options = await provider.getOptions(caAddressFull, FREE_SHIPPING_THRESHOLD_CENTS + 1, lines);
+
+    // The real resolved box dimensions/weight were still sent to the fetcher -- free shipping
+    // never short-circuits serviceability/packaging resolution, only the price afterward.
+    assert.deepEqual(receivedPkg?.dimensionsIn, { length: 12, width: 9, height: 6 });
+    assert.equal(receivedPkg?.weightLb, 6.4);
+    assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
+  } finally {
+    delete PACKAGING_PROFILES[PROFILE_ID];
+    delete PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID];
+  }
+});
+
+test("REGRESSION: two cart lines of the same product (colour/size variants) have their quantities summed for packaging, not just the first line's", async () => {
+  const { PACKAGING_PROFILES, PRODUCT_PACKAGING_ASSIGNMENTS } = await import("./packagingProfiles.ts");
+  const PROFILE_ID = "test-fixture-box-variants";
+  const PRODUCT_ID = "test-fixture-product-variants";
+  PACKAGING_PROFILES[PROFILE_ID] = {
+    id: PROFILE_ID,
+    label: "TEST FIXTURE ONLY",
+    outerDimensionsIn: { length: 12, width: 9, height: 6 },
+    emptyWeightLb: 0.4,
+    maxUnitsPerPackage: 5, // deliberately small: fits ONE variant line alone, not both combined
+    maxWeightLbPerPackage: 20,
+  };
+  PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID] = PROFILE_ID;
+
+  try {
+    let receivedDimensions: unknown = "not called";
+    const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg) => {
+      receivedDimensions = pkg.dimensionsIn;
+      return [{ id: "live", label: "Chit Chats", cents: 1850 }];
+    };
+    const provider = new ChitChatsShippingProvider(fakeFetcher);
+    // Two variants (e.g. Red + Blue) of the SAME product, 3 units each -- 6 total, over the
+    // 5-unit cap. Using only the first line's quantity (3) would incorrectly report "fits."
+    const variantLines = [
+      { unitWeightLb: 1, quantity: 3, productId: PRODUCT_ID },
+      { unitWeightLb: 1, quantity: 3, productId: PRODUCT_ID },
+    ];
+    await provider.getOptions(caAddressFull, 1000, variantLines);
+    assert.equal(receivedDimensions, null, "6 combined units exceeds the 5-unit cap -- must fall back to no-dimensions, not a fabricated fit");
+  } finally {
+    delete PACKAGING_PROFILES[PROFILE_ID];
+    delete PRODUCT_PACKAGING_ASSIGNMENTS[PRODUCT_ID];
+  }
+});
+
 test("getOptions() stays at dimensionsIn: null when a line's productId has no assigned profile -- never fabricates one", async () => {
   let receivedDimensions: unknown = "not called";
   const fakeFetcher: ChitChatsRateFetcher = async (_addr, _subtotal, pkg) => {

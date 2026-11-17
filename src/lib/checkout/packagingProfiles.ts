@@ -137,15 +137,23 @@ export function resolvePackaging(lines: PackagingCartLine[], productWeightLb: nu
   const distinctProductIds = new Set(lines.map((line) => line.productId));
   if (distinctProductIds.size !== 1) return null; // mixed-product cart -- see header
 
-  const [line] = lines;
-  if (line.quantity < 1) return null;
+  // The SAME product can legitimately appear as several separate cart lines -- different
+  // colour/size variants of one style, each its own PricedCartLine/ShippingQuoteLine upstream,
+  // but sharing this one productId (colour/size aren't part of it -- see buildProductId()). The
+  // capacity checks below must be against the TOTAL quantity across every such line, never just
+  // the first one -- using only `lines[0].quantity` here would silently ignore every other
+  // variant's units and could resolve a box sized for fewer units than are actually being
+  // shipped, exactly the under-counted-parcel failure mode this whole file exists to prevent.
+  const [{ productId }] = lines;
+  const totalQuantity = lines.reduce((sum, line) => sum + line.quantity, 0);
+  if (totalQuantity < 1) return null;
 
-  const profileId = PRODUCT_PACKAGING_ASSIGNMENTS[line.productId];
+  const profileId = PRODUCT_PACKAGING_ASSIGNMENTS[productId];
   if (!profileId) return null;
   const profile = PACKAGING_PROFILES[profileId];
   if (!profile) return null; // assignment points at a profile that doesn't exist -- data error, never guess
 
-  if (line.quantity > profile.maxUnitsPerPackage) return null; // would need multiple packages
+  if (totalQuantity > profile.maxUnitsPerPackage) return null; // would need multiple packages
 
   const weightLb = productWeightLb + profile.emptyWeightLb;
   if (weightLb > profile.maxWeightLbPerPackage) return null; // would need multiple packages
