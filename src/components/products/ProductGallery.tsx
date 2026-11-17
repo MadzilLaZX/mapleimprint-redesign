@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ImageBroken } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import type { CatalogueProduct } from "@/lib/products";
 
@@ -30,6 +31,16 @@ export function ProductGallery({
   // resets `index` here — not a useState-in-effect sync.
   const [index, setIndex] = useState(0);
 
+  // Tracks which image URLs have failed to load (e.g. a blocked supplier CDN request, see
+  // next.config.ts's own note on S&S Activewear's Cloudflare 403) so this gracefully falls back
+  // to the same "Image coming soon" placeholder ProductCard.tsx/FeaturedProducts.tsx already use
+  // elsewhere on the site, instead of a broken-image icon on the actual product page -- the one
+  // place a customer is deciding whether to buy. Keyed by URL (a Set, not a single boolean)
+  // because the hero image and several thumbnails are independent <Image> elements that can each
+  // fail or succeed on their own.
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
+  const markFailed = (url: string) => setFailedUrls((prev) => (prev.has(url) ? prev : new Set(prev).add(url)));
+
   // Warm the browser cache for every colour's primary photo shortly after the page settles, so
   // switching colours feels instant. Capped and low-priority — this is a handful of already-
   // compressed CDN thumbnails, not hundreds of full-size images.
@@ -53,7 +64,7 @@ export function ProductGallery({
   return (
     <div>
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-white">
-        {current ? (
+        {current && !failedUrls.has(current.url) ? (
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={current.url}
@@ -70,9 +81,15 @@ export function ProductGallery({
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 priority
                 className="object-cover"
+                onError={() => markFailed(current.url)}
               />
             </motion.div>
           </AnimatePresence>
+        ) : current ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-canvas text-muted">
+            <ImageBroken className="size-8" weight="light" />
+            <span className="text-xs">Image coming soon</span>
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-muted">No image yet</div>
         )}
@@ -98,7 +115,13 @@ export function ProductGallery({
                 i === index ? "ring-ink-950" : "ring-transparent hover:ring-sand",
               )}
             >
-              <Image src={img.url} alt="" fill sizes="120px" priority={i < 4} className="object-cover" />
+              {failedUrls.has(img.url) ? (
+                <div className="flex h-full w-full items-center justify-center bg-canvas text-muted">
+                  <ImageBroken className="size-4" weight="light" />
+                </div>
+              ) : (
+                <Image src={img.url} alt="" fill sizes="120px" priority={i < 4} className="object-cover" onError={() => markFailed(img.url)} />
+              )}
             </button>
           ))}
         </div>
