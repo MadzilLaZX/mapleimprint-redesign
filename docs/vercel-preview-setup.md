@@ -1,10 +1,14 @@
 # Vercel Preview deployment setup
 
-Written this round because no dedicated Preview setup doc existed yet (only
+Written in an earlier round because no dedicated Preview setup doc existed yet (only
 `production-deployment-checklist.md`, which assumes a project already exists and covers
-Production promotion, not initial Preview setup). Nothing in this document was executed —
-creating a Vercel project, connecting this repo, or setting any environment variable all require
-your explicit action (see "Important: a Vercel project almost certainly already exists" below).
+Production promotion, not initial Preview setup). Re-reviewed this round (`next.config.ts` and
+the env var inventory re-checked against the current codebase) -- no changes needed, the
+guidance below still holds. Nothing in this document was executed -- creating a Vercel project,
+connecting this repo, or setting any environment variable all require your explicit action (see
+"Important: a Vercel project almost certainly already exists" below). See
+`docs/owner-handoff-checklist.md` for the short action-list version of this and every other
+remaining step.
 
 ## Important: a Vercel project almost certainly already exists
 
