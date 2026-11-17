@@ -50,6 +50,16 @@ export function isKnownUnreliableImageHost(url: string | null): boolean {
   return KNOWN_UNRELIABLE_IMAGE_HOSTS.some((host) => url.includes(host));
 }
 
+/** Stable partition (never reorders within either group) used by both /shop's "featured" sort
+ *  and the static /products/[category]/[subcategory] listing pages -- one shared implementation
+ *  so the two surfaces can't drift into different image-reliability behavior. `getImageUrl`
+ *  exists because the two callers' item shapes differ (ShopProduct.image vs a resolved
+ *  CatalogueProduct cover image) and neither should have to conform to the other's shape just to
+ *  share this. */
+export function sortByImageReliability<T>(items: T[], getImageUrl: (item: T) => string | null): T[] {
+  return [...items].sort((a, b) => Number(isKnownUnreliableImageHost(getImageUrl(a))) - Number(isKnownUnreliableImageHost(getImageUrl(b))));
+}
+
 export function parseSort(value: string | undefined): ShopSort {
   return value === "price-asc" || value === "price-desc" ? value : "featured";
 }
@@ -83,13 +93,14 @@ export function partitionByPriceAvailability<T extends { startingPrice: number |
  *  with an image-reliability tiebreaker would defeat the point of asking for it. */
 export function sortProducts(products: ShopProduct[], sort: ShopSort): ShopProduct[] {
   const { priced, quoteRequired } = partitionByPriceAvailability(products);
+  let sortedPriced: ShopProduct[];
   if (sort === "featured") {
-    priced.sort((a, b) => Number(isKnownUnreliableImageHost(a.image)) - Number(isKnownUnreliableImageHost(b.image)));
+    sortedPriced = sortByImageReliability(priced, (p) => p.image);
   } else {
     const direction = sort === "price-asc" ? 1 : -1;
-    priced.sort((a, b) => (a.startingPrice! - b.startingPrice!) * direction);
+    sortedPriced = [...priced].sort((a, b) => (a.startingPrice! - b.startingPrice!) * direction);
   }
-  return [...priced, ...quoteRequired];
+  return [...sortedPriced, ...quoteRequired];
 }
 
 export function searchProducts(products: ShopProduct[], query: string): ShopProduct[] {

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sortProducts, isKnownUnreliableImageHost, partitionByPriceAvailability, searchProducts, buildShopUrl } from "./shopQuery.ts";
+import { sortProducts, isKnownUnreliableImageHost, sortByImageReliability, partitionByPriceAvailability, searchProducts, buildShopUrl } from "./shopQuery.ts";
 import type { ShopProduct } from "./shopProducts.ts";
 
 // REGRESSION, found via a real diagnosis of a "the whole Shop grid shows placeholders" report:
@@ -83,4 +83,21 @@ test("existing partitionByPriceAvailability/searchProducts/buildShopUrl behavior
 
   assert.deepEqual(searchProducts([fixtureProduct({ id: "a", name: "Red Shirt" })], "red").map((x) => x.id), ["a"]);
   assert.equal(buildShopUrl({}, { category: "custom-apparel" }), "/shop?category=custom-apparel");
+});
+
+test("sortByImageReliability: works over any shape via its getImageUrl accessor, not just ShopProduct -- used by the static /products/[category]/[subcategory] pages, which have a different item shape (CatalogueProduct)", () => {
+  const items = [
+    { id: "unreliable", coverUrl: "https://cdn.ssactivewear.com/a.jpg" },
+    { id: "reliable", coverUrl: "https://media.sanmarcanada.com/a.jpg" },
+    { id: "no-cover", coverUrl: null },
+  ];
+  const result = sortByImageReliability(items, (item) => item.coverUrl);
+  assert.deepEqual(result.map((x) => x.id), ["reliable", "no-cover", "unreliable"]);
+});
+
+test("sortByImageReliability: does not mutate the input array", () => {
+  const items = [{ id: "a", img: "https://cdn.ssactivewear.com/a.jpg" }, { id: "b", img: null }];
+  const original = [...items];
+  sortByImageReliability(items, (x) => x.img);
+  assert.deepEqual(items, original);
 });
