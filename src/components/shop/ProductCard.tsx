@@ -1,36 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ImageBroken } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { formatUnitPrice } from "@/lib/pricing/formatUnitPrice";
+import { ProductImage } from "@/components/ui/ProductImage";
 import type { ShopProduct } from "@/lib/shopProducts";
 
 export function ProductCard({ product }: { product: ShopProduct }) {
-  const [imageFailed, setImageFailed] = useState(false);
-
   return (
     <div className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white">
       <Link
         href={product.href}
         className="relative block aspect-[4/5] w-full shrink-0 overflow-hidden bg-white"
       >
-        {imageFailed || !product.image ? (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-canvas text-muted">
-            <ImageBroken className="size-8" weight="light" />
-            <span className="text-xs">Image coming soon</span>
-          </div>
-        ) : (
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            className="object-contain p-4 transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
-            onError={() => setImageFailed(true)}
-          />
-        )}
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+          className="object-contain p-4 transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+        />
       </Link>
       <div className="flex flex-1 flex-col p-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">

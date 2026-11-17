@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import { getProductsBySubcategory, subcategorySlugify } from "@/lib/products";
 import { defaultColourFor, heroImageFor } from "@/lib/productVariant";
 import { priceUnitLabel } from "@/lib/houseProducts/pricing/bundles";
-import { partitionByPriceAvailability } from "@/lib/shopQuery";
+import { partitionByPriceAvailability, sortByImageReliability } from "@/lib/shopQuery";
 
 function findSubcategory(categorySlug: string, subcategorySlug: string) {
   const cat = PRODUCT_CATEGORIES.find((c) => c.slug === categorySlug);
@@ -54,7 +54,15 @@ export default async function SubcategoryPage({
   // Priced (checkout-ready) products first, quote-required products after — this is a static page
   // built at next build time, so the ordering is baked into the HTML with no client-side reorder.
   const { priced, quoteRequired } = partitionByPriceAvailability(getProductsBySubcategory(category, subcategory));
-  const products = [...priced, ...quoteRequired];
+  // Within the priced group: products with a likely-to-load cover image come first, same
+  // reliability-based tiebreaker /shop's "featured" sort uses (sortProducts, shopQuery.ts) --
+  // this subcategory listing has no sort control at all, so this is its only ordering rule
+  // besides priced-before-quote-required. Computed from the SAME cover resolution the render
+  // loop below uses (heroImageFor/defaultColourFor), not a separate guess, so sort order and
+  // displayed image can never disagree.
+  const resolveCover = (product: (typeof priced)[number]) => heroImageFor(product, defaultColourFor(product)) ?? product.images[0] ?? null;
+  const sortedPriced = sortByImageReliability(priced, (p) => resolveCover(p)?.url ?? null);
+  const products = [...sortedPriced, ...quoteRequired];
 
   return (
     <>
@@ -82,8 +90,9 @@ export default async function SubcategoryPage({
               // Same resolver ProductDetail.tsx uses for its initial colour — this grid links
               // straight into the product page, so its cover photo must show the same colour the
               // product page will open on (previously both independently guessed from array
-              // position and could disagree for the same product).
-              const cover = heroImageFor(product, defaultColourFor(product)) ?? product.images[0];
+              // position and could disagree for the same product). Also the same resolver the
+              // sort above used, so order and displayed image can never disagree.
+              const cover = resolveCover(product);
               return (
                 <Reveal key={product.slug} delay={i * 0.04}>
                   <Link
@@ -91,20 +100,13 @@ export default async function SubcategoryPage({
                     className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white"
                   >
                     <div className="relative aspect-[4/5] w-full overflow-hidden bg-canvas">
-                      {cover ? (
-                        <Image
-                          src={cover.url}
-                          alt={product.name}
-                          fill
-                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                          priority={i < 4}
-                          className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-muted">
-                          No image yet
-                        </div>
-                      )}
+                      <ProductImage
+                        src={cover?.url ?? null}
+                        alt={product.name}
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                        priority={i < 4}
+                        className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"
+                      />
                     </div>
                     <div className="flex flex-1 flex-col p-4">
                       <p className="text-xs font-medium uppercase tracking-wide text-muted">

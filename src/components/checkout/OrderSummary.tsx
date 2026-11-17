@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { CaretDown, ImageBroken, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
+import { CaretDown, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/cn";
+import { ProductImage } from "@/components/ui/ProductImage";
 import type { CartItem } from "@/components/cart/CartProvider";
 
 export interface CheckoutQuote {
@@ -21,31 +21,13 @@ function money(cents: number): string {
 }
 
 function SummaryLines({ items, quote, quoteLoading }: { items: CartItem[]; quote: CheckoutQuote | null; quoteLoading: boolean }) {
-  // Supplier (S&S/SanMar) product photos can fail to load (e.g. a blocked CDN request -- see
-  // next.config.ts's own note) -- tracked per cart-item id, same fallback pattern used elsewhere
-  // on the site (ProductCard.tsx, ProductGallery.tsx, CartView.tsx).
-  const [failedImageItemIds, setFailedImageItemIds] = useState<Set<string>>(new Set());
-
   return (
     <>
       <ul className="space-y-4">
         {items.map((item) => (
           <li key={item.id} className="flex items-start gap-3">
             <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-canvas">
-              {failedImageItemIds.has(item.id) ? (
-                <div className="flex h-full w-full items-center justify-center text-muted">
-                  <ImageBroken className="size-5" weight="light" />
-                </div>
-              ) : (
-                <Image
-                  src={item.image}
-                  alt=""
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                  onError={() => setFailedImageItemIds((prev) => (prev.has(item.id) ? prev : new Set(prev).add(item.id)))}
-                />
-              )}
+              <ProductImage src={item.image} alt="" sizes="56px" className="object-cover" iconClassName="size-5" showLabel={false} />
               <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-ink-950 text-[10px] font-bold text-white">
                 {item.quantity}
               </span>

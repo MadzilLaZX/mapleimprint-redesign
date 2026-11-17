@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, CaretLeft, CaretRight, ImageBroken } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "@/components/ui/Container";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { formatUnitPrice } from "@/lib/pricing/formatUnitPrice";
 import type { ShopProduct } from "@/lib/shopProducts";
 
@@ -151,27 +151,16 @@ function FeaturedProductCard({
   reduce: boolean;
   onPrefetch: () => void;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
-
   return (
     <Link href={product.href} onMouseEnter={onPrefetch} onFocus={onPrefetch} className="group block">
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-sand">
-        {product.image && !imageFailed ? (
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(min-width: 1280px) 23vw, (min-width: 1024px) 29vw, (min-width: 640px) 46vw, 82vw"
-            priority={priority}
-            onError={() => setImageFailed(true)}
-            className={`object-cover transition-transform duration-200 ease-[var(--ease-premium)] ${reduce ? "" : "group-hover:scale-[1.02] group-hover:-translate-y-1"}`}
-          />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted">
-            <ImageBroken className="size-8" weight="light" />
-            <span className="text-xs">Image coming soon</span>
-          </div>
-        )}
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          sizes="(min-width: 1280px) 23vw, (min-width: 1024px) 29vw, (min-width: 640px) 46vw, 82vw"
+          priority={priority}
+          className={`object-cover transition-transform duration-200 ease-[var(--ease-premium)] ${reduce ? "" : "group-hover:scale-[1.02] group-hover:-translate-y-1"}`}
+        />
       </div>
       <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{product.categoryName}</p>
       <h3 className="mt-1 line-clamp-2 font-display font-semibold text-ink-900">{product.name}</h3>

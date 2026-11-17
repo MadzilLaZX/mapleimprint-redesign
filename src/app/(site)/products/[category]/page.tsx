@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, CheckCircle } from "@phosphor-icons/react/dist/ssr";
@@ -9,6 +8,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Accordion } from "@/components/ui/Accordion";
 import { Reveal } from "@/components/ui/Reveal";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES, PRINT_METHODS, SECONDARY_CTA } from "@/lib/constants";
 import { getProductsBySubcategory } from "@/lib/products";
@@ -87,10 +87,9 @@ export default async function CategoryPage({
               aria-label={`Shop all ${cat.name}`}
               className="group relative block aspect-[21/9] w-full overflow-hidden rounded-[28px]"
             >
-              <Image
+              <ProductImage
                 src={cat.cover}
                 alt=""
-                fill
                 sizes="100vw"
                 priority
                 className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-[1.03]"
@@ -137,16 +136,14 @@ export default async function CategoryPage({
                   href={href}
                   className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl bg-sand"
                 >
-                  {image && (
-                    <Image
-                      src={image}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                      priority={i < 5}
-                      className="object-cover transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
-                    />
-                  )}
+                  <ProductImage
+                    src={image}
+                    alt=""
+                    sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                    priority={i < 5}
+                    className="object-cover transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
+                    showLabel={false}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/10 to-transparent" />
                   <div className="relative p-3">
                     <p className="text-sm font-semibold text-white">{sub}</p>

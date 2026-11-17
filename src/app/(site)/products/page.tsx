@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/ui/Reveal";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
 
@@ -33,10 +33,9 @@ export default function ProductsPage() {
                 className="group flex h-full flex-col overflow-hidden rounded-[28px] bg-white"
               >
                 <div className="relative aspect-[4/3] w-full overflow-hidden">
-                  <Image
+                  <ProductImage
                     src={cat.cover}
                     alt=""
-                    fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     priority={i < 3}
                     className="object-cover transition-transform duration-700 ease-[var(--ease-premium)] group-hover:scale-105"

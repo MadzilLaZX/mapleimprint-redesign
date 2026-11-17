@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ImageBroken, Minus, Plus, ShoppingBag, Trash } from "@phosphor-icons/react/dist/ssr";
+import { Minus, Plus, ShoppingBag, Trash } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { useCart, QUOTE_PREFILL_KEY, QUOTE_CART_LINES_KEY, type QuoteCartHandoff } from "@/components/cart/CartProvider";
 import { PRIMARY_CTA } from "@/lib/constants";
 import { cn } from "@/lib/cn";
@@ -20,10 +19,6 @@ const FREE_SHIPPING_THRESHOLD_DOLLARS = FREE_SHIPPING_THRESHOLD_CENTS / 100;
 export function CartView() {
   const { items, removeItem, updateQuantity, totalCount } = useCart();
   const router = useRouter();
-  // Supplier (S&S/SanMar) product photos can fail to load (e.g. a blocked CDN request -- see
-  // next.config.ts's own note) -- tracked per cart-item id so one broken thumbnail doesn't affect
-  // any other line, same fallback pattern as ProductCard.tsx/ProductGallery.tsx elsewhere.
-  const [failedImageItemIds, setFailedImageItemIds] = useState<Set<string>>(new Set());
 
   const pricedItems = items.filter((i) => unitPriceFor(i) !== null);
   const unpricedCount = items.length - pricedItems.length;
@@ -85,20 +80,7 @@ export function CartView() {
         {items.map((item) => (
           <li key={item.id} className="flex items-center gap-4 py-5">
             <Link href={`/products/${item.categorySlug}`} className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-canvas">
-              {failedImageItemIds.has(item.id) ? (
-                <div className="flex h-full w-full items-center justify-center text-muted">
-                  <ImageBroken className="size-6" weight="light" />
-                </div>
-              ) : (
-                <Image
-                  src={item.image}
-                  alt=""
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                  onError={() => setFailedImageItemIds((prev) => (prev.has(item.id) ? prev : new Set(prev).add(item.id)))}
-                />
-              )}
+              <ProductImage src={item.image} alt="" sizes="80px" className="object-cover" iconClassName="size-6" showLabel={false} />
             </Link>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
