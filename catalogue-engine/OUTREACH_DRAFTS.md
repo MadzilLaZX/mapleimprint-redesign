@@ -86,6 +86,23 @@ the exact contact method)
 > `cdn.ssactivewear.com` from our site are currently being blocked (HTTP 403), so none of your
 > product photos are displaying for our customers.
 >
+> For reference, here's exactly what we're seeing (confirmed again 2026-11-17):
+>
+> ```
+> GET https://cdn.ssactivewear.com/Images/Color/102738_f_fm.jpg
+> → HTTP/1.1 403 Forbidden
+> → Server: cloudflare
+> → Response body: "error code: 1009"
+> ```
+>
+> This reproduces for every product image URL we've tried (same shape, different file names, e.g.
+> `/Images/Color/115024_f_fm.jpg`, `/Images/Color/108084_f_fm.jpg`) — it isn't specific to one
+> product or image. For comparison, the equivalent request to one of our other suppliers'
+> image CDNs returns a normal `200 OK`, so this looks specific to how `cdn.ssactivewear.com`'s
+> Cloudflare configuration is treating our requests (Cloudflare error 1009 is typically an
+> IP/ASN-level or bot-management block, not a per-URL permissions issue, for what that's worth on
+> your end).
+>
 > Could you help us with:
 >
 > 1. **Official image API or media access** — is there a supported way to request product images
