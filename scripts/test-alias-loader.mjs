@@ -19,6 +19,20 @@ const SRC_DIR = path.resolve(fileURLToPath(new URL("..", import.meta.url)), "src
 const EXTENSIONS = [".ts", ".tsx", ".js"];
 
 export async function resolve(specifier, context, nextResolve) {
+  // `server-only` (used by src/lib/server/supabaseAdmin.ts, among others) is a build-time guard:
+  // its real package body throws UNCONDITIONALLY the moment it's imported, with no environment
+  // check at all -- it relies entirely on Next.js/webpack's static analysis to only ever include
+  // it in a server bundle, never a client one. Outside that build pipeline (i.e. here, under
+  // plain `node --test`), importing it always crashes, regardless of whether the code path that
+  // pulled it in would ever actually run. Confirmed this round: fulfillOrder.integration.test.ts
+  // transitively imports it (fulfillOrder.ts -> exportDesign.ts -> supabaseAdmin.ts) and could not
+  // load AT ALL under node --test before this, independent of credentials/env vars -- this stub
+  // doesn't change what supabaseAdmin.ts's real guard does in the actual app/build; it only
+  // affects whether test files can finish loading.
+  if (specifier === "server-only") {
+    return { url: "data:text/javascript,export {}", shortCircuit: true };
+  }
+
   if (specifier.startsWith("@/")) {
     const withoutAlias = specifier.slice(2);
     const hasExtension = path.extname(withoutAlias) !== "";

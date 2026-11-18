@@ -1,11 +1,15 @@
 // Integration tests against the LIVE maple-imprint-catalogue Supabase project -- not mocks, and
-// NOT run by `npm test` or any automatic/CI path. Same pattern and same opt-in env var as
-// fulfillOrder.integration.test.ts. These INSERT/UPDATE/DELETE real rows in the
-// ChitChatsShippingQuote table (supabase/migrations/010_chit_chats_shipping_quotes.sql) via the
-// service-role client -- requires that migration to have been reviewed and APPLIED first (it is
-// NOT applied as of this file being written), plus a deliberate, explicit opt-in:
+// NOT run by `npm test` or any automatic/CI path. Same pattern and same opt-in env vars as
+// fulfillOrder.integration.test.ts (as of 2026-11-19, THREE separate env vars -- a third,
+// unambiguously-named confirmation was added as a fail-closed safety check). These INSERT/UPDATE/
+// DELETE real rows in the ChitChatsShippingQuote table
+// (supabase/migrations/010_chit_chats_shipping_quotes.sql) via the service-role client -- requires
+// that migration to have been reviewed and APPLIED first (it is NOT applied as of this file being
+// written), plus a deliberate, explicit opt-in:
 //
-//   RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 node --env-file=.env.local --test src/lib/checkout/chitChatsQuoteStore.integration.test.ts
+//   RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 \
+//   ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production \
+//   node --env-file=.env.local --test src/lib/checkout/chitChatsQuoteStore.integration.test.ts
 //
 // All rows here are synthetic (fingerprint prefixed with a fixed, recognizable test marker) and
 // deleted in an `after` hook regardless of pass/fail. No real Chit Chats API call is made by this
@@ -21,7 +25,10 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SupabaseChitChatsQuoteStore, generateOwnerToken } from "./chitChatsQuoteStore.ts";
 
 const SUPABASE_URL = "https://ovqkwedpwmuusnijbxro.supabase.co";
-const hasCredentials = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) && process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1";
+const hasCredentials =
+  Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) &&
+  process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1" &&
+  process.env.ALLOW_PRODUCTION_DB_WRITES === "i-understand-this-writes-to-production";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabaseAdmin: SupabaseClient<any, any, any>;

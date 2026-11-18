@@ -1,9 +1,14 @@
 // Integration tests against the LIVE maple-imprint-catalogue Supabase project -- not mocks, and
 // NOT run by `npm test` or any automatic/CI path. These perform real INSERT/UPDATE/DELETE writes
 // (via real RPC calls with service-role credentials) against the same shared database holding
-// real customer orders. Requires a deliberate, explicit opt-in:
+// real customer orders. Requires a deliberate, explicit opt-in -- THREE separate env vars as of
+// 2026-11-19 (previously two; a third, unambiguously-named confirmation was added as a fail-closed
+// safety check so this can't fire from merely having service-role credentials + one terse flag
+// set for an unrelated reason):
 //
-//   RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 node --env-file=.env.local --test src/lib/checkout/fulfillOrder.integration.test.ts
+//   RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 \
+//   ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production \
+//   node --env-file=.env.local --test src/lib/checkout/fulfillOrder.integration.test.ts
 //
 // Exercises the real mark_order_paid_and_sync_attempt() Postgres function and the real
 // markOrderPaidAndNotify() code path through it, via the same service-role REST/RPC access the
@@ -20,7 +25,10 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { markOrderPaidAndNotify } from "./fulfillOrder.ts";
 
 const SUPABASE_URL = "https://ovqkwedpwmuusnijbxro.supabase.co";
-const hasCredentials = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) && process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1";
+const hasCredentials =
+  Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) &&
+  process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1" &&
+  process.env.ALLOW_PRODUCTION_DB_WRITES === "i-understand-this-writes-to-production";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabaseAdmin: SupabaseClient<any, any, any>;
