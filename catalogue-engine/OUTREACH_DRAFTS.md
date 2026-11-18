@@ -37,7 +37,7 @@ adjust names/tone as needed, and send from whoever holds the wholesale account w
 
 ---
 
-## 1a. SanMar — product image access (new, 2026-11-18 — send alongside or instead of #1 if images are the priority)
+## 1a. SanMar — product image access (actual version sent, 2026-11-18)
 
 Raised after real browser evidence showed a `media.sanmarcanada.com` product image loading fine
 via direct navigation but returning `403 Forbidden` (CloudFront-generated, `X-Cache: Error from
@@ -50,38 +50,30 @@ rather than asking them about it, so we're asking directly instead. `SUPPLIER_RE
 an "Image Library" among SanMar's offered resources, which may already be the sanctioned path —
 unconfirmed.
 
-**To:** sanmarintegrations@sanmar.com
-**Subject:** Product image access / hotlinking — Maple Imprint (SanMar Canada account)
+**To:** SanMar Canada Support
+**Subject:** Product image access (403 Forbidden on embedded SanMar images)
 
-> Hi SanMar Integrations team,
+> Hello SanMar Canada Support,
 >
-> Following up on our integration access questions (separate email) — we have a specific issue
-> with product **images** we'd like your help with.
+> We are developing an e-commerce website for Maple Imprint Ltd., an Ottawa-based custom apparel
+> and promotional products business.
 >
-> We display SanMar Canada product photos directly from `media.sanmarcanada.com` on our website
-> (hotlinked, not rehosted). We're seeing successful `200 OK` responses when requesting an image
-> URL directly/without a referrer, but `403 Forbidden` responses (served by CloudFront itself,
-> `X-Cache: Error from cloudfront`) when the same URL is requested as an embedded image from our
-> actual site. This looks like referer-based hotlink protection on the CDN.
+> We are experiencing an issue displaying SanMar product images on our website. The image URLs
+> load successfully when opened directly, but return HTTP 403 Forbidden from CloudFront when
+> embedded on our website.
 >
-> A few questions:
+> Could you please confirm:
 >
-> 1. Is direct hotlinking/embedding of `media.sanmarcanada.com` image URLs on a third-party
->    retailer's website permitted under our wholesale account, and if so, is there a referrer
->    allowlist or similar step we need to request to stop these embedded requests being blocked?
-> 2. We understand you offer an "Image Library" resource — what does it provide, and is it a
->    sanctioned way to obtain stable, embeddable image URLs (or files to self-host) for the
->    products in our account?
-> 3. Is there an API or bulk-download option for product images, similar to the Product
->    Info/Pricing/Inventory services, so we could self-host images instead of hotlinking?
-> 4. Any usage/attribution requirements we should follow either way?
+> 1. Whether authorized resellers may display SanMar product images on their own e-commerce
+>    websites.
+> 2. Whether there is an approved image library, API, or downloadable product-image catalogue we
+>    can use.
+> 3. Whether our website domain needs to be allowlisted for image access.
 >
-> Happy to provide our account number, domain, or exact request examples if useful. Thanks for
-> your help!
+> We would appreciate guidance on the recommended integration method.
 >
-> [Your name]
-> Maple Imprint Ltd.
-> [phone / email]
+> Thank you,
+> Maple Imprint Website Development Team
 
 ---
 
