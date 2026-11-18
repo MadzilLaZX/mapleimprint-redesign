@@ -479,11 +479,15 @@ function DesignTextNode({
               const scaleX = node.scaleX();
               node.scaleX(1);
               node.scaleY(1);
+              // Same floor as the curved-text branch above (and TextToolbar's own 6-500 range) --
+              // without it, a corner-drag toward zero produced a near-zero/negative fontSize with
+              // no way to select or resize the text back on canvas.
+              const newFontSize = Math.max(6, Math.min(500, Math.round(fontSize * scaleX)));
               onCommit({
                 normalizedX: (node.x() - box.x) / box.width,
                 normalizedY: (node.y() - box.y) / box.height,
-                normalizedWidth: (node.width() * scaleX) / box.width,
-                fontSize: fontSize * scaleX,
+                normalizedWidth: Math.max(0.01, (node.width() * scaleX) / box.width),
+                fontSize: newFontSize,
                 rotation: node.rotation(),
               });
             }
@@ -1182,6 +1186,12 @@ export function CanvasStage({
                 flipEnabled={false}
                 keepRatio={selectedIsQr}
                 enabledAnchors={selectedIsQr ? ["top-left", "top-right", "bottom-left", "bottom-right"] : undefined}
+                // Floor on both axes: without this, dragging a corner handle toward zero could
+                // shrink an image/shape to ~0px, making it invisible AND unselectable on canvas
+                // (it only remained reachable via the Layers panel), and any object saved with a
+                // near-zero width/height would later divide-by-zero in Inspector's Fit/Fill
+                // buttons (1 / normalizedWidth → Infinity/NaN written back into state).
+                boundBoxFunc={(oldBox, newBox) => (Math.abs(newBox.width) < 10 || Math.abs(newBox.height) < 10 ? oldBox : newBox)}
                 onTransformStart={(e) => {
                   const node = e.target;
                   const pos = node.getAbsolutePosition();

@@ -383,6 +383,11 @@ function PositionAlignControl({ obj, onPatch }: { obj: DesignObjectRecord; onPat
   function scaleTo(factor: number) {
     const w = obj.normalizedWidth * factor;
     const h = obj.normalizedHeight * factor;
+    // Guard against a zero/near-zero obj.normalizedWidth or normalizedHeight (e.g. an object
+    // saved before CanvasStage's Transformer gained a minimum-size floor) -- factor would be
+    // Infinity/NaN in that case, and silently no-op-ing beats writing a non-finite size back
+    // into the object's persisted state.
+    if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return;
     onPatch({ normalizedWidth: w, normalizedHeight: h, normalizedX: (1 - w) / 2, normalizedY: (1 - h) / 2 });
   }
   const fit = () => scaleTo(Math.min(1 / obj.normalizedWidth, 1 / obj.normalizedHeight));

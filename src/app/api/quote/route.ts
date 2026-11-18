@@ -171,6 +171,11 @@ export async function POST(request: Request) {
   const studioClient = sessionToken ? createStudioClient(sessionToken) : null;
 
   const linesToExport: string[] = [];
+  // Surfaced to the customer below (not just logged) when a CUSTOM line's design couldn't be
+  // attached — the quote itself is still accepted (contact info/description are still valid), but
+  // a customer who believes they attached a finished design deserves to know it didn't come
+  // through, rather than silently getting a quote line with no artwork at all.
+  const unattachedDesignLines: string[] = [];
   for (const line of cartLines) {
     let designSnapshot: unknown = null;
     let designFrozenRevision = line.designFrozenRevision ?? null;
@@ -187,9 +192,15 @@ export async function POST(request: Request) {
           linesToExport.push(line.designProjectId);
         } else {
           console.error("[quote] couldn't freeze design project", line.designProjectId, freezeResult.error);
+          unattachedDesignLines.push(line.name ?? "Untitled item");
         }
       } else {
+        // Deliberately NOT falling back to the service-role admin client here: DesignProject's
+        // RLS is session-scoped specifically so a submitted designProjectId can only be read back
+        // by the session that actually owns it -- bypassing that would let a request claim any
+        // designProjectId and have it exported into someone else's quote.
         console.error("[quote] CUSTOM line has no session cookie to read its design:", line.designProjectId);
+        unattachedDesignLines.push(line.name ?? "Untitled item");
       }
     }
 
@@ -229,5 +240,8 @@ export async function POST(request: Request) {
   await appendInquiryRow(scored, fileLinks);
   await notifyInquiry(scored);
 
-  return NextResponse.json({ reference });
+  return NextResponse.json({
+    reference,
+    ...(unattachedDesignLines.length > 0 ? { unattachedDesignLines } : {}),
+  });
 }

@@ -31,6 +31,7 @@ import { drinkwareConfigFor } from "@/lib/studio/drinkwareCustomization";
 import { backgroundUrlFor, printAreaPixelBox, printAreaOverrideFor, printAreasOverlap, PRINT_AREAS } from "@/lib/studio/printAreas";
 import { viewGroupFor } from "@/lib/studio/garmentViews";
 import { resolveTemplateAssets, scaleTemplateObjects, type DesignTemplate } from "@/lib/studio/templates";
+import { syncZIndexToOrder } from "@/lib/studio/syncZIndexToOrder";
 import {
   generateQr,
   isLikelyUrl,
@@ -332,7 +333,10 @@ export function StudioClient({ projectId }: { projectId: string }) {
   }, []);
 
   const applySides = useCallback((next: SidesState) => {
-    setSides(next);
+    // See syncZIndexToOrder.ts for why this chokepoint exists -- every reorder/add/delete/patch
+    // call site already routes through applySides, so this is the one place to keep zIndex in
+    // sync with each side's array order.
+    setSides(syncZIndexToOrder(next));
     dirtySinceLoad.current = true;
   }, []);
 
@@ -677,6 +681,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
       pushHistory(sides);
       const obj = emptyObject("image", {
         assetUrl: data.url,
+        assetId: typeof data.assetId === "string" ? data.assetId : null,
         normalizedWidth: fit.normalizedWidth,
         normalizedHeight: fit.normalizedHeight,
         normalizedX: fit.normalizedX,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, PaperclipHorizontal, PencilSimple } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/Button";
@@ -108,6 +109,7 @@ export function QuoteWizard() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [unattachedDesignLines, setUnattachedDesignLines] = useState<string[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -223,6 +225,7 @@ export function QuoteWizard() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Something went wrong.");
       setReference(json.reference);
+      setUnattachedDesignLines(Array.isArray(json.unattachedDesignLines) ? json.unattachedDesignLines : []);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -241,6 +244,18 @@ export function QuoteWizard() {
           Your reference number is <span className="font-semibold text-ink-900">{reference}</span>. Our team will
           review the details and follow up by email with a scoped quote.
         </p>
+        {unattachedDesignLines.length > 0 && (
+          <div className="mt-4 rounded-2xl border border-orange/30 bg-orange/5 p-4 text-sm text-ink-900">
+            <p className="font-semibold">We couldn&apos;t attach your design for: {unattachedDesignLines.join(", ")}</p>
+            <p className="mt-1 text-ink-900/70">
+              Your request was still submitted. Please reply to our follow-up email with your design link, or{" "}
+              <Link href="/contact" className="underline underline-offset-2">
+                contact us
+              </Link>{" "}
+              so we can attach it manually.
+            </p>
+          </div>
+        )}
         <div className="mt-6 space-y-2 rounded-2xl bg-canvas p-5 text-sm text-ink-900/80">
           <p className="font-semibold text-ink-900">What happens next</p>
           <p>Reviewing → Quote sent → Proof approval → Payment → Production → Ready for pickup or shipped.</p>
@@ -253,6 +268,7 @@ export function QuoteWizard() {
             setData(initialData);
             setStep(0);
             setReference(null);
+            setUnattachedDesignLines([]);
           }}
         >
           Start another request
@@ -574,7 +590,7 @@ export function QuoteWizard() {
             Continue
           </Button>
         ) : (
-          <Button onClick={handleSubmit} showArrow>
+          <Button onClick={handleSubmit} showArrow disabled={submitting}>
             {submitting ? "Submitting…" : "Submit request"}
           </Button>
         )}

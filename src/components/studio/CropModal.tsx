@@ -11,7 +11,9 @@ export interface CropFraction {
 }
 
 const FULL_CROP: CropFraction = { x: 0, y: 0, width: 1, height: 1 };
-const PREVIEW_SIZE = 360;
+// Fallback only, for the (practically unreachable) case a drag starts before boxRef has laid out
+// -- the real drag math always measures the actual rendered box below, not this constant.
+const FALLBACK_PREVIEW_SIZE = 360;
 type Handle = "move" | "nw" | "ne" | "sw" | "se";
 
 /** Section 15. Deliberately simple — one axis-aligned rectangle, drag to move, drag a corner to
@@ -31,11 +33,17 @@ export function CropModal({
   onCancel: () => void;
 }) {
   const [crop, setCrop] = useState<CropFraction>(initialCrop ?? FULL_CROP);
-  const dragState = useRef<{ handle: Handle; startX: number; startY: number; startCrop: CropFraction } | null>(null);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const dragState = useRef<{ handle: Handle; startX: number; startY: number; startCrop: CropFraction; size: number } | null>(null);
 
   function beginDrag(handle: Handle, e: React.PointerEvent) {
     e.preventDefault();
-    dragState.current = { handle, startX: e.clientX, startY: e.clientY, startCrop: crop };
+    // Measure the box's REAL rendered size at drag-start, rather than assuming a fixed pixel
+    // size -- the box is responsive (w-full aspect-square below), so its actual size depends on
+    // viewport width. A phone narrower than the old hardcoded 360px constant used to overflow the
+    // modal; measuring here keeps the drag math correct at any size instead.
+    const size = boxRef.current?.getBoundingClientRect().width ?? FALLBACK_PREVIEW_SIZE;
+    dragState.current = { handle, startX: e.clientX, startY: e.clientY, startCrop: crop, size };
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", endDrag);
   }
@@ -43,8 +51,8 @@ export function CropModal({
   function onPointerMove(e: PointerEvent) {
     const drag = dragState.current;
     if (!drag) return;
-    const dx = (e.clientX - drag.startX) / PREVIEW_SIZE;
-    const dy = (e.clientY - drag.startY) / PREVIEW_SIZE;
+    const dx = (e.clientX - drag.startX) / drag.size;
+    const dy = (e.clientY - drag.startY) / drag.size;
     let { x, y, width, height } = drag.startCrop;
 
     if (drag.handle === "move") {
@@ -87,8 +95,13 @@ export function CropModal({
       <div className="w-full max-w-sm rounded-3xl bg-white p-5">
         <p className="font-display text-sm font-semibold text-ink-900">Crop image</p>
         <div
-          className="relative mx-auto mt-4 select-none overflow-hidden rounded-xl bg-[repeating-conic-gradient(#e9e4dc_0_25%,white_0_50%)] bg-[length:12px_12px]"
-          style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE }}
+          ref={boxRef}
+          // Responsive: fills the modal's own width (already capped by max-w-sm above) at a 1:1
+          // aspect ratio, instead of a hardcoded 360px box that overflowed the modal on viewports
+          // narrower than ~400px. Crop/handle positions below use percentages of this box, which
+          // stay correct at any rendered size -- only the drag math (onPointerMove) needs the
+          // actual measured pixel size, captured once per drag in beginDrag.
+          className="relative mx-auto mt-4 aspect-square w-full select-none overflow-hidden rounded-xl bg-[repeating-conic-gradient(#e9e4dc_0_25%,white_0_50%)] bg-[length:12px_12px]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- interactive crop preview, not a rendered page asset */}
           <img src={imageUrl} alt="" className="pointer-events-none absolute inset-0 size-full object-contain" />
@@ -97,10 +110,10 @@ export function CropModal({
             onPointerDown={(e) => beginDrag("move", e)}
             className="absolute cursor-move border-2 border-crimson"
             style={{
-              left: crop.x * PREVIEW_SIZE,
-              top: crop.y * PREVIEW_SIZE,
-              width: crop.width * PREVIEW_SIZE,
-              height: crop.height * PREVIEW_SIZE,
+              left: `${crop.x * 100}%`,
+              top: `${crop.y * 100}%`,
+              width: `${crop.width * 100}%`,
+              height: `${crop.height * 100}%`,
             }}
           >
             {(["nw", "ne", "sw", "se"] as const).map((h) => (
