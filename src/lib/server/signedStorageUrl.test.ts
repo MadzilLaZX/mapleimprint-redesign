@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getSignedAssetUrl, extractStoragePathFromPublicUrl } from "./signedStorageUrl.ts";
+import {
+  getSignedAssetUrl,
+  extractStoragePathFromPublicUrl,
+  extractStoragePathFromAnyKnownUrl,
+  normalizeToStableStorageUrl,
+  resolveSecureAssetUrl,
+} from "./signedStorageUrl.ts";
 
 // Fake Supabase client covering exactly the one call shape getSignedAssetUrl uses:
 // .storage.from(bucket).createSignedUrl(path, expiresInSeconds) -- same inline-fake pattern as
@@ -50,7 +56,7 @@ test("getSignedAssetUrl: defaults to a 600-second (10 minute) expiry when none i
   assert.equal(seenTtl, 600);
 });
 
-test("getSignedAssetUrl: returns null (never throws) when Supabase returns an error -- callers fall back to the known public URL", async () => {
+test("getSignedAssetUrl: returns null (never throws) when Supabase returns an error -- callers must treat this as unavailable, never fall back to a public URL", async () => {
   const client = fakeSupabaseStorage({ error: { message: "object not found" } });
   const url = await getSignedAssetUrl(client, "design-uploads", "missing/file.png");
   assert.equal(url, null);
@@ -88,4 +94,87 @@ test("extractStoragePathFromPublicUrl: returns null for a URL that doesn't match
 test("extractStoragePathFromPublicUrl: returns null for a completely unrelated URL, never guesses", () => {
   assert.equal(extractStoragePathFromPublicUrl("https://example.com/not-supabase-at-all.png", "design-uploads"), null);
   assert.equal(extractStoragePathFromPublicUrl("", "design-uploads"), null);
+});
+
+test("resolveSecureAssetUrl: returns null immediately for a null/empty input, no Storage call made", async () => {
+  let called = false;
+  const client = fakeSupabaseStorage({ signedUrl: "https://irrelevant", onCall: () => (called = true) });
+  assert.equal(await resolveSecureAssetUrl(client, new Map(), "design-uploads", null), null);
+  assert.equal(await resolveSecureAssetUrl(client, new Map(), "design-uploads", ""), null);
+  assert.equal(called, false);
+});
+
+test("resolveSecureAssetUrl: a data: URI is passed through UNCHANGED, never signed -- it isn't a Storage reference at all", async () => {
+  let called = false;
+  const client = fakeSupabaseStorage({ signedUrl: "https://irrelevant", onCall: () => (called = true) });
+  const dataUri = "data:image/svg+xml,%3Csvg%3E%3C/svg%3E";
+  const result = await resolveSecureAssetUrl(client, new Map(), "design-uploads", dataUri);
+  assert.equal(result, dataUri);
+  assert.equal(called, false, "a data: URI must never trigger a Storage signing call");
+});
+
+test("resolveSecureAssetUrl: a real Supabase public URL is resolved to a signed URL", async () => {
+  const client = fakeSupabaseStorage({ signedUrl: "https://project.supabase.co/storage/v1/object/sign/design-uploads/a/b.png?token=xyz" });
+  const publicUrl = "https://project.supabase.co/storage/v1/object/public/design-uploads/a/b.png";
+  const result = await resolveSecureAssetUrl(client, new Map(), "design-uploads", publicUrl);
+  assert.equal(result, "https://project.supabase.co/storage/v1/object/sign/design-uploads/a/b.png?token=xyz");
+});
+
+test("resolveSecureAssetUrl: FAIL-SECURE -- an unparseable URL (not a data: URI, not a recognizable Supabase public URL) resolves to null, never the raw URL", async () => {
+  const client = fakeSupabaseStorage({ signedUrl: "https://irrelevant" });
+  const result = await resolveSecureAssetUrl(client, new Map(), "design-uploads", "https://example.com/mystery-file.png");
+  assert.equal(result, null);
+});
+
+test("resolveSecureAssetUrl: caches by the raw input URL -- the same URL requested twice only signs once", async () => {
+  let callCount = 0;
+  const client = fakeSupabaseStorage({
+    signedUrl: "https://project.supabase.co/storage/v1/object/sign/design-uploads/a/b.png?token=xyz",
+    onCall: () => callCount++,
+  });
+  const cache = new Map();
+  const publicUrl = "https://project.supabase.co/storage/v1/object/public/design-uploads/a/b.png";
+  const first = await resolveSecureAssetUrl(client, cache, "design-uploads", publicUrl);
+  const second = await resolveSecureAssetUrl(client, cache, "design-uploads", publicUrl);
+  assert.equal(first, second);
+  assert.equal(callCount, 1);
+});
+
+test("extractStoragePathFromAnyKnownUrl: recovers the path from a plain public URL (same as extractStoragePathFromPublicUrl)", () => {
+  const url = "https://project.supabase.co/storage/v1/object/public/design-uploads/sess/a.png";
+  assert.equal(extractStoragePathFromAnyKnownUrl(url, "design-uploads"), "sess/a.png");
+});
+
+test("extractStoragePathFromAnyKnownUrl: recovers the path from a SIGNED URL, stripping the token query string", () => {
+  const url = "https://project.supabase.co/storage/v1/object/sign/design-uploads/sess/a.png?token=abc123.xyz";
+  assert.equal(extractStoragePathFromAnyKnownUrl(url, "design-uploads"), "sess/a.png");
+});
+
+test("extractStoragePathFromAnyKnownUrl: returns null for a URL that's neither shape", () => {
+  assert.equal(extractStoragePathFromAnyKnownUrl("https://example.com/not-supabase.png", "design-uploads"), null);
+});
+
+test("normalizeToStableStorageUrl: SECURITY/CORRECTNESS -- rewrites a signed URL back to the stable public-URL shape, dropping the token", () => {
+  const signed = "https://project.supabase.co/storage/v1/object/sign/design-uploads/sess/a.png?token=abc123.xyz";
+  const normalized = normalizeToStableStorageUrl(signed, "design-uploads");
+  assert.equal(normalized, "https://project.supabase.co/storage/v1/object/public/design-uploads/sess/a.png");
+});
+
+test("normalizeToStableStorageUrl: a URL already in the stable public shape is returned unchanged", () => {
+  const publicUrl = "https://project.supabase.co/storage/v1/object/public/design-uploads/sess/a.png";
+  assert.equal(normalizeToStableStorageUrl(publicUrl, "design-uploads"), publicUrl);
+});
+
+test("normalizeToStableStorageUrl: a data: URI is returned unchanged", () => {
+  const dataUri = "data:image/svg+xml,%3Csvg%3E%3C/svg%3E";
+  assert.equal(normalizeToStableStorageUrl(dataUri, "design-uploads"), dataUri);
+});
+
+test("normalizeToStableStorageUrl: null stays null", () => {
+  assert.equal(normalizeToStableStorageUrl(null, "design-uploads"), null);
+});
+
+test("normalizeToStableStorageUrl: an unrecognized URL shape is returned UNCHANGED, never discarded -- this is a write path, losing customer design data is worse than storing an unexpected value as-is", () => {
+  const mystery = "https://example.com/some-other-url.png";
+  assert.equal(normalizeToStableStorageUrl(mystery, "design-uploads"), mystery);
 });

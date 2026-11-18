@@ -49,11 +49,15 @@ export function LineFileCard({ line }: { line: LineFileInventory }) {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Asset files (originals)</p>
             {line.assets.length === 0 && <p className="mt-1 text-sm text-muted">None found.</p>}
             <ul className="mt-1 space-y-1">
-              {line.assets.map((a) => (
-                <li key={a.url}>
-                  <a href={a.url} target="_blank" rel="noreferrer" className="text-sm text-ink-900 underline-offset-2 hover:underline">
-                    {a.originalFileName}
-                  </a>
+              {line.assets.map((a, i) => (
+                <li key={`${a.originalFileName}-${i}`}>
+                  {a.url ? (
+                    <a href={a.url} target="_blank" rel="noreferrer" className="text-sm text-ink-900 underline-offset-2 hover:underline">
+                      {a.originalFileName}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-crimson">{a.originalFileName} (couldn&apos;t generate a link — try reloading)</span>
+                  )}
                   {a.fileSizeBytes ? <span className="ml-1 text-xs text-muted">({formatBytes(a.fileSizeBytes)})</span> : null}
                 </li>
               ))}
@@ -95,9 +99,13 @@ export function LineFileCard({ line }: { line: LineFileInventory }) {
                     {line.production.map((p) => (
                       <li key={p.sideType} className="text-sm text-ink-900">
                         {p.sideType}:{" "}
-                        <a href={p.pngUrl} target="_blank" rel="noreferrer" className="underline-offset-2 hover:underline">
-                          PNG
-                        </a>
+                        {p.pngUrl ? (
+                          <a href={p.pngUrl} target="_blank" rel="noreferrer" className="underline-offset-2 hover:underline">
+                            PNG
+                          </a>
+                        ) : (
+                          <span className="text-crimson">PNG unavailable — try reloading</span>
+                        )}
                         {p.svgUrl && (
                           <>
                             {" · "}
@@ -118,14 +126,23 @@ export function LineFileCard({ line }: { line: LineFileInventory }) {
                   <p className="mt-1 text-sm text-muted">No files yet.</p>
                 ) : (
                   <ul className="mt-1 flex flex-wrap gap-3">
-                    {line.preview.map((p) => (
-                      <li key={p.sideType}>
-                        <a href={p.url} target="_blank" rel="noreferrer">
-                          {/* eslint-disable-next-line @next/next/no-img-element -- internal admin-only view of a Supabase Storage URL, not worth adding to next.config.ts's remotePatterns */}
-                          <img src={p.url} alt={`${p.sideType} preview`} className="h-24 w-24 rounded-xl object-cover" />
-                        </a>
-                      </li>
-                    ))}
+                    {line.preview.map((p) =>
+                      p.url ? (
+                        <li key={p.sideType}>
+                          <a href={p.url} target="_blank" rel="noreferrer">
+                            {/* eslint-disable-next-line @next/next/no-img-element -- internal admin-only view of a short-lived signed Supabase Storage URL, not worth adding to next.config.ts's remotePatterns */}
+                            <img src={p.url} alt={`${p.sideType} preview`} className="h-24 w-24 rounded-xl object-cover" />
+                          </a>
+                        </li>
+                      ) : (
+                        <li
+                          key={p.sideType}
+                          className="flex h-24 w-24 items-center justify-center rounded-xl bg-canvas text-center text-xs text-crimson"
+                        >
+                          Unavailable — try reloading
+                        </li>
+                      ),
+                    )}
                   </ul>
                 )}
               </div>

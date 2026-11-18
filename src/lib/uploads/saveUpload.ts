@@ -39,7 +39,12 @@ const EXTENSION_FOR: Record<DetectedFileType, string> = {
 
 export interface SaveUploadResult {
   assetId: string;
+  /** Kept for internal bookkeeping/legacy reads (the Asset row still stores it) -- callers must
+   *  NOT send this to the browser as the file's src/href. Use storageBucket/storagePath with
+   *  getSignedAssetUrl() instead; see signedStorageUrl.ts's fail-secure contract. */
   publicUrl: string;
+  storageBucket: string;
+  storagePath: string;
   fileName: string;
   fileSize: number;
   driveLink: string | null;
@@ -148,6 +153,8 @@ export async function saveUpload(opts: {
   return {
     assetId: assetRow.id,
     publicUrl: urlData.publicUrl,
+    storageBucket: DESIGN_UPLOADS_BUCKET,
+    storagePath,
     fileName: opts.file.name,
     fileSize: bytes.byteLength,
     driveLink,

@@ -12,7 +12,7 @@ const BUCKET = "design-uploads";
  *  per path without needing a real Storage backend. */
 function fakeAdmin(opts: {
   designProjects?: Record<string, { exportStatus: string | null; exportError: string | null; exportedFiles: unknown; previewFiles: unknown }>;
-  assets?: Record<string, { originalFileName: string; publicUrl: string; storageBucket: string; storagePath: string; fileSizeBytes: number | null }>;
+  assets?: Record<string, { originalFileName: string; storageBucket: string; storagePath: string; fileSizeBytes: number | null }>;
   signingBehavior?: (bucket: string, path: string) => string | null; // null = signing "fails"
   signCallLog?: { bucket: string; path: string }[];
 }) {
@@ -127,27 +127,33 @@ function snapshot(objects: DesignObjectRecord[]): DesignProjectRecord {
   };
 }
 
-test("a tracked Asset (has storageBucket/storagePath) is served via a signed URL, not its stored publicUrl", async () => {
+test("a tracked Asset (has storageBucket/storagePath) is served via a signed URL", async () => {
   const admin = fakeAdmin({
-    assets: { "asset-1": { originalFileName: "logo.png", publicUrl: "https://project.supabase.co/storage/v1/object/public/design-uploads/sess/logo.png", storageBucket: BUCKET, storagePath: "sess/logo.png", fileSizeBytes: 1000 } },
+    assets: { "asset-1": { originalFileName: "logo.png", storageBucket: BUCKET, storagePath: "sess/logo.png", fileSizeBytes: 1000 } },
   });
   const inventory = await buildFileInventory(admin, [
     { productName: "Tee", quantity: 1, designSnapshot: snapshot([imageObject({ assetId: "asset-1" })]) },
   ]);
   assert.equal(inventory[0].assets.length, 1);
-  assert.match(inventory[0].assets[0].url, /\/storage\/v1\/object\/sign\//);
-  assert.doesNotMatch(inventory[0].assets[0].url, /\/storage\/v1\/object\/public\//);
+  const url = inventory[0].assets[0].url;
+  assert.ok(url, "expected a non-null signed URL");
+  assert.match(url, /\/storage\/v1\/object\/sign\//);
+  assert.doesNotMatch(url, /\/storage\/v1\/object\/public\//);
 });
 
-test("signing failure falls back to the asset's stored plain publicUrl -- never breaks the page", async () => {
+test("FAIL-SECURE -- a signing failure returns url: null, NEVER a permanent public URL for sensitive artwork", async () => {
   const admin = fakeAdmin({
-    assets: { "asset-1": { originalFileName: "logo.png", publicUrl: "https://project.supabase.co/storage/v1/object/public/design-uploads/sess/logo.png", storageBucket: BUCKET, storagePath: "sess/logo.png", fileSizeBytes: 1000 } },
+    assets: { "asset-1": { originalFileName: "logo.png", storageBucket: BUCKET, storagePath: "sess/logo.png", fileSizeBytes: 1000 } },
     signingBehavior: () => null,
   });
   const inventory = await buildFileInventory(admin, [
     { productName: "Tee", quantity: 1, designSnapshot: snapshot([imageObject({ assetId: "asset-1" })]) },
   ]);
-  assert.equal(inventory[0].assets[0].url, "https://project.supabase.co/storage/v1/object/public/design-uploads/sess/logo.png");
+  // The file is still LISTED (so a customer/admin doesn't think it vanished) but with no usable
+  // URL -- callers render this as "temporarily unavailable," never as a broken/public link.
+  assert.equal(inventory[0].assets.length, 1);
+  assert.equal(inventory[0].assets[0].url, null);
+  assert.equal(inventory[0].assets[0].originalFileName, "logo.png", "the file's existence is still visible even when its URL couldn't be produced");
 });
 
 test("an image object with no tracked Asset row (legacy assetUrl only) still gets signed by recovering the path from the URL", async () => {
@@ -160,21 +166,34 @@ test("an image object with no tracked Asset row (legacy assetUrl only) still get
     },
   ]);
   assert.equal(inventory[0].assets.length, 1);
-  assert.match(inventory[0].assets[0].url, /\/storage\/v1\/object\/sign\/design-uploads\/sess\/legacy\.png/);
+  const url = inventory[0].assets[0].url;
+  assert.ok(url);
+  assert.match(url, /\/storage\/v1\/object\/sign\/design-uploads\/sess\/legacy\.png/);
 });
 
-test("an assetUrl that doesn't match the expected Supabase shape falls back to the raw URL as-is", async () => {
+test("FAIL-SECURE -- an assetUrl that doesn't match the expected Supabase shape (path can't be recovered) returns null, never the raw unparseable URL", async () => {
   const admin = fakeAdmin({});
   const inventory = await buildFileInventory(admin, [
     { productName: "Tee", quantity: 1, designSnapshot: snapshot([imageObject({ assetId: null, assetUrl: "https://example.com/not-supabase.png" })]) },
   ]);
-  assert.equal(inventory[0].assets[0].url, "https://example.com/not-supabase.png");
+  assert.equal(inventory[0].assets[0].url, null);
+});
+
+test("a data: URI assetUrl (Studio's own clipart/graphics library, not a Storage reference) is passed through unchanged, never signed or marked unavailable", async () => {
+  const log: { bucket: string; path: string }[] = [];
+  const admin = fakeAdmin({ signCallLog: log });
+  const dataUri = "data:image/svg+xml,%3Csvg%3E%3C/svg%3E";
+  const inventory = await buildFileInventory(admin, [
+    { productName: "Tee", quantity: 1, designSnapshot: snapshot([imageObject({ assetId: null, assetUrl: dataUri })]) },
+  ]);
+  assert.equal(inventory[0].assets[0].url, dataUri, "a data: URI needs no signing and must never be reported as unavailable");
+  assert.equal(log.length, 0, "no Storage call should be made for a data: URI at all");
 });
 
 test("SECURITY/CORRECTNESS -- the same asset referenced twice (e.g. placed on two sides, or also used as a Designer's Choice reference) de-dupes to one entry with ONE signed URL, not two different tokens for the same file", async () => {
   const log: { bucket: string; path: string }[] = [];
   const admin = fakeAdmin({
-    assets: { "asset-1": { originalFileName: "logo.png", publicUrl: "https://project.supabase.co/storage/v1/object/public/design-uploads/sess/logo.png", storageBucket: BUCKET, storagePath: "sess/logo.png", fileSizeBytes: 1000 } },
+    assets: { "asset-1": { originalFileName: "logo.png", storageBucket: BUCKET, storagePath: "sess/logo.png", fileSizeBytes: 1000 } },
     signCallLog: log,
   });
   const inventory = await buildFileInventory(admin, [
@@ -202,13 +221,33 @@ test("production (300dpi export) and preview files are both served via signed UR
     },
   });
   const inventory = await buildFileInventory(admin, [{ productName: "Tee", quantity: 1, designProjectId: "proj-1" }]);
-  assert.match(inventory[0].production[0].pngUrl, /\/storage\/v1\/object\/sign\/design-uploads\/production-exports\/proj-1\/front\.png/);
-  assert.match(inventory[0].preview[0].url, /\/storage\/v1\/object\/sign\/design-uploads\/preview-exports\/proj-1\/front\.png/);
+  const pngUrl = inventory[0].production[0].pngUrl;
+  const previewUrl = inventory[0].preview[0].url;
+  assert.ok(pngUrl);
+  assert.ok(previewUrl);
+  assert.match(pngUrl, /\/storage\/v1\/object\/sign\/design-uploads\/production-exports\/proj-1\/front\.png/);
+  assert.match(previewUrl, /\/storage\/v1\/object\/sign\/design-uploads\/preview-exports\/proj-1\/front\.png/);
+});
+
+test("FAIL-SECURE -- a production file whose signing fails returns pngUrl: null, never its stored permanent URL", async () => {
+  const admin = fakeAdmin({
+    designProjects: {
+      "proj-1": {
+        exportStatus: "READY",
+        exportError: null,
+        exportedFiles: { front: { pngUrl: "https://project.supabase.co/storage/v1/object/public/design-uploads/production-exports/proj-1/front.png", svgUrl: null } },
+        previewFiles: {},
+      },
+    },
+    signingBehavior: () => null,
+  });
+  const inventory = await buildFileInventory(admin, [{ productName: "Tee", quantity: 1, designProjectId: "proj-1" }]);
+  assert.equal(inventory[0].production[0].pngUrl, null);
 });
 
 test("SECURITY -- a line with no designProjectId/designSnapshot never pulls in another line's files passed in the same call", async () => {
   const admin = fakeAdmin({
-    assets: { "asset-a": { originalFileName: "a.png", publicUrl: "https://x/public/design-uploads/a.png", storageBucket: BUCKET, storagePath: "a.png", fileSizeBytes: 1 } },
+    assets: { "asset-a": { originalFileName: "a.png", storageBucket: BUCKET, storagePath: "a.png", fileSizeBytes: 1 } },
   });
   const inventory = await buildFileInventory(admin, [
     { productName: "Has design", quantity: 1, designSnapshot: snapshot([imageObject({ assetId: "asset-a" })]) },
@@ -216,4 +255,35 @@ test("SECURITY -- a line with no designProjectId/designSnapshot never pulls in a
   ]);
   assert.equal(inventory[0].assets.length, 1);
   assert.equal(inventory[1].assets.length, 0, "a line with no design data of its own must never inherit another line's assets");
+});
+
+test("SECURITY/AUTHORIZATION -- signing only ever requests paths that were derived from the lines actually passed in, never an arbitrary/unrelated path", async () => {
+  // buildFileInventory has no authorization check of its own -- it trusts `lines` completely (see
+  // its own doc comment). This test is the contract that makes that safe in practice: it only
+  // ever CALLS createSignedUrl for storage paths that came from data already scoped to the
+  // caller-supplied lines (Asset rows looked up by id, or paths parsed from a line's own
+  // designSnapshot/exportedFiles) -- never for a path pulled from anywhere else. Asset "asset-b"
+  // below is never referenced by any line passed in, so it must never be signed even though its
+  // row exists in the (fake) database this call has access to.
+  const log: { bucket: string; path: string }[] = [];
+  const admin = fakeAdmin({
+    assets: {
+      "asset-a": { originalFileName: "a.png", storageBucket: BUCKET, storagePath: "owner-a/a.png", fileSizeBytes: 1 },
+      "asset-b": { originalFileName: "b.png", storageBucket: BUCKET, storagePath: "owner-b/b.png", fileSizeBytes: 1 },
+    },
+    signCallLog: log,
+  });
+  await buildFileInventory(admin, [{ productName: "Only A's line", quantity: 1, designSnapshot: snapshot([imageObject({ assetId: "asset-a" })]) }]);
+  assert.ok(log.some((c) => c.path === "owner-a/a.png"));
+  assert.ok(!log.some((c) => c.path === "owner-b/b.png"), "asset-b's path must never be signed -- no line referenced it");
+});
+
+test("a line with no files at all produces empty assets/production/preview arrays, no signing calls made", async () => {
+  const log: { bucket: string; path: string }[] = [];
+  const admin = fakeAdmin({ signCallLog: log });
+  const inventory = await buildFileInventory(admin, [{ productName: "Blank item", quantity: 1 }]);
+  assert.deepEqual(inventory[0].assets, []);
+  assert.deepEqual(inventory[0].production, []);
+  assert.deepEqual(inventory[0].preview, []);
+  assert.equal(log.length, 0);
 });

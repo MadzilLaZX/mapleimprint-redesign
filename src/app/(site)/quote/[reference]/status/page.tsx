@@ -75,12 +75,21 @@ export default async function QuoteStatusPage({ params }: { params: Promise<{ re
 
             {line.preview.length > 0 && (
               <ul className="mt-3 flex flex-wrap gap-3">
-                {line.preview.map((p) => (
-                  <li key={p.sideType}>
-                    {/* eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL */}
-                    <img src={p.url} alt={`${p.sideType} preview`} className="h-28 w-28 rounded-xl object-cover" />
-                  </li>
-                ))}
+                {line.preview.map((p) =>
+                  p.url ? (
+                    <li key={p.sideType}>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed Supabase Storage URL */}
+                      <img src={p.url} alt={`${p.sideType} preview`} className="h-28 w-28 rounded-xl object-cover" />
+                    </li>
+                  ) : (
+                    <li
+                      key={p.sideType}
+                      className="flex h-28 w-28 items-center justify-center rounded-xl bg-canvas text-center text-xs text-muted"
+                    >
+                      Preview temporarily unavailable
+                    </li>
+                  ),
+                )}
               </ul>
             )}
 
@@ -88,11 +97,15 @@ export default async function QuoteStatusPage({ params }: { params: Promise<{ re
               <div className="mt-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Your uploaded files</p>
                 <ul className="mt-1 space-y-1">
-                  {line.assets.map((a) => (
-                    <li key={a.url}>
-                      <a href={a.url} target="_blank" rel="noreferrer" className="text-sm text-ink-900 underline-offset-2 hover:underline">
-                        {a.originalFileName}
-                      </a>
+                  {line.assets.map((a, i) => (
+                    <li key={`${a.originalFileName}-${i}`}>
+                      {a.url ? (
+                        <a href={a.url} target="_blank" rel="noreferrer" className="text-sm text-ink-900 underline-offset-2 hover:underline">
+                          {a.originalFileName}
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted">{a.originalFileName} (temporarily unavailable)</span>
+                      )}
                     </li>
                   ))}
                 </ul>

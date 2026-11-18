@@ -3,6 +3,10 @@ import { cookies } from "next/headers";
 import { createStudioClient } from "@/lib/studio/supabaseClient";
 import { STUDIO_SESSION_COOKIE } from "@/lib/studio/session";
 import { loadDesignProjectRecord } from "@/lib/studio/loadProjectRecord";
+import { signDesignProjectRecordForClient } from "@/lib/studio/signDesignProjectUrls";
+import { DESIGN_UPLOADS_BUCKET } from "@/lib/studio/supabaseClient";
+import { createAdminClient } from "@/lib/server/supabaseAdmin";
+import { normalizeToStableStorageUrl } from "@/lib/server/signedStorageUrl";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType, PricingSnapshot } from "@/lib/studio/types";
 
 async function requireSupabase() {
@@ -23,7 +27,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   // deliberately the same 404 for both, so this never confirms/denies another session's project.
   if (!record) return NextResponse.json({ error: "Design not found." }, { status: 404 });
 
-  return NextResponse.json(record);
+  // Authorization already happened above (the session-scoped client's RLS-governed SELECT only
+  // ever returns a row this session owns) -- the admin client here is used ONLY to sign the
+  // asset/QR-logo URLs already present on that already-authorized record, never to look anything
+  // up by an arbitrary id. See signDesignProjectUrls.ts's own comment for why this must never be
+  // applied to what freeze.ts stores.
+  const signedRecord = await signDesignProjectRecordForClient(createAdminClient(), record);
+  return NextResponse.json(signedRecord);
 }
 
 interface PatchBody {
@@ -89,9 +99,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
 
       if (sideUpdate.objects.length > 0) {
+        // GET and the upload routes now hand the client SIGNED urls for assetUrl/qrLogoUrl (for
+        // rendering) -- the client's in-memory design state legitimately holds those, so autosave
+        // must normalize back to the stable, permanent public-URL shape before persisting.
+        // Without this, the DB would store an expiring signed URL as if it were permanent (see
+        // normalizeToStableStorageUrl's own comment for exactly what breaks if this is skipped).
+        const normalizedObjects = sideUpdate.objects.map((o) => ({
+          ...o,
+          assetUrl: normalizeToStableStorageUrl(o.assetUrl, DESIGN_UPLOADS_BUCKET),
+          qrLogoUrl: normalizeToStableStorageUrl(o.qrLogoUrl, DESIGN_UPLOADS_BUCKET),
+        }));
         const { error: insertError } = await supabase
           .from("DesignObject")
-          .insert(sideUpdate.objects.map((o) => ({ ...o, designSideId: side.id })));
+          .insert(normalizedObjects.map((o) => ({ ...o, designSideId: side.id })));
         if (insertError) {
           console.error("[studio] object insert failed:", insertError);
           return NextResponse.json({ error: "Couldn't save your design." }, { status: 502 });

@@ -3,6 +3,7 @@ import { renderDesignForExport } from "./renderDesignForExport";
 import { renderDesignToSvg, isVectorEligible } from "./renderDesignToSvg";
 import { renderPreview } from "./renderPreview";
 import { DESIGN_UPLOADS_BUCKET } from "./supabaseClient";
+import { signDesignProjectRecordForClient } from "./signDesignProjectUrls";
 import { createAdminClient } from "@/lib/server/supabaseAdmin";
 import type { DesignProjectRecord } from "./types";
 
@@ -64,7 +65,17 @@ export async function triggerDesignExport(
   const storageClient = createAdminClient();
 
   try {
-    const record = project.designSnapshot as DesignProjectRecord;
+    const storedRecord = project.designSnapshot as DesignProjectRecord;
+    // renderDesignForExport/renderPreview fetch each image object's bytes server-side
+    // (@napi-rs/canvas's loadImage) to actually compose the output file -- the frozen snapshot
+    // only ever stores the STABLE, unsigned asset URLs (correctly -- it's a permanent record, see
+    // signDesignProjectUrls.ts's own comment on why signed URLs must never be persisted). That
+    // stable URL stops being independently fetchable once the bucket is private, so the objects
+    // actually used for RENDERING (not persisted anywhere) are signed here, right before use --
+    // this is the same transformation GET /api/studio/[id] applies before sending a record to the
+    // browser, reused here for the same reason: a short-lived, authorized-use URL for reading
+    // pixel data, never written back to the database.
+    const record = await signDesignProjectRecordForClient(storageClient, storedRecord);
     const exportedFiles: Record<string, ExportedSideFiles> = {};
     const previewFiles: Record<string, PreviewSideFile> = {};
 

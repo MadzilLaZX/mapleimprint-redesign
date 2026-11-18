@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createStudioClient, DESIGN_UPLOADS_BUCKET } from "@/lib/studio/supabaseClient";
 import { STUDIO_SESSION_COOKIE } from "@/lib/studio/session";
+import { createAdminClient } from "@/lib/server/supabaseAdmin";
+import { getSignedAssetUrl, extractStoragePathFromAnyKnownUrl } from "@/lib/server/signedStorageUrl";
 
 // Server-side only — never exposed to the browser (no NEXT_PUBLIC_ prefix, read only here). When
 // unset, this route degrades exactly like every other optional integration in this codebase (see
@@ -21,13 +23,6 @@ const PHOTOROOM_TIMEOUT_MS = 30_000;
 // but this app never produces/stores HEIC — see upload/route.ts's own ALLOWED_TYPES — so it's
 // listed here only for completeness, not because any path in this app can currently reach it).
 const PHOTOROOM_ACCEPTED_INPUT_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/heic"]);
-
-function pathFromPublicUrl(url: string): string | null {
-  const marker = `/storage/v1/object/public/${DESIGN_UPLOADS_BUCKET}/`;
-  const index = url.indexOf(marker);
-  if (index === -1) return null;
-  return url.slice(index + marker.length);
-}
 
 /** Derived path is a deterministic function of the original's own path, not a fresh random id —
  *  this is what makes the "already processed, don't pay twice" check possible: re-requesting the
@@ -63,7 +58,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No image specified." }, { status: 400 });
   }
 
-  const originalPath = pathFromPublicUrl(body.imageUrl);
+  // The client may currently be holding either URL shape for this image -- a plain public URL (an
+  // older load) or a signed one (GET /api/studio/[id] and the upload routes both return signed
+  // URLs for rendering now) -- extractStoragePathFromAnyKnownUrl accepts either.
+  const originalPath = extractStoragePathFromAnyKnownUrl(body.imageUrl, DESIGN_UPLOADS_BUCKET);
   if (!originalPath || !originalPath.startsWith(`${sessionToken}/`)) {
     // Also blocks a session trying to background-remove another session's upload — every path in
     // this bucket is session-prefixed (see /api/studio/upload), so a mismatch here means either a
@@ -72,14 +70,18 @@ export async function POST(request: Request) {
   }
 
   const supabase = createStudioClient(sessionToken);
+  const admin = createAdminClient();
   const derivedPath = derivedPathFor(originalPath);
 
   // Duplicate-cost prevention: if this exact source was already processed successfully, reuse it
-  // instead of calling Photoroom (and paying) again for the same click.
-  const existing = supabase.storage.from(DESIGN_UPLOADS_BUCKET).getPublicUrl(derivedPath);
-  const existingCheck = await fetch(existing.data.publicUrl, { method: "HEAD" }).catch(() => null);
-  if (existingCheck?.ok) {
-    return NextResponse.json({ url: existing.data.publicUrl, reused: true });
+  // instead of calling Photoroom (and paying) again for the same click. Signs the derived path
+  // FIRST and HEADs the SIGNED url -- a plain public-URL HEAD would always 404 once the bucket is
+  // private, incorrectly treating every already-processed image as "not yet done" and paying for
+  // Photoroom again on every click.
+  const existingSignedUrl = await getSignedAssetUrl(admin, DESIGN_UPLOADS_BUCKET, derivedPath);
+  const existingCheck = existingSignedUrl ? await fetch(existingSignedUrl, { method: "HEAD" }).catch(() => null) : null;
+  if (existingCheck?.ok && existingSignedUrl) {
+    return NextResponse.json({ url: existingSignedUrl, reused: true });
   }
 
   let sourceBytes: ArrayBuffer;
@@ -175,6 +177,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "We removed the background but couldn't save the result. Please try again." }, { status: 502 });
   }
 
-  const { data } = supabase.storage.from(DESIGN_UPLOADS_BUCKET).getPublicUrl(derivedPath);
-  return NextResponse.json({ url: data.publicUrl, reused: false });
+  // Same fail-secure contract as every other signing call site: the file IS safely stored at this
+  // point (the upload above succeeded), but if we can't sign it, say so rather than handing back
+  // its permanent public URL.
+  const url = await getSignedAssetUrl(admin, DESIGN_UPLOADS_BUCKET, derivedPath);
+  if (!url) {
+    return NextResponse.json({ error: "We removed the background, but couldn't prepare it for preview. Please try again." }, { status: 502 });
+  }
+  return NextResponse.json({ url, reused: false });
 }

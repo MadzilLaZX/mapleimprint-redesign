@@ -42,7 +42,11 @@ export function buildZipArchive(header: ManifestHeader, inventory: LineFileInven
   return archive;
 }
 
-async function fetchBuffer(url: string): Promise<Buffer | null> {
+async function fetchBuffer(url: string | null): Promise<Buffer | null> {
+  // null means fileInventory.ts couldn't produce a signed URL for this file (see its fail-secure
+  // contract) -- silently excluded from the archive rather than erroring the whole download; the
+  // manifest still lists the file by name, so staff can see something's missing and reload.
+  if (!url) return null;
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
