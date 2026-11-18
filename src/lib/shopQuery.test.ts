@@ -30,6 +30,36 @@ function fixtureProduct(overrides: Partial<ShopProduct> = {}): ShopProduct {
   };
 }
 
+test("INVESTIGATION (2026-11-18): ATC Group apparel is SanMar-sourced, not S&S -- correctly classified as reliable", () => {
+  // Raised when ATC-branded products dominated a real /products/custom-apparel/t-shirts page's
+  // first screenful and still showed "Image coming soon": verified directly against the real
+  // generated catalogue (src/lib/generated/products.json) that EVERY sampled ATC-branded t-shirt
+  // (brandName "ATC(tm) EuroSpun(r)", etc.) has its image hosted on media.sanmarcanada.com, NOT
+  // cdn.ssactivewear.com -- SanMar distributes multiple brands (ATC, Port & Company, Gildan,
+  // L3xxx/S3xxx/Y3xxx style-numbered lines, ...), so "ATC" is a BRAND sold through SanMar, not a
+  // separate supplier. Confirmed live: every one of the actual rendered first-24 image URLs for
+  // that exact page (pulled from the real next build's pre-rendered static HTML, not just dev
+  // mode) returned a real HTTP 200 from media.sanmarcanada.com. The catalogue mapping, the
+  // rendered URL, and this classification are all correct -- there was no bug to fix here. This
+  // test locks in that correct state so a future change can't silently misclassify this host or
+  // break the ATC->SanMar mapping without a visible test failure.
+  const sampleAtcSanMarUrls = [
+    "https://media.sanmarcanada.com/catalog/product/a/t/atc0822_form_front_athleticgreyblackcamo_022019.jpg",
+    "https://media.sanmarcanada.com/catalog/product/a/t/atc8000_form_front_athleticgrey_042015.jpg",
+    "https://media.sanmarcanada.com/catalog/product/a/t/atc1000_form-front_aquatic-blue_2024_cil.jpg",
+  ];
+  for (const url of sampleAtcSanMarUrls) {
+    assert.equal(isKnownUnreliableImageHost(url), false, `expected ${url} to be classified as reliable (SanMar-hosted)`);
+  }
+
+  // The sort must put these ATC/SanMar products ahead of an S&S one in "featured" order, exactly
+  // as the real page's behavior confirmed.
+  const atcProduct = fixtureProduct({ id: "atc", image: sampleAtcSanMarUrls[0] });
+  const ssProduct = fixtureProduct({ id: "ss", image: "https://cdn.ssactivewear.com/Images/Color/102738_f_fm.jpg" });
+  const result = sortProducts([ssProduct, atcProduct], "featured");
+  assert.deepEqual(result.map((p) => p.id), ["atc", "ss"]);
+});
+
 test("isKnownUnreliableImageHost: true for the confirmed-blocked S&S CDN host, false for SanMar and local/null", () => {
   assert.equal(isKnownUnreliableImageHost("https://cdn.ssactivewear.com/Images/Color/102738_f_fm.jpg"), true);
   assert.equal(isKnownUnreliableImageHost("https://media.sanmarcanada.com/catalog/product/1/0/108085_black.jpg"), false);
