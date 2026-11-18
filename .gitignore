@@ -13,6 +13,13 @@
 # testing
 /coverage
 
+# Playwright (e2e) — test-run artifacts, not source; see e2e/README.md
+/test-results/
+/playwright-report/
+/e2e/screenshots/
+/blob-report/
+/playwright/.cache/
+
 # next.js
 /.next/
 /out/

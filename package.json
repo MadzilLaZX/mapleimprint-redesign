@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:e2e": "playwright test",
     "test": "node --import ./scripts/register-test-alias-loader.mjs --test src/lib/checkout/validation.test.ts src/lib/admin/session.test.ts src/lib/studio/freeze.test.ts src/lib/studio/syncZIndexToOrder.test.ts src/lib/checkout/generateOrderReference.test.ts src/lib/checkout/generateQuoteReference.test.ts src/lib/checkout/errorMessages.test.ts src/lib/automation/scoring.test.ts src/lib/shopQuery.test.ts src/components/ui/productImageFallback.test.ts src/lib/checkout/canadaPostShippingProvider.test.ts src/lib/checkout/chitChatsShippingProvider.test.ts src/lib/checkout/chitChatsRateFetcher.test.ts src/lib/checkout/chitChatsShipmentReconciler.test.ts src/lib/checkout/packagingProfiles.test.ts src/lib/checkout/chitChatsRateCache.test.ts src/lib/checkout/chitChatsQuoteStore.test.ts src/lib/checkout/chitChatsQuoteCoordinator.test.ts src/lib/checkout/chitChatsShippingProviderPersistentCache.test.ts src/lib/checkout/chitChatsPostagePurchase.test.ts src/lib/checkout/taxProvider.test.ts src/lib/checkout/checkoutTotalConsistency.test.ts src/lib/automation/email/templates.test.ts src/lib/images/resolveHostedImage.test.ts"
   },
   "dependencies": {
@@ -33,6 +34,7 @@
     "use-image": "^1.1.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tabler/icons": "^3.46.0",
     "@tailwindcss/postcss": "^4",
     "@types/archiver": "^8.0.0",
