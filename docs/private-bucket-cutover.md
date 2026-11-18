@@ -46,7 +46,16 @@ none of it blocks starting the cutover sequence, but you should know about it go
 - **No live Supabase connection exists in this environment** (see
   `docs/local-test-environment-setup.md`), so nothing above was run against a real bucket in
   either its public or private state. Every claim here is backed by unit tests against a fake
-  Storage client plus careful code tracing, not a live end-to-end run.
+  Storage client plus careful code tracing, not a live end-to-end run. A real-API integration test
+  (`src/lib/server/privateStorageIntegration.test.ts`) now exists to close this gap — it is
+  prepared and verified to skip cleanly with no credentials present, but has not actually been run
+  against real Storage; see `docs/local-test-environment-setup.md` section 1 for exactly what's
+  still needed (Docker + a pulled schema + a manually-recreated bucket/policy) before it can be.
+- **Vercel Preview is not an isolated environment** — confirmed this round that the Supabase
+  project URL is hardcoded in source (not an env var), so Preview, Production, and local dev all
+  point at the same live project. Step 1 of the cutover sequence below ("deploy to Preview first")
+  still correctly validates the code path, but be aware it is exercising the real bucket and real
+  customer rows while doing so, not a sandboxed copy.
 - Whether the session-scoped (anon-key) client can call `createSignedUrl()` at all against this
   bucket's actual policies was deliberately avoided as a question: every signing call site in this
   round uses the service-role (admin) client specifically, so this was never exercised either way.
