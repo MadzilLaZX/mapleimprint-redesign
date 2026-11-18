@@ -9,6 +9,12 @@ import { buildFileInventory } from "@/lib/admin/fileInventory";
  * as src/app/(site)/order/[reference]/confirmation/page.tsx: do not add a lookup that also works
  * by internal id, and never list/enumerate quotes from this route.
  *
+ * SECURITY FIX (2026-11-18): this comment's claim was false until this date — the generator used
+ * to produce a sequential MI-YYYYMMDD-#### counter (trivially enumerable: anyone with one
+ * reference could walk neighbouring digits for the same day and read other customers' contact
+ * info and artwork). Fixed in generateQuoteReference.ts to use a random base32 suffix instead;
+ * this page's code was already correct, only the generator needed to change.
+ *
  * Customer-facing, so only ever shows the customer's own uploaded originals and the composited
  * preview image — never the 300dpi production files (those are for the print shop, not the
  * customer) and never a fabricated design for a line that's genuinely design-less (Designer's
