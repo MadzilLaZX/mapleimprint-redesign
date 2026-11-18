@@ -44,6 +44,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Supabase CLI local state (e.g. cli-latest version cache) -- never a real local DB, since Docker
+# isn't available in this environment; see docs/local-test-environment-setup.md
+/supabase/.temp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
