@@ -4,18 +4,20 @@ Written because this round needed to test against a real (not mocked) Supabase d
 Square sandbox, and neither was available in this environment. Nothing in this file was executed
 against live infrastructure — follow it to actually run the integration tests this round added.
 
-## 0. Does Vercel Preview share Production Supabase? Yes — by source code, not configuration
+## 0. Does Vercel Preview share Production Supabase? Previously yes by source code — now a config choice
 
-Confirmed by reading `src/lib/studio/supabaseClient.ts` and `src/lib/server/supabaseAdmin.ts`: the
-Supabase project connection is a fixed source constant in both files, not an environment variable,
-and there is no staging-equivalent constant anywhere in this codebase. Practically: local dev,
-every Vercel Preview deployment, and Production all run the same code path and therefore reach the
-same Supabase project — there is no environment-based data isolation today. This is a deliberate,
-pre-existing tradeoff (documented in `supabaseClient.ts`'s own comment) made before Preview/
-Production separation was a concern for private-storage work specifically. Worth an explicit owner
-decision about introducing a real staging project and making that connection env-configurable, now
-that private-storage correctness depends on knowing which project is actually live — not acted on
-here since it's a deployment-architecture change, not a readiness-review fix.
+A prior round found that the Supabase project connection was a fixed source constant in both
+`src/lib/studio/supabaseClient.ts` and `src/lib/server/supabaseAdmin.ts`, not an environment
+variable — meaning local dev, every Vercel Preview deployment, and Production all necessarily
+reached the same project, with no way to separate them without a code change.
+
+**That's fixed as of this round.** Both files now read their connection from environment
+variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`), with no hardcoded fallback — see `docs/environment-configuration.md`
+for the full variable reference and exactly which Vercel environment needs which values.
+Separating Preview from Production is now purely a configuration step (point Preview's env vars
+at a staging project once one exists) with zero further code changes required on either side of
+that switch. `supabase/staging-baseline/` has the schema to actually create that staging project.
 
 ## 1. Local, isolated Supabase (for `src/lib/studio/dbIntegration.test.ts` and
    `src/lib/server/privateStorageIntegration.test.ts`)

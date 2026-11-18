@@ -55,11 +55,23 @@ if (existsSync(envPath)) {
   }
 }
 
-// Same project URL constant as src/lib/server/supabaseAdmin.ts -- not a secret, it's a public
-// project ref, never the thing this script is careful about.
-const SUPABASE_URL = 'https://ovqkwedpwmuusnijbxro.supabase.co';
+// Reads the same NEXT_PUBLIC_SUPABASE_URL env var src/lib/server/supabaseAdmin.ts now requires --
+// not a secret (it's a public project ref), but no longer hardcoded either, so this script
+// targets whichever project the website's own .env.local is currently configured for (staging or
+// production) rather than always assuming production.
 const MIN_SURVIVING_FRACTION = 0.5;
 const PAGE_SIZE = 1000; // PostgREST's own default max rows per request
+
+function requireSupabaseUrl() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) {
+    throw new Error(
+      'NEXT_PUBLIC_SUPABASE_URL is not set (checked process.env and .env.local). This script ' +
+        'reads the same env var the website app itself uses -- set it there instead of hardcoding it here.',
+    );
+  }
+  return url;
+}
 
 function requireServiceRoleKey() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -130,7 +142,7 @@ function pushTo(map, key, value) {
 
 async function main() {
   const force = process.argv.includes('--force');
-  const supabase = createClient(SUPABASE_URL, requireServiceRoleKey(), { auth: { persistSession: false } });
+  const supabase = createClient(requireSupabaseUrl(), requireServiceRoleKey(), { auth: { persistSession: false } });
 
   console.log('Fetching published MasterProducts...');
   const products = await fetchAll(supabase, 'MasterProduct', {

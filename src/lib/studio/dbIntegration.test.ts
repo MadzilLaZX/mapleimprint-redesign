@@ -29,8 +29,8 @@ import assert from "node:assert/strict";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { freezeDesignProject } from "./freeze.ts";
 import { generateQuoteReference } from "../checkout/generateQuoteReference.ts";
+import { refuseIfProductionSupabaseUrl } from "../server/knownProductionSupabaseProject.ts";
 
-const PRODUCTION_SUPABASE_URL = "https://ovqkwedpwmuusnijbxro.supabase.co";
 const localUrl = process.env.LOCAL_SUPABASE_URL;
 const localKey = process.env.LOCAL_SUPABASE_SERVICE_ROLE_KEY;
 const hasCredentials = Boolean(localUrl) && Boolean(localKey) && process.env.RUN_LOCAL_DB_INTEGRATION_TESTS === "1";
@@ -44,12 +44,7 @@ before(() => {
   if (!hasCredentials) return;
   // Hard safety guard, not just documentation: refuses to run against the real project even if
   // someone mis-sets these env vars, regardless of what RUN_LOCAL_DB_INTEGRATION_TESTS says.
-  if (localUrl === PRODUCTION_SUPABASE_URL || localUrl!.includes("ovqkwedpwmuusnijbxro")) {
-    throw new Error(
-      "LOCAL_SUPABASE_URL points at the production project -- refusing to run write tests against it. " +
-        "Use a local `supabase start` instance (http://127.0.0.1:54321) instead.",
-    );
-  }
+  refuseIfProductionSupabaseUrl(localUrl, "LOCAL_SUPABASE_URL");
   db = createClient(localUrl!, localKey!, { auth: { persistSession: false } });
 });
 

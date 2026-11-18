@@ -34,8 +34,13 @@ if (existsSync(envPath)) {
   }
 }
 
-const SUPABASE_URL = 'https://ovqkwedpwmuusnijbxro.supabase.co';
 const PAGE_SIZE = 1000;
+
+function requireSupabaseUrl() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set (checked process.env and .env.local).');
+  return url;
+}
 
 function requireServiceRoleKey() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -80,7 +85,7 @@ async function main() {
   const staged = JSON.parse(readFileSync(stagedPath, 'utf-8'));
   const stagedBySlug = new Map(staged.map((p) => [p.slug, p]));
 
-  const supabase = createClient(SUPABASE_URL, requireServiceRoleKey(), { auth: { persistSession: false } });
+  const supabase = createClient(requireSupabaseUrl(), requireServiceRoleKey(), { auth: { persistSession: false } });
 
   console.log('Fetching every published product + its orderable offers directly (independent of the export script)...');
   const published = await fetchAll(supabase, 'MasterProduct', {

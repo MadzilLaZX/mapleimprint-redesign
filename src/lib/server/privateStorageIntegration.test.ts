@@ -41,8 +41,8 @@ import {
   normalizeToStableStorageUrl,
   resolveSecureAssetUrl,
 } from "./signedStorageUrl.ts";
+import { refuseIfProductionSupabaseUrl } from "./knownProductionSupabaseProject.ts";
 
-const PRODUCTION_SUPABASE_URL = "https://ovqkwedpwmuusnijbxro.supabase.co";
 const BUCKET = "design-uploads";
 const localUrl = process.env.LOCAL_SUPABASE_URL;
 const localKey = process.env.LOCAL_SUPABASE_SERVICE_ROLE_KEY;
@@ -59,12 +59,7 @@ before(() => {
   // Hard safety guard, not just documentation -- same pattern as dbIntegration.test.ts's own
   // `before()`. Refuses to run real Storage writes against the real project even if someone
   // mis-sets these env vars.
-  if (localUrl === PRODUCTION_SUPABASE_URL || localUrl!.includes("ovqkwedpwmuusnijbxro")) {
-    throw new Error(
-      "LOCAL_SUPABASE_URL points at the production project -- refusing to run write tests against it. " +
-        "Use a local `supabase start` instance (http://127.0.0.1:54321) instead.",
-    );
-  }
+  refuseIfProductionSupabaseUrl(localUrl, "LOCAL_SUPABASE_URL");
   db = createClient(localUrl!, localKey!, { auth: { persistSession: false } });
 });
 

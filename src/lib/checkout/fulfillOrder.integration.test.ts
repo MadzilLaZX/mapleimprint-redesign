@@ -1,14 +1,23 @@
-// Integration tests against the LIVE maple-imprint-catalogue Supabase project -- not mocks, and
-// NOT run by `npm test` or any automatic/CI path. These perform real INSERT/UPDATE/DELETE writes
-// (via real RPC calls with service-role credentials) against the same shared database holding
-// real customer orders. Requires a deliberate, explicit opt-in -- THREE separate env vars as of
-// 2026-11-19 (previously two; a third, unambiguously-named confirmation was added as a fail-closed
-// safety check so this can't fire from merely having service-role credentials + one terse flag
-// set for an unrelated reason):
+// Integration tests against a REAL Supabase project -- not mocks, and NOT run by `npm test` or
+// any automatic/CI path. These perform real INSERT/UPDATE/DELETE writes (via real RPC calls with
+// service-role credentials). As of this round, the target project is read from
+// INTEGRATION_TEST_SUPABASE_URL rather than hardcoded -- point it at a staging project once one
+// exists (see docs/staging-schema-setup.md); running against production is still possible but
+// requires an EXTRA explicit confirmation on top of the base opt-in, checked dynamically (not by
+// a hardcoded URL comparison) via isProductionSupabaseUrl():
 //
-//   RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 \
-//   ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production \
-//   node --env-file=.env.local --test src/lib/checkout/fulfillOrder.integration.test.ts
+//   Against staging (once it exists):
+//     INTEGRATION_TEST_SUPABASE_URL=<staging project URL> \
+//     SUPABASE_SERVICE_ROLE_KEY=<staging service_role key> \
+//     RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 \
+//     node --test src/lib/checkout/fulfillOrder.integration.test.ts
+//
+//   Against production (not recommended -- prefer staging):
+//     INTEGRATION_TEST_SUPABASE_URL=<production project URL> \
+//     SUPABASE_SERVICE_ROLE_KEY=<production service_role key> \
+//     RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 \
+//     ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production \
+//     node --test src/lib/checkout/fulfillOrder.integration.test.ts
 //
 // Exercises the real mark_order_paid_and_sync_attempt() Postgres function and the real
 // markOrderPaidAndNotify() code path through it, via the same service-role REST/RPC access the
@@ -17,26 +26,34 @@
 // MO-TEST-INTEGRATION-), and deleted in an `after` hook regardless of pass/fail.
 //
 // The three scenarios below (decline-then-retry, duplicate webhook, concurrent callbacks) were
-// already verified live, manually, on 2026-11-10 -- all passing. This file exists so the same
-// coverage is repeatable later without needing another manual pass, not because it's unverified.
+// already verified live, manually, on 2026-11-10 (against production, before this file existed or
+// staging was planned) -- all passing. This file exists so the same coverage is repeatable later
+// without needing another manual pass, not because it's unverified.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { markOrderPaidAndNotify } from "./fulfillOrder.ts";
+import { isProductionSupabaseUrl } from "../server/knownProductionSupabaseProject.ts";
 
-const SUPABASE_URL = "https://ovqkwedpwmuusnijbxro.supabase.co";
-const hasCredentials =
-  Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) &&
-  process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1" &&
-  process.env.ALLOW_PRODUCTION_DB_WRITES === "i-understand-this-writes-to-production";
+const targetUrl = process.env.INTEGRATION_TEST_SUPABASE_URL;
+const hasBaseOptIn = Boolean(targetUrl) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) && process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1";
+const targetsProduction = isProductionSupabaseUrl(targetUrl);
+const hasCredentials = hasBaseOptIn && (!targetsProduction || process.env.ALLOW_PRODUCTION_DB_WRITES === "i-understand-this-writes-to-production");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabaseAdmin: SupabaseClient<any, any, any>;
 const createdOrderIds: string[] = [];
 
 before(() => {
+  if (hasBaseOptIn && targetsProduction && process.env.ALLOW_PRODUCTION_DB_WRITES !== "i-understand-this-writes-to-production") {
+    throw new Error(
+      "INTEGRATION_TEST_SUPABASE_URL resolves to the production Supabase project. Set " +
+        "ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production explicitly if this is " +
+        "really intended, or point INTEGRATION_TEST_SUPABASE_URL at a staging project instead.",
+    );
+  }
   if (!hasCredentials) return;
-  supabaseAdmin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  supabaseAdmin = createClient(targetUrl!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false },
   });
 });

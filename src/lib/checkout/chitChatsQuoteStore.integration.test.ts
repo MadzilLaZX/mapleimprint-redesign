@@ -1,15 +1,20 @@
-// Integration tests against the LIVE maple-imprint-catalogue Supabase project -- not mocks, and
-// NOT run by `npm test` or any automatic/CI path. Same pattern and same opt-in env vars as
-// fulfillOrder.integration.test.ts (as of 2026-11-19, THREE separate env vars -- a third,
-// unambiguously-named confirmation was added as a fail-closed safety check). These INSERT/UPDATE/
-// DELETE real rows in the ChitChatsShippingQuote table
+// Integration tests against a REAL Supabase project -- not mocks, and NOT run by `npm test` or
+// any automatic/CI path. Same pattern and env vars as fulfillOrder.integration.test.ts (see that
+// file's header for the full explanation): the target project is read from
+// INTEGRATION_TEST_SUPABASE_URL rather than hardcoded, so this can run against a staging project
+// once one exists, with production only reachable behind an extra explicit confirmation. These
+// INSERT/UPDATE/DELETE real rows in the ChitChatsShippingQuote table
 // (supabase/migrations/010_chit_chats_shipping_quotes.sql) via the service-role client -- requires
-// that migration to have been reviewed and APPLIED first (it is NOT applied as of this file being
-// written), plus a deliberate, explicit opt-in:
+// that migration to have been reviewed and applied against whichever project is targeted first.
 //
-//   RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 \
-//   ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production \
-//   node --env-file=.env.local --test src/lib/checkout/chitChatsQuoteStore.integration.test.ts
+//   Against staging (once it exists):
+//     INTEGRATION_TEST_SUPABASE_URL=<staging project URL> \
+//     SUPABASE_SERVICE_ROLE_KEY=<staging service_role key> \
+//     RUN_LIVE_PAYMENT_INTEGRATION_TESTS=1 \
+//     node --test src/lib/checkout/chitChatsQuoteStore.integration.test.ts
+//
+//   Against production (not recommended -- prefer staging), additionally set:
+//     ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production
 //
 // All rows here are synthetic (fingerprint prefixed with a fixed, recognizable test marker) and
 // deleted in an `after` hook regardless of pass/fail. No real Chit Chats API call is made by this
@@ -23,20 +28,27 @@ import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SupabaseChitChatsQuoteStore, generateOwnerToken } from "./chitChatsQuoteStore.ts";
+import { isProductionSupabaseUrl } from "../server/knownProductionSupabaseProject.ts";
 
-const SUPABASE_URL = "https://ovqkwedpwmuusnijbxro.supabase.co";
-const hasCredentials =
-  Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) &&
-  process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1" &&
-  process.env.ALLOW_PRODUCTION_DB_WRITES === "i-understand-this-writes-to-production";
+const targetUrl = process.env.INTEGRATION_TEST_SUPABASE_URL;
+const hasBaseOptIn = Boolean(targetUrl) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) && process.env.RUN_LIVE_PAYMENT_INTEGRATION_TESTS === "1";
+const targetsProduction = isProductionSupabaseUrl(targetUrl);
+const hasCredentials = hasBaseOptIn && (!targetsProduction || process.env.ALLOW_PRODUCTION_DB_WRITES === "i-understand-this-writes-to-production");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabaseAdmin: SupabaseClient<any, any, any>;
 const createdFingerprints: string[] = [];
 
 before(() => {
+  if (hasBaseOptIn && targetsProduction && process.env.ALLOW_PRODUCTION_DB_WRITES !== "i-understand-this-writes-to-production") {
+    throw new Error(
+      "INTEGRATION_TEST_SUPABASE_URL resolves to the production Supabase project. Set " +
+        "ALLOW_PRODUCTION_DB_WRITES=i-understand-this-writes-to-production explicitly if this is " +
+        "really intended, or point INTEGRATION_TEST_SUPABASE_URL at a staging project instead.",
+    );
+  }
   if (!hasCredentials) return;
-  supabaseAdmin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+  supabaseAdmin = createClient(targetUrl!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
 });
 
 after(async () => {
@@ -125,9 +137,9 @@ test("takeOver() against a real, genuinely-stale pending row succeeds and resets
 });
 
 test("real RLS: the anon key cannot read ChitChatsShippingQuote rows at all", { skip: !hasCredentials }, async () => {
-  const anonKey = process.env.SUPABASE_ANON_KEY;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!anonKey) return; // no anon key configured locally -- not this test's job to require one
-  const anonClient = createClient(SUPABASE_URL, anonKey);
+  const anonClient = createClient(targetUrl!, anonKey);
   const fp = syntheticFingerprint("rls-deny-all");
   const store = new SupabaseChitChatsQuoteStore(supabaseAdmin);
   const now = new Date();

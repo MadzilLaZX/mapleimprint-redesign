@@ -51,11 +51,14 @@ none of it blocks starting the cutover sequence, but you should know about it go
   prepared and verified to skip cleanly with no credentials present, but has not actually been run
   against real Storage; see `docs/local-test-environment-setup.md` section 1 for exactly what's
   still needed (Docker + a pulled schema + a manually-recreated bucket/policy) before it can be.
-- **Vercel Preview is not an isolated environment** — confirmed this round that the Supabase
-  project URL is hardcoded in source (not an env var), so Preview, Production, and local dev all
-  point at the same live project. Step 1 of the cutover sequence below ("deploy to Preview first")
-  still correctly validates the code path, but be aware it is exercising the real bucket and real
-  customer rows while doing so, not a sandboxed copy.
+- **Vercel Preview's isolation from Production is now a configuration choice, not a code
+  limitation** — a prior round found the Supabase project URL was hardcoded in source; a later
+  round (see `docs/environment-configuration.md`) made it environment-configured instead. Until
+  Preview's own Vercel env vars are actually pointed at a staging project (see
+  `supabase/staging-baseline/`), it still reaches the real live project by configuration, same as
+  before — so step 1 of the cutover sequence below ("deploy to Preview first") still exercises the
+  real bucket and real customer rows today. Pointing Preview at staging first, then re-running
+  step 1 there, is now possible without any further code change.
 - Whether the session-scoped (anon-key) client can call `createSignedUrl()` at all against this
   bucket's actual policies was deliberately avoided as a question: every signing call site in this
   round uses the service-role (admin) client specifically, so this was never exercised either way.
