@@ -4,31 +4,18 @@ Written because this round needed to test against a real (not mocked) Supabase d
 Square sandbox, and neither was available in this environment. Nothing in this file was executed
 against live infrastructure — follow it to actually run the integration tests this round added.
 
-## 0. Does Vercel Preview share Production Supabase? Yes — unconditionally, by source code, not configuration
+## 0. Does Vercel Preview share Production Supabase? Yes — by source code, not configuration
 
-Confirmed by reading `src/lib/studio/supabaseClient.ts` and `src/lib/server/supabaseAdmin.ts`
-directly: **the Supabase project URL (`https://ovqkwedpwmuusnijbxro.supabase.co`) is a hardcoded
-source constant in both files, not an environment variable.** There is no `NEXT_PUBLIC_SUPABASE_URL`
-or equivalent anywhere in this codebase. This means:
-
-- Local dev, every Vercel Preview deployment, and Production all run the exact same code and
-  therefore all connect to the **exact same Supabase project** — same Postgres database, same
-  `design-uploads` bucket, same real customer rows and files. There is no environment-based
-  separation at the Supabase layer at all today.
-- The only thing that *is* environment-scoped is `SUPABASE_SERVICE_ROLE_KEY` (read from
-  `process.env`, presumably set differently per Vercel environment) — but since the URL is fixed
-  in source, even a different service-role key per environment would still authenticate against
-  the one shared project. It cannot provide isolation on its own.
-- Practical consequence: **testing anything in a Vercel Preview deployment today is testing
-  against real production data and real production storage**, not a separate staging copy. A bug
-  in Preview-only code (e.g. a bad migration applied by hand, a test upload) is a real risk to the
-  live project, not a sandboxed one.
-- This was deliberate, not an oversight — `supabaseClient.ts`'s own comment says the anon key is
-  "hardcoded on purpose, so Studio works on every deployment target without needing Vercel env var
-  configuration." That tradeoff made sense before Preview = Production mattered; it's worth an
-  explicit owner decision (not made here) about whether to introduce a real staging Supabase
-  project and switch these two files to read the URL from an env var, now that private-storage
-  correctness depends on knowing which project is live.
+Confirmed by reading `src/lib/studio/supabaseClient.ts` and `src/lib/server/supabaseAdmin.ts`: the
+Supabase project connection is a fixed source constant in both files, not an environment variable,
+and there is no staging-equivalent constant anywhere in this codebase. Practically: local dev,
+every Vercel Preview deployment, and Production all run the same code path and therefore reach the
+same Supabase project — there is no environment-based data isolation today. This is a deliberate,
+pre-existing tradeoff (documented in `supabaseClient.ts`'s own comment) made before Preview/
+Production separation was a concern for private-storage work specifically. Worth an explicit owner
+decision about introducing a real staging project and making that connection env-configurable, now
+that private-storage correctness depends on knowing which project is actually live — not acted on
+here since it's a deployment-architecture change, not a readiness-review fix.
 
 ## 1. Local, isolated Supabase (for `src/lib/studio/dbIntegration.test.ts` and
    `src/lib/server/privateStorageIntegration.test.ts`)
@@ -41,17 +28,13 @@ runtime is missing. Re-confirmed this round; nothing has changed about this bloc
 
 **Second blocker, newly confirmed this round — Docker alone is NOT sufficient:**
 
-- The `DesignProject`/`DesignSide`/`DesignObject`/`Asset` **base tables have no `CREATE TABLE`
-  anywhere in this repository.** `supabase/migrations/001_design_freeze.sql`'s own header comment
-  says they were created "via the SQL editor... no migration tooling in this repo runs this
-  automatically." Every numbered migration under `supabase/migrations/` is an `ALTER TABLE`
-  against tables assumed to already exist. Running `supabase db reset` against a bare local
-  instance will fail outright on the first migration (`ALTER TABLE "DesignProject"` on a table
-  that was never created).
-- The `design-uploads` **bucket itself, and its `storage.objects` RLS policy** (the
-  `(storage.foldername(name))[1] = x-mi-session header` folder-scoping rule referenced in
-  `exportDesign.ts`'s own comment) are *also* dashboard-only — no SQL for either exists in this
-  repo.
+- The Studio-related base tables have no `CREATE TABLE` anywhere in this repository —
+  `supabase/migrations/001_design_freeze.sql`'s own header comment says they were created directly
+  against the live project, outside any migration tooling this repo runs automatically. Every
+  numbered migration under `supabase/migrations/` is an `ALTER TABLE` against tables assumed to
+  already exist, so a bare local instance would fail on the very first migration.
+- The design-uploads storage bucket and its access policy are, likewise, dashboard-only — not
+  captured as SQL anywhere in this repo.
 - Neither gap is new this round; both are now explicitly documented because
   `privateStorageIntegration.test.ts` (below) is the first test that would actually need all of
   this to exist locally to run meaningfully.
@@ -61,17 +44,15 @@ runtime is missing. Re-confirmed this round; nothing has changed about this bloc
 1. `npx supabase init` — one-time, creates `supabase/config.toml`.
 2. `npx supabase link` (needs a database password from Project Settings > Database), then
    **`npx supabase db pull`** — the standard Supabase-CLI way to capture a schema that was never
-   checked in. This produces a new migration file containing the real
-   `DesignProject`/`DesignSide`/`DesignObject`/`Asset` table definitions pulled from the live
-   project. **Review the pulled file before trusting it** — this is a read-only pull, not a write,
-   but double-check it didn't pull anything unexpected.
+   checked in. This produces a new migration file with the real table definitions pulled from the
+   live project. **Review the pulled file before trusting it** — this is a read-only pull, not a
+   write, but double-check it didn't pull anything unexpected.
 3. `npx supabase start`, then `npx supabase db reset` to apply the pulled schema plus every file
    already in `supabase/migrations/` against the fresh local instance.
-4. In the local Supabase Studio (`http://127.0.0.1:54323`), manually create a bucket named
-   `design-uploads`, mark it **private**, and add a `storage.objects` policy equivalent to
-   production's folder-scoped rule above. There is no SQL to copy this from verbatim yet —
-   reproduce it by hand from the production dashboard's existing policy text (Authentication →
-   Policies, scoped to `storage.objects`, filtered to this bucket).
+4. In the local Supabase Studio (`http://127.0.0.1:54323`), manually recreate the storage bucket
+   and its access policy to match the live project — copy the policy directly from the production
+   dashboard (Authentication → Policies, scoped to `storage.objects`) rather than guessing its
+   shape; the exact rule isn't reproduced here.
 5. Run the DB-only tests:
    ```
    LOCAL_SUPABASE_URL=http://127.0.0.1:54321 \

@@ -6,39 +6,23 @@
 // client -- this file exercises the real @supabase/supabase-js Storage API (real upload, real
 // createSignedUrl, real fetch of the signed URL, real expiry) against a real bucket.
 //
-// IMPORTANT -- this alone is not enough to actually run these tests. Two things are missing from
-// version control that a fresh `supabase start` instance will NOT have, confirmed while writing
-// this file:
-//
-//   1. The DesignProject/DesignSide/DesignObject/Asset BASE TABLES have no CREATE TABLE anywhere
-//      in this repo -- supabase/migrations/001_design_freeze.sql's own header comment says they
-//      were created "via the SQL editor... no migration tooling in this repo runs this
-//      automatically." Every numbered migration in supabase/migrations/ is an ALTER against
-//      tables assumed to already exist. A bare `supabase start` + `supabase migration up` will
-//      fail outright (ALTER TABLE on a table that doesn't exist) -- this is a pre-existing gap,
-//      not something introduced by this round.
-//   2. The `design-uploads` BUCKET and its storage.objects RLS policy (the
-//      `(storage.foldername(name))[1] = x-mi-session header` rule referenced in
-//      exportDesign.ts's own comment) are ALSO dashboard-only -- no SQL for either exists in this
-//      repo.
-//
-// Real owner steps to get an isolated instance that can actually run this file:
+// IMPORTANT -- a plain `supabase start` is not enough to run this file. The Studio base tables and
+// the design-uploads bucket/policy were both created directly against the live project, outside
+// any migration this repo runs automatically -- see docs/local-test-environment-setup.md section 1
+// for the full explanation and the exact owner steps (Docker install, `supabase db pull` to
+// capture the live schema, and manually recreating the bucket + its access policy locally by
+// copying it from the production dashboard). Summarized version of those steps:
 //   1. Install Docker Desktop (or Podman) -- confirmed NOT installed in the environment this was
 //      written in (`npx supabase start` fails with "docker: command not found").
-//   2. `npx supabase init`, then **`npx supabase db pull`** against the real project (requires
-//      `npx supabase link` with a database password from Project Settings > Database) -- this is
-//      the standard Supabase-CLI way to capture a schema that was never checked in, and will
-//      produce a migration file containing the real DesignProject/DesignSide/DesignObject/Asset
-//      definitions. Review the pulled file before trusting it; don't run it against anything but
-//      a local instance.
+//   2. `npx supabase init`, then `npx supabase db pull` against the real project (requires
+//      `npx supabase link` with a database password) to capture the schema that was never checked
+//      in. Review the pulled file before trusting it; don't run it against anything but a local
+//      instance.
 //   3. `npx supabase start`, then `npx supabase db reset` to apply the pulled schema + every file
 //      already in supabase/migrations/.
-//   4. In the local Supabase Studio (http://127.0.0.1:54323), create a bucket named
-//      `design-uploads`, mark it PRIVATE, and add a storage.objects policy equivalent to
-//      production's folder-scoped rule above (INSERT/SELECT where the first path segment equals
-//      the caller's own session). Without this policy, the cross-session parts of this file would
-//      pass for the wrong reason (no policy to violate) -- there is currently no SQL to copy this
-//      from verbatim, so reproduce it by hand from the dashboard's existing policy text.
+//   4. In the local Supabase Studio (http://127.0.0.1:54323), recreate the storage bucket and its
+//      access policy to match the live project -- copy the policy from the production dashboard
+//      rather than guessing its shape (see docs/local-test-environment-setup.md, not reproduced here).
 //   5. Run:
 //        LOCAL_SUPABASE_URL=http://127.0.0.1:54321 \
 //        LOCAL_SUPABASE_SERVICE_ROLE_KEY=<service_role key supabase start printed> \
