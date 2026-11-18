@@ -96,6 +96,22 @@ const nextConfig: NextConfig = {
       {
         // SanMar Canada's product-image CDN — same hotlinking stance as S&S above, same open
         // image-rights question. Added 2026-09-12 with the first real SanMar products.
+        //
+        // UPDATE (2026-11-18): real browser evidence shows a direct, un-referred request to a
+        // media.sanmarcanada.com URL returns 200 (Server: AmazonS3 behind CloudFront, "X-Cache:
+        // Hit from cloudfront"), but the SAME URL requested as an embedded <img> from this site's
+        // actual deployed domain returned 403 ("Server: CloudFront", "X-Cache: Error from
+        // cloudfront" -- the error came from CloudFront itself, before reaching S3). That pattern
+        // -- works with no/foreign referrer, fails when the referrer is a real third-party site --
+        // is the classic signature of referer-based hotlink protection, consistent with the
+        // "image-rights unconfirmed" caveat above. This was NOT independently re-confirmed by
+        // testing Referer header variations against SanMar's CDN (deliberately not attempted --
+        // that would itself be probing for a bypass, not diagnosing one). Practical consequence:
+        // this host's earlier "reliable" classification (src/lib/shopQuery.ts) was based on a
+        // plain unauthenticated request that doesn't replicate real embedded browser behavior --
+        // treat that classification as UNCONFIRMED for real-world embedding until this is
+        // resolved with SanMar directly (see catalogue-engine/OUTREACH_DRAFTS.md's SanMar
+        // section, extended this round to ask about authorized image access specifically).
         protocol: "https",
         hostname: "media.sanmarcanada.com",
       },

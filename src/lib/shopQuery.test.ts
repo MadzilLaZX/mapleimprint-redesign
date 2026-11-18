@@ -30,19 +30,24 @@ function fixtureProduct(overrides: Partial<ShopProduct> = {}): ShopProduct {
   };
 }
 
-test("INVESTIGATION (2026-11-18): ATC Group apparel is SanMar-sourced, not S&S -- correctly classified as reliable", () => {
+test("INVESTIGATION (2026-11-18, updated): ATC Group apparel is SanMar-sourced, not S&S -- the CATALOGUE mapping is correct; the HOST's real-world reliability is now an open question, not confirmed", () => {
   // Raised when ATC-branded products dominated a real /products/custom-apparel/t-shirts page's
   // first screenful and still showed "Image coming soon": verified directly against the real
   // generated catalogue (src/lib/generated/products.json) that EVERY sampled ATC-branded t-shirt
   // (brandName "ATC(tm) EuroSpun(r)", etc.) has its image hosted on media.sanmarcanada.com, NOT
   // cdn.ssactivewear.com -- SanMar distributes multiple brands (ATC, Port & Company, Gildan,
   // L3xxx/S3xxx/Y3xxx style-numbered lines, ...), so "ATC" is a BRAND sold through SanMar, not a
-  // separate supplier. Confirmed live: every one of the actual rendered first-24 image URLs for
-  // that exact page (pulled from the real next build's pre-rendered static HTML, not just dev
-  // mode) returned a real HTTP 200 from media.sanmarcanada.com. The catalogue mapping, the
-  // rendered URL, and this classification are all correct -- there was no bug to fix here. This
-  // test locks in that correct state so a future change can't silently misclassify this host or
-  // break the ATC->SanMar mapping without a visible test failure.
+  // separate supplier. The catalogue mapping and rendered URL are confirmed correct -- that part
+  // was never the bug.
+  //
+  // UPDATED (2026-11-18, same day): real browser evidence (see next.config.ts's
+  // media.sanmarcanada.com comment and shopQuery.ts's KNOWN_UNRELIABLE_IMAGE_HOSTS comment above)
+  // shows this host returning 403 for a real embedded request from this site's own domain,
+  // despite returning 200 to a plain no-referrer request -- so "isKnownUnreliableImageHost
+  // returns false for SanMar" below is still an accurate test of TODAY'S CODE, but no longer
+  // being read as proof the images actually display for real visitors. This assertion is kept
+  // (it documents current, intentional behavior) but must not be cited as evidence the problem
+  // is resolved -- see docs/production-deployment-checklist.md for the honest current status.
   const sampleAtcSanMarUrls = [
     "https://media.sanmarcanada.com/catalog/product/a/t/atc0822_form_front_athleticgreyblackcamo_022019.jpg",
     "https://media.sanmarcanada.com/catalog/product/a/t/atc8000_form_front_athleticgrey_042015.jpg",

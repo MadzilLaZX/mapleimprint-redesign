@@ -37,6 +37,22 @@ export type ShopSearchParams = {
  *  first means a customer sees at least some real photos before any placeholder, without ever
  *  pretending the blocked ones have loaded.
  *
+ *  IMPORTANT CORRECTION (2026-11-18) -- read before assuming a host missing from this list is
+ *  actually reliable: this list was built from plain, unauthenticated, no-referrer requests
+ *  (curl/direct navigation), which do NOT replicate how a real browser requests an image once
+ *  it's embedded on this site (a real embedded request carries this site's own origin as
+ *  Referer). Real browser evidence (2026-11-18, see next.config.ts's media.sanmarcanada.com
+ *  comment) shows that host returning 403 ("Error from cloudfront") for an embedded request from
+ *  this site's actual deployed domain, despite returning 200 for the exact same URL requested
+ *  without a referrer -- the classic signature of referer-based hotlink protection that a plain
+ *  curl check cannot detect. In other words: **absence from this list is not confirmation of
+ *  real-world reliability** -- it only reflects what a no-referrer request returns. Deliberately
+ *  NOT adding `media.sanmarcanada.com` here without further evidence (testing Referer variations
+ *  against a supplier's CDN to pin down the exact rule would itself be probing for a bypass, not
+ *  diagnosing one) -- see `docs/production-deployment-checklist.md` for the current, honest
+ *  status and `catalogue-engine/OUTREACH_DRAFTS.md` for the question now posed to SanMar
+ *  directly about authorized image access.
+ *
  *  Remove an entry once that supplier's CDN access is actually resolved -- don't leave it here
  *  "just in case." An individual image gets treated as reliable automatically, with no code
  *  change needed here, the moment `resolveHostedImage()` resolves it to a real rehosted override
