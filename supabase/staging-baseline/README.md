@@ -26,6 +26,15 @@ a copy of them here.
 (`catalogue-engine/prisma/`). Run catalogue-engine's own Prisma migrations against the staging
 project separately if you want product-catalogue data there too.
 
+## Base table/role grants — a separate gap from RLS, covered by `003_grants.sql`
+
+RLS policies alone are not sufficient on a project created with Supabase's "auto-grant API
+access" dashboard toggle off (`mapleimprint-staging` was): every table starts with zero base
+SELECT/INSERT/UPDATE/DELETE grants for `anon`/`service_role`, so even a correct RLS policy
+42501s with "permission denied for table X" until the matching base grant exists too. See
+`003_grants.sql`'s own header for the full derivation (read from real call sites, not guessed)
+and exactly which commands each role needs per table.
+
 ## Row Level Security policies — intentionally not written out here
 
 This folder's SQL creates tables and the storage bucket, but does **not** include the RLS
@@ -73,6 +82,9 @@ Against a fresh local instance (`supabase start`) or a fresh staging project's S
 4. In the Supabase dashboard, manually recreate the bucket's access policy and the three Studio
    tables' RLS policies by copying the real, already-reviewed patterns (see the RLS section
    above) — not by writing new policy SQL from a guess.
+5. `003_grants.sql` (this folder) — base table/role grants. Only needed if this project (like
+   `mapleimprint-staging`) was created with "auto-grant API access" off; skip it if grants
+   already exist (a normal Supabase project does this automatically on table creation).
 
 **Never contains real customer data.** These files create empty tables and an empty bucket —
 nothing here seeds, copies, or references any real `MapleOrder`/`QuoteRequest`/customer upload.
