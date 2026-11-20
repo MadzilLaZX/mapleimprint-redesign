@@ -1,10 +1,22 @@
 import { defineConfig, devices } from "@playwright/test";
+import { refuseIfProductionSupabaseUrl } from "./src/lib/server/knownProductionSupabaseProject";
 
 /** Real-browser end-to-end tests against the LOCAL dev server only — never a Vercel Preview/
  *  Production URL. See e2e/README.md for the mocking strategy (every Supabase-backed API route
  *  is intercepted at the browser network layer; nothing here ever writes to live Supabase, makes
  *  a real payment, or sends a real email). Chromium only — Firefox/WebKit binaries were never
  *  installed, to keep the install light; see e2e/README.md for how to add them if ever needed. */
+
+// Defense in depth beyond the browser-level mocks above: `webServer` below launches `next dev`,
+// which loads .env.local itself -- if a missed mock ever let a real request through, or
+// .env.local is ever pointed at Production again, this refuses to even start the suite rather
+// than risk a real write. Checked here (config load time), not inside a test, so it blocks the
+// webServer from starting at all.
+refuseIfProductionSupabaseUrl(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  "NEXT_PUBLIC_SUPABASE_URL (.env.local, loaded by the `next dev` server Playwright launches)",
+);
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,

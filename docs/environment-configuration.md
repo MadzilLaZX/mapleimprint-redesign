@@ -48,9 +48,13 @@ in this round only removes the *obstacle* (the hardcoded constant) to using it.
   — that one change is what actually separates Preview/development testing from Production, with
   no code change needed on either side of that switch.
 - **Development** (`.env.local`, gitignored — never commit real values here): same three
-  variables. Point at Production's values for continuity with today, or at a staging/local
-  instance once one exists — either works, since the app itself doesn't know or care which
-  project it's talking to anymore.
+  variables, pointed at the **staging** project (`mapleimprint-staging`) now that one exists —
+  not Production. `playwright.config.ts` hard-refuses to start (via
+  `knownProductionSupabaseProject.ts`'s `refuseIfProductionSupabaseUrl`) if `NEXT_PUBLIC_SUPABASE_URL`
+  ever resolves to Production's project id, so local dev/test runs fail closed instead of risking
+  a real write. If staging's `SUPABASE_SERVICE_ROLE_KEY` isn't available locally, leave it unset
+  — admin-dependent routes fail closed with a clear "not set" error rather than falling back to
+  anything else.
 
 ## Fail-closed behavior
 

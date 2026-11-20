@@ -65,6 +65,14 @@ test.describe("Custom Product Studio", () => {
     // stays open across tool switches -- clicking its header again here would just toggle it
     // closed, not "re-open" it. ---
     const layerRows = page.locator("ul li button.flex-1").filter({ hasText: /./ });
+    // Explicit wait for the real condition (both layers actually rendered in the panel) rather
+    // than assuming the prior awaits left enough time -- under parallel test-worker contention
+    // (multiple browsers competing for CPU), the image layer's React state update can land after
+    // this point even though every prior await already resolved, since none of them are actually
+    // tied to the Layers list re-rendering. Root-caused via `--workers=1 --repeat-each=6` (6/6
+    // pass serialized, confirming the real app is correct) vs. default parallel runs (intermittent
+    // failures here) -- a test-timing gap, not an application bug.
+    await expect(layerRows).toHaveCount(2);
     const orderBeforeMove = await layerRows.allTextContents();
     expect(orderBeforeMove.length).toBe(2);
 
