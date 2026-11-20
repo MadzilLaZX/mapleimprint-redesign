@@ -42,6 +42,11 @@ export function SquarePaymentSection({
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<SquareCard | null>(null);
   const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
+  // Stable for this whole checkout session -- unlike idempotencyKeyRef above, deliberately NEVER
+  // reassigned on failure/retry (see docs/payment-idempotency-design.md). This is what lets the
+  // server recognize "this is the same checkout attempt retrying" even though the Square source
+  // token and idempotencyKey are necessarily different on every retry.
+  const checkoutAttemptIdRef = useRef<string>(crypto.randomUUID());
 
   useEffect(() => {
     if (!sdkReady || payments) return;
@@ -107,7 +112,13 @@ export function SquarePaymentSection({
         const res = await fetch("/api/checkout/pay", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, sourceId: token, sourceType, idempotencyKey: idempotencyKeyRef.current }),
+          body: JSON.stringify({
+            ...payload,
+            sourceId: token,
+            sourceType,
+            idempotencyKey: idempotencyKeyRef.current,
+            checkoutAttemptId: checkoutAttemptIdRef.current,
+          }),
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {

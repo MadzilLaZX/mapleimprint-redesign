@@ -10,6 +10,7 @@ import { humanPaymentError } from "@/lib/checkout/errorMessages";
 import { markOrderPaidAndNotify } from "@/lib/checkout/fulfillOrder";
 import { validatePostalCode } from "@/lib/checkout/validation";
 import { PICKUP_LOCATION } from "@/lib/checkout/pickupLocation";
+import { decideCheckoutAttemptAction, type ExistingOrderForAttempt } from "@/lib/checkout/checkoutAttemptState";
 import { SquareError } from "square";
 
 interface DeliveryAddressInput {
@@ -30,6 +31,11 @@ interface PayRequestBody {
   sourceId: string;
   sourceType: "CARD" | "APPLE_PAY" | "GOOGLE_PAY";
   idempotencyKey: string;
+  /** Stable for one checkout session, NEVER regenerated on retry (unlike idempotencyKey above) --
+   *  see docs/payment-idempotency-design.md. Optional for backward compatibility with any caller
+   *  that doesn't send it; omitting it just means this request gets today's per-idempotencyKey
+   *  behavior only, with no durable attempt tracking across a client-regenerated key. */
+  checkoutAttemptId?: string;
   /** Defaults to "delivery" -- existing callers that don't send this field are unaffected.
    *  "pickup" means Ottawa local pickup: $0 shipping, Ontario's point-of-sale HST rate regardless
    *  of any address, a Square PICKUP fulfillment (not SHIPMENT), and no delivery address required. */
@@ -75,6 +81,37 @@ export async function POST(request: Request) {
   }
 
   const supabaseAdmin = createAdminClient();
+
+  // Durable attempt tracking (docs/payment-idempotency-design.md): resolved BEFORE any pricing/
+  // shipping/Square work, on the stable checkoutAttemptId -- unlike idempotencyKey (regenerated
+  // by the client on every failed attempt), this identifies the whole checkout session across
+  // retries. Closes the lost-response double-charge window: if a prior attempt for this exact
+  // session already succeeded, this returns success immediately and never calls Square again,
+  // regardless of what idempotencyKey this particular retry carries.
+  let existingOrderForAttempt: ExistingOrderForAttempt | null = null;
+  if (body.checkoutAttemptId) {
+    const { data, error: attemptLookupError } = await supabaseAdmin
+      .from("MapleOrder")
+      .select("id, reference, status, squareOrderId")
+      .eq("checkoutAttemptId", body.checkoutAttemptId)
+      .maybeSingle();
+    if (attemptLookupError) {
+      console.error("[checkout] checkoutAttemptId lookup failed:", attemptLookupError);
+      return NextResponse.json({ error: "Couldn't process your payment. Please try again." }, { status: 502 });
+    }
+    existingOrderForAttempt = data;
+  }
+  const attemptAction = decideCheckoutAttemptAction(existingOrderForAttempt);
+
+  if (attemptAction.kind === "ALREADY_PAID") {
+    return NextResponse.json({ ok: true, orderReference: attemptAction.orderReference });
+  }
+  if (attemptAction.kind === "REJECT_CANCELLED_ORDER") {
+    return NextResponse.json(
+      { error: "This order was cancelled. Please start a new checkout from your cart." },
+      { status: 409 },
+    );
+  }
 
   // Authoritative recompute — identical logic to /api/checkout/quote, run again here rather than
   // trusting any total the browser sent, per the non-negotiable "server calculates the charge".
@@ -141,87 +178,21 @@ export async function POST(request: Request) {
     ? { fulfillmentMethod: "pickup" as const, pickupLocation: PICKUP_LOCATION }
     : { fulfillmentMethod: "delivery" as const, ...addr! };
 
-  // Idempotency: if this exact attempt was already submitted (retry after a lost response,
-  // accidental double-click with the same key), reuse the existing order/attempt rather than
-  // creating a second one or double-charging.
-  const { data: existingAttempt, error: existingAttemptError } = await supabaseAdmin
-    .from("PaymentAttempt")
-    .select("id, orderId, status, squarePaymentId")
-    .eq("idempotencyKey", body.idempotencyKey)
-    .maybeSingle();
-  if (existingAttemptError) {
-    console.error("[checkout] idempotency lookup failed:", existingAttemptError);
-    return NextResponse.json({ error: "Couldn't process your payment. Please try again." }, { status: 502 });
-  }
-
   let orderId: string;
   let orderReference: string;
+  // Non-null only for REUSE_ORDER_REUSE_SQUARE_ORDER -- an existing Square Order from a prior
+  // attempt for this same checkoutAttemptId, reused instead of creating a second one.
+  let reusedSquareOrderId: string | null = null;
 
-  if (existingAttempt) {
-    orderId = existingAttempt.orderId;
-    const { data: existingOrder } = await supabaseAdmin
-      .from("MapleOrder")
-      .select("reference, status")
-      .eq("id", orderId)
-      .maybeSingle();
-    if (!existingOrder) return NextResponse.json({ error: "Order not found." }, { status: 404 });
-    orderReference = existingOrder.reference;
-
-    if (existingAttempt.status === "SUCCEEDED" || existingOrder.status === "PAID") {
-      return NextResponse.json({ ok: true, orderReference });
-    }
-    // status === "CREATED" (a prior attempt with this key started but never resolved) falls
-    // through to re-call Square below with the SAME idempotencyKey — Square's own idempotency
-    // guarantee makes that safe to repeat.
-  } else {
-    orderReference = generateOrderReference();
-    const { data: newOrder, error: orderError } = await supabaseAdmin
-      .from("MapleOrder")
-      .insert({
-        reference: orderReference,
-        status: "PENDING_PAYMENT",
-        contactName: body.contact.fullName,
-        contactEmail: body.contact.email,
-        contactPhone: body.contact.phone,
-        shippingAddress: orderAddressRecord,
-        subtotalCents,
-        taxCents,
-        shippingCents: shippingOption.cents,
-        totalCents,
-        currency: "CAD",
-        squareLocationId: squareLocationId(),
-      })
-      .select("id")
-      .single();
-    if (orderError || !newOrder) {
-      console.error("[checkout] order creation failed:", orderError);
-      return NextResponse.json({ error: "Couldn't start your order. Please try again." }, { status: 502 });
-    }
-    orderId = newOrder.id;
-
-    const { error: linesError } = await supabaseAdmin.from("MapleOrderLine").insert(
-      lines.map((l) => ({
-        orderId,
-        cartItemId: l.cartItemId,
-        productName: l.productName,
-        categorySlug: l.categorySlug,
-        colourName: l.colourName,
-        sizeBreakdown: l.sizeBreakdown,
-        quantity: l.quantity,
-        unitPriceCents: l.unitPriceCents,
-        lineTotalCents: l.lineTotalCents,
-        customizationType: l.customizationType,
-        designProjectId: l.designProjectId,
-        designFrozenRevision: l.designFrozenRevision,
-        designSnapshot: l.designSnapshot,
-      })),
-    );
-    if (linesError) {
-      console.error("[checkout] order line creation failed:", linesError);
-      // Same orphaned-order concern as the PaymentAttempt race below -- a MapleOrder with no
-      // lines and no PaymentAttempt would otherwise sit in the admin orders list forever.
-      await supabaseAdmin.from("MapleOrder").delete().eq("id", orderId);
-      return NextResponse.json({ error: "Couldn't start your order. Please try again." }, { status: 502 });
+  if (attemptAction.kind === "REUSE_ORDER_NEW_SQUARE_ORDER" || attemptAction.kind === "REUSE_ORDER_REUSE_SQUARE_ORDER") {
+    // A retry of a known, not-yet-paid checkoutAttemptId -- the MapleOrder/MapleOrderLine rows
+    // already exist from the attempt that created them; never insert a second copy. Only a fresh
+    // PaymentAttempt is needed, since this request's sourceId/idempotencyKey are necessarily new
+    // (Square Web Payments SDK tokens are single-use).
+    orderId = attemptAction.orderId;
+    orderReference = attemptAction.orderReference;
+    if (attemptAction.kind === "REUSE_ORDER_REUSE_SQUARE_ORDER") {
+      reusedSquareOrderId = attemptAction.squareOrderId;
     }
 
     const { error: attemptError } = await supabaseAdmin.from("PaymentAttempt").insert({
@@ -231,19 +202,117 @@ export async function POST(request: Request) {
       sourceType: body.sourceType,
     });
     if (attemptError) {
-      console.error("[checkout] payment attempt creation failed:", attemptError);
-      // A near-simultaneous duplicate submission (same idempotencyKey -- a double-click, or a
-      // retried request racing the original before either's PaymentAttempt existed yet) can lose
-      // PaymentAttempt.idempotencyKey's unique-constraint race: both requests found no
-      // existingAttempt above, both inserted their own MapleOrder/MapleOrderLine, but only one can
-      // ever win this insert. Without this cleanup, the loser leaves an orphaned
-      // PENDING_PAYMENT MapleOrder behind forever -- no PaymentAttempt will ever reference it, so
-      // it would never transition to PAID or FAILED, just sit in the admin orders list
-      // indefinitely. Deleting it here (cascades to MapleOrderLine, see migration 002) means the
-      // race fails cleanly instead of littering the orders table; the other, winning request's own
-      // order and payment proceed completely unaffected.
-      await supabaseAdmin.from("MapleOrder").delete().eq("id", orderId);
+      console.error("[checkout] payment attempt creation failed (reuse path):", attemptError);
+      // Deliberately NOT deleting MapleOrder on failure here, unlike the fresh-order path below --
+      // this order existed before this request (created by an earlier attempt for the same
+      // checkoutAttemptId) and must survive regardless of this particular retry's outcome.
       return NextResponse.json({ error: "Couldn't process your payment. Please try again." }, { status: 502 });
+    }
+  } else {
+    // attemptAction.kind === "CREATE_NEW_ORDER" -- today's behavior, unchanged.
+    //
+    // Idempotency: if this exact attempt was already submitted (retry after a lost response,
+    // accidental double-click with the same key), reuse the existing order/attempt rather than
+    // creating a second one or double-charging.
+    const { data: existingAttempt, error: existingAttemptError } = await supabaseAdmin
+      .from("PaymentAttempt")
+      .select("id, orderId, status, squarePaymentId")
+      .eq("idempotencyKey", body.idempotencyKey)
+      .maybeSingle();
+    if (existingAttemptError) {
+      console.error("[checkout] idempotency lookup failed:", existingAttemptError);
+      return NextResponse.json({ error: "Couldn't process your payment. Please try again." }, { status: 502 });
+    }
+
+    if (existingAttempt) {
+      orderId = existingAttempt.orderId;
+      const { data: existingOrder } = await supabaseAdmin
+        .from("MapleOrder")
+        .select("reference, status")
+        .eq("id", orderId)
+        .maybeSingle();
+      if (!existingOrder) return NextResponse.json({ error: "Order not found." }, { status: 404 });
+      orderReference = existingOrder.reference;
+
+      if (existingAttempt.status === "SUCCEEDED" || existingOrder.status === "PAID") {
+        return NextResponse.json({ ok: true, orderReference });
+      }
+      // status === "CREATED" (a prior attempt with this key started but never resolved) falls
+      // through to re-call Square below with the SAME idempotencyKey — Square's own idempotency
+      // guarantee makes that safe to repeat.
+    } else {
+      orderReference = generateOrderReference();
+      const { data: newOrder, error: orderError } = await supabaseAdmin
+        .from("MapleOrder")
+        .insert({
+          reference: orderReference,
+          status: "PENDING_PAYMENT",
+          contactName: body.contact.fullName,
+          contactEmail: body.contact.email,
+          contactPhone: body.contact.phone,
+          shippingAddress: orderAddressRecord,
+          subtotalCents,
+          taxCents,
+          shippingCents: shippingOption.cents,
+          totalCents,
+          currency: "CAD",
+          squareLocationId: squareLocationId(),
+          checkoutAttemptId: body.checkoutAttemptId ?? null,
+        })
+        .select("id")
+        .single();
+      if (orderError || !newOrder) {
+        console.error("[checkout] order creation failed:", orderError);
+        return NextResponse.json({ error: "Couldn't start your order. Please try again." }, { status: 502 });
+      }
+      orderId = newOrder.id;
+
+      const { error: linesError } = await supabaseAdmin.from("MapleOrderLine").insert(
+        lines.map((l) => ({
+          orderId,
+          cartItemId: l.cartItemId,
+          productName: l.productName,
+          categorySlug: l.categorySlug,
+          colourName: l.colourName,
+          sizeBreakdown: l.sizeBreakdown,
+          quantity: l.quantity,
+          unitPriceCents: l.unitPriceCents,
+          lineTotalCents: l.lineTotalCents,
+          customizationType: l.customizationType,
+          designProjectId: l.designProjectId,
+          designFrozenRevision: l.designFrozenRevision,
+          designSnapshot: l.designSnapshot,
+        })),
+      );
+      if (linesError) {
+        console.error("[checkout] order line creation failed:", linesError);
+        // Same orphaned-order concern as the PaymentAttempt race below -- a MapleOrder with no
+        // lines and no PaymentAttempt would otherwise sit in the admin orders list forever.
+        await supabaseAdmin.from("MapleOrder").delete().eq("id", orderId);
+        return NextResponse.json({ error: "Couldn't start your order. Please try again." }, { status: 502 });
+      }
+
+      const { error: attemptError } = await supabaseAdmin.from("PaymentAttempt").insert({
+        orderId,
+        idempotencyKey: body.idempotencyKey,
+        status: "CREATED",
+        sourceType: body.sourceType,
+      });
+      if (attemptError) {
+        console.error("[checkout] payment attempt creation failed:", attemptError);
+        // A near-simultaneous duplicate submission (same idempotencyKey -- a double-click, or a
+        // retried request racing the original before either's PaymentAttempt existed yet) can lose
+        // PaymentAttempt.idempotencyKey's unique-constraint race: both requests found no
+        // existingAttempt above, both inserted their own MapleOrder/MapleOrderLine, but only one can
+        // ever win this insert. Without this cleanup, the loser leaves an orphaned
+        // PENDING_PAYMENT MapleOrder behind forever -- no PaymentAttempt will ever reference it, so
+        // it would never transition to PAID or FAILED, just sit in the admin orders list
+        // indefinitely. Deleting it here (cascades to MapleOrderLine, see migration 002) means the
+        // race fails cleanly instead of littering the orders table; the other, winning request's own
+        // order and payment proceed completely unaffected.
+        await supabaseAdmin.from("MapleOrder").delete().eq("id", orderId);
+        return NextResponse.json({ error: "Couldn't process your payment. Please try again." }, { status: 502 });
+      }
     }
   }
 
@@ -251,68 +320,78 @@ export async function POST(request: Request) {
   const locationId = squareLocationId();
 
   try {
-    const orderResponse = await square.orders.create({
-      order: {
-        locationId,
-        referenceId: orderReference,
-        lineItems: lines.map((l) => ({
-          name: l.productName,
-          quantity: String(l.quantity),
-          basePriceMoney: { amount: BigInt(l.unitPriceCents), currency: "CAD" },
-        })),
-        fulfillments: isPickup
-          ? [
-              {
-                type: "PICKUP",
-                pickupDetails: {
-                  recipient: {
-                    displayName: body.contact.fullName,
-                    phoneNumber: body.contact.phone,
-                    emailAddress: body.contact.email,
+    // REUSE_ORDER_REUSE_SQUARE_ORDER already has a live Square Order from a prior attempt for
+    // this same checkoutAttemptId -- creating a second one would be exactly the duplicate this
+    // whole model exists to prevent. Every other path (a genuine first attempt, or a retry that
+    // never got far enough to create one) still needs this call.
+    let squareOrderId: string;
+    if (reusedSquareOrderId) {
+      squareOrderId = reusedSquareOrderId;
+    } else {
+      const orderResponse = await square.orders.create({
+        order: {
+          locationId,
+          referenceId: orderReference,
+          lineItems: lines.map((l) => ({
+            name: l.productName,
+            quantity: String(l.quantity),
+            basePriceMoney: { amount: BigInt(l.unitPriceCents), currency: "CAD" },
+          })),
+          fulfillments: isPickup
+            ? [
+                {
+                  type: "PICKUP",
+                  pickupDetails: {
+                    recipient: {
+                      displayName: body.contact.fullName,
+                      phoneNumber: body.contact.phone,
+                      emailAddress: body.contact.email,
+                    },
+                    // ASAP, not a specific scheduled pickupAt window -- no confirmed prep-time or
+                    // appointment-slot system exists for pickup orders (see pickupLocation.ts's own
+                    // caveat on BUSINESS.hours), so this doesn't invent a pickup time; Square
+                    // computes pickup_at itself for ASAP fulfillments. The note surfaces the real,
+                    // already-public hours to Square Point of Sale / staff, not a fabricated window.
+                    scheduleType: "ASAP",
+                    note: `Local pickup — ${PICKUP_LOCATION.label}. Hours: ${PICKUP_LOCATION.hours.map((h) => `${h.days} ${h.time}`).join("; ")}`,
                   },
-                  // ASAP, not a specific scheduled pickupAt window -- no confirmed prep-time or
-                  // appointment-slot system exists for pickup orders (see pickupLocation.ts's own
-                  // caveat on BUSINESS.hours), so this doesn't invent a pickup time; Square
-                  // computes pickup_at itself for ASAP fulfillments. The note surfaces the real,
-                  // already-public hours to Square Point of Sale / staff, not a fabricated window.
-                  scheduleType: "ASAP",
-                  note: `Local pickup — ${PICKUP_LOCATION.label}. Hours: ${PICKUP_LOCATION.hours.map((h) => `${h.days} ${h.time}`).join("; ")}`,
                 },
-              },
-            ]
-          : [
-              {
-                type: "SHIPMENT",
-                shipmentDetails: {
-                  recipient: {
-                    displayName: body.contact.fullName,
-                    phoneNumber: body.contact.phone,
-                    emailAddress: body.contact.email,
-                    address: {
-                      addressLine1: addr!.addressLine1,
-                      addressLine2: addr!.addressLine2 || undefined,
-                      locality: addr!.city,
-                      administrativeDistrictLevel1: addr!.province,
-                      postalCode: addr!.postalCode,
-                      country: addr!.country as never,
+              ]
+            : [
+                {
+                  type: "SHIPMENT",
+                  shipmentDetails: {
+                    recipient: {
+                      displayName: body.contact.fullName,
+                      phoneNumber: body.contact.phone,
+                      emailAddress: body.contact.email,
+                      address: {
+                        addressLine1: addr!.addressLine1,
+                        addressLine2: addr!.addressLine2 || undefined,
+                        locality: addr!.city,
+                        administrativeDistrictLevel1: addr!.province,
+                        postalCode: addr!.postalCode,
+                        country: addr!.country as never,
+                      },
                     },
                   },
                 },
-              },
-            ],
-        // Short, non-sensitive references only — never PII or design JSON in Square metadata.
-        metadata: { mapleOrderReference: orderReference },
-      },
-      idempotencyKey: `order-${body.idempotencyKey}`,
-    });
+              ],
+          // Short, non-sensitive references only — never PII or design JSON in Square metadata.
+          metadata: { mapleOrderReference: orderReference },
+        },
+        idempotencyKey: `order-${body.idempotencyKey}`,
+      });
 
-    const squareOrderId = orderResponse.order?.id;
-    if (!squareOrderId) {
-      throw new Error("Square order creation returned no order id.");
+      const newSquareOrderId = orderResponse.order?.id;
+      if (!newSquareOrderId) {
+        throw new Error("Square order creation returned no order id.");
+      }
+      squareOrderId = newSquareOrderId;
+      // Persisted before the payment call (not just on success) so a webhook that arrives before
+      // this request finishes can still find this MapleOrder via squareOrderId.
+      await supabaseAdmin.from("MapleOrder").update({ squareOrderId }).eq("id", orderId);
     }
-    // Persisted before the payment call (not just on success) so a webhook that arrives before
-    // this request finishes can still find this MapleOrder via squareOrderId.
-    await supabaseAdmin.from("MapleOrder").update({ squareOrderId }).eq("id", orderId);
 
     const paymentResponse = await square.payments.create({
       sourceId: body.sourceId,
