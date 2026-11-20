@@ -328,15 +328,34 @@ export async function POST(request: Request) {
     if (reusedSquareOrderId) {
       squareOrderId = reusedSquareOrderId;
     } else {
+      // Square's Payments API validates that a payment's amount matches its referenced Order's
+      // own computed total -- confirmed directly against sandbox (ORDER_TOTAL_MISMATCH) when this
+      // only listed product line items: the Order totaled subtotalCents alone while the Payment
+      // below charges subtotalCents + taxCents + shippingOption.cents, and Square rejects the
+      // mismatch rather than silently accepting a payment that doesn't match its order. Tax and
+      // shipping as their own line items (not Square's percentage-based `taxes`/`service_charges`)
+      // keeps the Order's total exactly equal to totalCents with no separate rounding path to
+      // drift from our own already-computed cents values. Omitted entirely when zero (a pickup
+      // order's shippingOption.cents) rather than sent as a $0 line item.
+      const squareLineItems = [
+        ...lines.map((l) => ({
+          name: l.productName,
+          quantity: String(l.quantity),
+          basePriceMoney: { amount: BigInt(l.unitPriceCents), currency: "CAD" as const },
+        })),
+        ...(shippingOption.cents > 0
+          ? [{ name: shippingOption.label, quantity: "1", basePriceMoney: { amount: BigInt(shippingOption.cents), currency: "CAD" as const } }]
+          : []),
+        ...(taxCents > 0
+          ? [{ name: "Tax", quantity: "1", basePriceMoney: { amount: BigInt(taxCents), currency: "CAD" as const } }]
+          : []),
+      ];
+
       const orderResponse = await square.orders.create({
         order: {
           locationId,
           referenceId: orderReference,
-          lineItems: lines.map((l) => ({
-            name: l.productName,
-            quantity: String(l.quantity),
-            basePriceMoney: { amount: BigInt(l.unitPriceCents), currency: "CAD" },
-          })),
+          lineItems: squareLineItems,
           fulfillments: isPickup
             ? [
                 {
