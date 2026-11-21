@@ -12,6 +12,7 @@ import { validatePostalCode } from "@/lib/checkout/validation";
 import { PICKUP_LOCATION } from "@/lib/checkout/pickupLocation";
 import { decideCheckoutAttemptAction, type ExistingOrderForAttempt } from "@/lib/checkout/checkoutAttemptState";
 import { SquareError } from "square";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface DeliveryAddressInput {
   addressLine1: string;
@@ -428,6 +429,8 @@ export async function POST(request: Request) {
         .from("PaymentAttempt")
         .update({ status: "FAILED", failureReason: reason, rawResponse: paymentResponse as unknown as object })
         .eq("idempotencyKey", body.idempotencyKey);
+      const winnerReference = await alreadyPaidByConcurrentAttempt(supabaseAdmin, orderId);
+      if (winnerReference) return NextResponse.json({ ok: true, orderReference: winnerReference });
       return NextResponse.json({ error: reason }, { status: 402 });
     }
 
@@ -445,6 +448,7 @@ export async function POST(request: Request) {
       squareOrderId,
       squarePaymentId: payment.id,
       rawResponse: paymentResponse as unknown as object,
+      idempotencyKey: body.idempotencyKey,
     });
 
     return NextResponse.json({ ok: true, orderReference });
@@ -459,6 +463,31 @@ export async function POST(request: Request) {
       .from("PaymentAttempt")
       .update({ status: "FAILED", failureReason: reason })
       .eq("idempotencyKey", body.idempotencyKey);
+    // Confirmed live against sandbox: a genuinely concurrent retry against the same squareOrderId
+    // is rejected by Square itself with "The order is already paid" once a racing request's
+    // payment already completed -- Square is the authoritative source of truth here, not
+    // something this app needs to pre-check or lock around. But that rejection would otherwise
+    // surface to THIS request's caller as a confusing "payment didn't go through" error even
+    // though the checkout attempt as a whole genuinely succeeded (via the other request) --
+    // checking our own now-authoritative order status catches that and returns success instead.
+    const winnerReference = await alreadyPaidByConcurrentAttempt(supabaseAdmin, orderId);
+    if (winnerReference) return NextResponse.json({ ok: true, orderReference: winnerReference });
     return NextResponse.json({ error: reason }, { status: isDeclineLike ? 402 : 502 });
   }
+}
+
+/** After a payment call fails, checks whether a genuinely concurrent request for the SAME order
+ *  (not a sequential retry -- those are already caught earlier by the checkoutAttemptId lookup)
+ *  won the race and already marked this exact order PAID, between this request's own order
+ *  lookup and its payment attempt. Returns the order's reference if so, null otherwise -- never
+ *  throws, since a failed check here should fall back to reporting the original failure rather
+ *  than masking it with a second error. */
+async function alreadyPaidByConcurrentAttempt(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabaseAdmin: SupabaseClient<any, any, any>,
+  orderId: string,
+): Promise<string | null> {
+  const { data } = await supabaseAdmin.from("MapleOrder").select("status, reference").eq("id", orderId).maybeSingle();
+  if (data?.status === "PAID") return data.reference as string;
+  return null;
 }

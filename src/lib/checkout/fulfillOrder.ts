@@ -28,6 +28,7 @@ export async function markOrderPaidAndNotify(
     squareOrderId,
     squarePaymentId,
     rawResponse,
+    idempotencyKey,
   }: {
     orderId: string;
     squareOrderId: string;
@@ -37,6 +38,17 @@ export async function markOrderPaidAndNotify(
      *  webhook path, which has no equivalent payments.create() response of its own (the webhook
      *  event itself is already stored separately in ProcessedWebhookEvent.payload). */
     rawResponse?: object;
+    /** The PaymentAttempt that actually succeeded, when known -- the synchronous /pay path always
+     *  has this (it's the key of the request that just got a COMPLETED payment back). Omitted on
+     *  the webhook path, which has no idempotencyKey of its own; the RPC falls back to its
+     *  previous best-effort "the one still-CREATED attempt" matching for that case. Passing this
+     *  precisely matters under genuine concurrency (two /pay requests racing the same order):
+     *  confirmed live against Square sandbox that without it, a losing concurrent request's own
+     *  still-CREATED PaymentAttempt row could be caught by the winner's blanket status-based
+     *  update and briefly stamped with the winner's squarePaymentId before the loser's own
+     *  failure-handling overwrote its status back to FAILED -- leaving a stale, misleading
+     *  squarePaymentId on a failed record even though its status was correct. */
+    idempotencyKey?: string;
   },
 ): Promise<void> {
   const { data: rows, error: rpcError } = await supabaseAdmin.rpc("mark_order_paid_and_sync_attempt", {
@@ -44,6 +56,7 @@ export async function markOrderPaidAndNotify(
     p_square_order_id: squareOrderId,
     p_square_payment_id: squarePaymentId,
     p_raw_response: rawResponse ?? null,
+    p_idempotency_key: idempotencyKey ?? null,
   });
 
   if (rpcError) {
