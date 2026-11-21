@@ -12,6 +12,13 @@ export type ShopProduct = {
   categoryName: string;
   subcategorySlug: string;
   subcategoryName: string;
+  /** Real catalogue brand (e.g. "Gildan", "ATC") — null for the generic subcategory-placeholder
+   *  tile (no single SKU, so no one brand to show). Carried through specifically so a card can
+   *  show truthful, specific product identity when its photo is unavailable (a confirmed-blocked
+   *  supplier CDN, see shopQuery.ts) instead of a bare "Image coming soon" with nothing else to
+   *  distinguish one listing from another — never a substitute for the photo itself, never
+   *  invented when the catalogue doesn't have it. */
+  brandName: string | null;
   /** Null when no real product photo and no sibling subcategory photo exists yet for this
    *  category — an honest "no photo yet", not a link to a file that doesn't exist. */
   image: string | null;
@@ -49,6 +56,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = PRODUCT_CATEGORIES.flatMap((cat) =>
           categoryName: cat.name,
           subcategorySlug: subSlug,
           subcategoryName: sub,
+          brandName: p.brandName || null,
           image: hero?.url ?? resolveSubcategoryImage(cat.slug, subSlug),
           defaultColour: defaultColour || null,
           href: `/products/${cat.slug}/${subSlug}/${p.slug}`,
@@ -66,6 +74,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = PRODUCT_CATEGORIES.flatMap((cat) =>
         categoryName: cat.name,
         subcategorySlug: subSlug,
         subcategoryName: sub,
+        brandName: null,
         image: resolveSubcategoryImage(cat.slug, subSlug),
         defaultColour: null,
         href: `/products/${cat.slug}`,

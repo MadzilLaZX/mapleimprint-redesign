@@ -25,6 +25,11 @@ export interface ProductImageProps {
    *  layout -- the icon alone is still a clear, intentional fallback, never a raw broken-image
    *  icon or empty box. */
   showLabel?: boolean;
+  /** Real catalogue data only (e.g. a brand name) shown under "Image coming soon" when the
+   *  fallback is active -- gives a customer genuine, specific product identity instead of a bare
+   *  placeholder, without ever substituting for the actual photo. Never rendered once a real
+   *  image is showing. Ignored when `showLabel` is false (same small-thumbnail reasoning). */
+  fallbackSubtitle?: string | null;
 }
 
 /**
@@ -63,6 +68,7 @@ export function ProductImage({
   fallbackClassName,
   iconClassName = "size-8",
   showLabel = true,
+  fallbackSubtitle,
 }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
 
@@ -75,7 +81,12 @@ export function ProductImage({
     return (
       <div className={cn("flex h-full w-full flex-col items-center justify-center gap-2 bg-canvas text-muted", fallbackClassName)}>
         <ImageBroken className={iconClassName} weight="light" />
-        {showLabel && <span className="text-xs">Image coming soon</span>}
+        {showLabel && (
+          <span className="flex flex-col items-center gap-0.5 text-center">
+            <span className="text-xs">Image coming soon</span>
+            {fallbackSubtitle && <span className="text-[11px] font-semibold uppercase tracking-wide">{fallbackSubtitle}</span>}
+          </span>
+        )}
       </div>
     );
   }

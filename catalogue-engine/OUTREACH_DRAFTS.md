@@ -155,7 +155,11 @@ the exact contact method)
 >    infrastructure/CDN under our wholesale account, so we're not dependent on live hotlinking at
 >    all going forward. We'd of course credit/attribute S&S Activewear however you require, and
 >    we're happy to limit this to images for products we actually carry.
-> 4. While we're in touch — generating an API key for product/pricing/inventory data sync as well
+> 4. We've also seen that you offer free, downloadable, distributor-brandable digital catalogs —
+>    are the product photos in those catalogs licensed for us to extract and display per-item on
+>    our own e-commerce product pages (not just as a branded PDF/print piece), or are they intended
+>    for marketing collateral only?
+> 5. While we're in touch — generating an API key for product/pricing/inventory data sync as well
 >    (we understand this is done via "My Account"), if that's a separate step from the above.
 >
 > Happy to hop on a call if that's easier, or to provide our account number/domain for

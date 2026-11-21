@@ -160,6 +160,7 @@ function FeaturedProductCard({
           sizes="(min-width: 1280px) 23vw, (min-width: 1024px) 29vw, (min-width: 640px) 46vw, 82vw"
           priority={priority}
           className={`object-cover transition-transform duration-200 ease-[var(--ease-premium)] ${reduce ? "" : "group-hover:scale-[1.02] group-hover:-translate-y-1"}`}
+          fallbackSubtitle={product.brandName}
         />
       </div>
       <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{product.categoryName}</p>

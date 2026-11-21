@@ -21,6 +21,7 @@ function fixtureProduct(overrides: Partial<ShopProduct> = {}): ShopProduct {
     categoryName: "Custom Apparel",
     subcategorySlug: "t-shirts",
     subcategoryName: "T-Shirts",
+    brandName: null,
     image: null,
     defaultColour: null,
     href: "/products/custom-apparel/t-shirts/test",
