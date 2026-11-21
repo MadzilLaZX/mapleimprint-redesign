@@ -58,8 +58,25 @@ export type ShopSearchParams = {
  *  change needed here, the moment `resolveHostedImage()` resolves it to a real rehosted override
  *  in `imageManifest.json` (that resolution already happens before `ShopProduct.image` is ever
  *  set -- see `shopProducts.ts`), since this function only ever sees the final, already-resolved
- *  URL. */
-const KNOWN_UNRELIABLE_IMAGE_HOSTS = ["cdn.ssactivewear.com"];
+ *  URL.
+ *
+ *  `media.sanmarcanada.com` ADDED (2026-11-22) -- the "IMPORTANT CORRECTION" above was written
+ *  while that evidence was still being gathered; it's since been captured directly (real DevTools
+ *  Network tab, documented in next.config.ts's own hostname comment and
+ *  docs/production-deployment-checklist.md): a real embedded request from this site's actual
+ *  deployed domain gets 403 from CloudFront itself, not just a theoretical risk. Measured against
+ *  the generated catalogue this round: 1065 products (60%) are S&S-sourced, 669 (38%) are
+ *  SanMar-sourced (this also covers every ATC-branded item -- ATC is a brand SanMar distributes,
+ *  not a separate host) -- together 98% of the 1769-product catalogue has no confirmed-working
+ *  image host left at all. This list no longer has a genuinely "reliable" tier to promote ahead
+ *  of -- see `shouldShowImageFallback()` (productImageFallback.ts), which now uses this same list
+ *  to skip the doomed network request entirely rather than wait for it to fail, since for 98% of
+ *  products that wait is pure wasted load time with a predictable outcome. Still NOT attempting a
+ *  `referrerPolicy="no-referrer"` workaround (which the referer-based signature suggests might
+ *  technically succeed) -- that would be circumventing a supplier's access control, not fixing an
+ *  application bug, and was deliberately rejected on those same grounds the first time this came
+ *  up. */
+const KNOWN_UNRELIABLE_IMAGE_HOSTS = ["cdn.ssactivewear.com", "media.sanmarcanada.com"];
 
 export function isKnownUnreliableImageHost(url: string | null): boolean {
   if (!url) return false;

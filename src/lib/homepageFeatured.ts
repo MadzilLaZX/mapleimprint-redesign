@@ -1,4 +1,5 @@
 import { SHOP_PRODUCTS, type ShopProduct } from "@/lib/shopProducts";
+import { sortByImageReliability } from "@/lib/shopQuery";
 
 // Hand-curated homepage "Explore what we print" rail — deliberately alternates product families
 // (apparel / headwear / drinkware / print / promo / stickers) rather than defaulting to a row of
@@ -22,7 +23,16 @@ const MAX_FEATURED = 12;
 
 /** Resolves the curated ID list against the real catalogue, silently dropping anything that no
  *  longer resolves, has no photo, or has no valid price — never renders a broken/missing card
- *  (a product going to draft or losing its photo shouldn't be able to break the homepage). */
+ *  (a product going to draft or losing its photo shouldn't be able to break the homepage).
+ *
+ *  FIX (2026-11-22): this curated list previously kept its hand-picked order verbatim, which put
+ *  every apparel item (t-shirt, cap, hoodie, polo) first — all four sourced from the confirmed-
+ *  blocked S&S/SanMar CDNs (see shopQuery.ts's KNOWN_UNRELIABLE_IMAGE_HOSTS) — so visiting the
+ *  homepage showed "Image coming soon" for the first 2 cards and 4 of the first 6, right below the
+ *  hero, before a customer ever saw a real photo. The exact same `sortByImageReliability` stable
+ *  partition already used by /shop and the static category/subcategory pages is applied here too,
+ *  so the curated family-mix is preserved (nothing added, removed, or reordered within either
+ *  group) while reliable-photo products surface first. */
 export function getHomepageFeaturedProducts(): ShopProduct[] {
   const byId = new Map(SHOP_PRODUCTS.map((p) => [p.id, p]));
   const resolved: ShopProduct[] = [];
@@ -33,5 +43,5 @@ export function getHomepageFeaturedProducts(): ShopProduct[] {
     resolved.push(product);
     if (resolved.length >= MAX_FEATURED) break;
   }
-  return resolved;
+  return sortByImageReliability(resolved, (p) => p.image);
 }

@@ -30,53 +30,42 @@ function fixtureProduct(overrides: Partial<ShopProduct> = {}): ShopProduct {
   };
 }
 
-test("INVESTIGATION (2026-11-18, updated): ATC Group apparel is SanMar-sourced, not S&S -- the CATALOGUE mapping is correct; the HOST's real-world reliability is now an open question, not confirmed", () => {
+test("INVESTIGATION (2026-11-18): ATC Group apparel is SanMar-sourced, not S&S -- the CATALOGUE mapping is correct, it was never the bug", () => {
   // Raised when ATC-branded products dominated a real /products/custom-apparel/t-shirts page's
   // first screenful and still showed "Image coming soon": verified directly against the real
   // generated catalogue (src/lib/generated/products.json) that EVERY sampled ATC-branded t-shirt
   // (brandName "ATC(tm) EuroSpun(r)", etc.) has its image hosted on media.sanmarcanada.com, NOT
   // cdn.ssactivewear.com -- SanMar distributes multiple brands (ATC, Port & Company, Gildan,
   // L3xxx/S3xxx/Y3xxx style-numbered lines, ...), so "ATC" is a BRAND sold through SanMar, not a
-  // separate supplier. The catalogue mapping and rendered URL are confirmed correct -- that part
-  // was never the bug.
+  // separate supplier. The catalogue mapping and rendered URL are confirmed correct.
   //
-  // UPDATED (2026-11-18, same day): real browser evidence (see next.config.ts's
-  // media.sanmarcanada.com comment and shopQuery.ts's KNOWN_UNRELIABLE_IMAGE_HOSTS comment above)
-  // shows this host returning 403 for a real embedded request from this site's own domain,
-  // despite returning 200 to a plain no-referrer request -- so "isKnownUnreliableImageHost
-  // returns false for SanMar" below is still an accurate test of TODAY'S CODE, but no longer
-  // being read as proof the images actually display for real visitors. This assertion is kept
-  // (it documents current, intentional behavior) but must not be cited as evidence the problem
-  // is resolved -- see docs/production-deployment-checklist.md for the honest current status.
+  // UPDATED (2026-11-22): real browser evidence (next.config.ts's media.sanmarcanada.com comment,
+  // docs/production-deployment-checklist.md) confirmed this host ALSO 403s for a real embedded
+  // request -- the same class of block as S&S, not a separate open question anymore. SanMar/ATC
+  // moved into KNOWN_UNRELIABLE_IMAGE_HOSTS alongside S&S this round; see that list's own comment.
   const sampleAtcSanMarUrls = [
     "https://media.sanmarcanada.com/catalog/product/a/t/atc0822_form_front_athleticgreyblackcamo_022019.jpg",
     "https://media.sanmarcanada.com/catalog/product/a/t/atc8000_form_front_athleticgrey_042015.jpg",
     "https://media.sanmarcanada.com/catalog/product/a/t/atc1000_form-front_aquatic-blue_2024_cil.jpg",
   ];
   for (const url of sampleAtcSanMarUrls) {
-    assert.equal(isKnownUnreliableImageHost(url), false, `expected ${url} to be classified as reliable (SanMar-hosted)`);
+    assert.equal(isKnownUnreliableImageHost(url), true, `expected ${url} to be classified as unreliable (SanMar-hosted, confirmed CDN block)`);
   }
-
-  // The sort must put these ATC/SanMar products ahead of an S&S one in "featured" order, exactly
-  // as the real page's behavior confirmed.
-  const atcProduct = fixtureProduct({ id: "atc", image: sampleAtcSanMarUrls[0] });
-  const ssProduct = fixtureProduct({ id: "ss", image: "https://cdn.ssactivewear.com/Images/Color/102738_f_fm.jpg" });
-  const result = sortProducts([ssProduct, atcProduct], "featured");
-  assert.deepEqual(result.map((p) => p.id), ["atc", "ss"]);
 });
 
-test("isKnownUnreliableImageHost: true for the confirmed-blocked S&S CDN host, false for SanMar and local/null", () => {
+test("isKnownUnreliableImageHost: true for both confirmed-blocked CDN hosts (S&S, SanMar/ATC), false for local/null/other hosts", () => {
   assert.equal(isKnownUnreliableImageHost("https://cdn.ssactivewear.com/Images/Color/102738_f_fm.jpg"), true);
-  assert.equal(isKnownUnreliableImageHost("https://media.sanmarcanada.com/catalog/product/1/0/108085_black.jpg"), false);
+  assert.equal(isKnownUnreliableImageHost("https://media.sanmarcanada.com/catalog/product/1/0/108085_black.jpg"), true);
   assert.equal(isKnownUnreliableImageHost("/images/subcategory/t-shirts.jpg"), false);
+  assert.equal(isKnownUnreliableImageHost("https://example-other-supplier.test/a.jpg"), false);
   assert.equal(isKnownUnreliableImageHost(null), false);
 });
 
 test("REGRESSION: 'featured' sort surfaces products with a reliable image before known-unreliable ones, without reordering within either group", () => {
-  const reliable1 = fixtureProduct({ id: "reliable-1", image: "https://media.sanmarcanada.com/a.jpg" });
+  const reliable1 = fixtureProduct({ id: "reliable-1", image: "https://example-other-supplier.test/a.jpg" });
   const unreliable1 = fixtureProduct({ id: "unreliable-1", image: "https://cdn.ssactivewear.com/a.jpg" });
-  const unreliable2 = fixtureProduct({ id: "unreliable-2", image: "https://cdn.ssactivewear.com/b.jpg" });
-  const reliable2 = fixtureProduct({ id: "reliable-2", image: "https://media.sanmarcanada.com/b.jpg" });
+  const unreliable2 = fixtureProduct({ id: "unreliable-2", image: "https://media.sanmarcanada.com/b.jpg" });
+  const reliable2 = fixtureProduct({ id: "reliable-2", image: "https://example-other-supplier.test/b.jpg" });
   const noImage = fixtureProduct({ id: "no-image", image: null });
 
   // Deliberately ordered worst-case: every unreliable-image product appears before every
@@ -92,7 +81,7 @@ test("REGRESSION: 'featured' sort surfaces products with a reliable image before
 
 test("REGRESSION: price-asc/price-desc sorts are NOT affected by image reliability -- an explicit price sort stays exactly price order", () => {
   const cheapButUnreliable = fixtureProduct({ id: "cheap-unreliable", image: "https://cdn.ssactivewear.com/a.jpg", startingPrice: 5 });
-  const expensiveButReliable = fixtureProduct({ id: "expensive-reliable", image: "https://media.sanmarcanada.com/a.jpg", startingPrice: 50 });
+  const expensiveButReliable = fixtureProduct({ id: "expensive-reliable", image: "https://example-other-supplier.test/a.jpg", startingPrice: 50 });
 
   const ascending = sortProducts([expensiveButReliable, cheapButUnreliable], "price-asc");
   assert.deepEqual(ascending.map((p) => p.id), ["cheap-unreliable", "expensive-reliable"]);
@@ -102,7 +91,7 @@ test("REGRESSION: price-asc/price-desc sorts are NOT affected by image reliabili
 });
 
 test("quote-required (unpriced) products still always come after every priced product, regardless of image reliability", () => {
-  const quoteRequired = fixtureProduct({ id: "quote-required", startingPrice: null, image: "https://media.sanmarcanada.com/a.jpg" });
+  const quoteRequired = fixtureProduct({ id: "quote-required", startingPrice: null, image: "https://example-other-supplier.test/a.jpg" });
   const pricedButUnreliableImage = fixtureProduct({ id: "priced-unreliable", startingPrice: 10, image: "https://cdn.ssactivewear.com/a.jpg" });
 
   const result = sortProducts([quoteRequired, pricedButUnreliableImage], "featured");
@@ -123,7 +112,7 @@ test("existing partitionByPriceAvailability/searchProducts/buildShopUrl behavior
 test("sortByImageReliability: works over any shape via its getImageUrl accessor, not just ShopProduct -- used by the static /products/[category]/[subcategory] pages, which have a different item shape (CatalogueProduct)", () => {
   const items = [
     { id: "unreliable", coverUrl: "https://cdn.ssactivewear.com/a.jpg" },
-    { id: "reliable", coverUrl: "https://media.sanmarcanada.com/a.jpg" },
+    { id: "reliable", coverUrl: "https://example-other-supplier.test/a.jpg" },
     { id: "no-cover", coverUrl: null },
   ];
   const result = sortByImageReliability(items, (item) => item.coverUrl);
