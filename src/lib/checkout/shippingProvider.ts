@@ -53,13 +53,18 @@ export interface ShippingQuoteProvider {
  * Planned activation order (per the owner's 2026-11-12 decision to replace Canada Post with
  * Chit Chats as the primary carrier):
  *   1. ChitChatsShippingProvider (chitChatsShippingProvider.ts) — PLANNED PRIMARY. Built, tested
- *      against synthetic fixtures, not activated. Needs a Chit Chats API access token + client ID
- *      (none exist in this codebase) before it can ever make a real call.
+ *      against synthetic fixtures, not activated. A Chit Chats API access token + client ID now
+ *      exist in `.env.local` (confirmed working against production — see
+ *      docs/chit-chats-production-readiness.md), so credentials are no longer the blocker; the
+ *      current blocker is that `packagingProfiles.ts`'s PACKAGING_PROFILES/
+ *      PRODUCT_PACKAGING_ASSIGNMENTS are still empty — Chit Chats requires real parcel dimensions
+ *      on every rate request, and no product in the catalogue has owner-measured dimensions yet.
  *   2. CanadaPostShippingProvider (canadaPostShippingProvider.ts) — kept as a documented, built,
  *      tested FALLBACK only, no longer the planned primary. Needs its own Canada Post Developer
  *      Program credentials (also absent) if ever activated instead of or alongside Chit Chats.
- * Activating either is a one-line swap of the export below, once credentials exist and the owner
- * approves Production shipping activation — never silently substituted for a failed paid quote.
+ * Activating either is a one-line swap of the export below, once a real packaging profile exists
+ * and the owner approves Production shipping activation — never silently substituted for a failed
+ * paid quote.
  */
 class FreeShippingProvider implements ShippingQuoteProvider {
   async getOptions(): Promise<ShippingOption[]> {
