@@ -5,6 +5,14 @@ adjust names/tone as needed, and send from whoever holds the wholesale account w
 (these questions typically need to come from the account holder, not a third party). Fill in the
 `[brackets]` before sending.
 
+**STATUS (2026-11-22): finalized, NOT sent — awaiting the owner's explicit approval to send.**
+For the image-access problem specifically, **1a** (SanMar) and **2a** (S&S) are the two drafts to
+actually send — both now explicitly ask about (a) whether authorized resellers/wholesale accounts
+may display the supplier's product images on their own e-commerce site at all, and (b) explicit
+permission to cache/rehost those images on Maple's own infrastructure/CDN, so there is no live
+hotlinking dependency going forward either way the supplier answers. See each draft's own header
+for what prompted it and exactly what evidence it cites.
+
 ---
 
 ## 1. SanMar — integration access (send first, per the research findings)
@@ -37,7 +45,7 @@ adjust names/tone as needed, and send from whoever holds the wholesale account w
 
 ---
 
-## 1a. SanMar — product image access (actual version sent, 2026-11-18)
+## 1a. SanMar — product image access (ready to send, NOT yet sent — see STATUS above)
 
 Raised after real browser evidence showed a `media.sanmarcanada.com` product image loading fine
 via direct navigation but returning `403 Forbidden` (CloudFront-generated, `X-Cache: Error from
@@ -68,7 +76,12 @@ unconfirmed.
 >    websites.
 > 2. Whether there is an approved image library, API, or downloadable product-image catalogue we
 >    can use.
-> 3. Whether our website domain needs to be allowlisted for image access.
+> 3. **Whether we may cache and rehost SanMar product images on our own infrastructure/CDN** under
+>    our wholesale account, rather than depending on live hotlinking from `media.sanmarcanada.com`
+>    going forward — we're happy to credit/attribute SanMar however required, and to limit this to
+>    products we actually carry.
+> 4. Whether our website domain needs to be allowlisted for image access, if hotlinking is in fact
+>    the intended access pattern once authorized.
 >
 > We would appreciate guidance on the recommended integration method.
 >
