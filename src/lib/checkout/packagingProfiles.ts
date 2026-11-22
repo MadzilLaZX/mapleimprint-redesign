@@ -102,6 +102,61 @@ export interface PackagingProfile {
  * packaging data. Every real Chit Chats rate request stays correctly blocked (see
  * chitChatsShippingProvider.ts's dimensions-required preflight check) for exactly as long as this
  * stays empty, which is the safe default, not a bug to work around.
+ *
+ * CATEGORY TEMPLATES (2026-11-22) -- copy ONE of these into the object literal above once you've
+ * actually measured the real box, filling in every `0 /* MEASURE ME *\/` with a real number. These
+ * are deliberately kept as a COMMENT, not live code -- pasting a template with its placeholder
+ * zeros still in place would silently "work" (resolvePackaging() has no way to tell a real 0 from
+ * an unmeasured one) and could let a real customer get quoted a free/garbage rate for a parcel
+ * that was never actually sized. Copying out of a comment forces a deliberate, visible edit.
+ *
+ * T-SHIRT / LIGHT APPAREL (folded flat, poly mailer) --
+ *   "tshirt-poly-mailer": {
+ *     id: "tshirt-poly-mailer", label: "T-shirt poly mailer",
+ *     outerDimensionsIn: { length: 0 /* MEASURE ME *\/, width: 0 /* MEASURE ME *\/, height: 0 /* MEASURE ME *\/ },
+ *     emptyWeightLb: 0 /* MEASURE ME -- empty mailer only, no garment *\/,
+ *     maxUnitsPerPackage: 0 /* MEASURE ME -- how many folded shirts actually fit *\/,
+ *     maxWeightLbPerPackage: 0 /* MEASURE ME *\/,
+ *   },
+ *
+ * HOODIE / HEAVIER CLOTHING (bulkier, usually needs a box or a larger/reinforced mailer) --
+ *   "hoodie-box": {
+ *     id: "hoodie-box", label: "Hoodie shipping box",
+ *     outerDimensionsIn: { length: 0 /* MEASURE ME *\/, width: 0 /* MEASURE ME *\/, height: 0 /* MEASURE ME *\/ },
+ *     emptyWeightLb: 0 /* MEASURE ME -- empty box + any tissue/dunnage *\/,
+ *     maxUnitsPerPackage: 0 /* MEASURE ME *\/,
+ *     maxWeightLbPerPackage: 0 /* MEASURE ME *\/,
+ *   },
+ *
+ * MUG (rigid, fragile -- needs a box with real cushioning, never a poly mailer) --
+ *   "mug-gift-box": {
+ *     id: "mug-gift-box", label: "Single mug gift box",
+ *     outerDimensionsIn: { length: 0 /* MEASURE ME *\/, width: 0 /* MEASURE ME *\/, height: 0 /* MEASURE ME *\/ },
+ *     emptyWeightLb: 0 /* MEASURE ME -- empty box + packing insert, no mug *\/,
+ *     maxUnitsPerPackage: 0 /* MEASURE ME -- usually 1 unless a specific multi-mug box is used *\/,
+ *     maxWeightLbPerPackage: 0 /* MEASURE ME *\/,
+ *   },
+ *
+ * TUMBLER (also rigid/fragile -- typically its own box, taller than a mug box) --
+ *   "tumbler-box": {
+ *     id: "tumbler-box", label: "Single tumbler box",
+ *     outerDimensionsIn: { length: 0 /* MEASURE ME *\/, width: 0 /* MEASURE ME *\/, height: 0 /* MEASURE ME *\/ },
+ *     emptyWeightLb: 0 /* MEASURE ME *\/,
+ *     maxUnitsPerPackage: 0 /* MEASURE ME *\/,
+ *     maxWeightLbPerPackage: 0 /* MEASURE ME *\/,
+ *   },
+ *
+ * MIXED-PRODUCT ORDERS AND MULTIPLE QUANTITIES -- deliberately NOT a template, because no single
+ * box profile can honestly answer either case. `resolvePackaging()` already handles both
+ * correctly without any new entry: a cart with more than one distinct product always resolves to
+ * null (mixed-product carts route to a manual quote -- see this file's header, "SCOPE, DELIBERATELY
+ * LIMITED"), and a quantity that exceeds a single profile's `maxUnitsPerPackage` or
+ * `maxWeightLbPerPackage` also resolves to null (routes to manual quote) rather than silently
+ * guessing it fits. If a specific product is regularly ordered in bulk, measure a SEPARATE,
+ * larger box for it and give it its own profile (e.g. "tshirt-case-of-12") rather than reusing the
+ * single-unit profile above -- `PRODUCT_PACKAGING_ASSIGNMENTS` maps one product to exactly one
+ * profile, so a product moving between a standard and bulk box is a business/fulfillment decision,
+ * not something this file resolves automatically.
  */
 export const PACKAGING_PROFILES: Record<string, PackagingProfile> = {};
 
