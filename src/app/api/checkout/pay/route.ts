@@ -150,11 +150,15 @@ export async function POST(request: Request) {
       // shown as-is, and 422 signals "your input, not our system." Anything else is an unexpected
       // failure (network error, Chit Chats/Canada Post outage) and gets the generic message + 502.
       if (err instanceof ShippingRateUnavailableError) {
-        return NextResponse.json({ error: err.message }, { status: 422 });
+        // Same `shippingUnavailable` tag /api/checkout/quote uses -- lets the frontend offer a
+        // "Request a Shipping Quote" path here too, in the unlikely case this is ever reached
+        // without a successful quote already having set it there first (e.g. a destination that
+        // became unserviceable between the two calls).
+        return NextResponse.json({ error: err.message, shippingUnavailable: true }, { status: 422 });
       }
       console.error("[checkout] shipping quote failed:", err);
       return NextResponse.json(
-        { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
+        { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us.", shippingUnavailable: true },
         { status: 502 },
       );
     }

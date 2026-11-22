@@ -22,6 +22,7 @@ import {
   formatCanadianPostalCode,
 } from "@/lib/checkout/validation";
 import type { CheckoutCartItemInput } from "@/lib/checkout/priceCartItem";
+import { buildShippingQuoteRequestMessage } from "@/components/checkout/shippingQuoteRequestMessage";
 
 const QUOTE_DEBOUNCE_MS = 500;
 
@@ -65,6 +66,10 @@ export function CheckoutClient() {
   const [quote, setQuote] = useState<CheckoutQuote | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  // Distinguishes "no real carrier rate could be calculated" (offer Request a Shipping Quote)
+  // from every other quote failure (a generic retry message is enough) -- see
+  // /api/checkout/quote's `shippingUnavailable` flag.
+  const [shippingUnavailable, setShippingUnavailable] = useState(false);
   const [unresolvedItems, setUnresolvedItems] = useState<{ cartItemId: string; reason: string }[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -112,6 +117,16 @@ export function CheckoutClient() {
     [items],
   );
 
+  // Only meaningful while shippingUnavailable is true (see render below) -- built eagerly anyway
+  // since it's cheap and purely derived from state already in scope, no extra fetch.
+  const shippingQuoteRequestUrl = useMemo(() => {
+    const message = buildShippingQuoteRequestMessage(
+      items.map((i) => ({ name: i.name, quantity: i.quantity, colourName: i.colourName ?? null })),
+      delivery,
+    );
+    return `/contact?type=general&message=${encodeURIComponent(message)}`;
+  }, [items, delivery]);
+
   useEffect(() => {
     if (quoteItems.length === 0) return;
     // Pickup never needs a delivery address to quote -- the server prices it from
@@ -128,7 +143,21 @@ export function CheckoutClient() {
           items: quoteItems,
           fulfillmentMethod,
           ...(fulfillmentMethod === "delivery"
-            ? { shippingAddress: { province: delivery.province, country: delivery.country, postalCode: delivery.postalCode } }
+            ? {
+                // A real carrier rate request (ChitChatsShippingProvider) needs the full address,
+                // not just province/postal code, to confirm serviceability -- name/addressLine1/
+                // city are already in component state by the time this fires (the customer is
+                // actively filling the Delivery section), so there's no reason to withhold them
+                // and force a worse answer at this preview step than /api/checkout/pay would give.
+                shippingAddress: {
+                  name: contact.fullName,
+                  province: delivery.province,
+                  country: delivery.country,
+                  postalCode: delivery.postalCode,
+                  addressLine1: delivery.addressLine1,
+                  city: delivery.city,
+                },
+              }
             : {}),
         }),
       })
@@ -137,25 +166,32 @@ export function CheckoutClient() {
           if (!res.ok) {
             if (data.unresolvedItems) {
               setUnresolvedItems(data.unresolvedItems);
+              setShippingUnavailable(false);
               setQuote(null);
             } else {
               setQuoteError(data.error ?? "Couldn't calculate your total.");
+              setShippingUnavailable(Boolean(data.shippingUnavailable));
+              setQuote(null);
             }
             return;
           }
           setUnresolvedItems([]);
           setQuoteError(null);
+          setShippingUnavailable(false);
           setQuote(data);
         })
-        .catch(() => setQuoteError("Couldn't calculate your total. Check your connection and try again."))
+        .catch(() => {
+          setQuoteError("Couldn't calculate your total. Check your connection and try again.");
+          setShippingUnavailable(false);
+        })
         .finally(() => setQuoteLoading(false));
     }, QUOTE_DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-    // Only the address fields that actually affect tax/shipping should retrigger the quote —
-    // re-running on every contact keystroke would spam the endpoint for no reason.
-  }, [quoteItems, fulfillmentMethod, delivery.province, delivery.country, delivery.postalCode]);
+    // Only the fields that actually affect tax/shipping should retrigger the quote -- re-running
+    // on every keystroke elsewhere (e.g. phone) would spam the endpoint for no reason.
+  }, [quoteItems, fulfillmentMethod, contact.fullName, delivery.addressLine1, delivery.city, delivery.province, delivery.country, delivery.postalCode]);
 
   if (items.length === 0) {
     return (
@@ -413,7 +449,25 @@ export function CheckoutClient() {
             </AnimatePresence>
           </section>
 
-          {quoteError && (
+          {quoteError && shippingUnavailable && (
+            <div className="flex items-start gap-2 rounded-2xl bg-crimson/10 px-4 py-3 text-sm text-crimson">
+              <WarningCircle className="mt-0.5 size-4 shrink-0" weight="bold" />
+              <div>
+                <p className="font-semibold">{quoteError}</p>
+                <p className="mt-1 text-ink-900/70">
+                  We never guess a shipping price — a real carrier rate couldn&apos;t be calculated for this
+                  order. Request a shipping quote instead and we&apos;ll confirm it manually.
+                </p>
+                <Link
+                  href={shippingQuoteRequestUrl}
+                  className="mt-3 inline-flex items-center justify-center rounded-full bg-ink-950 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  Request a Shipping Quote
+                </Link>
+              </div>
+            </div>
+          )}
+          {quoteError && !shippingUnavailable && (
             <p className="flex items-center gap-1.5 text-sm text-crimson">
               <WarningCircle className="size-4" weight="bold" />
               {quoteError}

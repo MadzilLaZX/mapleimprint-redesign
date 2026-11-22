@@ -18,7 +18,7 @@ const TABS: { key: ContactTab; label: string }[] = [
   { key: "general", label: "General Inquiry" },
 ];
 
-export function ContactTabs({ initialTab }: { initialTab: ContactTab }) {
+export function ContactTabs({ initialTab, initialMessage }: { initialTab: ContactTab; initialMessage?: string }) {
   const [tab, setTab] = useState<ContactTab>(initialTab);
 
   return (
@@ -43,16 +43,20 @@ export function ContactTabs({ initialTab }: { initialTab: ContactTab }) {
         {tab === "location" && <LocationPanel />}
         {tab === "quote" && <QuoteWizard />}
         {tab === "appointment" && <AppointmentPanel />}
-        {tab === "general" && <GeneralInquiryForm />}
+        {tab === "general" && <GeneralInquiryForm initialMessage={initialMessage} />}
       </div>
     </div>
   );
 }
 
-function GeneralInquiryForm() {
+/** `initialMessage` is only ever real data the customer already entered elsewhere on the site
+ *  (e.g. CheckoutClient.tsx's "Request a Shipping Quote" CTA, which pre-fills cart contents and
+ *  delivery address) -- never invented here, and always still a plain editable textarea, not a
+ *  locked/read-only field, so the customer can edit or clear it before sending. */
+function GeneralInquiryForm({ initialMessage = "" }: { initialMessage?: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);

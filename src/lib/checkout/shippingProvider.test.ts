@@ -1,38 +1,61 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { resolveShippingProvider } from "./shippingProvider.ts";
+import { ShippingRateUnavailableError } from "./canadaPostShippingProvider.ts";
 
-const ON = { province: "ON", country: "CA", postalCode: "K1V 8B9" };
+const ON_FULL = { province: "ON", country: "CA", postalCode: "K1V 8B9", name: "Test Customer", addressLine1: "123 Test St", city: "Ottawa" };
 
 // resolveShippingProvider is the pure, directly-testable gating function the live
 // `shippingProvider` singleton is built from (see shippingProvider.ts), mirroring
-// resolveTaxProvider's exact pattern in taxProvider.ts. Both branches currently agree
-// (FreeShippingProvider, no threshold) -- see that file's header "COMMERCIAL RISK" comment for
-// why, and what a future activation requires. These tests exist so that a later edit to either
-// branch has an immediate, obvious regression signal.
+// resolveTaxProvider's exact pattern in taxProvider.ts.
+//
+// ACTIVATED 2026-11-22 (owner-approved): Production stays on the unconditional FreeShippingProvider
+// placeholder (see that file's header); Preview/dev now run the real ChitChatsShippingProvider,
+// which already implements the confirmed $300-threshold policy (chitChatsShippingProvider.test.ts
+// covers that logic in full, against a mocked fetcher) -- these tests exist to confirm the
+// ACTIVATION WIRING itself, not re-derive that policy's logic.
 
-test("resolveShippingProvider('production') returns Free Shipping with no threshold, today", async () => {
+test("resolveShippingProvider('production') still returns unconditional Free Shipping, unaffected by this round's Preview activation", async () => {
   const provider = resolveShippingProvider("production");
-  const options = await provider.getOptions(ON, 999_999_00, []);
+  const options = await provider.getOptions(ON_FULL, 999_999_00, []);
   assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
 });
 
-test("resolveShippingProvider('preview') also returns Free Shipping with no threshold, today", async () => {
-  const provider = resolveShippingProvider("preview");
-  const options = await provider.getOptions(ON, 500, []);
-  assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
-});
-
-test("resolveShippingProvider(undefined) (local dev / npm test) also returns Free Shipping, today", async () => {
-  const provider = resolveShippingProvider(undefined);
-  const options = await provider.getOptions(ON, 500, []);
-  assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
-});
-
-test("Free Shipping is granted regardless of subtotal size -- no threshold is enforced yet (the documented commercial-risk gap)", async () => {
+test("resolveShippingProvider('production') grants Free Shipping regardless of subtotal size -- Production's documented commercial-risk gap, deliberately unchanged this round", async () => {
   const provider = resolveShippingProvider("production");
-  const tiny = await provider.getOptions(ON, 1, []);
-  const huge = await provider.getOptions(ON, 1_000_000_00, []);
+  const tiny = await provider.getOptions(ON_FULL, 1, []);
+  const huge = await provider.getOptions(ON_FULL, 1_000_000_00, []);
   assert.equal(tiny[0].cents, 0);
   assert.equal(huge[0].cents, 0);
+});
+
+test("resolveShippingProvider('preview') uses the real ChitChatsShippingProvider -- never silently falls back to a fabricated Free Shipping when a real rate can't be calculated", async () => {
+  const provider = resolveShippingProvider("preview");
+  // No real packaging profile exists for any product yet (packagingProfiles.ts is still empty),
+  // so a real rate request always fails fetchChitChatsRates' own dimensions-required preflight --
+  // confirmed below to throw, NEVER to resolve with a $0/free option. This never reaches the
+  // network: the preflight throws before any fetch call, so this is safe to run unmocked.
+  await assert.rejects(
+    () => provider.getOptions(ON_FULL, 1_000_00, []),
+    ShippingRateUnavailableError,
+    "expected a would-be-free ($1000, over the $300 threshold) order to still require a real rate, not an automatic free pass",
+  );
+});
+
+test("resolveShippingProvider(undefined) (local dev / npm test) also uses the real ChitChatsShippingProvider, same as 'preview'", async () => {
+  const provider = resolveShippingProvider(undefined);
+  await assert.rejects(() => provider.getOptions(ON_FULL, 1_000_00, []), ShippingRateUnavailableError);
+});
+
+test("resolveShippingProvider('preview') never grants free shipping for a small (under-threshold) order either -- it's not just the free path that requires a real rate", async () => {
+  const provider = resolveShippingProvider("preview");
+  await assert.rejects(() => provider.getOptions(ON_FULL, 100, []), ShippingRateUnavailableError);
+});
+
+test("resolveShippingProvider('preview') refuses rather than fabricating when the destination can't even be minimally validated", async () => {
+  const provider = resolveShippingProvider("preview");
+  await assert.rejects(
+    () => provider.getOptions({ province: "", country: "CA", postalCode: "" }, 1_000_00, []),
+    ShippingRateUnavailableError,
+  );
 });

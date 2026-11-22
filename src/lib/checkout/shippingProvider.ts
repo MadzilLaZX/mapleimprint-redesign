@@ -1,3 +1,10 @@
+// Explicit .ts extension -- required for plain `node --test` (this file's own test imports it
+// directly), matching the convention already used throughout this package. A type-only import
+// cycle already existed in the other direction (chitChatsShippingProvider.ts imports this file's
+// *types*); importing the real class here is safe since that existing import is `import type`,
+// erased entirely at compile time -- there is no runtime circular dependency.
+import { ChitChatsShippingProvider } from "./chitChatsShippingProvider.ts";
+
 export interface ShippingAddressInput {
   province: string;
   country: string;
@@ -45,42 +52,20 @@ export interface ShippingQuoteProvider {
 }
 
 /**
- * COMMERCIAL RISK — LAUNCH BLOCKER (read before approving a Production deploy):
+ * Production-only placeholder — see `resolveShippingProvider` below for why Production stays here
+ * while Preview/dev run the real `ChitChatsShippingProvider`. Ships EVERY order free, with NO
+ * threshold, NO weight/value cap, and NO destination check beyond what `ShippingAddressInput`
+ * itself requires. That is NOT the same thing as "free shipping" being Maple's approved policy —
+ * the owner confirmed a narrower one on 2026-11-12 (standard delivery free only on eligible
+ * Canadian orders over $300, after a real carrier rate confirms serviceability; see
+ * `chitChatsShippingProvider.ts`'s header and `FREE_SHIPPING_THRESHOLD_CENTS`) and approved
+ * (2026-11-22) implementing it for real in Preview — this class is deliberately NOT that
+ * implementation, it's what Production keeps using until a separate, deliberate decision moves
+ * Production onto the real policy too (see `resolveShippingProvider` below).
  *
- * This provider ships EVERY order free, with NO threshold, NO weight/value cap, and NO
- * destination check beyond what `ShippingAddressInput` itself requires. That is NOT the same
- * thing as "free shipping" being Maple's approved policy — the owner already confirmed a
- * specific, narrower policy on 2026-11-12 (see `chitChatsShippingProvider.ts`'s header and its
- * exported `FREE_SHIPPING_THRESHOLD_CENTS`, currently CAD $300.00): standard delivery is free
- * ONLY on eligible Canadian orders with a merchandise subtotal strictly over $300, confirmed
- * serviceable by a real carrier rate request first; orders at or under $300 are supposed to get a
- * REAL calculated rate, not a free one. **Today's live code gives every order the $300+ treatment
- * regardless of size** — a $15 order and a $15,000 order are both "Free Shipping" today. If this
- * is deployed to Production as-is, that gap is real and ongoing, not hypothetical.
- *
- * Why this hasn't simply been fixed by activating the real policy: `ChitChatsShippingProvider`
- * already implements the owner's exact policy correctly (threshold, serviceability-first, never a
- * fabricated free rate for an unconfirmed destination) and a Chit Chats API token + client ID now
- * exist in `.env.local` (confirmed working against production — see
- * docs/chit-chats-production-readiness.md). The remaining blocker is that `packagingProfiles.ts`'s
- * PACKAGING_PROFILES/PRODUCT_PACKAGING_ASSIGNMENTS are still empty — Chit Chats requires real
- * parcel dimensions on every rate request (confirmed against the live OpenAPI spec), so activating
- * `ChitChatsShippingProvider` as-is today would route EVERY order (not just small ones) to a
- * manual-quote refusal, since no product has owner-measured dimensions yet. That would be a far
- * bigger availability regression than the free-shipping gap it would fix, and is not a decision
- * this codebase makes unilaterally — see `resolveShippingProvider` below for the prepared,
- * one-line activation point once the owner decides how to proceed (measure a box first, accept
- * the manual-quote friction on small orders as an interim state, or keep blanket free shipping as
- * a deliberate, approved launch promotion instead of an oversight).
- *
- * Planned activation order (per the owner's 2026-11-12 decision to replace Canada Post with
- * Chit Chats as the primary carrier):
- *   1. ChitChatsShippingProvider (chitChatsShippingProvider.ts) — PLANNED PRIMARY, already
- *      implements the confirmed $300 threshold policy. Blocked only on real packaging dimensions
- *      (see above), not credentials.
- *   2. CanadaPostShippingProvider (canadaPostShippingProvider.ts) — kept as a documented, built,
- *      tested FALLBACK only, no longer the planned primary. Needs its own Canada Post Developer
- *      Program credentials (also absent) if ever activated instead of or alongside Chit Chats.
+ * PRODUCTION LAUNCH BLOCKER: going live on this class as-is means every Production order ships
+ * free regardless of size, with no cap. That gap is real and ongoing, not hypothetical, for as
+ * long as Production stays on this branch of `resolveShippingProvider`.
  */
 class FreeShippingProvider implements ShippingQuoteProvider {
   async getOptions(_address: ShippingAddressInput, subtotalCents: number): Promise<ShippingOption[]> {
@@ -95,20 +80,38 @@ class FreeShippingProvider implements ShippingQuoteProvider {
 
 /**
  * The per-environment gate, mirroring `taxProvider.ts`'s `resolveTaxProvider` exactly: a plain,
- * directly-testable function (never reading `process.env` itself) so a future activation decision
- * is a one-line change to the branch below, reviewed via a real commit — never an env var or
- * Vercel dashboard setting an owner could flip by accident. Both branches return the same
- * `FreeShippingProvider` today — this function exists to PREPARE the seam, not to change behavior
- * yet. Once the owner approves (a) a real packaging profile and (b) how to handle orders at/under
- * the $300 threshold in the meantime, activating `ChitChatsShippingProvider` for Preview first
- * (to verify against the real Chit Chats account before Production ever sees it) is a one-line
- * edit to the non-Production branch below; Production stays on `FreeShippingProvider` until a
- * separate, deliberate edit to the Production branch follows, exactly like `resolveTaxProvider`'s
+ * directly-testable function (never reading `process.env` itself) so any future change is a
+ * one-line edit to a branch below, reviewed via a real commit — never an env var or Vercel
+ * dashboard setting an owner could flip by accident.
+ *
+ * ACTIVATED 2026-11-22 (owner-approved) for Preview/dev only: `ChitChatsShippingProvider` already
+ * implements the confirmed policy correctly (orders at/under $300 get the real calculated rate;
+ * orders over $300 get it free, but ONLY after that same real rate request succeeds and confirms
+ * the destination is serviceable; any failure — unreachable carrier, unsupported destination, or
+ * today, for every real cart, missing package dimensions — throws `ShippingRateUnavailableError`
+ * rather than ever falling back to a fabricated free or invented rate). Both checkout API routes
+ * already catch that error and surface a "request a shipping quote" path (see
+ * CheckoutClient.tsx) instead of silently completing checkout.
+ *
+ * Concretely, until a real `packagingProfiles.ts` entry exists for at least one product, EVERY
+ * delivery quote in Preview will hit the dimensions-required refusal (`fetchChitChatsRates`'s own
+ * preflight check) and route to a manual quote — Ottawa pickup is unaffected (it never calls this
+ * provider at all). That is the correct, honest behavior given no real packaging data exists yet,
+ * not a bug: see packagingProfiles.ts's header for how to add a real, measured profile, at which
+ * point real Chit Chats rate requests will actually start flowing for that product, in Preview
+ * only, using the real Chit Chats account (there is no staging sandbox for Chit Chats itself —
+ * see chitChatsShippingProvider.ts's header) — always as an unpurchased, deletable draft shipment,
+ * never postage, per this codebase's standing "no real shipments without approval" rule.
+ *
+ * Production stays on `FreeShippingProvider` until a separate, deliberate edit to that branch
+ * follows a real Production-activation decision — exactly like `resolveTaxProvider`'s
  * Production/non-Production split.
  */
 export function resolveShippingProvider(vercelEnv: string | undefined): ShippingQuoteProvider {
-  void vercelEnv; // not yet branched on — see header above for why both paths agree today
-  return new FreeShippingProvider();
+  if (vercelEnv === "production") {
+    return new FreeShippingProvider();
+  }
+  return new ChitChatsShippingProvider();
 }
 
 export const shippingProvider: ShippingQuoteProvider = resolveShippingProvider(process.env.VERCEL_ENV);

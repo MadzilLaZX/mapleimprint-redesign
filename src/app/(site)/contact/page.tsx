@@ -24,6 +24,10 @@ export default async function ContactPage({
   const initialTab: ContactTab = TAB_PARAMS.includes(requested as ContactTab)
     ? (requested as ContactTab)
     : "quote";
+  // Real data the customer already entered elsewhere (currently: CheckoutClient.tsx's "Request a
+  // Shipping Quote" CTA) -- plain text only, pre-fills GeneralInquiryForm's editable textarea,
+  // never rendered as HTML/markup.
+  const initialMessage = typeof params.message === "string" ? params.message : undefined;
 
   return (
     <>
@@ -81,7 +85,7 @@ export default async function ContactPage({
           </Reveal>
 
           <Reveal delay={0.1}>
-            <ContactTabs initialTab={initialTab} />
+            <ContactTabs initialTab={initialTab} initialMessage={initialMessage} />
           </Reveal>
         </Container>
       </Section>

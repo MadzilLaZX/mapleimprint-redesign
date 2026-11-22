@@ -9,8 +9,13 @@ import { PICKUP_LOCATION } from "@/lib/checkout/pickupLocation";
 interface QuoteRequestBody {
   items: CheckoutCartItemInput[];
   /** Required for "delivery", absent/ignored for "pickup" -- the fulfillment selector never
-   *  collects a delivery address when pickup is chosen. */
-  shippingAddress?: { province: string; country: string; postalCode: string };
+   *  collects a delivery address when pickup is chosen. `name`/`addressLine1`/`city` are optional
+   *  for backward compatibility with any caller that only sends province/country/postalCode, but
+   *  CheckoutClient.tsx now sends all of them once the delivery form has them -- a real carrier
+   *  rate request (ChitChatsShippingProvider) needs the full address to confirm serviceability,
+   *  not just a province/postal-code preview; see that provider's own
+   *  `assertFullChitChatsAddress` note for why there's no lighter-weight path to a real answer. */
+  shippingAddress?: { province: string; country: string; postalCode: string; name?: string; addressLine1?: string; city?: string };
   /** Defaults to "delivery" -- existing callers that don't send this field are unaffected.
    *  "pickup" means Ottawa local pickup: free, and taxed at Ontario's point-of-sale rate
    *  regardless of shippingAddress. */
@@ -73,11 +78,15 @@ export async function POST(request: Request) {
       );
     } catch (err) {
       if (err instanceof ShippingRateUnavailableError) {
-        return NextResponse.json({ error: err.message }, { status: 422 });
+        // `shippingUnavailable` distinguishes this from every other 4xx/5xx this endpoint can
+        // return (unresolved items, a malformed request, an unexpected failure) -- the frontend
+        // uses it specifically to offer a "Request a Shipping Quote" path instead of a bare error,
+        // never to silently substitute a free or invented rate (see CheckoutClient.tsx).
+        return NextResponse.json({ error: err.message, shippingUnavailable: true }, { status: 422 });
       }
       console.error("[checkout] shipping quote failed:", err);
       return NextResponse.json(
-        { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us." },
+        { error: "We couldn't get a shipping rate for this address right now. Please try again or contact us.", shippingUnavailable: true },
         { status: 502 },
       );
     }
