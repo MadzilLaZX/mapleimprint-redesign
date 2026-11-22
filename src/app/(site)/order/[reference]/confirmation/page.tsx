@@ -51,6 +51,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   const inventory = order.status === "PAID" ? await buildFileInventory(supabaseAdmin, lines ?? []) : [];
   const linesWithFiles = inventory.filter((line) => line.preview.length > 0 || line.assets.length > 0);
 
+  const hasCustomDesign = (lines ?? []).some((l) => l.customizationType === "CUSTOM");
   const firstName = order.contactName.split(" ")[0] || order.contactName;
   const address = order.shippingAddress as
     | { city?: string; province?: string; fulfillmentMethod?: "delivery" | "pickup"; pickupLocation?: { label: string; addressLine1: string; addressLine2: string; city: string; province: string; postalCode: string } }
@@ -185,7 +186,11 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
       <div className="mt-8 rounded-[24px] bg-canvas p-6 text-left">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">What happens next</p>
         <ol className="mt-3 space-y-2 text-sm text-ink-900">
-          <li>✓ Design approved</li>
+          {/* "Design approved" only applies to orders with an actual custom-printed design
+              (customizationType "CUSTOM") -- a blank/undecorated order never went through
+              Studio's approval step, and claiming it did would be describing a step that never
+              happened for this specific order. */}
+          {hasCustomDesign && <li>✓ Design approved</li>}
           <li>✓ Payment received</li>
           <li className="text-muted">Preparing for production</li>
           <li className="text-muted">Printing</li>
