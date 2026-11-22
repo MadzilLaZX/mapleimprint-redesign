@@ -16,16 +16,7 @@ import {
 import { cn } from "@/lib/cn";
 import { QUOTE_PREFILL_KEY, QUOTE_CART_LINES_KEY, type QuoteCartHandoff } from "@/components/cart/CartProvider";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
-
-type ProjectType =
-  | "apparel"
-  | "uniforms"
-  | "print"
-  | "signs"
-  | "stickers"
-  | "promo"
-  | "mixed"
-  | "unsure";
+import { projectTypeForHandoff, type ProjectType } from "@/components/contact/quoteProjectType";
 
 type DeliveryMethod = "pickup" | "shipping";
 type ContactMethod = "email" | "phone";
@@ -135,7 +126,16 @@ export function QuoteWizard() {
     const rawLines = window.sessionStorage.getItem(QUOTE_CART_LINES_KEY);
     if (rawLines) {
       try {
-        setCartLines(JSON.parse(rawLines));
+        const lines: QuoteCartHandoff[] = JSON.parse(rawLines);
+        setCartLines(lines);
+        // Pre-select step 1 from the real cart/design category when it maps unambiguously --
+        // never a guess (projectTypeForHandoff returns null rather than picking one for an
+        // unmapped/empty category), and never skips step 1 -- the customer still sees and can
+        // change it there, this just saves re-stating what the site already knows.
+        const inferredType = projectTypeForHandoff(lines);
+        if (inferredType) {
+          setData((prev) => (prev.projectType ? prev : { ...prev, projectType: inferredType }));
+        }
       } catch {
         // Malformed/stale sessionStorage value — fail open to an empty array rather than block
         // the wizard; the free-text prefill above still carries a human-readable summary.
