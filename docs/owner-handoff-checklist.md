@@ -131,9 +131,11 @@ your account number, name, and phone/email before sending from whoever holds eac
 ### Mandatory blockers (launch should not proceed without these)
 1. **Measure at least one shipping box** (section 1 above).
 2. **Add Chit Chats credentials to Vercel's *Production* environment variables** —
-   `CHIT_CHATS_API_ACCESS_TOKEN` and `CHIT_CHATS_CLIENT_ID` currently exist only in local
-   `.env.local`, confirmed working against the real Chit Chats account, but are **not yet present
-   in Vercel's Production (or Preview) project settings**. Shipping activation needs them there.
+   `CHIT_CHATS_API_ACCESS_TOKEN`, `CHIT_CHATS_CLIENT_ID`, `CHIT_CHATS_ENVIRONMENT=production` are
+   now configured in Vercel's **Preview** environment only (owner-approved and verified 2026-11-22:
+   a real read-only `GET /shipments` auth check against production succeeded). Production still
+   needs the same three variables added separately — this was deliberately NOT done automatically,
+   since Production env changes are outside this engagement's authorization.
 3. **Confirm GST/HST registration status** with your accountant — only the 13% Ontario *rate* is
    confirmed correct; registration/authorization to collect it is a separate, unconfirmed question
    that gates whether Production can ever charge real tax at all.
