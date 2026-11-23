@@ -4,6 +4,9 @@
 // *types*); importing the real class here is safe since that existing import is `import type`,
 // erased entirely at compile time -- there is no runtime circular dependency.
 import { ChitChatsShippingProvider } from "./chitChatsShippingProvider.ts";
+import { ChitChatsQuoteCoordinator } from "./chitChatsQuoteCoordinator.ts";
+import { SupabaseChitChatsQuoteStore } from "./chitChatsQuoteStore.ts";
+import { createAdminClient } from "@/lib/server/supabaseAdmin";
 
 export interface ShippingAddressInput {
   province: string;
@@ -107,11 +110,34 @@ class FreeShippingProvider implements ShippingQuoteProvider {
  * follows a real Production-activation decision — exactly like `resolveTaxProvider`'s
  * Production/non-Production split.
  */
+/**
+ * ACTIVATED (this round) now that supabase/migrations/010_chit_chats_shipping_quotes.sql is
+ * confirmed applied to staging -- chitChatsQuoteCoordinator.ts's own prior header literally named
+ * "the table hasn't been created" as the reason this was never wired in; that's no longer true for
+ * staging. Fails SOFT, never hard: if SUPABASE_SERVICE_ROLE_KEY/NEXT_PUBLIC_SUPABASE_URL aren't
+ * available when this runs (local `npm test`/`npm run dev` without them, confirmed true in this
+ * sandbox -- or any other environment misconfiguration), this returns undefined and
+ * ChitChatsShippingProvider behaves EXACTLY as before: in-memory-only caching, no crash, no
+ * behavior change. Reconciler stays the coordinator's own honest "unknown" default -- building a
+ * real one would mean a NEW live Chit Chats API call path, out of scope here. */
+export function buildCoordinator(): ChitChatsQuoteCoordinator | undefined {
+  try {
+    const supabaseAdmin = createAdminClient();
+    return new ChitChatsQuoteCoordinator(new SupabaseChitChatsQuoteStore(supabaseAdmin));
+  } catch (err) {
+    console.error(
+      "[shipping] couldn't construct the persistent Chit Chats quote coordinator -- falling back to in-memory-only caching:",
+      err,
+    );
+    return undefined;
+  }
+}
+
 export function resolveShippingProvider(vercelEnv: string | undefined): ShippingQuoteProvider {
   if (vercelEnv === "production") {
     return new FreeShippingProvider();
   }
-  return new ChitChatsShippingProvider();
+  return new ChitChatsShippingProvider(undefined, undefined, buildCoordinator());
 }
 
 export const shippingProvider: ShippingQuoteProvider = resolveShippingProvider(process.env.VERCEL_ENV);

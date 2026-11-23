@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { resolveShippingProvider } from "./shippingProvider.ts";
+import { resolveShippingProvider, buildCoordinator } from "./shippingProvider.ts";
 import { ShippingRateUnavailableError } from "./canadaPostShippingProvider.ts";
+import { ChitChatsQuoteCoordinator } from "./chitChatsQuoteCoordinator.ts";
 
 const ON_FULL = { province: "ON", country: "CA", postalCode: "K1V 8B9", name: "Test Customer", addressLine1: "123 Test St", city: "Ottawa" };
 
@@ -58,4 +59,42 @@ test("resolveShippingProvider('preview') refuses rather than fabricating when th
     () => provider.getOptions({ province: "", country: "CA", postalCode: "" }, 1_000_00, []),
     ShippingRateUnavailableError,
   );
+});
+
+// ACTIVATED (this round): the persistent, cross-instance Chit Chats quote coordinator, now that
+// migration 010's table is confirmed applied to staging. buildCoordinator() must fail SOFT, never
+// hard -- this sandbox has no SUPABASE_SERVICE_ROLE_KEY configured (confirmed: every test above
+// already runs resolveShippingProvider('preview'/undefined) successfully without one), so these
+// tests lock in that the missing-credentials path never throws and never breaks the provider.
+
+test("buildCoordinator() returns undefined (never throws) when Supabase admin credentials aren't available -- exactly this sandbox's real condition", () => {
+  const original = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  try {
+    assert.equal(buildCoordinator(), undefined);
+  } finally {
+    if (original !== undefined) process.env.SUPABASE_SERVICE_ROLE_KEY = original;
+  }
+});
+
+test("buildCoordinator() successfully constructs a real ChitChatsQuoteCoordinator once Supabase admin credentials ARE available -- proves the wiring itself works, not just the fallback", () => {
+  const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const originalKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Fake but well-formed values -- constructing a Supabase client and the coordinator around it
+  // never makes a network call, so no real request reaches any project, fake or real.
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://fake-project-for-this-test.supabase.co";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "fake-service-role-key-for-this-test";
+  try {
+    const coordinator = buildCoordinator();
+    assert.ok(coordinator instanceof ChitChatsQuoteCoordinator);
+  } finally {
+    if (originalUrl !== undefined) process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+    else delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (originalKey !== undefined) process.env.SUPABASE_SERVICE_ROLE_KEY = originalKey;
+    else delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  }
+});
+
+test("resolveShippingProvider('preview') never throws during construction regardless of credential availability -- the coordinator wiring must never break the provider itself", () => {
+  assert.doesNotThrow(() => resolveShippingProvider("preview"));
 });
