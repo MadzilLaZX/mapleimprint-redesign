@@ -406,7 +406,10 @@ function ApparelCustomizer({
               {startingStudio ? (
                 <SpinnerGap className="size-4 animate-spin" weight="bold" />
               ) : (
-                "Customize This Shirt →"
+                // Generic on purpose -- this component serves every apparel/accessory subcategory
+                // (hoodies, jackets, hats, bags, aprons, etc.), not only shirts; the previous
+                // hardcoded "Customize This Shirt" showed verbatim on every one of those.
+                "Customize This Product →"
               )}
             </button>
             <p className="text-center text-xs text-muted">Add your logo, artwork or text in Maple Studio.</p>

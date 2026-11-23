@@ -20,7 +20,19 @@ import {
 } from "@/lib/houseProducts/pricing/bundles";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { drinkwareConfigFor } from "@/lib/studio/drinkwareCustomization";
+import { standardLocationsFor } from "@/lib/studio/productDecorationProfile";
 import type { CatalogueProduct } from "@/lib/products";
+
+/** Sublimation-printed personalized-engraving gifts (coasters, kitchen towels, plaques, etc.) are
+ *  a real decoration process this site can offer today, using the same generic "accessory" front
+ *  location every other photo-less gift/promo product already uses (see productDecorationProfile.ts).
+ *  Laser-engraving items in this same category are a different decoration process with no template
+ *  built for it — explicitly excluded here, the same precedent drinkwareCustomization.ts already
+ *  set for engraved-personalized drinkware. The "sublimation-"/"engraving-" slug prefix is real,
+ *  existing catalogue data (confirmed across every row in jotoGiftsCatalog.ts), not inferred. */
+function isSublimationGift(product: CatalogueProduct): boolean {
+  return product.categorySlug === "personalized-engraving" && product.slug.startsWith("sublimation-");
+}
 
 const MONEY = new Intl.NumberFormat("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const money = (n: number) => `$${MONEY.format(n)}`;
@@ -52,8 +64,12 @@ export function BundleConfigurator({
   const [startingStudio, setStartingStudio] = useState(false);
   const [studioError, setStudioError] = useState<string | null>(null);
   // Drinkware bundle products (Joto) are customizable — they get "Customize" + "Request Custom
-  // Quote" alongside the blank "Add to cart". Non-drinkware bundles keep the existing two actions.
+  // Quote" alongside the blank "Add to cart". Non-drinkware bundles keep the existing two actions,
+  // except sublimation gifts (see isSublimationGift above), which get the same three actions using
+  // the generic "accessory" family's front location instead of drinkware's mug-wrap.
   const drinkwareCfg = drinkwareConfigFor(product);
+  const designable = Boolean(drinkwareCfg) || isSublimationGift(product);
+  const designLocations = drinkwareCfg?.locations ?? standardLocationsFor(product.categorySlug, product.subcategorySlug, false);
 
   // Show the chosen option's own photos when it has any (colours/finishes); size options have none,
   // so the gallery keeps showing every photo rather than a misleading "not available" notice.
@@ -121,7 +137,7 @@ export function BundleConfigurator({
   const perItemBase = unitPrice !== null ? Math.round((unitPrice / (entry.sellUnit === "unit" ? 1 : entry.itemsPerBundle)) * 100) / 100 : 0;
 
   async function handleDesign() {
-    if (!entry || !drinkwareCfg || startingStudio) return;
+    if (!entry || !designable || startingStudio) return;
     setStartingStudio(true);
     setStudioError(null);
     try {
@@ -150,7 +166,7 @@ export function BundleConfigurator({
             printRuleVersion: product.printRuleVersion,
           },
           mockupImages: {},
-          sides: drinkwareCfg.locations.map((type) => ({ type })),
+          sides: designLocations.map((type) => ({ type })),
         }),
       });
       const data = await res.json();
@@ -294,9 +310,10 @@ export function BundleConfigurator({
         </div>
       </div>
 
-      {drinkwareCfg ? (
-        // Customizable drinkware: design is the primary action; blank "Add to cart" stays as a
-        // secondary option; a custom quote is the third path. Pack pricing above is untouched.
+      {designable ? (
+        // Customizable drinkware or sublimation gift: design is the primary action; blank "Add to
+        // cart" stays as a secondary option; a custom quote is the third path. Pack pricing above
+        // is untouched.
         <>
           <button
             type="button"

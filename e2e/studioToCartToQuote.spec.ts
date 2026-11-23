@@ -20,9 +20,9 @@ test("apparel: Studio design -> real cart (correct name/qty/price) -> real check
   });
 
   await page.goto("/products/custom-apparel/t-shirts/allpro-men-s-pro-lock-performance-t-shirt");
-  // ProductCustomizer gates "Customize This Shirt" on at least one sized quantity > 0.
+  // ProductCustomizer gates "Customize This Product" on at least one sized quantity > 0.
   await page.getByRole("button", { name: /^Increase .* quantity$/ }).first().click();
-  await page.getByRole("button", { name: "Customize This Shirt" }).click();
+  await page.getByRole("button", { name: "Customize This Product" }).click();
   await page.waitForURL(/\/studio\//);
   await expect(page.getByRole("button", { name: "Text" })).toBeVisible({ timeout: 15_000 });
 

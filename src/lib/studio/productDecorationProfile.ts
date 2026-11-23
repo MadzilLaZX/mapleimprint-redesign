@@ -118,6 +118,14 @@ export function familyFor(categorySlug: string, subcategorySlug: string): Produc
   // misrouting bug, not just a missing-content gap.
   if (categorySlug === "stickers-labels") return "sticker";
   if (categorySlug === "hats-accessories") return "accessory"; // aprons, bags, general accessories
+  // Personalized-engraving house gifts (src/lib/houseProducts/jotoGiftsCatalog.ts: coasters,
+  // kitchen towels, plaques, notebooks, ornaments, etc.) — previously unmapped here, which meant
+  // any Customize entry point built for them would have silently fallen through to "tee" below and
+  // shown a 12x16in t-shirt chest template, the exact misrouting bug class already fixed once for
+  // stickers (see the comment above). As physically varied as gifts-promo/packaging, so it reuses
+  // the same generic "accessory" front/back locations — see BundleConfigurator.tsx for which of
+  // these products actually get a Customize button (sublimation items only, not engraving ones).
+  if (categorySlug === "personalized-engraving") return "accessory";
   return "tee";
 }
 
