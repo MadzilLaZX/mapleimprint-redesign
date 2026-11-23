@@ -5,6 +5,7 @@ import { buildFileInventory } from "@/lib/admin/fileInventory";
 import { LineFileCard } from "@/components/admin/LineFileCard";
 import { OrderFulfillmentControl } from "@/components/admin/OrderFulfillmentControl";
 import type { FulfillmentStatus } from "@/lib/checkout/orderFulfillment";
+import { findStoredShippingQuoteForOrder } from "@/lib/checkout/chitChatsStoredQuoteLookup";
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = await params;
@@ -37,6 +38,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
       }
     | null;
   const isPickup = address?.fulfillmentMethod === "pickup";
+  const storedQuote = isPickup ? null : await findStoredShippingQuoteForOrder(supabaseAdmin, order);
 
   return (
     <div>
@@ -94,6 +96,27 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             shippingCarrier={order.shippingCarrier}
             trackingNumber={order.trackingNumber}
           />
+        </div>
+      )}
+
+      {!isPickup && (
+        <div className="mt-6 rounded-[24px] bg-white p-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Shipping rate quote</p>
+          {storedQuote ? (
+            <div className="mt-2 space-y-1 text-sm text-ink-900">
+              {storedQuote.rates.map((r) => (
+                <p key={r.id}>
+                  {r.label}: ${(r.cents / 100).toFixed(2)}
+                </p>
+              ))}
+              <p className="text-xs text-muted">Quoted {new Date(storedQuote.createdAt).toLocaleString()}</p>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-muted">
+              No stored carrier quote for this order — real packaging-profile data doesn&apos;t exist yet, so no real-time
+              rate request has ever been attempted for any order.
+            </p>
+          )}
         </div>
       )}
 
