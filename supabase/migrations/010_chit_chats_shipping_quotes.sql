@@ -1,6 +1,22 @@
--- NOT APPLIED -- prepared for review/approval only, same as every other "not yet run" migration
--- convention in this repo. Do not run this against the live `maple-imprint-catalogue` Supabase
--- project without explicit approval.
+-- CONFIRMED APPLIED to the staging project (`mapleimprint-staging`), verified directly 2026-11-24
+-- via live inspection (table/columns/indexes/both check constraints/RLS all match this file
+-- exactly). STILL NOT APPLIED to `maple-imprint-catalogue` (Production, ovqkwedpwmuusnijbxro) --
+-- do not run this there without explicit approval; that project was not touched to confirm the
+-- above.
+--
+-- IMPORTANT, also confirmed 2026-11-24: even on staging, this table is not actually reachable from
+-- real traffic today. ChitChatsShippingProvider's real constructor
+-- (src/lib/checkout/chitChatsShippingProvider.ts, instantiated with no arguments by
+-- resolveShippingProvider() in shippingProvider.ts) never supplies a ChitChatsQuoteCoordinator, so
+-- only the in-process, single-instance ChitChatsRateCache is ever used -- this table's persistent,
+-- cross-instance tier is fully built and tested (chitChatsQuoteStore.ts,
+-- chitChatsQuoteCoordinator.ts, chitChatsQuoteStore.integration.test.ts) but dormant. Wiring a
+-- coordinator into the live provider is a real behavior change to the live shipping-quote request
+-- path (every quote request would start reading/writing this table) and deserves its own
+-- deliberate decision and review, same precedent as resolveShippingProvider's Production branch --
+-- not something to flip as a side effect of an admin-visibility feature. Building a staff-facing
+-- "stored shipping quote" view before that decision is made would show "no quote" for literally
+-- every order, forever, under today's wiring -- not useful, and not attempted here.
 --
 -- REVIEWED AGAIN (2026-11-15, still not applied, no live database touched): added the
 -- "chit_chats_quote_purchased_implies_ready" check constraint and the
