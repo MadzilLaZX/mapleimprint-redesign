@@ -31,6 +31,7 @@ export interface LineFileInventory {
   productName: string;
   colourName: string | null;
   quantity: number;
+  sizeBreakdown: { size: string; qty: number }[] | null;
   customizationType: string | null;
   designProjectId: string | null;
   exportStatus: string | null;
@@ -46,6 +47,7 @@ interface LineLike {
   productName: string;
   colourName?: string | null;
   quantity: number;
+  sizeBreakdown?: { size: string; qty: number }[] | null;
   customizationType?: string | null;
   designProjectId?: string | null;
   designSnapshot?: unknown;
@@ -201,6 +203,7 @@ export async function buildFileInventory(
         productName: line.productName,
         colourName: line.colourName ?? null,
         quantity: line.quantity,
+        sizeBreakdown: line.sizeBreakdown ?? null,
         customizationType: line.customizationType ?? null,
         designProjectId: line.designProjectId ?? null,
         exportStatus: project?.exportStatus ?? null,

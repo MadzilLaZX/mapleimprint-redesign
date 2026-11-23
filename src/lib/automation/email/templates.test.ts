@@ -47,6 +47,24 @@ test("adminOrderPaidEmail: html includes a link to the admin order page for the 
   assert.match(html, /\/admin\/orders\/MI-1042/);
 });
 
+test("adminOrderPaidEmail: shows the size/quantity breakdown so staff know what to pack, not just a combined line quantity", () => {
+  const order = {
+    ...BASE_ORDER,
+    lines: [{ productName: "Custom Tee", quantity: 5, colourName: "Black", sizeBreakdown: [{ size: "S", qty: 2 }, { size: "M", qty: 3 }] }],
+  };
+  const { text } = adminOrderPaidEmail(order);
+  assert.match(text, /Custom Tee \(Black\) × 5 \(S ×2, M ×3\)/);
+});
+
+test("orderConfirmationEmail: shows the customer's own size/quantity breakdown on their paid-order email", () => {
+  const order = {
+    ...BASE_ORDER,
+    lines: [{ productName: "Custom Tee", quantity: 5, colourName: "Black", sizeBreakdown: [{ size: "S", qty: 2 }, { size: "M", qty: 3 }] }],
+  };
+  const { text } = orderConfirmationEmail(order);
+  assert.match(text, /Custom Tee \(Black\) × 5 \(S ×2, M ×3\)/);
+});
+
 test("adminOrderPaidEmail: omits colour suffix when colourName is null", () => {
   const { text } = adminOrderPaidEmail(BASE_ORDER);
   const mugLine = text.split("\n").find((l) => l.includes("Mug"));

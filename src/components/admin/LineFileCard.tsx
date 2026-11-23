@@ -24,6 +24,11 @@ export function LineFileCard({ line }: { line: LineFileInventory }) {
         <h2 className="font-display text-lg font-semibold text-ink-900">
           {line.productName}
           {line.colourName ? ` (${line.colourName})` : ""} × {line.quantity}
+          {line.sizeBreakdown && line.sizeBreakdown.length > 0 && (
+            <span className="ml-2 text-sm font-normal text-muted">
+              {line.sizeBreakdown.map((s) => `${s.size} ×${s.qty}`).join(", ")}
+            </span>
+          )}
         </h2>
         {line.customizationType && (
           <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ink-900">

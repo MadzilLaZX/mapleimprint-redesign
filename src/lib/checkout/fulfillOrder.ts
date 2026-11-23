@@ -151,7 +151,7 @@ export async function markOrderPaidAndNotify(
         contactName: transitioned.contactName,
         contactEmail: transitioned.contactEmail,
         totalCents: transitioned.totalCents,
-        lines: (lines ?? []).map((l) => ({ productName: l.productName, quantity: l.quantity, colourName: l.colourName })),
+        lines: (lines ?? []).map((l) => ({ productName: l.productName, quantity: l.quantity, colourName: l.colourName, sizeBreakdown: l.sizeBreakdown })),
         fulfillment,
         amountBreakdown,
       });

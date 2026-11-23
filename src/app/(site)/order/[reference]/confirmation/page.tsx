@@ -9,6 +9,7 @@ interface OrderLine {
   quantity: number;
   colourName: string | null;
   customizationType: string | null;
+  sizeBreakdown: { size: string; qty: number }[] | null;
 }
 
 /**
@@ -43,7 +44,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
   const { data: lines } = await supabaseAdmin
     .from("MapleOrderLine")
-    .select("productName, quantity, colourName, customizationType, designProjectId, designSnapshot")
+    .select("productName, quantity, colourName, customizationType, sizeBreakdown, designProjectId, designSnapshot")
     .eq("orderId", order.id);
 
   // Customer-facing: only the composited preview image and the customer's own uploaded original —
@@ -105,6 +106,9 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
               <span className="text-ink-900">
                 {line.productName}
                 {line.colourName ? ` (${line.colourName})` : ""} × {line.quantity}
+                {line.sizeBreakdown && line.sizeBreakdown.length > 0 && (
+                  <> · {line.sizeBreakdown.map((s) => `${s.size} ×${s.qty}`).join(", ")}</>
+                )}
               </span>
               {line.customizationType === "CUSTOM" && (
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-crimson">Custom</span>

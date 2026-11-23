@@ -20,7 +20,7 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
 
   const { data: lines } = await supabaseAdmin
     .from("QuoteRequestLine")
-    .select("productName, colourName, quantity, customizationType, designProjectId, designSnapshot, assistanceBrief")
+    .select("productName, colourName, quantity, sizeBreakdown, customizationType, designProjectId, designSnapshot, assistanceBrief")
     .eq("quoteRequestId", quote.id);
 
   const inventory = await buildFileInventory(supabaseAdmin, lines ?? []);

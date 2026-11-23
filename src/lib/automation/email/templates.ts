@@ -92,7 +92,7 @@ interface OrderConfirmationInput {
   contactName: string;
   contactEmail: string;
   totalCents: number;
-  lines: { productName: string; quantity: number; colourName: string | null }[];
+  lines: { productName: string; quantity: number; colourName: string | null; sizeBreakdown?: { size: string; qty: number }[] | null }[];
   fulfillment?: OrderFulfillmentInfo;
   /** Optional so existing callers that only ever had a total keep working -- when present, shows
    *  tax as its own itemized line rather than silently folding it into "Total paid". */
@@ -103,6 +103,14 @@ function money(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+/** Matches the "S ×2, M ×3" rendering convention already used in CartView/OrderSummary/Inspector
+ *  — staff and customers reading an order email need the same size/quantity split they saw at
+ *  checkout, not just a combined line-item quantity that hides which sizes were actually ordered. */
+function sizeSuffix(sizeBreakdown: { size: string; qty: number }[] | null | undefined): string {
+  if (!sizeBreakdown || sizeBreakdown.length === 0) return "";
+  return ` (${sizeBreakdown.map((s) => `${s.size} ×${s.qty}`).join(", ")})`;
+}
+
 export function orderConfirmationEmail(order: OrderConfirmationInput): { subject: string; html: string; text: string } {
   const firstName = order.contactName.split(" ")[0] || order.contactName;
   const total = money(order.totalCents);
@@ -110,7 +118,7 @@ export function orderConfirmationEmail(order: OrderConfirmationInput): { subject
   const confirmationUrl = `${SITE_URL}/order/${order.reference}/confirmation`;
   const isPickup = order.fulfillment?.method === "pickup";
 
-  const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}`);
+  const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}${sizeSuffix(l.sizeBreakdown)}`);
 
   const pickupTextLines = isPickup
     ? [
@@ -202,7 +210,7 @@ interface AdminOrderPaidInput {
   contactName: string;
   contactEmail: string;
   totalCents: number;
-  lines: { productName: string; quantity: number; colourName: string | null }[];
+  lines: { productName: string; quantity: number; colourName: string | null; sizeBreakdown?: { size: string; qty: number }[] | null }[];
   fulfillment?: OrderFulfillmentInfo;
   amountBreakdown?: OrderAmountBreakdown;
 }
@@ -215,7 +223,7 @@ export function adminOrderPaidEmail(order: AdminOrderPaidInput): { subject: stri
   const isPickup = order.fulfillment?.method === "pickup";
   const subject = `New paid order — ${order.reference} (${order.contactName})${isPickup ? " [PICKUP]" : ""}`;
   const adminUrl = `${SITE_URL}/admin/orders/${order.reference}`;
-  const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}`);
+  const itemLines = order.lines.map((l) => `${l.productName}${l.colourName ? ` (${l.colourName})` : ""} × ${l.quantity}${sizeSuffix(l.sizeBreakdown)}`);
   const b = order.amountBreakdown;
 
   const text = [

@@ -20,7 +20,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
   const { data: lines } = await supabaseAdmin
     .from("MapleOrderLine")
-    .select("productName, colourName, quantity, customizationType, designProjectId, designSnapshot")
+    .select("productName, colourName, quantity, sizeBreakdown, customizationType, designProjectId, designSnapshot")
     .eq("orderId", order.id);
 
   const inventory = await buildFileInventory(supabaseAdmin, lines ?? []);

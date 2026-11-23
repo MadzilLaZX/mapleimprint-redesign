@@ -141,6 +141,16 @@ test("a tracked Asset (has storageBucket/storagePath) is served via a signed URL
   assert.doesNotMatch(url, /\/storage\/v1\/object\/public\//);
 });
 
+test("sizeBreakdown passes through unchanged -- staff fulfilling an order must see which sizes/quantities to pack, not just a combined line quantity", async () => {
+  const admin = fakeAdmin({});
+  const inventory = await buildFileInventory(admin, [
+    { productName: "Tee", quantity: 5, sizeBreakdown: [{ size: "S", qty: 2 }, { size: "M", qty: 3 }] },
+    { productName: "Mug", quantity: 1 }, // no sizeBreakdown at all -- must not throw, must resolve to null
+  ]);
+  assert.deepEqual(inventory[0].sizeBreakdown, [{ size: "S", qty: 2 }, { size: "M", qty: 3 }]);
+  assert.equal(inventory[1].sizeBreakdown, null);
+});
+
 test("FAIL-SECURE -- a signing failure returns url: null, NEVER a permanent public URL for sensitive artwork", async () => {
   const admin = fakeAdmin({
     assets: { "asset-1": { originalFileName: "logo.png", storageBucket: BUCKET, storagePath: "sess/logo.png", fileSizeBytes: 1000 } },
