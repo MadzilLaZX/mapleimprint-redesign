@@ -95,11 +95,31 @@ import { resolvePackaging } from "./packagingProfiles.ts";
 //     threshold invented here -- once real dimensions exist, it's expected to surface as a real
 //     rejection from the live rate fetcher, which this provider propagates as-is.
 //   - Origin/ship-from address is Chit Chats account-level configuration (Settings > Returns), not
-//     a per-request field -- not something this provider needs to supply.
+//     a per-request field -- not something this provider needs to supply. CONFIRMED 2026-11-22
+//     against the live API reference: there is no GET endpoint anywhere in this API (for a client/
+//     account, or for return-address settings specifically) that exposes this value -- it is
+//     dashboard-only, with no programmatic way to read or cross-check it. See
+//     docs/owner-handoff-checklist.md for the known discrepancy between this address and
+//     BUSINESS.addressLine1/addressLine2 (src/lib/constants.ts) that only the owner can resolve.
+//   - DOMESTIC-ONLY TODAY, re-confirmed 2026-11-22: this site's checkout form hardcodes
+//     country: "CA" (CheckoutClient.tsx), and the request body below sends only `description`,
+//     never `line_items`. That is sufficient for Canadian domestic shipments -- the live API
+//     reference states `line_items` becomes REQUIRED (not just recommended) "for US and
+//     International shipments." If international shipping is ever enabled, `line_items` (with
+//     real per-item SKU/description/value, never invented) becomes a new requirement on top of
+//     everything already here -- not a concern for the current Canada-only scope, but flagged so
+//     it isn't missed later.
+//   - `purchase_amount` CONFIRMED 2026-11-22 (re-checked against the live API reference, not just
+//     assumed): it is the TOTAL amount the customer would actually pay for that rate, already
+//     inclusive of postage_fee/insurance_fee/provincial_tax/federal_tax/delivery_fee/etc. --
+//     mapChitChatsRateEntries() below is correct to read only this one field as the rate's
+//     `cents`, never summing the individual fee fields in separately (which would double-count).
 //
-// Credentials needed before this can ever go live: a Chit Chats account, an API Access Token
-// (Settings > Developer > API Access Tokens), and the account's client ID (every request path is
-// scoped under /clients/<CLIENT_ID>/) -- none exist in this codebase today.
+// Credentials: a Chit Chats API Access Token (Settings > Developer > API Access Tokens) and the
+// account's client ID (every request path is scoped under /clients/<CLIENT_ID>/) now exist in
+// `.env.local` and in Vercel's Preview environment (owner-approved and configured 2026-11-22;
+// confirmed working via a real read-only GET /shipments auth check, 200 response) -- still
+// deliberately NOT present in Production, pending a separate Production-activation decision.
 
 export const FREE_SHIPPING_THRESHOLD_CENTS = 30000; // CAD $300.00, before tax -- strictly greater than
 
@@ -181,9 +201,14 @@ export type ChitChatsRateFetcher = (
 ) => Promise<ShippingOption[]>;
 
 /** One entry of Chit Chats' `rates` array, per https://chitchats.com/docs/api/v1 -- only the
- *  fields this mapping actually reads are declared; the real response carries more. Exported so
- *  chitChatsShipmentReconciler.ts's GET /shipments?q= lookup (whose results carry the same `rates`
- *  shape) can map a recovered shipment's rates identically rather than duplicating this logic. */
+ *  fields this mapping actually reads are declared; the real response carries many more
+ *  (postage_fee, insurance_fee, provincial_tax, federal_tax, delivery_fee, tariff_fee, and
+ *  several other optional fee fields). That's deliberate, not an oversight: `purchase_amount` is
+ *  confirmed (2026-11-22, against the live API reference) to already be the grand total inclusive
+ *  of all of those -- reading only it is correct and complete, not a partial read that happens to
+ *  miss some fees. Exported so chitChatsShipmentReconciler.ts's GET /shipments?q= lookup (whose
+ *  results carry the same `rates` shape) can map a recovered shipment's rates identically rather
+ *  than duplicating this logic. */
 export interface ChitChatsRateApiEntry {
   postage_type?: string;
   postage_description?: string;

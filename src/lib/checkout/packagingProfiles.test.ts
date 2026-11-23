@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { resolvePackaging, PACKAGING_PROFILES, PRODUCT_PACKAGING_ASSIGNMENTS, type PackagingProfile } from "./packagingProfiles.ts";
+import { resolvePackaging, validatePackagingProfile, PACKAGING_PROFILES, PRODUCT_PACKAGING_ASSIGNMENTS, type PackagingProfile } from "./packagingProfiles.ts";
 
 // PACKAGING_PROFILES / PRODUCT_PACKAGING_ASSIGNMENTS ship empty (see packagingProfiles.ts's
 // header -- no real measured box exists yet). Tests populate them with clearly-fake fixture data
@@ -143,4 +143,94 @@ test("an assignment pointing at a profile id that doesn't exist resolves to null
   } finally {
     delete PRODUCT_PACKAGING_ASSIGNMENTS[FIXTURE_PRODUCT_ID];
   }
+});
+
+// --- validatePackagingProfile(): the pre-activation safety gate ---
+
+test("validatePackagingProfile: a real-looking, fully-measured profile passes with no errors", () => {
+  const result = validatePackagingProfile(fixtureProfile);
+  assert.equal(result.valid, true);
+  assert.deepEqual(result.errors, []);
+});
+
+test("validatePackagingProfile: a profile with every field still at a placeholder zero (e.g. the header's unmeasured template, copied verbatim) fails with one error per field", () => {
+  const placeholder: PackagingProfile = {
+    id: "unmeasured",
+    label: "Copied from the template, never measured",
+    outerDimensionsIn: { length: 0, width: 0, height: 0 },
+    emptyWeightLb: 0,
+    maxUnitsPerPackage: 0,
+    maxWeightLbPerPackage: 0,
+  };
+  const result = validatePackagingProfile(placeholder);
+  assert.equal(result.valid, false);
+  // One error per validated field: length, width, height, emptyWeightLb, maxWeightLbPerPackage,
+  // maxUnitsPerPackage.
+  assert.equal(result.errors.length, 6);
+});
+
+test("validatePackagingProfile: a single still-zero dimension (the other fields real) is caught individually, not masked by the others being fine", () => {
+  const almostReal: PackagingProfile = { ...fixtureProfile, outerDimensionsIn: { ...fixtureProfile.outerDimensionsIn, height: 0 } };
+  const result = validatePackagingProfile(almostReal);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => e.includes("outerDimensionsIn.height")));
+});
+
+test("validatePackagingProfile: a negative value is caught the same as zero -- a real measurement is never negative", () => {
+  const result = validatePackagingProfile({ ...fixtureProfile, emptyWeightLb: -0.5 });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => e.includes("emptyWeightLb")));
+});
+
+test("validatePackagingProfile: a non-finite value (NaN/Infinity) is caught, not just non-positive ones", () => {
+  assert.equal(validatePackagingProfile({ ...fixtureProfile, emptyWeightLb: NaN }).valid, false);
+  assert.equal(validatePackagingProfile({ ...fixtureProfile, maxWeightLbPerPackage: Infinity }).valid, false);
+});
+
+test("validatePackagingProfile: maxUnitsPerPackage must be a whole number, not just positive -- half a unit of capacity isn't real", () => {
+  const result = validatePackagingProfile({ ...fixtureProfile, maxUnitsPerPackage: 2.5 });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => e.includes("maxUnitsPerPackage")));
+});
+
+test("resolvePackaging(): an INVALID assigned profile (placeholder zeros) is refused exactly like a missing one -- never used to build a real rate request", () => {
+  const invalidProfile: PackagingProfile = {
+    id: "invalid-fixture",
+    label: "TEST FIXTURE -- invalid on purpose",
+    outerDimensionsIn: { length: 10, width: 8, height: 0 }, // one field still unmeasured
+    emptyWeightLb: 0.5,
+    maxUnitsPerPackage: 20,
+    maxWeightLbPerPackage: 15,
+  };
+  PACKAGING_PROFILES["invalid-fixture"] = invalidProfile;
+  PRODUCT_PACKAGING_ASSIGNMENTS[FIXTURE_PRODUCT_ID] = "invalid-fixture";
+  try {
+    const result = resolvePackaging([{ productId: FIXTURE_PRODUCT_ID, quantity: 1 }], 1);
+    assert.equal(result, null, "an invalid profile must never resolve real dimensions, even though the lookup itself succeeded");
+  } finally {
+    delete PACKAGING_PROFILES["invalid-fixture"];
+    delete PRODUCT_PACKAGING_ASSIGNMENTS[FIXTURE_PRODUCT_ID];
+  }
+});
+
+// --- Live-data gate: runs against whatever PACKAGING_PROFILES ACTUALLY contains, every time the
+// suite runs. Empty today (passes vacuously) -- the moment a real entry is added, this test starts
+// checking it automatically, with no further test-writing required. This is the "automated
+// validation test that will verify a future measured packaging profile before activation" this
+// file exists to provide. ---
+
+test("LIVE GATE: every profile currently in PACKAGING_PROFILES passes validatePackagingProfile() -- catches a bad real entry before it ever reaches a customer", () => {
+  const failures: string[] = [];
+  for (const [id, profile] of Object.entries(PACKAGING_PROFILES)) {
+    const { valid, errors } = validatePackagingProfile(profile);
+    if (!valid) failures.push(`${id}: ${errors.join("; ")}`);
+  }
+  assert.deepEqual(failures, [], "one or more PACKAGING_PROFILES entries failed validation -- see the messages above for exactly which field(s)");
+});
+
+test("LIVE GATE: every PRODUCT_PACKAGING_ASSIGNMENTS entry points at a profile that actually exists in PACKAGING_PROFILES", () => {
+  const dangling = Object.entries(PRODUCT_PACKAGING_ASSIGNMENTS)
+    .filter(([, profileId]) => !(profileId in PACKAGING_PROFILES))
+    .map(([productId, profileId]) => `${productId} -> ${profileId}`);
+  assert.deepEqual(dangling, [], "one or more product assignments point at a profile id that doesn't exist");
 });

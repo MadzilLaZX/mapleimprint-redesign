@@ -37,6 +37,16 @@ measured packaging profile. This is pure data entry — the code is already buil
 You don't need to measure every product before launch — even one profile (e.g. "standard t-shirt
 in a poly mailer") lets you verify the whole real-rate pipeline end to end before doing the rest.
 
+**A fillable copy of this, per product category, is in
+`docs/packaging-measurement-worksheet.md`** — print it or fill it in digitally, one box per sheet.
+
+**Safety net (added 2026-11-22):** the moment you add a real entry, `npm test` automatically
+checks it — a "LIVE GATE" test in `packagingProfiles.test.ts` validates every field is a real,
+positive number (never a placeholder `0` left over from copying the template) before it can ever
+be used for a real rate request. A profile that fails this check behaves exactly like no profile
+existing at all — it routes to "Request a Shipping Quote," never a fabricated or zero-dimension
+rate. You'll see exactly which field failed if a test fails after you add your numbers.
+
 ---
 
 ## 2. Supplier outreach emails — ready for your approval
@@ -205,5 +215,9 @@ step before the last is reversible.
   insurance auto-included. You need to decide: should these be the same address? If so, which one
   is correct, and update the other to match (in the Chit Chats dashboard, or in
   `src/lib/constants.ts` — not something the code will reconcile on its own).
+  **Confirmed 2026-11-22 against Chit Chats' live API reference: there is no API endpoint at all
+  (for the account, or for return-address settings specifically) that exposes this value** — this
+  can only ever be checked by logging into the Chit Chats dashboard yourself, not automated or
+  cross-checked by this codebase going forward.
 - **`OWNER_NOTIFICATION_EMAIL`**: unset everywhere. Not strictly a tax/shipping item, but grouped
   here as another real environment gap — set it when you want staff alerts on new orders/leads.

@@ -167,6 +167,34 @@ export const PACKAGING_PROFILES: Record<string, PackagingProfile> = {};
  */
 export const PRODUCT_PACKAGING_ASSIGNMENTS: Record<string, string> = {};
 
+/**
+ * Catches exactly the failure mode this file's own header warns about: a profile that LOOKS
+ * present (the key exists in PACKAGING_PROFILES) but whose values are still placeholder zeros --
+ * e.g. someone copied a template out of this file's header comment and forgot to replace one
+ * "MEASURE ME" field, or a typo'd `0` in an otherwise-real entry. Every numeric field must be a
+ * finite, strictly-positive number; a real box has a non-zero length/width/height/weight, holds
+ * at least one unit, and has a positive weight ceiling. `resolvePackaging()` below calls this on
+ * every lookup -- an invalid profile is treated exactly like a missing one (routes to manual
+ * quote), never used for a real rate request. Returns the specific reasons it failed (not just a
+ * boolean) so a human reviewing a rejected profile knows exactly which field is still wrong,
+ * rather than having to guess.
+ */
+export function validatePackagingProfile(profile: PackagingProfile): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const positive = (value: number, label: string) => {
+    if (!Number.isFinite(value) || value <= 0) errors.push(`${label} must be a positive number (got ${value})`);
+  };
+  positive(profile.outerDimensionsIn.length, "outerDimensionsIn.length");
+  positive(profile.outerDimensionsIn.width, "outerDimensionsIn.width");
+  positive(profile.outerDimensionsIn.height, "outerDimensionsIn.height");
+  positive(profile.emptyWeightLb, "emptyWeightLb");
+  positive(profile.maxWeightLbPerPackage, "maxWeightLbPerPackage");
+  if (!Number.isFinite(profile.maxUnitsPerPackage) || !Number.isInteger(profile.maxUnitsPerPackage) || profile.maxUnitsPerPackage < 1) {
+    errors.push(`maxUnitsPerPackage must be a positive whole number (got ${profile.maxUnitsPerPackage})`);
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 export interface PackagingCartLine {
   productId: string;
   quantity: number;
@@ -207,6 +235,12 @@ export function resolvePackaging(lines: PackagingCartLine[], productWeightLb: nu
   if (!profileId) return null;
   const profile = PACKAGING_PROFILES[profileId];
   if (!profile) return null; // assignment points at a profile that doesn't exist -- data error, never guess
+
+  // A profile that exists but fails validation (placeholder zeros, a typo) is treated exactly
+  // like a missing one -- never used to build a real rate request. See validatePackagingProfile()
+  // above for exactly what "valid" means; this is the one call site that actually gates real
+  // Chit Chats rate requests on it, so an invalid profile can never silently reach one.
+  if (!validatePackagingProfile(profile).valid) return null;
 
   if (totalQuantity > profile.maxUnitsPerPackage) return null; // would need multiple packages
 
