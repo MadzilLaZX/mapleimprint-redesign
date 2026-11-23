@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { FileText, Package, PenNib, Receipt } from "@phosphor-icons/react/dist/ssr";
+import { Package, PenNib, Receipt } from "@phosphor-icons/react/dist/ssr";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, TextInput } from "@/components/ui/Field";
+import { SavedDesignsPanel } from "@/components/account/SavedDesignsPanel";
 
 export const metadata: Metadata = {
   title: "Account",
   robots: { index: false, follow: true },
 };
 
-const panels = [
+// "Saved designs" is handled by its own real component below -- unlike these three, it doesn't
+// need a login system (see SavedDesignsPanel's own comment on why the existing session cookie is
+// enough for that one case specifically).
+const disabledPanels = [
   { icon: Package, label: "Orders", detail: "Track status from approved through to delivery." },
   { icon: PenNib, label: "Quotes & proofs", detail: "Review and approve digital proofs in one place." },
-  { icon: FileText, label: "Saved designs", detail: "Reopen and reorder a previous design in a few clicks." },
   { icon: Receipt, label: "Invoices", detail: "Download receipts and invoice-ready paperwork." },
 ];
 
@@ -29,7 +32,8 @@ export default function AccountPage() {
         <Container className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-start">
           <div>
             <div className="grid gap-4 sm:grid-cols-2">
-              {panels.map((panel) => (
+              <SavedDesignsPanel />
+              {disabledPanels.map((panel) => (
                 <div key={panel.label} className="rounded-2xl bg-white p-5 opacity-60">
                   <panel.icon className="size-5 text-crimson" weight="duotone" />
                   <p className="mt-3 font-display font-semibold text-ink-900">{panel.label}</p>

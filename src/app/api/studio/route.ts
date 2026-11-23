@@ -5,6 +5,39 @@ import { PRINT_AREAS, PRINT_AREA_TEMPLATE_VERSION } from "@/lib/studio/printArea
 import { STUDIO_SESSION_COOKIE } from "@/lib/studio/session";
 import type { CreateDesignProjectInput } from "@/lib/studio/types";
 
+const SAVED_DESIGNS_LIMIT = 20;
+
+/** "My saved designs" discovery -- lets a customer who lost their /studio/[id] link find their way
+ *  back to it, without a login system. Safe within the EXISTING trust model, not a new one: the
+ *  session-scoped client (createStudioClient) sends the `x-mi-session` header the DesignProject
+ *  RLS policies already key off everywhere else (see supabaseClient.ts, and GET /api/studio/[id]'s
+ *  own comment) -- a plain SELECT with no id filter returns exactly this cookie's own rows, no
+ *  more and no less, the same guarantee already relied on to read ANY single design by id. Nothing
+ *  here is reachable by a guessed id, and nothing exposes another session's rows: RLS enforces
+ *  that, not application code. What this does NOT solve -- recovering designs from a different
+ *  browser/device, or after this cookie is cleared -- would need a real account system, a separate
+ *  decision outside this change's scope; this only recovers what the SAME browser can already
+ *  authenticate for via the cookie it already holds. */
+export async function GET() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(STUDIO_SESSION_COOKIE)?.value;
+  if (!sessionToken) return NextResponse.json({ projects: [] });
+
+  const supabase = createStudioClient(sessionToken);
+  const { data: projects, error } = await supabase
+    .from("DesignProject")
+    .select("id, productName, colourName, totalQuantity, status, mockupImages, updatedAt")
+    .order("updatedAt", { ascending: false })
+    .limit(SAVED_DESIGNS_LIMIT);
+
+  if (error) {
+    console.error("[studio] list projects failed:", error);
+    return NextResponse.json({ error: "Couldn't load your saved designs." }, { status: 502 });
+  }
+
+  return NextResponse.json({ projects: projects ?? [] });
+}
+
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(STUDIO_SESSION_COOKIE)?.value;
