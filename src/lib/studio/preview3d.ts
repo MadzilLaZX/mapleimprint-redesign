@@ -7,7 +7,7 @@ import type { ProductFamily } from "@/lib/studio/productDecorationProfile";
 // toggle: mug via the vessel-aware Mug3DPreview, everything else via the generic Flat3DPreview.
 // Shared between StudioClient (the editing canvas) and ReviewPanel (the approval screen) so both
 // surfaces agree on which families get a 3D toggle at all.
-export const FAMILIES_WITHOUT_3D: ProductFamily[] = ["tee", "hoodie", "joggers", "headwear"];
+export const FAMILIES_WITHOUT_3D: ProductFamily[] = ["tee", "hoodie", "jacket", "joggers", "headwear"];
 
 // NOTE: the drinkware vessel for the 3D/2D preview is now resolved by drinkwareConfigFor() in
 // src/lib/studio/drinkwareCustomization.ts (a richer 6-vessel model incl. travel mug / skinny

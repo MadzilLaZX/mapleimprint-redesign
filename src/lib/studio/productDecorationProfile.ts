@@ -19,7 +19,7 @@ import type { DesignSideType } from "./types";
 
 export type SupportStatus = "STANDARD" | "REVIEW_REQUIRED" | "UNAVAILABLE";
 
-export type ProductFamily = "tee" | "hoodie" | "joggers" | "headwear" | "accessory" | "business-card" | "postcard" | "flyer" | "poster" | "mug" | "banner" | "sticker";
+export type ProductFamily = "tee" | "hoodie" | "jacket" | "joggers" | "headwear" | "accessory" | "business-card" | "postcard" | "flyer" | "poster" | "mug" | "banner" | "sticker";
 
 // Section 20: how a location's editing view is constructed, independent of its SupportStatus.
 // Status answers "can the customer design this, and is it confirmed for production"; viewType
@@ -74,7 +74,13 @@ export interface ProductDecorationProfile {
  *  falls back to "tee" — a torso garment with a conventional front/back/chest layout, which is
  *  true for every remaining subcategory (polos, button-ups, sweaters, workwear shirts, etc). */
 export function familyFor(categorySlug: string, subcategorySlug: string): ProductFamily {
-  if (subcategorySlug === "hoodies-sweatshirts" || subcategorySlug === "jackets-outerwear") return "hoodie";
+  if (subcategorySlug === "hoodies-sweatshirts") return "hoodie";
+  // Previously shared the "hoodie" family, which incorrectly offered "Hood" and "Pocket" decoration
+  // locations on jackets -- most jackets have neither a hood nor a kangaroo pocket (that's a
+  // hoodie-specific garment feature). Split into its own family below, reusing the SAME front/back/
+  // chest/sleeve/neck print-area geometry every other upper-body family already shares (no new
+  // physical dimensions invented) -- just without the two anatomically hoodie-only locations.
+  if (subcategorySlug === "jackets-outerwear") return "jacket";
   if (subcategorySlug === "joggers-bottoms") return "joggers";
   if (subcategorySlug === "caps" || subcategorySlug === "beanies-toques") return "headwear";
   // STUDIO V4 brief's forward-looking flat-print/mug families — real marketing subcategories
@@ -169,6 +175,22 @@ const HOODIE_LOCATIONS: DecorationLocation[] = [
   { id: "outside-neck", label: "Outside Neck Label", group: "special", status: "REVIEW_REQUIRED", viewType: "OUTER_NECK_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
 ];
 
+// Same geometry as HOODIE_LOCATIONS (every id below already exists in printAreas.ts, shared
+// across families -- no new print-area dimensions added here), minus "hood" and "pocket", which
+// most jackets physically don't have. See familyFor()'s own comment for why this is a separate
+// family rather than jackets continuing to share HOODIE_LOCATIONS directly.
+const JACKET_LOCATIONS: DecorationLocation[] = [
+  { id: "front", label: "Front", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "back", label: "Back", group: "core", status: "STANDARD", viewType: "PRODUCT_BACK", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "left-chest", label: "Left Chest", group: "core", status: "STANDARD", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: false, requiresManualReview: false },
+  { id: "right-chest", label: "Right Chest", group: "core", status: "REVIEW_REQUIRED", viewType: "PRODUCT_FRONT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "left-sleeve", label: "Left Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", viewType: "SLEEVE_LEFT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "right-sleeve", label: "Right Sleeve", group: "sleeves", status: "REVIEW_REQUIRED", viewType: "SLEEVE_RIGHT_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "upper-back", label: "Upper Back", group: "special", status: "REVIEW_REQUIRED", viewType: "PRODUCT_BACK_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+  { id: "inside-neck", label: "Inside Neck Label", group: "special", status: "REVIEW_REQUIRED", viewType: "INNER_NECK_SCHEMATIC", usesPlacementPreview: true, requiresManualReview: true, productionNotes: "Small tag-style print; confirm label stock and eligibility with Maple." },
+  { id: "outside-neck", label: "Outside Neck Label", group: "special", status: "REVIEW_REQUIRED", viewType: "OUTER_NECK_PLACEMENT", usesPlacementPreview: true, requiresManualReview: true },
+];
+
 // Joggers deliberately do NOT reuse the tee's chest-centered "front" box — see printAreas.ts's
 // JOGGERS_FRONT_BOX. Independent left/right leg prints stay REVIEW_REQUIRED until Maple confirms
 // dual-leg registration; "front" alone (single centered placement, real garment photo) is the only
@@ -253,6 +275,7 @@ const STICKER_LOCATIONS: DecorationLocation[] = [
 const PROFILES: Record<ProductFamily, DecorationLocation[]> = {
   tee: TEE_LOCATIONS,
   hoodie: HOODIE_LOCATIONS,
+  jacket: JACKET_LOCATIONS,
   joggers: JOGGERS_LOCATIONS,
   headwear: HEADWEAR_LOCATIONS,
   accessory: ACCESSORY_LOCATIONS,

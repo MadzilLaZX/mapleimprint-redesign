@@ -38,3 +38,14 @@ test("a laser-engraving item in the same category correctly stays quote-only -- 
   await expect(page.getByRole("button", { name: "Customize Your Product" })).not.toBeVisible();
   await expect(page.getByRole("button", { name: "Add to cart" })).toBeVisible();
 });
+
+test("a jacket still prices and offers Customize correctly after the jacket/hoodie family split -- the real pricing pipeline, not just a unit test of chartFor()", async ({ page }) => {
+  await page.goto("/products/custom-apparel/jackets-outerwear/core365-women-s-prevail-packable-puffer-jacket");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Packable Puffer Jacket/i);
+  // A real dollar price, not blank/null -- this is exactly what would break if chartFor() in
+  // pricing.ts still fell through to its business-card/flyer/poster "no approved apparel-style
+  // print rule" branch for the new "jacket" family.
+  await expect(page.getByText(/\$\d/).first()).toBeVisible();
+  await page.getByRole("button", { name: /^Increase .* quantity$/ }).first().click();
+  await expect(page.getByRole("button", { name: "Customize This Product" })).toBeVisible();
+});

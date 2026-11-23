@@ -93,7 +93,7 @@ function chartFor(product: CatalogueProduct): ChartTier[] | null {
   const family: ProductFamily = familyFor(product.categorySlug, product.subcategorySlug);
   if (family === "headwear") return HEADWEAR_CHART;
   if (family === "mug") return null; // mugs use MUG_CHART's mode-based shape, not this additive-location shape
-  if (family === "tee" || family === "hoodie" || family === "joggers" || family === "accessory") return APPAREL_CHART;
+  if (family === "tee" || family === "hoodie" || family === "jacket" || family === "joggers" || family === "accessory") return APPAREL_CHART;
   return null; // business-card/flyer/poster — no approved apparel-style print rule; see Phase 11's "unmapped" handling
 }
 

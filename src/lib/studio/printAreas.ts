@@ -23,6 +23,14 @@ export const PRINT_AREA_TEMPLATE_VERSION = "v5-sleeve-schematic-garment-view";
 export const CANVAS_NATURAL_WIDTH = 520;
 export const CANVAS_NATURAL_HEIGHT = 650; // 4:5, matching the site's product-photo aspect convention
 
+// safeMarginIn, informational only (not yet enforced): the inward margin from each box's outer
+// edge production should keep clear of (print-method bleed/registration tolerance), sourced
+// alongside each widthIn/heightIn rather than invented separately. Nothing in this codebase reads
+// it today -- no safe-zone guide is drawn on the canvas, and export/render never clips or warns
+// against it. Kept rather than removed because it's real data a future safe-zone guide or
+// export-time warning would need and shouldn't have to re-derive; if/when that's built, this is
+// where it already lives. Decide to enforce, keep as reference, or remove only alongside a real
+// change to Studio's canvas/export behavior -- not as a drive-by edit here.
 export const PRINT_AREAS: Record<DesignSideType, { widthIn: number; heightIn: number; safeMarginIn: number; confirmed: boolean }> = {
   front: { widthIn: 12, heightIn: 16, safeMarginIn: 0.25, confirmed: true },
   back: { widthIn: 12, heightIn: 16, safeMarginIn: 0.25, confirmed: true },

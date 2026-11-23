@@ -280,7 +280,9 @@ function graphicSeed(assetId: string, overrides: Partial<TemplateObjectSeed>): T
 }
 
 const NOW = "2026-09-15T00:00:00.000Z";
-const TEE_HOODIE: ProductFamily[] = ["tee", "hoodie"];
+// Name predates the jacket/hoodie family split (jackets used to share "hoodie") -- jackets use
+// the identical chest/back geometry, so they still belong in this default set.
+const TEE_HOODIE: ProductFamily[] = ["tee", "hoodie", "jacket"];
 
 interface TemplateLine {
   text: string;
@@ -5373,6 +5375,7 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string }[] = [
 const RECOMMENDED_CATEGORY_ORDER: Record<ProductFamily, TemplateCategory[]> = {
   tee: ["events", "birthday", "business", "streetwear", "family", "fundraisers", "schools", "qr-social"],
   hoodie: ["streetwear", "schools", "sports", "clubs", "events", "qr-social"],
+  jacket: ["streetwear", "schools", "sports", "clubs", "events", "qr-social"],
   joggers: ["streetwear", "sports", "minimal"],
   headwear: ["sports", "streetwear", "minimal", "trades"],
   accessory: ["business", "minimal", "canadian", "trades"],
