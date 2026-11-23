@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/server/supabaseAdmin";
 import { buildFileInventory } from "@/lib/admin/fileInventory";
 import { LineFileCard } from "@/components/admin/LineFileCard";
+import { OrderFulfillmentControl } from "@/components/admin/OrderFulfillmentControl";
+import type { FulfillmentStatus } from "@/lib/checkout/orderFulfillment";
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = await params;
@@ -11,7 +13,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const { data: order } = await supabaseAdmin
     .from("MapleOrder")
     .select(
-      "id, reference, status, contactName, contactEmail, contactPhone, shippingAddress, subtotalCents, taxCents, shippingCents, totalCents, currency, createdAt",
+      "id, reference, status, contactName, contactEmail, contactPhone, shippingAddress, subtotalCents, taxCents, shippingCents, totalCents, currency, createdAt, fulfillmentStatus, shippingCarrier, trackingNumber",
     )
     .eq("reference", reference)
     .maybeSingle();
@@ -82,6 +84,18 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           </a>
         </div>
       </div>
+
+      {order.status === "PAID" && (
+        <div className="mt-6">
+          <OrderFulfillmentControl
+            reference={order.reference}
+            currentStatus={order.fulfillmentStatus as FulfillmentStatus | null}
+            isPickup={isPickup}
+            shippingCarrier={order.shippingCarrier}
+            trackingNumber={order.trackingNumber}
+          />
+        </div>
+      )}
 
       <div className="mt-8 space-y-4">
         {inventory.map((line) => (

@@ -23,7 +23,9 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
   const { data: order } = await supabaseAdmin
     .from("MapleOrder")
-    .select("id, reference, status, contactName, contactEmail, shippingAddress, subtotalCents, taxCents, shippingCents, totalCents, currency")
+    .select(
+      "id, reference, status, contactName, contactEmail, shippingAddress, subtotalCents, taxCents, shippingCents, totalCents, currency, fulfillmentStatus, shippingCarrier, trackingNumber",
+    )
     .eq("reference", reference)
     .maybeSingle();
 
@@ -196,9 +198,33 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
               happened for this specific order. */}
           {hasCustomDesign && <li>✓ Design approved</li>}
           <li>✓ Payment received</li>
-          <li className="text-muted">Preparing for production</li>
-          <li className="text-muted">Printing</li>
-          <li className="text-muted">{isPickup ? "Ready for pickup — we'll email you" : "Shipping"}</li>
+          {/* Driven by the order's REAL fulfillmentStatus column (supabase/migrations/014_order_
+              fulfillment_status.sql), not a static always-the-same list -- a step only shows ✓
+              once staff have actually recorded it, and the still-ahead steps show as upcoming,
+              never implying progress that hasn't really happened. fulfillmentStatus is null only
+              for an order paid before this feature existed; treated the same as AWAITING_PRODUCTION. */}
+          {(() => {
+            const steps: { key: string; label: string }[] = [
+              { key: "AWAITING_PRODUCTION", label: "Preparing for production" },
+              { key: "IN_PRODUCTION", label: "Printing" },
+              { key: isPickup ? "READY_FOR_PICKUP" : "SHIPPED", label: isPickup ? "Ready for pickup" : "Shipped" },
+              { key: "COMPLETED", label: isPickup ? "Picked up" : "Delivered" },
+            ];
+            const statusOrder = ["AWAITING_PRODUCTION", "IN_PRODUCTION", isPickup ? "READY_FOR_PICKUP" : "SHIPPED", "COMPLETED"];
+            const currentIndex = statusOrder.indexOf(order.fulfillmentStatus ?? "AWAITING_PRODUCTION");
+            return steps.map((step, i) => (
+              <li key={step.key} className={i <= currentIndex ? "" : "text-muted"}>
+                {i <= currentIndex ? "✓ " : ""}
+                {step.label}
+                {step.key === "SHIPPED" && i <= currentIndex && (order.trackingNumber || order.shippingCarrier) && (
+                  <span className="ml-1 text-muted">
+                    — {order.shippingCarrier ?? "carrier not recorded"}
+                    {order.trackingNumber ? `, tracking ${order.trackingNumber}` : ""}
+                  </span>
+                )}
+              </li>
+            ));
+          })()}
         </ol>
       </div>
 
