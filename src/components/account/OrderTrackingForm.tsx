@@ -1,10 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { FieldError, FieldLabel, TextInput } from "@/components/ui/Field";
 
 export function OrderTrackingForm() {
+  const router = useRouter();
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +27,10 @@ export function OrderTrackingForm() {
         setError(json.error || "We couldn't find that order.");
         return;
       }
+      // Previously missing entirely -- a successful lookup cleared the loading state and left the
+      // customer staring at the same empty form with no indication anything was found. The order
+      // confirmation page is the one place that already renders status/files for a real reference.
+      router.push(`/order/${json.reference}/confirmation`);
     } finally {
       setLoading(false);
     }
@@ -37,7 +43,7 @@ export function OrderTrackingForm() {
           <FieldLabel htmlFor="orderNumber">Order number</FieldLabel>
           <TextInput
             id="orderNumber"
-            placeholder="e.g. MI-104822"
+            placeholder="e.g. MO-K7X9QRST"
             value={orderNumber}
             onChange={(e) => setOrderNumber(e.target.value)}
           />
