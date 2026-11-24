@@ -8,6 +8,7 @@ import { ChitChatsQuoteCoordinator } from "./chitChatsQuoteCoordinator.ts";
 import { buildQuoteFingerprint } from "./chitChatsQuoteStore.ts";
 import { chitChatsShipmentsUrl, chitChatsRequestHeaders } from "../server/chitChatsClient.ts";
 import { resolvePackaging } from "./packagingProfiles.ts";
+import type { ChitChatsPersistedQuoteKey } from "./chitChatsQuoteStore.ts";
 
 // Architecture for the owner-confirmed shipping policy, NOT wired in as the live `shippingProvider`
 // export (see shippingProvider.ts) -- Chit Chats replaces Canada Post as the PLANNED primary
@@ -248,6 +249,37 @@ export function mapChitChatsRateEntries(rates: ChitChatsRateApiEntry[]): Shippin
     .filter((option) => Number.isFinite(option.cents) && option.cents >= 0);
 }
 
+/** Builds the exact (address, subtotalCents, package) key getOptions() uses to fetch/cache/persist
+ *  a quote -- extracted so a caller with the SAME real, live request inputs (not reconstructed
+ *  from stored historical data) can look up the matching persisted ChitChatsShippingQuote row
+ *  afterward, e.g. to durably associate it with the order being created in that same request. See
+ *  chitChatsOrderQuoteAssociation.ts for that caller. Returns null only when a parcel weight can't
+ *  be estimated at all (every line missing unitWeightLb) -- getOptions() itself still throws in
+ *  that case; this just lets the null be checked at a different call site without duplicating the
+ *  weight-estimation logic. */
+export function buildChitChatsQuoteKey(
+  address: ShippingAddressInput,
+  subtotalCents: number,
+  lines: ShippingQuoteLine[],
+): ChitChatsPersistedQuoteKey | null {
+  const parcelWeightLb = estimateParcelWeightLb(lines);
+  if (parcelWeightLb === null) return null;
+
+  const everyLineIdentified = lines.every((line) => typeof line.productId === "string");
+  const resolvedPackaging = everyLineIdentified
+    ? resolvePackaging(
+        lines.map((line) => ({ productId: line.productId as string, quantity: line.quantity })),
+        parcelWeightLb,
+      )
+    : null;
+
+  const pkg: ChitChatsPackageInput = resolvedPackaging
+    ? { weightLb: resolvedPackaging.weightLb, dimensionsIn: resolvedPackaging.dimensionsIn }
+    : { weightLb: parcelWeightLb, dimensionsIn: null };
+
+  return { address, subtotalCents, pkg };
+}
+
 /** `POST /clients/<id>/shipments` with `postage_type: "unknown"` -- per this file's header, this
  *  is Chit Chats' only way to get a real rate (there is no quote-only endpoint); the resulting
  *  shipment is left unpurchased (no postage bought) and can be deleted, consistent with the
@@ -410,37 +442,18 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
     // attempting the quote, never skipped just because the result might end up being $0.
     assertFullChitChatsAddress(address);
 
-    const parcelWeightLb = estimateParcelWeightLb(lines);
-    if (parcelWeightLb === null) {
+    // Real, owner-measured packaging (packagingProfiles.ts) resolved inside buildChitChatsQuoteKey
+    // -- see that function's own comment, and this file's header, for exactly when a real profile
+    // applies vs. the weight-only fallback. null here specifically means no parcel weight could be
+    // estimated at all (every line missing unitWeightLb), not "no packaging profile" (that's a
+    // valid, common case the key still builds fine for, via the weight-only fallback).
+    const cacheKeyInput = buildChitChatsQuoteKey(address, subtotalCents, lines);
+    if (cacheKeyInput === null) {
       throw new ShippingRateUnavailableError(
         "We don't have a shipping weight for everything in your cart yet — request a quote and we'll confirm shipping manually.",
       );
     }
-
-    // Real, owner-measured packaging (packagingProfiles.ts) -- only attempted when EVERY line
-    // resolved to a real catalogue product id; a single missing id makes the cart's true
-    // composition unknowable (a line that's silently dropped from the lookup could hide a second
-    // distinct product), so this intentionally bails to the no-dimensions fallback below rather
-    // than resolving packaging against a partial, possibly-misleading view of the cart.
-    const everyLineIdentified = lines.every((line) => typeof line.productId === "string");
-    const resolvedPackaging = everyLineIdentified
-      ? resolvePackaging(
-          lines.map((line) => ({ productId: line.productId as string, quantity: line.quantity })),
-          parcelWeightLb,
-        )
-      : null;
-
-    // Falls back to weight-only/no-dimensions when no real profile applies yet (no assigned
-    // profile, a mixed-product cart, or a quantity/weight that would need multiple packages --
-    // see resolvePackaging()'s own header for exactly which). fetchChitChatsRates' own preflight
-    // check turns a null dimensionsIn into the honest "no package dimensions yet" refusal rather
-    // than ever attempting a doomed request -- this is the single integration point that makes a
-    // real owner-entered profile take effect the moment one exists, with zero behavior change
-    // while PACKAGING_PROFILES stays empty.
-    const pkg: ChitChatsPackageInput = resolvedPackaging
-      ? { weightLb: resolvedPackaging.weightLb, dimensionsIn: resolvedPackaging.dimensionsIn }
-      : { weightLb: parcelWeightLb, dimensionsIn: null };
-    const cacheKeyInput = { address, subtotalCents, pkg };
+    const pkg = cacheKeyInput.pkg;
 
     // Tier 1: in-memory, this provider instance only. Reuses a prior real quote for the identical
     // address/subtotal/parcel instead of creating another Chit Chats shipment record for a cart

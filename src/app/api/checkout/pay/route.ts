@@ -4,6 +4,7 @@ import { createSquareClient, squareLocationId } from "@/lib/server/squareClient"
 import { priceCartItem, type CheckoutCartItemInput } from "@/lib/checkout/priceCartItem";
 import { taxProvider } from "@/lib/checkout/taxProvider";
 import { shippingProvider } from "@/lib/checkout/shippingProvider";
+import { associateShippingQuoteWithOrder } from "@/lib/checkout/chitChatsOrderQuoteAssociation";
 import { ShippingRateUnavailableError, OTTAWA_PICKUP_OPTION } from "@/lib/checkout/canadaPostShippingProvider";
 import { generateOrderReference } from "@/lib/checkout/generateOrderReference";
 import { humanPaymentError } from "@/lib/checkout/errorMessages";
@@ -319,6 +320,24 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Couldn't process your payment. Please try again." }, { status: 502 });
       }
     }
+  }
+
+  // Best-effort, never blocks/delays payment -- see associateShippingQuoteWithOrder's own header.
+  // Only for delivery orders: pickup never calls the real shipping provider, so there is nothing
+  // real to associate. Uses the EXACT same (addr, subtotalCents, lines) already passed to
+  // shippingProvider.getOptions() above in this same request -- orderId is a real FK to the order
+  // just created/reused, never a fingerprint reconstructed from stored data later. Idempotent on
+  // retry (orderId is unique; see migration 015), so safe to call unconditionally here regardless
+  // of which branch above produced this orderId.
+  if (!isPickup) {
+    await associateShippingQuoteWithOrder(
+      supabaseAdmin,
+      orderId,
+      addr!,
+      subtotalCents,
+      lines.map((l) => ({ unitWeightLb: l.unitWeightLb, quantity: l.quantity, productId: l.productId })),
+      shippingOption,
+    );
   }
 
   const square = createSquareClient();

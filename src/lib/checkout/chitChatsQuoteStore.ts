@@ -40,6 +40,10 @@ export interface ChitChatsPersistedQuote {
   purchasedAt: Date | null;
   expiresAt: Date;
   leaseExpiresAt: Date;
+  /** When this row was first created (the real moment this fingerprint was first quoted/claimed)
+   *  -- added so a durable caller (chitChatsOrderQuoteAssociation.ts) can record the real quoted-at
+   *  moment rather than substituting its own current time for it. */
+  createdAt: Date;
 }
 
 export type ChitChatsClaimOutcome =
@@ -159,6 +163,7 @@ export class SupabaseChitChatsQuoteStore implements ChitChatsQuoteStore {
     purchasedAt: string | null;
     expiresAt: string;
     leaseExpiresAt: string;
+    createdAt: string;
   }): ChitChatsPersistedQuote {
     return {
       fingerprint,
@@ -169,6 +174,7 @@ export class SupabaseChitChatsQuoteStore implements ChitChatsQuoteStore {
       purchasedAt: row.purchasedAt ? new Date(row.purchasedAt) : null,
       expiresAt: new Date(row.expiresAt),
       leaseExpiresAt: new Date(row.leaseExpiresAt),
+      createdAt: new Date(row.createdAt),
     };
   }
 
@@ -205,7 +211,7 @@ export class SupabaseChitChatsQuoteStore implements ChitChatsQuoteStore {
 
       const { data: row } = await this.supabaseAdmin
         .from("ChitChatsShippingQuote")
-        .select("status, ownerToken, leaseExpiresAt, chitChatsShipmentId, rates, purchasedAt, expiresAt")
+        .select("status, ownerToken, leaseExpiresAt, chitChatsShipmentId, rates, purchasedAt, expiresAt, createdAt")
         .eq("quoteFingerprint", fingerprint)
         .maybeSingle();
 
@@ -304,7 +310,7 @@ export class SupabaseChitChatsQuoteStore implements ChitChatsQuoteStore {
   async findReady(fingerprint: string, now: Date): Promise<ChitChatsPersistedQuote | null> {
     const { data } = await this.supabaseAdmin
       .from("ChitChatsShippingQuote")
-      .select("status, ownerToken, chitChatsShipmentId, rates, purchasedAt, expiresAt, leaseExpiresAt")
+      .select("status, ownerToken, chitChatsShipmentId, rates, purchasedAt, expiresAt, leaseExpiresAt, createdAt")
       .eq("quoteFingerprint", fingerprint)
       .eq("status", "ready")
       .gt("expiresAt", now.toISOString())
@@ -363,6 +369,7 @@ export class InMemoryChitChatsQuoteStore implements ChitChatsQuoteStore {
         purchasedAt: null,
         expiresAt: quoteExpiresAt,
         leaseExpiresAt,
+        createdAt: now,
       });
       return { kind: "owner", ownerToken: newOwnerToken };
     }
