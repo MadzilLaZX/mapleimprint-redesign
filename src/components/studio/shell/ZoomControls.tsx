@@ -2,8 +2,10 @@
 
 import { ArrowsOut, Minus, Plus } from "@phosphor-icons/react/dist/ssr";
 
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 2.5;
+// Exported so CanvasStage's pinch-to-zoom gesture clamps to the exact same range as these
+// buttons -- a pinch must never reach a zoom level the +/- controls themselves can't produce.
+export const MIN_ZOOM = 0.5;
+export const MAX_ZOOM = 2.5;
 const STEP = 0.25;
 
 /** Section 5. Only the useful controls — zoom in/out, current %, Fit — no rulers or advanced

@@ -11,6 +11,7 @@ import { localPointToStage } from "@/lib/studio/localCoordinates";
 import type { DesignObjectRecord, DesignSideType } from "@/lib/studio/types";
 import { useFontReady } from "@/lib/studio/fontLoader";
 import { normalizeFontFamilyCss } from "@/lib/studio/fontRegistry";
+import { MIN_ZOOM, MAX_ZOOM } from "@/components/studio/shell/ZoomControls";
 
 // All object/print-area math below is done in this fixed "design space" — box coordinates,
 // object x/y/width/height are all computed against these constants, never against the container's
@@ -50,6 +51,10 @@ function useHtmlImage(url: string | null) {
 function useResponsiveScale(fitHeight: boolean) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(1);
+  // Tracked alongside scale (not derived from it) so pinch-zoom/pan clamping below has the real
+  // container box to clamp against -- scale alone can't tell "how much room is there" once zoom
+  // pushes content past 100%.
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const el = containerRef.current;
@@ -57,6 +62,7 @@ function useResponsiveScale(fitHeight: boolean) {
     const observer = new ResizeObserver((entries) => {
       const rect = entries[0]?.contentRect;
       if (!rect) return;
+      setContainerSize({ width: rect.width, height: rect.height });
       const widthScale = rect.width / NATURAL_WIDTH;
       if (!fitHeight) {
         setScale(Math.min(1, widthScale));
@@ -69,8 +75,30 @@ function useResponsiveScale(fitHeight: boolean) {
     return () => observer.disconnect();
   }, [fitHeight]);
 
-  return { containerRef, scale };
+  return { containerRef, scale, containerSize };
 }
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function touchDistance(a: Touch, b: Touch): number {
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+}
+
+function touchMidpoint(a: Touch, b: Touch): { x: number; y: number } {
+  return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+}
+
+/** Active touch gesture on the canvas -- "pan" (one finger on empty canvas background, never on
+ *  a design object, which keeps Konva's own node-drag handling the only thing that can move
+ *  artwork) or "pinch" (two fingers, zooms and pans together, overriding whatever the first
+ *  finger landed on since a two-finger touch always means "move the viewport," never "move this
+ *  object"). Kept as a plain ref rather than state -- it's mutated every touchmove and must never
+ *  itself trigger a re-render. */
+type TouchGesture =
+  | { mode: "pan"; startClientX: number; startClientY: number; startPan: { x: number; y: number } }
+  | { mode: "pinch"; startDist: number; startZoom: number; startMid: { x: number; y: number }; startPan: { x: number; y: number } };
 
 function MockupBackground({ url }: { url: string | null }) {
   const img = useHtmlImage(url);
@@ -918,6 +946,8 @@ export function CanvasStage({
   readOnly = false,
   placementPreview = false,
   zoom = 1,
+  onZoomChange,
+  onCancelDragCommit,
   fitMode = "contain",
 }: {
   /** Every location visible in this canvas right now — see CanvasLayerSpec. Exactly one should be
@@ -941,11 +971,168 @@ export function CanvasStage({
    *  for an explicit "Placement Preview" one so a customer never mistakes it for exact photography. */
   placementPreview?: boolean;
   zoom?: number;
+  /** Lets a two-finger pinch gesture drive the same zoom value the +/- buttons control — omit for
+   *  a canvas whose zoom is fixed by its caller (ReviewPanel's read-only cells etc.); pinch then
+   *  simply has no effect on scale, but panning still works. */
+  onZoomChange?: (zoom: number) => void;
+  /** Called right after a two-finger pinch force-cancels a Konva drag that was already in
+   *  progress on a design object -- see the comment at this function's one call site
+   *  (handleStageTouchStart) for why that cancellation itself needs undoing. Omit for a read-only
+   *  canvas, where nothing is ever draggable in the first place. */
+  onCancelDragCommit?: () => void;
   fitMode?: "contain" | "width";
 }) {
-  const { containerRef, scale: fitScale } = useResponsiveScale(fitMode === "contain");
+  const { containerRef, scale: fitScale, containerSize } = useResponsiveScale(fitMode === "contain");
   const scale = fitScale * zoom;
   const stageRef = useRef<Konva.Stage | null>(null);
+  // Touch-only viewport offset -- never written by mouse/trackpad input, so desktop's existing
+  // overflow-auto scrollbar panning (the only pan affordance that existed before this) is
+  // completely untouched; see the gesture handlers and touchAction below.
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const touchGestureRef = useRef<TouchGesture | null>(null);
+  // Separate from touchGestureRef (which tracks pan/pinch mode) because it must survive a
+  // mid-gesture pinch<->pan handoff (lifting to one finger, or a second finger joining a pan) --
+  // whichever node this holds stays non-draggable for the WHOLE multi-touch sequence, not just the
+  // instant two fingers first touched down, and is only restored once every finger has lifted.
+  const suspendedDragNodeRef = useRef<Konva.Node | null>(null);
+  const activeLocationForPan = layers.find((l) => l.active)?.location ?? null;
+
+  const contentWidth = NATURAL_WIDTH * scale;
+  const contentHeight = NATURAL_HEIGHT * scale;
+  const maxPanX = Math.max(0, (contentWidth - containerSize.width) / 2);
+  const maxPanY = Math.max(0, (contentHeight - containerSize.height) / 2);
+  const clampPan = useCallback(
+    (p: { x: number; y: number }) => ({ x: clamp(p.x, -maxPanX, maxPanX), y: clamp(p.y, -maxPanY, maxPanY) }),
+    [maxPanX, maxPanY],
+  );
+
+  // Both adjusted during render rather than in an effect -- the same "derived state from a
+  // changed value" pattern StudioClient already uses for lastSelectedId/mobileInspectorOpen --
+  // since these just synchronize `pan` to a value React already knows this render, not to
+  // anything external.
+  //
+  // Re-clamp whenever the available room changes (container resize, zoom via the +/- buttons):
+  // without this, zooming back out after a touch-pan leaves the view stuck off-center since
+  // maxPanX/Y shrinks but the stale pan value doesn't.
+  const [lastPanBounds, setLastPanBounds] = useState({ maxPanX, maxPanY });
+  if (lastPanBounds.maxPanX !== maxPanX || lastPanBounds.maxPanY !== maxPanY) {
+    setLastPanBounds({ maxPanX, maxPanY });
+    setPan((p) => clampPan(p));
+  }
+  // Switching print locations (Front -> Back, etc.) starts that location's view centered, same as
+  // its own independent zoom level already does via zoomByLocation in StudioClient.
+  const [lastActiveLocationForPan, setLastActiveLocationForPan] = useState(activeLocationForPan);
+  if (activeLocationForPan !== lastActiveLocationForPan) {
+    setLastActiveLocationForPan(activeLocationForPan);
+    setPan({ x: 0, y: 0 });
+  }
+
+  /** Two fingers always means "move the viewport," never "move this object," for as long as any
+   *  of them stay down -- even though only the FIRST finger's touchstart can land on a draggable
+   *  node at all (a second finger joining mid-gesture doesn't retarget Konva's drag binding).
+   *  Konva's own drag system binds to a node at its OWN touchstart and, left alone, would start
+   *  (or continue) dragging it purely from that one finger's movement, regardless of what the
+   *  other finger is doing -- disabling draggable for the gesture's duration is what actually
+   *  prevents that, not just reacting after the fact: stopDrag() only cancels a drag already in
+   *  progress, but Konva waits for a move past its own threshold before setting isDragging(), so
+   *  calling it once at touchstart is too early to catch a drag that starts on the very next
+   *  touchmove. isDragging()+stopDrag()+onCancelDragCommit handles the rarer case where touch one
+   *  had already been dragging (e.g. briefly, before touch two landed) when this fires. */
+  function suspendNodeDrag(target: Konva.Node, stage: Konva.Stage | null) {
+    if (!target || target === stage || typeof target.draggable !== "function") return;
+    if (target.isDragging?.()) {
+      target.stopDrag();
+      onCancelDragCommit?.();
+    }
+    target.draggable(false);
+    suspendedDragNodeRef.current = target;
+  }
+
+  function restoreSuspendedDrag() {
+    suspendedDragNodeRef.current?.draggable(true);
+    suspendedDragNodeRef.current = null;
+  }
+
+  function handleStageTouchStart(e: Konva.KonvaEventObject<TouchEvent>) {
+    const touches = e.evt.touches;
+    const stage = e.target.getStage();
+    if (touches.length === 2) {
+      suspendNodeDrag(e.target, stage);
+      touchGestureRef.current = {
+        mode: "pinch",
+        startDist: touchDistance(touches[0], touches[1]),
+        startZoom: zoom,
+        startMid: touchMidpoint(touches[0], touches[1]),
+        startPan: pan,
+      };
+    } else if (touches.length === 1 && stage && e.target === stage) {
+      // One finger on empty canvas background (never on an object -- Konva's own hit test via
+      // e.target already distinguishes that) pans the viewport instead of doing nothing, which is
+      // what happened before this.
+      touchGestureRef.current = {
+        mode: "pan",
+        startClientX: touches[0].clientX,
+        startClientY: touches[0].clientY,
+        startPan: pan,
+      };
+    } else {
+      // Single finger on a design object: leave Konva's existing node-drag entirely alone.
+      touchGestureRef.current = null;
+    }
+  }
+
+  function handleStageTouchMove(e: Konva.KonvaEventObject<TouchEvent>) {
+    const gesture = touchGestureRef.current;
+    if (!gesture) return;
+    const touches = e.evt.touches;
+    if (gesture.mode === "pinch" && touches.length >= 2) {
+      e.evt.preventDefault();
+      const dist = touchDistance(touches[0], touches[1]);
+      const mid = touchMidpoint(touches[0], touches[1]);
+      const newZoom = clamp(gesture.startZoom * (dist / gesture.startDist), MIN_ZOOM, MAX_ZOOM);
+      onZoomChange?.(newZoom);
+      setPan(
+        clampPan({
+          x: gesture.startPan.x + (mid.x - gesture.startMid.x),
+          y: gesture.startPan.y + (mid.y - gesture.startMid.y),
+        }),
+      );
+    } else if (gesture.mode === "pan" && touches.length === 1) {
+      e.evt.preventDefault();
+      setPan(
+        clampPan({
+          x: gesture.startPan.x + (touches[0].clientX - gesture.startClientX),
+          y: gesture.startPan.y + (touches[0].clientY - gesture.startClientY),
+        }),
+      );
+    } else if (gesture.mode === "pan" && touches.length === 2) {
+      // A second finger landed mid-pan -- hand off to pinch from here rather than ignoring it,
+      // matching how a real two-finger gesture is expected to behave.
+      suspendNodeDrag(e.target, e.target.getStage());
+      touchGestureRef.current = {
+        mode: "pinch",
+        startDist: touchDistance(touches[0], touches[1]),
+        startZoom: zoom,
+        startMid: touchMidpoint(touches[0], touches[1]),
+        startPan: pan,
+      };
+    }
+  }
+
+  function handleStageTouchEnd(e: Konva.KonvaEventObject<TouchEvent>) {
+    const touches = e.evt.touches;
+    const gesture = touchGestureRef.current;
+    if (gesture?.mode === "pinch" && touches.length === 1) {
+      // Lifted one finger during a pinch -- keep going as a one-finger pan with the remaining
+      // finger rather than dropping the gesture entirely. The suspended node (if any) stays
+      // non-draggable until this finger lifts too, not just back down to one.
+      touchGestureRef.current = { mode: "pan", startClientX: touches[0].clientX, startClientY: touches[0].clientY, startPan: pan };
+    } else if (touches.length === 0) {
+      touchGestureRef.current = null;
+      restoreSuspendedDrag();
+    }
+  }
+
   const transformerRef = useRef<Konva.Transformer | null>(null);
   const nodeRefs = useRef<Map<string, Konva.Node>>(new Map());
   // Bumped once an image object's Konva node actually mounts — see DesignImageNode's own effect
@@ -1050,9 +1237,20 @@ export function CanvasStage({
         fitMode === "contain" ? "flex h-full w-full items-center justify-center" : "mx-auto flex w-full items-center justify-center",
         zoom > 1 && "overflow-auto",
       )}
-      style={fitMode === "width" ? { maxWidth: NATURAL_WIDTH } : undefined}
+      // touch-action only governs touch-driven gestures (pinch/pan), never mouse/trackpad -- the
+      // overflow-auto scrollbar panning above stays exactly as it worked before this for desktop;
+      // this just stops the browser's own native touch-pan/pinch-zoom from fighting the gesture
+      // handlers on the Stage below, which now do that job deliberately.
+      style={{ ...(fitMode === "width" ? { maxWidth: NATURAL_WIDTH } : {}), touchAction: "none" }}
     >
-      <div className="relative" style={{ width: NATURAL_WIDTH * scale, height: NATURAL_HEIGHT * scale }}>
+      <div
+        className="relative"
+        style={{
+          width: NATURAL_WIDTH * scale,
+          height: NATURAL_HEIGHT * scale,
+          transform: pan.x || pan.y ? `translate(${pan.x}px, ${pan.y}px)` : undefined,
+        }}
+      >
         <Stage
           ref={stageRef}
           width={NATURAL_WIDTH * scale}
@@ -1062,6 +1260,10 @@ export function CanvasStage({
           onMouseDown={(e) => {
             if (!readOnly && e.target === e.target.getStage()) onSelect(null);
           }}
+          onTouchStart={handleStageTouchStart}
+          onTouchMove={handleStageTouchMove}
+          onTouchEnd={handleStageTouchEnd}
+          onTouchCancel={handleStageTouchEnd}
           className="overflow-hidden rounded-3xl bg-white"
         >
           <Layer>

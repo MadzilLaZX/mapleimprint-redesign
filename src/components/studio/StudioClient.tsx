@@ -363,6 +363,18 @@ export function StudioClient({ projectId }: { projectId: string }) {
     dirtySinceLoad.current = true;
   }
 
+  // CanvasStage calls this right after it force-cancels a Konva node drag that a two-finger pinch
+  // gesture interrupted (Konva's stopDrag() unconditionally fires 'dragend', which commits the
+  // node's position via the normal onCommitObject path even though nothing the customer intended
+  // as an edit happened) -- reverses exactly that one commitObjectPatch call: `sides` here is still
+  // the same pre-commit closure value commitObjectPatch's own pushHistory(sides) call just pushed,
+  // so restoring it and popping that entry net out to "as if the commit never happened," without
+  // touching the real undo/redo stack the way a user-visible Undo click would.
+  function cancelSpuriousDragCommit() {
+    setSides(sides);
+    setHistory((h) => ({ ...h, past: h.past.slice(0, -1) }));
+  }
+
   // Extracted so "Back to Product" can flush a pending save immediately instead of either losing
   // it (a plain navigation would abandon the debounce timer) or forcing the customer through a
   // "you have unsaved changes" confirmation modal for something Studio can just finish on its own.
@@ -1766,6 +1778,8 @@ export function StudioClient({ projectId }: { projectId: string }) {
                   onSwitchLocation={handleSelectLocation}
                   placementPreview={activeLocation?.usesPlacementPreview ?? false}
                   zoom={zoom}
+                  onZoomChange={setZoom}
+                  onCancelDragCommit={cancelSpuriousDragCommit}
                 />
               )}
 
