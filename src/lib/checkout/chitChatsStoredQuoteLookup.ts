@@ -1,42 +1,38 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface StoredShippingQuoteInfo {
-  rates: { id: string; label: string; cents: number }[];
+  carrier: string;
+  service: string;
+  originalQuotedCents: number;
   chitChatsShipmentId: string | null;
-  createdAt: string;
-  expiresAt: string;
+  quotedAt: string;
 }
 
 /**
- * Looks up a genuine, already-persisted Chit Chats rate quote for a delivery order, for the
- * admin order detail page. Returns null -- "no stored quote" -- in two real, currently-permanent
- * situations, both honestly disclosed rather than worked around with a guess:
+ * Looks up the genuine Chit Chats quote durably associated with this exact order, for the admin
+ * order detail page -- a direct, exact lookup by MapleOrderShippingQuote.orderId (migration 015),
+ * not a fingerprint reconstructed from stored order data. That reconstruction approach was
+ * considered and rejected: MapleOrderLine doesn't store subcategorySlug/slug, so a historical
+ * order's quote key couldn't be rebuilt reliably after the fact, and a looser address+subtotal-only
+ * match risked showing a real row quoted for a DIFFERENT package as if it were this order's.
+ * chitChatsOrderQuoteAssociation.ts closes that gap at the moment of order creation instead, using
+ * the real live request data the quote was actually computed from in that same request.
  *
- * 1. No quote has ever been successfully fetched for ANY order yet, because packagingProfiles.ts
- *    has zero real entries (fetchChitChatsRates' own preflight refuses before any external call
- *    when package dimensions are null -- see chitChatsShippingProvider.ts's header). This is true
- *    regardless of whether shippingProvider.ts's coordinator is wired in.
- * 2. Even once a real quote exists, there is currently NO RELIABLE WAY to find which row belongs
- *    to a given order: ChitChatsShippingQuote is keyed by a fingerprint hashed from
- *    (address, subtotalCents, parcel weight/dimensions) -- see chitChatsQuoteStore.ts's
- *    buildQuoteFingerprint() -- and recomputing that fingerprint needs the exact packaging
- *    profile resolved at checkout time, which in turn needs each line's buildProductId()
- *    (categorySlug + subcategorySlug + slug). MapleOrderLine only stores categorySlug (see
- *    002_maple_orders.sql) -- subcategorySlug and slug were never added -- so the fingerprint
- *    can't be reconstructed from a historical order today.
- *
- * Deliberately does NOT fall back to a looser match (e.g. address + subtotal alone, ignoring
- * package weight/dimensions) -- Chit Chats rates depend on weight/dimensions too, so a looser
- * match could show a real row that was actually quoted for a DIFFERENT package, which would be
- * exactly the "fabricated/placeholder rate presented as real" this feature must never do. Fixing
- * this for real needs two separate, deliberate additions: real packaging-profile data, and
- * MapleOrderLine storing subcategorySlug/slug (or the resolved packaging itself) at order-creation
- * time -- not attempted here, since inventing either would violate this round's own constraints.
+ * Returns null -- an honest "no stored quote" -- whenever no row exists: a pickup order (never
+ * calls the real shipping provider), an order placed before this table existed, or one where no
+ * persisted Chit Chats quote existed to associate in the first place (e.g. the coordinator wasn't
+ * wired, or packagingProfiles.ts had no real entry yet, so the request never produced a quote
+ * worth persisting). Never fabricated.
  */
 export async function findStoredShippingQuoteForOrder(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _supabaseAdmin: SupabaseClient<any, any, any>,
-  _order: { shippingAddress: unknown; subtotalCents: number },
+  supabaseAdmin: SupabaseClient<any, any, any>,
+  order: { id: string },
 ): Promise<StoredShippingQuoteInfo | null> {
-  return null;
+  const { data } = await supabaseAdmin
+    .from("MapleOrderShippingQuote")
+    .select("carrier, service, originalQuotedCents, chitChatsShipmentId, quotedAt")
+    .eq("orderId", order.id)
+    .maybeSingle();
+  return data ?? null;
 }

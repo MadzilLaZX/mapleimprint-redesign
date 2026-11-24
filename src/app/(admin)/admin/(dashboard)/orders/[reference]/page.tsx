@@ -104,18 +104,16 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">Shipping rate quote</p>
           {storedQuote ? (
             <div className="mt-2 space-y-1 text-sm text-ink-900">
-              {storedQuote.rates.map((r) => (
-                <p key={r.id}>
-                  {r.label}: ${(r.cents / 100).toFixed(2)}
-                </p>
-              ))}
-              <p className="text-xs text-muted">Quoted {new Date(storedQuote.createdAt).toLocaleString()}</p>
+              <p>
+                {storedQuote.carrier} — {storedQuote.service}: ${(storedQuote.originalQuotedCents / 100).toFixed(2)}
+              </p>
+              {storedQuote.chitChatsShipmentId && (
+                <p className="text-xs text-muted">Shipment ref {storedQuote.chitChatsShipmentId}</p>
+              )}
+              <p className="text-xs text-muted">Quoted {new Date(storedQuote.quotedAt).toLocaleString()}</p>
             </div>
           ) : (
-            <p className="mt-2 text-sm text-muted">
-              No stored carrier quote for this order — real packaging-profile data doesn&apos;t exist yet, so no real-time
-              rate request has ever been attempted for any order.
-            </p>
+            <p className="mt-2 text-sm text-muted">No stored carrier quote for this order.</p>
           )}
         </div>
       )}
