@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CaretDown, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
+import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { ProductImage } from "@/components/ui/ProductImage";
@@ -50,10 +50,23 @@ function SummaryLines({ items, quote, quoteLoading }: { items: CartItem[]; quote
 
       <div className="mt-5 space-y-1.5 border-t border-sand pt-4 text-sm">
         {quoteLoading || !quote ? (
-          <p className="flex items-center gap-2 text-muted">
-            <SpinnerGap className="size-3.5 animate-spin" weight="bold" />
-            Calculating…
-          </p>
+          // Reserves the SAME 4-row height as the real result below (Subtotal/Shipping/Tax/Total)
+          // instead of a single line -- the page used to visibly grow taller the moment the
+          // debounced quote fetch resolved, since a one-line "Calculating…" was much shorter than
+          // the four real rows that replaced it.
+          <div aria-live="polite">
+            <p className="sr-only">Calculating shipping and tax…</p>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex items-center justify-between py-0.5">
+                <span className="h-4 w-20 animate-pulse rounded bg-sand" aria-hidden="true" />
+                <span className="h-4 w-14 animate-pulse rounded bg-sand" aria-hidden="true" />
+              </div>
+            ))}
+            <div className="flex items-center justify-between border-t border-sand pt-2">
+              <span className="h-5 w-12 animate-pulse rounded bg-sand" aria-hidden="true" />
+              <span className="h-5 w-16 animate-pulse rounded bg-sand" aria-hidden="true" />
+            </div>
+          </div>
         ) : (
           <>
             <div className="flex justify-between text-ink-900/70">
