@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Check } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/Button";
 import { FieldError, FieldLabel, TextArea, TextInput } from "@/components/ui/Field";
@@ -18,17 +18,63 @@ const TABS: { key: ContactTab; label: string }[] = [
   { key: "general", label: "General Inquiry" },
 ];
 
+/** WAI-ARIA Tabs pattern (https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), automatic activation:
+ *  arrow keys move focus AND select in one step (no separate "activate" keypress), matching the
+ *  simplest and most common real-world tabs behavior. Home/End jump to the first/last tab. Only
+ *  the active tab sits in the Tab-key sequence (roving tabindex) -- the others are reached via
+ *  arrow keys once a tab has focus, same as this pattern's reference implementation. */
 export function ContactTabs({ initialTab, initialMessage }: { initialTab: ContactTab; initialMessage?: string }) {
   const [tab, setTab] = useState<ContactTab>(initialTab);
+  const tabRefs = useRef<Record<ContactTab, HTMLButtonElement | null>>({
+    location: null,
+    quote: null,
+    general: null,
+    appointment: null,
+  });
+
+  function selectTab(index: number) {
+    const next = TABS[index];
+    setTab(next.key);
+    tabRefs.current[next.key]?.focus();
+  }
+
+  function onTabKeyDown(e: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      selectTab((index + 1) % TABS.length);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      selectTab((index - 1 + TABS.length) % TABS.length);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      selectTab(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      selectTab(TABS.length - 1);
+    }
+  }
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2 rounded-[28px] bg-canvas p-1.5 sm:inline-flex sm:rounded-full">
-        {TABS.map((t) => (
+      <div
+        role="tablist"
+        aria-label="Contact options"
+        className="flex flex-wrap gap-2 rounded-[28px] bg-canvas p-1.5 sm:inline-flex sm:rounded-full"
+      >
+        {TABS.map((t, i) => (
           <button
             key={t.key}
+            ref={(el) => {
+              tabRefs.current[t.key] = el;
+            }}
+            role="tab"
+            id={`contact-tab-${t.key}`}
+            aria-selected={tab === t.key}
+            aria-controls={`contact-tabpanel-${t.key}`}
+            tabIndex={tab === t.key ? 0 : -1}
             type="button"
             onClick={() => setTab(t.key)}
+            onKeyDown={(e) => onTabKeyDown(e, i)}
             className={cn(
               "whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-semibold transition-colors sm:px-5",
               tab === t.key ? "bg-ink-950 text-white" : "text-ink-900/70 hover:text-ink-900",
@@ -39,7 +85,13 @@ export function ContactTabs({ initialTab, initialMessage }: { initialTab: Contac
         ))}
       </div>
 
-      <div className="mt-8">
+      <div
+        role="tabpanel"
+        id={`contact-tabpanel-${tab}`}
+        aria-labelledby={`contact-tab-${tab}`}
+        tabIndex={0}
+        className="mt-8"
+      >
         {tab === "location" && <LocationPanel />}
         {tab === "quote" && <QuoteWizard />}
         {tab === "appointment" && <AppointmentPanel />}
