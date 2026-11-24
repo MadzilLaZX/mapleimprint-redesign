@@ -80,7 +80,11 @@ export function LayersPanel({
                 {defaultLabel(obj)}
               </button>
             )}
-            <div className="flex shrink-0 items-center gap-0.5">
+            {/* p-2/size-4 (mobile) vs lg:p-1/lg:size-3.5 (desktop, unchanged) -- six icon-only
+                buttons at the old p-1/size-3.5 were ~22x22px touch targets with only 2px between
+                them, well under common touch-target guidance; desktop keeps its original compact
+                density since a mouse doesn't have the same mis-tap risk. */}
+            <div className="flex shrink-0 items-center gap-1.5 lg:gap-0.5">
               <button
                 type="button"
                 aria-label="Rename layer"
@@ -88,41 +92,41 @@ export function LayersPanel({
                   setDraft(defaultLabel(obj));
                   setEditingId(obj.id);
                 }}
-                className="rounded p-1 text-ink-900/50 hover:bg-white hover:text-ink-900"
+                className="rounded p-2 text-ink-900/50 hover:bg-white hover:text-ink-900 lg:p-1"
               >
-                <PencilSimple className="size-3.5" weight="bold" />
+                <PencilSimple className="size-4 lg:size-3.5" weight="bold" />
               </button>
               <button
                 type="button"
                 aria-label="Move up"
                 disabled={isTop}
                 onClick={() => onMove(obj.id, "up")}
-                className="rounded p-1 text-ink-900/50 hover:bg-white hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-30"
+                className="rounded p-2 text-ink-900/50 hover:bg-white hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-30 lg:p-1"
               >
-                <ArrowUp className="size-3.5" weight="bold" />
+                <ArrowUp className="size-4 lg:size-3.5" weight="bold" />
               </button>
               <button
                 type="button"
                 aria-label="Move down"
                 disabled={isBottom}
                 onClick={() => onMove(obj.id, "down")}
-                className="rounded p-1 text-ink-900/50 hover:bg-white hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-30"
+                className="rounded p-2 text-ink-900/50 hover:bg-white hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-30 lg:p-1"
               >
-                <ArrowDown className="size-3.5" weight="bold" />
+                <ArrowDown className="size-4 lg:size-3.5" weight="bold" />
               </button>
               <button
                 type="button"
                 aria-label={obj.hidden ? "Show layer" : "Hide layer"}
                 onClick={() => onToggleHidden(obj.id)}
-                className="rounded p-1 text-ink-900/50 hover:bg-white hover:text-ink-900"
+                className="rounded p-2 text-ink-900/50 hover:bg-white hover:text-ink-900 lg:p-1"
               >
-                {obj.hidden ? <EyeSlash className="size-3.5" weight="bold" /> : <Eye className="size-3.5" weight="bold" />}
+                {obj.hidden ? <EyeSlash className="size-4 lg:size-3.5" weight="bold" /> : <Eye className="size-4 lg:size-3.5" weight="bold" />}
               </button>
-              <button type="button" aria-label="Duplicate layer" onClick={() => onDuplicate(obj.id)} className="rounded p-1 text-ink-900/50 hover:bg-white hover:text-ink-900">
-                <Copy className="size-3.5" weight="bold" />
+              <button type="button" aria-label="Duplicate layer" onClick={() => onDuplicate(obj.id)} className="rounded p-2 text-ink-900/50 hover:bg-white hover:text-ink-900 lg:p-1">
+                <Copy className="size-4 lg:size-3.5" weight="bold" />
               </button>
-              <button type="button" aria-label="Delete layer" onClick={() => onDelete(obj.id)} className="rounded p-1 text-ink-900/50 hover:bg-white hover:text-crimson">
-                <Trash className="size-3.5" weight="bold" />
+              <button type="button" aria-label="Delete layer" onClick={() => onDelete(obj.id)} className="rounded p-2 text-ink-900/50 hover:bg-white hover:text-crimson lg:p-1">
+                <Trash className="size-4 lg:size-3.5" weight="bold" />
               </button>
             </div>
           </li>
