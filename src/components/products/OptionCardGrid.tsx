@@ -46,15 +46,17 @@ export function OptionCardGrid({
             )}
           >
             <span className="block font-medium">{option.label}</span>
+            {/* ink-900/70, not the previous /50 (~3.5:1, fails WCAG AA's 4.5:1 for normal text) --
+                verified against the real --color-ink-900 hex value, /70 computes to ~6.8:1. */}
             {option.sublabel && (
-              <span className={cn("block text-xs", isSelected ? "text-white/70" : "text-ink-900/50")}>
+              <span className={cn("block text-xs", isSelected ? "text-white/70" : "text-ink-900/70")}>
                 {option.sublabel}
               </span>
             )}
             {option.disabled && option.disabledReason ? (
-              <span className="mt-0.5 block text-xs text-ink-900/50">{option.disabledReason}</span>
+              <span className="mt-0.5 block text-xs text-ink-900/70">{option.disabledReason}</span>
             ) : option.priceDelta ? (
-              <span className={cn("mt-0.5 block text-xs", isSelected ? "text-white/70" : "text-ink-900/50")}>
+              <span className={cn("mt-0.5 block text-xs", isSelected ? "text-white/70" : "text-ink-900/70")}>
                 {option.priceDelta}
               </span>
             ) : null}

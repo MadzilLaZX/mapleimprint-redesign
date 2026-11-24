@@ -32,7 +32,8 @@ export function PricingGuideFlyout({ rows }: { rows: PricingGuideRow[] }) {
         <div className="mt-2 max-h-56 overflow-y-auto rounded-xl border border-sand bg-white">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-sand text-ink-900/50">
+              {/* /70, not /50 -- WCAG AA contrast fix, same reasoning as OptionCardGrid.tsx. */}
+              <tr className="border-b border-sand text-ink-900/70">
                 <th className="px-3 py-2 font-medium">Qty</th>
                 <th className="px-3 py-2 font-medium">Total</th>
                 <th className="px-3 py-2 font-medium">Per unit</th>

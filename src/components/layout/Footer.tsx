@@ -59,7 +59,9 @@ export function Footer() {
         </div>
 
         <nav aria-label="Products">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Products</h3>
+          {/* /60, not the previous /40 (~3.7:1 against ink-950, fails WCAG AA's 4.5:1) -- same fix
+              applied to the other three column headings and the copyright line below. */}
+          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/60">Products</h3>
           <ul className="mt-4 space-y-3 text-sm">
             {PRODUCT_CATEGORIES.slice(0, 6).map((cat) => (
               <li key={cat.slug}>
@@ -72,7 +74,7 @@ export function Footer() {
         </nav>
 
         <nav aria-label="Solutions">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Solutions</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/60">Solutions</h3>
           <ul className="mt-4 space-y-3 text-sm">
             {SOLUTIONS.map((s) => (
               <li key={s.slug}>
@@ -85,7 +87,7 @@ export function Footer() {
         </nav>
 
         <nav aria-label="Help">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Help</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/60">Help</h3>
           <ul className="mt-4 space-y-3 text-sm">
             {helpLinks.map((l) => (
               <li key={l.href}>
@@ -98,7 +100,7 @@ export function Footer() {
         </nav>
 
         <nav aria-label="Company">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Company</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/60">Company</h3>
           <ul className="mt-4 space-y-3 text-sm">
             <li>
               <Link href="/about" className="hover:text-white">
@@ -125,7 +127,7 @@ export function Footer() {
       </Container>
 
       <div className="border-t border-white/10">
-        <Container className="flex flex-col gap-4 py-6 text-xs text-white/45 md:flex-row md:items-center md:justify-between">
+        <Container className="flex flex-col gap-4 py-6 text-xs text-white/55 md:flex-row md:items-center md:justify-between">
           <p>&copy; {new Date().getFullYear()} Maple Imprint Ltd. All rights reserved.</p>
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {legalLinks.map((l) => (
