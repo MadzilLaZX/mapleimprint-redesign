@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { X, Ruler } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
 import { getSizeSpecsFor, SPEC_TYPE_INFO, IN_TO_CM, type NormalizedSpecType } from "@/lib/sizeSpecs";
+import { useModalA11y } from "@/lib/useModalA11y";
 
 const SPEC_COLUMN_ORDER: NormalizedSpecType[] = [
   "CHEST_WIDTH_FLAT",
@@ -49,6 +50,7 @@ function MeasurementDiagram() {
 export function SizeGuidePanel({ productSlug, onClose }: { productSlug: string; onClose: () => void }) {
   const [unit, setUnit] = useState<"in" | "cm">("in");
   const specs = useMemo(() => getSizeSpecsFor(productSlug), [productSlug]);
+  const panelRef = useModalA11y(onClose);
 
   const sizes = useMemo(() => {
     const seen = new Map<string, string | null>();
@@ -70,11 +72,20 @@ export function SizeGuidePanel({ productSlug, onClose }: { productSlug: string; 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/50 sm:items-center sm:p-6">
-      <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-[28px] bg-white p-6 sm:rounded-[28px]">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="size-guide-heading"
+        tabIndex={-1}
+        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-[28px] bg-white p-6 outline-none sm:rounded-[28px]"
+      >
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <Ruler className="size-5 text-crimson" weight="bold" />
-            <h2 className="font-display text-lg font-semibold text-ink-900">Size guide</h2>
+            <h2 id="size-guide-heading" className="font-display text-lg font-semibold text-ink-900">
+              Size guide
+            </h2>
           </div>
           <button
             type="button"

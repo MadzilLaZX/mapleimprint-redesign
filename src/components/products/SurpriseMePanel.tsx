@@ -5,6 +5,7 @@ import { X, Check, SpinnerGap, UploadSimple } from "@phosphor-icons/react/dist/s
 import { useCart } from "@/components/cart/CartProvider";
 import { heroImageFor } from "@/lib/productVariant";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
+import { useModalA11y } from "@/lib/useModalA11y";
 import type { CatalogueProduct } from "@/lib/products";
 
 type Purpose = "business" | "team" | "event" | "gift" | "personal" | "clothing-brand" | "other";
@@ -55,6 +56,7 @@ export function SurpriseMePanel({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const panelRef = useModalA11y(onClose);
 
   async function handleUpload(file: File) {
     setUploading(true);
@@ -107,11 +109,20 @@ export function SurpriseMePanel({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/50 sm:items-center sm:p-6">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-[28px] bg-white p-6 sm:rounded-[28px]">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="surprise-me-heading"
+        tabIndex={-1}
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-[28px] bg-white p-6 outline-none sm:rounded-[28px]"
+      >
         <div className="flex items-start justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-crimson">✦ Designer&apos;s choice</p>
-            <h2 className="mt-1 font-display text-lg font-semibold text-ink-900">Surprise me</h2>
+            <h2 id="surprise-me-heading" className="mt-1 font-display text-lg font-semibold text-ink-900">
+              Surprise me
+            </h2>
             <p className="mt-1 text-sm text-muted">
               Give us the idea. Our design team creates something and sends it for your approval before anything prints.
             </p>

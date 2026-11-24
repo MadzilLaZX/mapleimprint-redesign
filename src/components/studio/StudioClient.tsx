@@ -48,6 +48,7 @@ import {
 import { loadQrAssets, saveQrAssets, type QrAsset } from "@/lib/studio/qrAssets";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { QRPanel } from "@/components/studio/panels/QRPanel";
+import { useModalA11yWhen } from "@/lib/useModalA11y";
 import type { DesignAsset } from "@/lib/studio/assetProviders";
 import type { StudioToolId } from "@/lib/studio/tools";
 import type { DesignObjectRecord, DesignProjectRecord, DesignSideType, ShapeKind } from "@/lib/studio/types";
@@ -246,6 +247,7 @@ export function StudioClient({ projectId }: { projectId: string }) {
   // Object ids that failed the pre-Review scan check (Section "QR REVIEW VALIDATION") — non-null
   // means the gate modal is showing instead of switching to Review.
   const [qrReviewGate, setQrReviewGate] = useState<string[] | null>(null);
+  const qrReviewGatePanelRef = useModalA11yWhen(qrReviewGate !== null, () => setQrReviewGate(null));
   const [fixingAllQr, setFixingAllQr] = useState(false);
   // QR ASSET library (Section "CORE UX DECISION") — every reusable generated QR for this browser
   // session, independent of which/how many print areas currently place it. Hydrated synchronously
@@ -273,6 +275,11 @@ export function StudioClient({ projectId }: { projectId: string }) {
     pendingChanges: Partial<QrGenerateInput>;
   } | null>(null);
   const [qrSharedEditBusy, setQrSharedEditBusy] = useState(false);
+  // Escape is a no-op while an update is in flight -- matches the Cancel button's own
+  // disabled={qrSharedEditBusy} below, never lets Escape abandon a write that's already running.
+  const qrSharedEditPanelRef = useModalA11yWhen(qrSharedEditPrompt !== null, () => {
+    if (!qrSharedEditBusy) setQrSharedEditPrompt(null);
+  });
 
   const [history, setHistory] = useState<{ past: SidesState[]; future: SidesState[] }>({ past: [], future: [] });
   // Text toolbar's "Copy style" / "Paste style" — deliberately NOT part of undo history (copying a
@@ -440,6 +447,21 @@ export function StudioClient({ projectId }: { projectId: string }) {
       await saveNow(sides);
     }
   }, [sides, saveNow]);
+
+  // Mobile-specific gap `beforeunload` above doesn't cover: switching apps/backgrounding a mobile
+  // tab reliably fires `visibilitychange` (hidden) but NOT `beforeunload`, and a backgrounded
+  // tab's JS timers can be throttled/suspended by the OS/browser -- so a pending 900ms-debounced
+  // autosave, or a retry still sitting in SAVE_RETRY_DELAYS_MS's backoff wait, had no guaranteed
+  // flush-on-background path at all. Best-effort only (there's no way to block/await tab
+  // backgrounding the way beforeunload can warn before a close) -- strictly better than the
+  // previous behavior of doing nothing and hoping the timer survives.
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "hidden") flushPendingSave();
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [flushPendingSave]);
 
   async function handleBackToProduct(productHref: string) {
     setBackNavigating(true);
@@ -1901,9 +1923,16 @@ export function StudioClient({ projectId }: { projectId: string }) {
 
         {qrReviewGate && (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-950/50 p-6">
-            <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl">
+            <div
+              ref={qrReviewGatePanelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="qr-review-gate-heading"
+              tabIndex={-1}
+              className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl outline-none"
+            >
               <WarningCircle className="mx-auto size-8 text-orange" weight="bold" />
-              <h2 className="mt-3 font-display text-lg font-semibold text-ink-900">
+              <h2 id="qr-review-gate-heading" className="mt-3 font-display text-lg font-semibold text-ink-900">
                 {qrReviewGate.length === 1 ? "One QR code may not scan" : `${qrReviewGate.length} QR codes may not scan`}
               </h2>
               <p className="mt-1.5 text-sm text-muted">
@@ -1935,9 +1964,16 @@ export function StudioClient({ projectId }: { projectId: string }) {
             placement pauses here instead of silently propagating or silently diverging. */}
         {qrSharedEditPrompt && (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-950/50 p-6">
-            <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl">
+            <div
+              ref={qrSharedEditPanelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="qr-shared-edit-heading"
+              tabIndex={-1}
+              className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-xl outline-none"
+            >
               <WarningCircle className="mx-auto size-8 text-orange" weight="bold" />
-              <h2 className="mt-3 font-display text-lg font-semibold text-ink-900">
+              <h2 id="qr-shared-edit-heading" className="mt-3 font-display text-lg font-semibold text-ink-900">
                 This QR is used in {qrSharedEditPrompt.siblingIds.length + 1} places
               </h2>
               <p className="mt-1.5 text-sm text-muted">Update the destination everywhere it&apos;s placed, or split this one off with its own link.</p>

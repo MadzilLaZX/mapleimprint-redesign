@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Check, X } from "@phosphor-icons/react/dist/ssr";
+import { useModalA11y } from "@/lib/useModalA11y";
 
 export interface CropFraction {
   x: number;
@@ -33,6 +34,7 @@ export function CropModal({
   onCancel: () => void;
 }) {
   const [crop, setCrop] = useState<CropFraction>(initialCrop ?? FULL_CROP);
+  const panelRef = useModalA11y(onCancel);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const dragState = useRef<{ handle: Handle; startX: number; startY: number; startCrop: CropFraction; size: number } | null>(null);
 
@@ -92,8 +94,17 @@ export function CropModal({
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-950/50 p-6">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-5">
-        <p className="font-display text-sm font-semibold text-ink-900">Crop image</p>
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="crop-modal-heading"
+        tabIndex={-1}
+        className="w-full max-w-sm rounded-3xl bg-white p-5 outline-none"
+      >
+        <p id="crop-modal-heading" className="font-display text-sm font-semibold text-ink-900">
+          Crop image
+        </p>
         <div
           ref={boxRef}
           // Responsive: fills the modal's own width (already capped by max-w-sm above) at a 1:1
