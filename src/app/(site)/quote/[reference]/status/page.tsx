@@ -79,7 +79,7 @@ export default async function QuoteStatusPage({ params }: { params: Promise<{ re
                   p.url ? (
                     <li key={p.sideType}>
                       {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed Supabase Storage URL */}
-                      <img src={p.url} alt={`${p.sideType} preview`} className="h-28 w-28 rounded-xl object-cover" />
+                      <img src={p.url} alt={`${line.productName} — ${p.sideType} preview`} className="h-28 w-28 rounded-xl object-cover" />
                     </li>
                   ) : (
                     <li

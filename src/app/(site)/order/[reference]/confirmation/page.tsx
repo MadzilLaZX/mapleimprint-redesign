@@ -155,7 +155,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
                       p.url ? (
                         <li key={p.sideType}>
                           {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed Supabase Storage URL */}
-                          <img src={p.url} alt={`${p.sideType} preview`} className="h-24 w-24 rounded-xl object-cover" />
+                          <img src={p.url} alt={`${line.productName} — ${p.sideType} preview`} className="h-24 w-24 rounded-xl object-cover" />
                         </li>
                       ) : (
                         <li

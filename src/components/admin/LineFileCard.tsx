@@ -136,7 +136,7 @@ export function LineFileCard({ line }: { line: LineFileInventory }) {
                         <li key={p.sideType}>
                           <a href={p.url} target="_blank" rel="noreferrer">
                             {/* eslint-disable-next-line @next/next/no-img-element -- internal admin-only view of a short-lived signed Supabase Storage URL, not worth adding to next.config.ts's remotePatterns */}
-                            <img src={p.url} alt={`${p.sideType} preview`} className="h-24 w-24 rounded-xl object-cover" />
+                            <img src={p.url} alt={`${line.productName} — ${p.sideType} preview`} className="h-24 w-24 rounded-xl object-cover" />
                           </a>
                         </li>
                       ) : (
