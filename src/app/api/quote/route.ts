@@ -9,6 +9,7 @@ import { createStudioClient } from "@/lib/studio/supabaseClient";
 import { STUDIO_SESSION_COOKIE } from "@/lib/studio/session";
 import { freezeDesignProject } from "@/lib/studio/freeze";
 import { triggerDesignExport } from "@/lib/studio/exportDesign";
+import { isValidQuoteEmail, safeQuoteLineQuantity } from "@/lib/checkout/quoteValidation";
 import type { NormalizedInquiry } from "@/lib/automation/types";
 
 type UploadedFile = { fileId: string; fileName: string; webViewLink: string | null };
@@ -49,6 +50,9 @@ export async function POST(request: Request) {
       { error: "Name and email are required to submit a quote request." },
       { status: 422 },
     );
+  }
+  if (!isValidQuoteEmail(email)) {
+    return NextResponse.json({ error: "Enter a valid email address." }, { status: 422 });
   }
 
   const idempotencyKey = str(body, "idempotencyKey");
@@ -180,7 +184,13 @@ export async function POST(request: Request) {
     let designSnapshot: unknown = null;
     let designFrozenRevision = line.designFrozenRevision ?? null;
 
-    if (line.designProjectId && line.customizationType === "CUSTOM") {
+    if (line.customizationType === "CUSTOM" && !line.designProjectId) {
+      // Not reachable through normal navigation -- StudioClient.tsx always sets designProjectId
+      // alongside customizationType: "CUSTOM" -- but a direct/malformed POST could previously
+      // skip this entire block (the old condition required designProjectId to be truthy) and
+      // insert a CUSTOM line with no design and no warning to the customer at all.
+      unattachedDesignLines.push(line.name ?? "Untitled item");
+    } else if (line.designProjectId && line.customizationType === "CUSTOM") {
       if (studioClient) {
         // Defensive — CUSTOM items normally only reach the cart already frozen (handleApproveAndAddToCart
         // freezes before addItem), so this is expected to be a no-op read in the common case, not a
@@ -213,7 +223,7 @@ export async function POST(request: Request) {
       productSlug: line.productSlug ?? null,
       colourName: line.colourName ?? null,
       sizeBreakdown: line.sizeBreakdown ?? null,
-      quantity: line.quantity ?? null,
+      quantity: safeQuoteLineQuantity(line.quantity),
       customizationType: line.customizationType ?? null,
       designProjectId: line.designProjectId ?? null,
       designFrozenRevision,
