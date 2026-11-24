@@ -17,61 +17,16 @@ import { cn } from "@/lib/cn";
 import { QUOTE_PREFILL_KEY, QUOTE_CART_LINES_KEY, type QuoteCartHandoff } from "@/components/cart/CartProvider";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { projectTypeForHandoff, type ProjectType } from "@/components/contact/quoteProjectType";
+import {
+  type QuoteData,
+  type UploadedFile,
+  initialQuoteData,
+  loadQuoteDraft,
+  saveQuoteDraft,
+  clearQuoteDraft,
+} from "@/lib/checkout/quoteDraft";
 
-type DeliveryMethod = "pickup" | "shipping";
-type ContactMethod = "email" | "phone";
-
-type UploadedFile = { fileId: string; fileName: string; webViewLink: string | null; assetId?: string };
-
-type QuoteData = {
-  projectType: ProjectType | null;
-  productDescription: string;
-  quantity: string;
-  sizesVariants: string;
-  budgetRange: string;
-  decorationMethod: string;
-  placements: string;
-  personalization: boolean;
-  designHelp: boolean;
-  fileNotes: string;
-  fileNames: string[];
-  uploadedFiles: UploadedFile[];
-  neededBy: string;
-  eventDate: string;
-  deliveryMethod: DeliveryMethod | null;
-  postalCode: string;
-  name: string;
-  organization: string;
-  email: string;
-  phone: string;
-  preferredContact: ContactMethod | null;
-  consent: boolean;
-};
-
-const initialData: QuoteData = {
-  projectType: null,
-  productDescription: "",
-  quantity: "",
-  sizesVariants: "",
-  budgetRange: "",
-  decorationMethod: "",
-  placements: "",
-  personalization: false,
-  designHelp: false,
-  fileNotes: "",
-  fileNames: [],
-  uploadedFiles: [],
-  neededBy: "",
-  eventDate: "",
-  deliveryMethod: null,
-  postalCode: "",
-  name: "",
-  organization: "",
-  email: "",
-  phone: "",
-  preferredContact: null,
-  consent: false,
-};
+const initialData = initialQuoteData;
 
 const STEP_LABELS = [
   "Project type",
@@ -105,10 +60,27 @@ export function QuoteWizard() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [cartLines, setCartLines] = useState<QuoteCartHandoff[]>([]);
-  // Generated once per mount, reused across every submit retry (including a double-click or a
-  // network-error retry) so /api/quote's idempotency check can recognize a resubmission instead
-  // of creating a second QuoteRequest with a second reference.
-  const [idempotencyKey] = useState(() => crypto.randomUUID());
+  // Generated once per mount, but overwritten with a resumed draft's own key below -- resuming
+  // must reuse the SAME idempotency key the draft was saved under, or a customer who refreshes
+  // mid-submit and resumes would be able to create a genuine duplicate QuoteRequest.
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+  // A resumable draft found on mount, awaiting the customer's own choice -- never auto-applied,
+  // per "Allow customers to discard a saved draft" (silently resuming could also surprise someone
+  // who shares this browser/tab with another person on the same device).
+  const [draftPrompt, setDraftPrompt] = useState<ReturnType<typeof loadQuoteDraft>>(null);
+
+  useEffect(() => {
+    // A fresh "Get a quote" handoff from the cart (below) represents a deliberate action the
+    // customer just took and always wins over an old draft from a previous visit -- checked here,
+    // before the handoff effect consumes (removes) those same sessionStorage keys.
+    const hasFreshHandoff = Boolean(
+      window.sessionStorage.getItem(QUOTE_PREFILL_KEY) || window.sessionStorage.getItem(QUOTE_CART_LINES_KEY),
+    );
+    if (!hasFreshHandoff) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDraftPrompt(loadQuoteDraft());
+    }
+  }, []);
 
   useEffect(() => {
     // One-shot read from a browser-only external store (sessionStorage) on
@@ -143,6 +115,28 @@ export function QuoteWizard() {
       window.sessionStorage.removeItem(QUOTE_CART_LINES_KEY);
     }
   }, []);
+
+  // Autosaves on every real change -- skipped while an unresolved draftPrompt is showing (so it
+  // can't be clobbered with blank initialData before the customer decides), and after a
+  // successful submission (reference set) so a completed request is never offered as a "resume."
+  useEffect(() => {
+    if (draftPrompt || reference) return;
+    saveQuoteDraft({ step, data, cartLines, idempotencyKey });
+  }, [step, data, cartLines, idempotencyKey, draftPrompt, reference]);
+
+  function resumeDraft() {
+    if (!draftPrompt) return;
+    setStep(draftPrompt.step);
+    setData(draftPrompt.data);
+    setCartLines(draftPrompt.cartLines);
+    setIdempotencyKey(draftPrompt.idempotencyKey);
+    setDraftPrompt(null);
+  }
+
+  function discardDraft() {
+    clearQuoteDraft();
+    setDraftPrompt(null);
+  }
 
   function update<K extends keyof QuoteData>(key: K, value: QuoteData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -226,6 +220,7 @@ export function QuoteWizard() {
       if (!res.ok) throw new Error(json.error || "Something went wrong.");
       setReference(json.reference);
       setUnattachedDesignLines(Array.isArray(json.unattachedDesignLines) ? json.unattachedDesignLines : []);
+      clearQuoteDraft();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -279,6 +274,17 @@ export function QuoteWizard() {
 
   return (
     <div className="rounded-[28px] bg-white p-6 lg:p-10">
+      {draftPrompt && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-orange/30 bg-orange/5 p-4 text-sm text-ink-900">
+          <p>You have an unfinished quote request. Continue where you left off?</p>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" tone="light" onClick={discardDraft}>
+              Discard
+            </Button>
+            <Button onClick={resumeDraft}>Resume</Button>
+          </div>
+        </div>
+      )}
       <ol className="flex flex-wrap gap-x-2 gap-y-2 text-xs font-medium text-muted">
         {STEP_LABELS.map((label, i) => (
           <li key={label} className="flex items-center gap-2">
