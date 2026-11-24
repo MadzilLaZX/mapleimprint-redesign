@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowUUpLeft, ArrowUUpRight, Eye, SpinnerGap } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft, ArrowUUpLeft, ArrowUUpRight, Eye, SpinnerGap, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 
 /** Section 3. PREVIEW and REVIEW are deliberately two different buttons/destinations — Preview
  *  answers "what will this look like," Review is the order-approval step. Never combine them.
@@ -53,7 +53,13 @@ export function TopBar({
         </div>
       </div>
 
-      <div className="hidden items-center gap-2 sm:flex">
+      {/* Previously hidden entirely below the sm breakpoint (~640px, i.e. every phone) -- there was
+          no way to undo/redo on mobile at all except a physical-keyboard shortcut, and a save
+          failure that exhausted its retries produced zero visible indication on mobile either.
+          Undo/Redo are now always visible (compact icon-only, same as before); the error state is
+          now always visible too, since a silently-failed autosave is a real data-loss risk --
+          "Saving…"/"Saved ✓" stay desktop-only (cosmetic, not safety-critical). */}
+      <div className="flex items-center gap-1 sm:gap-2">
         <button
           type="button"
           aria-label="Undo"
@@ -72,15 +78,21 @@ export function TopBar({
         >
           <ArrowUUpRight className="size-4" weight="bold" />
         </button>
-        <span className="w-24 text-xs text-muted">
-          {saveStatus === "saving" && (
-            <span className="flex items-center gap-1">
-              <SpinnerGap className="size-3 animate-spin" weight="bold" /> Saving…
-            </span>
-          )}
-          {saveStatus === "saved" && "Saved ✓"}
-          {saveStatus === "error" && "Couldn't save — retrying"}
-        </span>
+        {saveStatus === "error" ? (
+          <span role="status" aria-live="polite" className="flex items-center gap-1 text-xs font-semibold text-crimson">
+            <WarningCircle className="size-3.5 shrink-0" weight="bold" />
+            <span className="hidden sm:inline">Couldn&apos;t save — retrying</span>
+          </span>
+        ) : (
+          <span role="status" aria-live="polite" className="hidden w-24 text-xs text-muted sm:inline-block">
+            {saveStatus === "saving" && (
+              <span className="flex items-center gap-1">
+                <SpinnerGap className="size-3 animate-spin" weight="bold" /> Saving…
+              </span>
+            )}
+            {saveStatus === "saved" && "Saved ✓"}
+          </span>
+        )}
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
