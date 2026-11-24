@@ -97,7 +97,9 @@ export function ProductGallery({
                 i === index ? "ring-ink-950" : "ring-transparent hover:ring-sand",
               )}
             >
-              <ProductImage src={img.url} alt="" sizes="120px" priority={i < 4} className="object-cover" iconClassName="size-4" showLabel={false} />
+              {/* Only the first thumbnail is likely visible without the gallery already being in
+                  view -- priority={i < 4} was eager-loading up to four of these unconditionally. */}
+              <ProductImage src={img.url} alt="" sizes="120px" priority={i === 0} className="object-cover" iconClassName="size-4" showLabel={false} />
             </button>
           ))}
         </div>
