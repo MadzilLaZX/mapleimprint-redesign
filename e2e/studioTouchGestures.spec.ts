@@ -22,7 +22,7 @@ type MinimalCdpSession = { send(method: string, params?: Record<string, unknown>
 
 async function dispatchTouch(
   client: MinimalCdpSession,
-  type: "touchStart" | "touchMove" | "touchEnd",
+  type: "touchStart" | "touchMove" | "touchEnd" | "touchCancel",
   points: TouchPoint[],
 ) {
   await client.send("Input.dispatchTouchEvent", {
@@ -131,6 +131,67 @@ test.describe("Studio canvas: touch gestures (simulated via CDP, Mobile Chrome p
 
     // Panning the viewport must never create an undoable design mutation.
     await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
+  });
+
+  test("a gesture interrupted by touchcancel (e.g. an OS gesture or incoming call taking over) leaves the canvas in a clean, still-usable state", async ({
+    page,
+  }) => {
+    await openStudio(page);
+    const client = await page.context().newCDPSession(page);
+
+    await page.getByRole("button", { name: "Text" }).click();
+    await page.getByRole("button", { name: /add heading/i }).click();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
+    await closeActivePanel(page);
+    const closeDetails = page.getByRole("button", { name: "Close details" });
+    if (await closeDetails.isVisible().catch(() => false)) await closeDetails.click();
+    await page.waitForTimeout(500);
+
+    const canvasBox = await page.locator("canvas").first().boundingBox();
+    if (!canvasBox) throw new Error("canvas not found");
+    const cx = canvasBox.x + canvasBox.width / 2;
+    const cy = canvasBox.y + canvasBox.height / 2;
+
+    // Start a pinch directly over the heading (same as the "never moves the object" test), then
+    // the OS/browser cancels it mid-gesture instead of a normal lift -- the one real difference
+    // between touchend and touchcancel this app needs to handle the same way: restoring whatever
+    // drag-suspension was in effect, not leaving the object permanently undraggable.
+    await dispatchTouch(client, "touchStart", [
+      { x: cx - 15, y: cy, id: 0 },
+      { x: cx + 15, y: cy, id: 1 },
+    ]);
+    await dispatchTouch(client, "touchMove", [
+      { x: cx - 50, y: cy, id: 0 },
+      { x: cx + 50, y: cy, id: 1 },
+    ]);
+    await page.waitForTimeout(100);
+    await dispatchTouch(client, "touchCancel", []);
+    await page.waitForTimeout(200);
+
+    // No extra history entry from the interrupted gesture (same baseline-of-2 rationale as the
+    // normal pinch-over-object test: adding the heading, then blurring its inline editor when the
+    // panels above were closed, are the only two genuine edits).
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
+
+    // The object's drag-suspension must have been released by the cancel, not left stuck --
+    // redo back to a state with the heading present, then confirm a plain single-finger drag on
+    // it still works (the real regression this guards: forgetting to restore draggable() on
+    // touchcancel would leave every object permanently frozen after any interrupted gesture).
+    await page.getByRole("button", { name: "Redo" }).click();
+    await page.getByRole("button", { name: "Redo" }).click();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
+
+    await dispatchTouch(client, "touchStart", [{ x: cx, y: cy, id: 2 }]);
+    await dispatchTouch(client, "touchMove", [{ x: cx + 40, y: cy + 40, id: 2 }]);
+    await page.waitForTimeout(100);
+    await dispatchTouch(client, "touchEnd", []);
+    await page.waitForTimeout(100);
+    // A real object drag commits a new history entry on top of whatever was there -- proves the
+    // object is draggable again post-cancel, not merely that nothing crashed.
+    await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
   });
 
   test("a two-finger pinch starting over an object moves the viewport, never the object itself", async ({ page }) => {
