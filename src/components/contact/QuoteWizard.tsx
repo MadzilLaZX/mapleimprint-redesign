@@ -17,6 +17,7 @@ import { cn } from "@/lib/cn";
 import { QUOTE_PREFILL_KEY, QUOTE_CART_LINES_KEY, type QuoteCartHandoff } from "@/components/cart/CartProvider";
 import { getOrCreateClientSessionToken } from "@/lib/studio/session";
 import { projectTypeForHandoff, type ProjectType } from "@/components/contact/quoteProjectType";
+import { friendlyErrorMessage } from "@/lib/friendlyErrorMessage";
 import {
   type QuoteData,
   type UploadedFile,
@@ -194,7 +195,7 @@ export function QuoteWizard() {
         uploadedFiles: [...prev.uploadedFiles, ...uploaded],
       }));
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+      setUploadError(friendlyErrorMessage(err, "Upload failed. Please try again."));
     } finally {
       setUploading(false);
     }
@@ -222,7 +223,7 @@ export function QuoteWizard() {
       setUnattachedDesignLines(Array.isArray(json.unattachedDesignLines) ? json.unattachedDesignLines : []);
       clearQuoteDraft();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setSubmitError(friendlyErrorMessage(err, "Something went wrong. Please try again."));
     } finally {
       setSubmitting(false);
     }
