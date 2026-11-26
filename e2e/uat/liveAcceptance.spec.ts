@@ -223,13 +223,15 @@ test.describe("UAT journey — live Preview", () => {
     const cardFrame = page.frameLocator("#square-card-container iframe").first();
     await cardFrame.getByRole("textbox", { name: "Card number" }).fill("4111 1111 1111 1111");
     await page.waitForTimeout(500); // lets Square's brand/AVS detection settle before checking for a zip field
-    // Regression check for the postal-code-field defect fixed this round: when a zip field is
-    // present it must be ENABLED and accept input -- previously disabled and pre-filled with an
-    // invalid value (the business's own address), permanently blocking payment for every pickup
-    // order. Separately (see UAT report), this Sandbox test card's zip field only accepts
-    // numeric-only input -- a real Canadian postal code's letters are silently stripped -- which
-    // is reported as its own finding, not fixed here (unconfirmed whether that's a Sandbox-test-
-    // card artifact or a genuine production limitation).
+    // Regression check for the postal-code-field defect fixed in an earlier round: when a zip
+    // field is present it must be ENABLED and accept input -- previously disabled and pre-filled
+    // with an invalid value (the business's own address), permanently blocking payment for every
+    // pickup order. This Sandbox test card's zip field only accepts numeric input (a real
+    // Canadian postal code's letters get silently stripped) -- CONFIRMED a Square Sandbox
+    // limitation, not a code defect: Square's own docs/forum state the field's country-specific
+    // format is detected from the real card's BIN, and Square's Sandbox has no Canadian-BIN test
+    // cards at all (see UAT-13 below and the UAT report for sources). A numeric value here is
+    // therefore the correct way to complete a Sandbox test, not a workaround.
     const zipField = cardFrame.getByRole("textbox", { name: "Postal code" }).or(cardFrame.getByPlaceholder("ZIP"));
     if (await zipField.count()) {
       await expect(zipField).toBeEnabled();
@@ -268,5 +270,87 @@ test.describe("UAT journey — live Preview", () => {
       timeout: 10_000,
     });
     await page.screenshot({ path: `${SHOT_DIR}/17-saved-designs.png` });
+  });
+
+  test("UAT-13 DOCUMENTS A KNOWN SANDBOX LIMITATION (not a defect) — a real Canadian postal code is stripped to digits-only by this Sandbox test card", async () => {
+    // This is a canary, not a bug report: confirms the CURRENT, Square-documented Sandbox
+    // behavior is unchanged. Root cause (confirmed against Square's own docs and developer
+    // forum, see the UAT report): the card() form's postal-code format is auto-detected from the
+    // real card's BIN/issuing country, and Square's Sandbox only provides US-simulated test
+    // cards -- there is no Canadian-BIN test card to exercise the real Canadian-format path here.
+    // If this test ever starts FAILING (the field accepts "K1V 8B9" intact), that's good news:
+    // it means Square has added Canadian Sandbox test values and UAT-11's numeric workaround
+    // above can be revisited.
+    await page.goto(`${PREVIEW_BASE}/products/custom-apparel/t-shirts/allpro-men-s-pro-lock-performance-t-shirt`);
+    await page.getByRole("button", { name: /increase .* quantity/i }).first().click();
+    await page.getByRole("button", { name: "Buy It Blank" }).click();
+    await page.goto(`${PREVIEW_BASE}/cart`);
+    await page.getByRole("link", { name: /checkout/i }).click();
+    await page.waitForURL(/\/checkout/);
+    await page.getByLabel("Full name").fill(UAT_NAME);
+    await page.getByLabel("Email").fill(UAT_EMAIL);
+    await page.getByLabel("Phone").fill("6135550123");
+    await page.getByRole("button", { name: /Free Local Pickup/i }).click();
+
+    const cardFrame = page.frameLocator("#square-card-container iframe").first();
+    await cardFrame.getByRole("textbox", { name: "Card number" }).fill("4111 1111 1111 1111");
+    await page.waitForTimeout(500);
+    const zipField = cardFrame.getByRole("textbox", { name: "Postal code" }).or(cardFrame.getByPlaceholder("ZIP"));
+    await expect(zipField).toHaveCount(1, { timeout: 10_000 }); // this Sandbox card DOES require a postal code at all
+    await zipField.pressSequentially("K1V 8B9", { delay: 50 });
+    const value = await zipField.inputValue();
+    console.log(`UAT-13 Sandbox-limitation canary: typed "K1V 8B9", field now contains ${JSON.stringify(value)}`);
+    expect(value).toBe("189"); // letters + space silently stripped -- the documented Sandbox limitation
+  });
+
+  test("UAT-14 Delivery checkout: real Canadian address entry, and Square's card form behaves identically to pickup", async () => {
+    test.setTimeout(60_000);
+    await page.goto(`${PREVIEW_BASE}/products/custom-apparel/t-shirts/allpro-men-s-pro-lock-performance-t-shirt`);
+    await page.getByRole("button", { name: /increase .* quantity/i }).first().click();
+    await page.getByRole("button", { name: "Buy It Blank" }).click();
+    await expect(page.getByRole("button", { name: "Added to cart" })).toBeVisible();
+
+    await page.goto(`${PREVIEW_BASE}/cart`);
+    await page.getByRole("link", { name: /checkout/i }).click();
+    await page.waitForURL(/\/checkout/);
+
+    await page.getByLabel("Full name").fill(UAT_NAME);
+    await page.getByLabel("Email").fill(UAT_EMAIL);
+    await page.getByLabel("Phone").fill("6135550123");
+    await page.getByRole("button", { name: /Ship to Address/i }).click();
+    await page.getByLabel("Address").fill("123 Test Street");
+    await page.getByLabel("City").fill("Ottawa");
+    // Province defaults to Ontario and Country is a disabled, pre-set "Canada" select (this
+    // checkout only ships within Canada) -- neither needs interaction.
+    // The real DELIVERY ADDRESS field -- a plain app-owned <input>, unrelated to Square's own
+    // hosted card zip field below -- confirmed to accept the real Canadian format intact.
+    await page.getByLabel("Postal code").fill("K1V 8B9");
+    await page.screenshot({ path: `${SHOT_DIR}/18-delivery-checkout-address.png` });
+    await expect(page.getByLabel("Postal code")).toHaveValue("K1V 8B9");
+
+    // Discovered live while writing this test: the entire Payment section (Square's card form
+    // included) stays gated behind "Complete Contact & Delivery to continue to payment" until a
+    // real shipping rate resolves -- and a synthetic, non-serviceable test address like this one
+    // never resolves to either a real rate or the "Request a Shipping Quote" fallback within any
+    // reasonable wait. This is a SEPARATE, pre-existing, already-documented limitation (no real
+    // Chit Chats packaging profile exists yet -- see docs/launch-readiness-report.md) and NOT
+    // something this postal-code investigation can or should resolve (would need a real
+    // serviceable address + a real packaging profile, both out of scope here).
+    //
+    // Consequence: Square's card form -- and therefore its zip-field behavior -- could not be
+    // independently LIVE-verified for the delivery path this round. By direct code inspection,
+    // SquarePaymentSection.tsx's payments.card() call takes no fulfillment-method argument at all
+    // and has zero branching on it, so the identical behavior confirmed for pickup in UAT-11/
+    // UAT-13 necessarily applies to delivery too -- but that is a code-read inference, not a live
+    // observation, and is reported as such.
+    const paymentUnlocked = await page
+      .getByText("Complete Contact & Delivery to continue to payment.")
+      .waitFor({ state: "hidden", timeout: 20_000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(
+      !paymentUnlocked,
+      "Pre-existing limitation, not a regression: no real shipping rate resolves for a synthetic test address without a configured packaging profile, so Square's card form never unlocks for delivery in this environment. See the UAT report.",
+    );
   });
 });

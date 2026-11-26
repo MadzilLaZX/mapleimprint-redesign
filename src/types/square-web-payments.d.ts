@@ -54,10 +54,18 @@ interface SquareGooglePayButton {
 }
 
 interface SquarePayments {
-  // postalCode is an INITIAL VALUE for the card form's own built-in postal/zip sub-field — Square
-  // doesn't support hiding that field, only seeding it, so we prefill from the delivery address
-  // already collected instead of leaving it blank (which the customer then has to fill a second
-  // time, confusingly, in a field with no label of its own).
+  // postalCode seeds an INITIAL VALUE for the card form's own built-in postal/zip sub-field --
+  // deliberately never passed by this app (see SquarePaymentSection.tsx's own comment): a seeded
+  // value is asserted as the real billing postal code, and the field's country-specific format
+  // (US ZIP vs. Canadian postal code vs. none at all) is auto-detected from the card's own BIN
+  // once entered, not from anything this app configures -- confirmed against Square's own docs
+  // (https://developer.squareup.com/reference/sdks/web/payments/card-payments: "automatically
+  // infers whether to display the postal code field... based on the issuing country of the
+  // buyer payment card") and their community forum (Square staff, directly on this exact
+  // Canadian-postal-code question: "the card they entered doesn't have that format on file with
+  // the bank"). Square's Sandbox has no Canadian-BIN test cards -- only US-simulated ones -- so a
+  // Sandbox test with any test card will always show the numeric US ZIP format regardless of this
+  // option; that's a documented Sandbox limitation, not something fixable in integration code.
   card(options?: { postalCode?: string }): Promise<SquareCard>;
   paymentRequest(options: {
     countryCode: string;
