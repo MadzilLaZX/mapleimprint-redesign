@@ -69,10 +69,17 @@ export function SquarePaymentSection({
     let cancelled = false;
 
     payments
-      // Pickup has no customer-entered postal code -- seeds the card form with the pickup
-      // location's own (only used to pre-fill the embedded iframe's optional zip hint, never
-      // stored or charged against).
-      .card({ postalCode: payload.shippingAddress?.postalCode ?? PICKUP_LOCATION.postalCode })
+      // No postalCode seed here, for either fulfillment method -- found live during UAT: Square's
+      // `card({ postalCode })` option doesn't pre-fill an editable hint the customer can correct,
+      // it DISABLES the zip field and asserts that exact value is the cardholder's real billing
+      // postal code. Seeding it with the pickup location's own address (which isn't the
+      // customer's billing zip at all) left the field disabled and failing Square's own
+      // validation, blocking every pickup order's payment with no way to proceed. The same
+      // mechanism would also silently assert the wrong billing zip for a delivery customer whose
+      // billing address differs from their shipping address. Leaving this unset gives Square's own
+      // default empty, editable, required zip field -- the customer enters their real billing
+      // postal code, same as any other online checkout.
+      .card()
       .then((card) => card.attach("#square-card-container").then(() => card))
       .then((card) => {
         if (cancelled) {
@@ -90,9 +97,6 @@ export function SquarePaymentSection({
     return () => {
       cancelled = true;
     };
-    // postalCode is intentionally read once as a seed value, not tracked — re-running this on
-    // every keystroke would tear down and recreate the whole card element mid-typing.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payments]);
 
   useEffect(
