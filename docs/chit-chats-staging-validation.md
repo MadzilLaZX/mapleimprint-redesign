@@ -1,5 +1,14 @@
 # Chit Chats staging validation procedure
 
+> **SUPERSEDED premise, confirmed in a later round:** `https://staging.chitchats.com` returns
+> `404` for Maple Imprint's actual account — there is no usable Chit Chats staging environment for
+> this business (see `docs/chit-chats-production-readiness.md`). Everything below that assumes a
+> separate staging host is **not executable as written**. For the real, accurate procedure (real
+> Chit Chats production API, unpurchased draft shipments, required cleanup), see
+> **`docs/chit-chats-real-rate-test-plan.md`** instead. Kept below for its still-useful research on
+> `order_id` full-text search behaviour (Finding 2) and the reconciliation fallback — just mentally
+> substitute "production" wherever this says "staging."
+
 Not run this round — no staging credentials exist in this codebase, and this is explicitly a
 "prepare, don't execute" task. This is the exact sequence someone with a Chit Chats account should
 run once staging credentials and explicit test authorization exist, to validate the assumptions

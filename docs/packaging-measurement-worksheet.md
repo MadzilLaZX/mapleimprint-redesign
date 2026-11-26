@@ -114,3 +114,27 @@ system — every blank below must come from a real box in your hands.
 This is intentionally a one-way gate: a box that fails validation behaves exactly like no box
 existing at all (the order routes to a manual "Request a Shipping Quote," never a fabricated or
 zero-dimension rate).
+
+---
+
+## Cost validation (do this once, right after your first profile goes live)
+
+The $300 free-shipping threshold is a fixed dollar amount — it does NOT look at how much the real
+carrier rate actually costs. A heavier or bulkier order that still qualifies (e.g. several hoodies
+totalling $310) gets its real shipping cost absorbed by Maple in full, however much that turns out
+to be. There is no second, separate cap on the absorbed cost today — only the unit/weight limits
+you set on each box profile above indirectly control how large an order can ever reach this path.
+
+**Once your first profile is live and quoting real rates** (see
+`docs/chit-chats-real-rate-test-plan.md`), note the real quoted cost here for a sanity check before
+trusting the $300 number at scale:
+
+| Product / profile | Order subtotal tested | Real quoted shipping rate | Destination used | Notes |
+|---|---|---|---|---|
+| _______________ | $_______ | $_______ | _______________ | _______________ |
+| _______________ | $_______ | $_______ | _______________ | _______________ |
+
+If a realistic order near $300–350 is quoting a shipping cost that eats an uncomfortable chunk of
+that order's margin, that's a signal to revisit either the $300 threshold itself or the
+`maxUnitsPerPackage`/`maxWeightLbPerPackage` caps on that profile — both are business decisions,
+not something the code will flag or cap on its own.
