@@ -169,7 +169,10 @@ export function CartView() {
           </div>
         )}
         {pricedItems.length > 0 &&
-          (estimatedSubtotal > FREE_SHIPPING_THRESHOLD_DOLLARS ? (
+          // Compared in integer cents, matching chitChatsShippingProvider.ts's own basis -- a raw
+          // float-dollar comparison at an exact $300.00 boundary risks drifting from the
+          // server's authoritative decision due to floating-point summation error.
+          (Math.round(estimatedSubtotal * 100) >= FREE_SHIPPING_THRESHOLD_CENTS ? (
             // A subtotal-only preview -- the cart has no delivery address yet, so true
             // eligibility (destination + carrier serviceability) is only confirmed at checkout
             // once a real quote runs. Worded to reflect that, not as a final promise.
@@ -178,8 +181,8 @@ export function CartView() {
             </p>
           ) : (
             <p className="mb-4 text-sm text-muted">
-              Add ${(FREE_SHIPPING_THRESHOLD_DOLLARS + 0.01 - estimatedSubtotal).toFixed(2)} more to qualify for free
-              shipping anywhere in Canada (orders over ${FREE_SHIPPING_THRESHOLD_DOLLARS.toFixed(2)}).
+              Add ${(FREE_SHIPPING_THRESHOLD_DOLLARS - estimatedSubtotal).toFixed(2)} more to qualify for free
+              shipping anywhere in Canada (orders of ${FREE_SHIPPING_THRESHOLD_DOLLARS.toFixed(2)} or more).
             </p>
           ))}
         <p className="text-sm leading-relaxed text-muted">

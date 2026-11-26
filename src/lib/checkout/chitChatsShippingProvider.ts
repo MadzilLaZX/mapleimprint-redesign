@@ -35,8 +35,10 @@ import type { ChitChatsPersistedQuoteKey } from "./chitChatsQuoteStore.ts";
 //   1. All 10 provinces and 3 territories are geographically eligible, SUBJECT TO ACTUAL CARRIER
 //      SERVICEABILITY -- see the serviceability note below; this is not a blanket "any CA address
 //      qualifies" rule.
-//   2-4. Threshold: eligible merchandise subtotal strictly greater than CAD $300.00, after
-//      discounts, before tax/shipping. $300.00 exactly = not eligible. $300.01 = eligible.
+//   2-4. Threshold: eligible merchandise subtotal at or above CAD $300.00, after discounts,
+//      before tax/shipping. $299.99 = not eligible. $300.00 exactly = eligible. $300.01 = eligible.
+//      (Corrected 2026-11-26: originally coded as strictly-greater-than, excluding $300.00 exactly
+//      -- the owner's policy was always inclusive of the threshold itself.)
 //   5. Eligible standard delivery is $0 to the customer; Maple absorbs the real carrier cost.
 //   6. Expedited/premium service levels may still carry a charge even on an otherwise-eligible
 //      order -- see "multiple service levels" below.
@@ -122,7 +124,7 @@ import type { ChitChatsPersistedQuoteKey } from "./chitChatsQuoteStore.ts";
 // confirmed working via a real read-only GET /shipments auth check, 200 response) -- still
 // deliberately NOT present in Production, pending a separate Production-activation decision.
 
-export const FREE_SHIPPING_THRESHOLD_CENTS = 30000; // CAD $300.00, before tax -- strictly greater than
+export const FREE_SHIPPING_THRESHOLD_CENTS = 30000; // CAD $300.00, before tax -- inclusive (>=)
 
 /** Minimal destination check that applies to EVERY address, delivery or free, Canadian or
  *  international -- Chit Chats ships internationally (unlike Canada Post, which this codebase
@@ -491,7 +493,7 @@ export class ChitChatsShippingProvider implements ShippingQuoteProvider {
     // Free shipping is Canada-only and threshold-gated, per the owner's explicit confirmation --
     // checked only AFTER a real quote has already succeeded, so this can never apply to a
     // destination/parcel Chit Chats couldn't actually service.
-    const freeShippingEligible = address.country === "CA" && subtotalCents > FREE_SHIPPING_THRESHOLD_CENTS;
+    const freeShippingEligible = address.country === "CA" && subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS;
     if (!freeShippingEligible) {
       return liveRates;
     }

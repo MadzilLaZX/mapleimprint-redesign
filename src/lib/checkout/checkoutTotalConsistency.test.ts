@@ -79,13 +79,28 @@ test("the free-shipping threshold decision is independent of GST/HST: the shippi
   assert.deepEqual(onOptions[0], abOptions[0]);
 });
 
-test("the free-shipping threshold decision is unaffected by tax even at the exact $300.00 boundary (not-eligible) across different tax types", async () => {
+test("the free-shipping threshold decision is unaffected by tax even at the exact $300.00 boundary (inclusive -- now eligible) across different tax types", async () => {
   const onShipping = new ChitChatsShippingProvider(okFetcher);
   const abShipping = new ChitChatsShippingProvider(okFetcher);
   const onOptions = await onShipping.getOptions(onAddressFull, 30000, weighedLines);
   const abOptions = await abShipping.getOptions(abAddressFull, 30000, weighedLines);
-  assert.equal(onOptions[0].cents, 1850);
-  assert.equal(abOptions[0].cents, 1850);
+  assert.equal(onOptions[0].cents, 0);
+  assert.equal(abOptions[0].cents, 0);
+});
+
+test("REGRESSION: $299.99 stays paid, $300.00 and $300.01 are both free -- Square total consistency across the new inclusive boundary", async () => {
+  const under = await computeTotalCents({ subtotalCents: 29999, address: onAddressFull });
+  const exact = await computeTotalCents({ subtotalCents: 30000, address: onAddressFull });
+  const over = await computeTotalCents({ subtotalCents: 30001, address: onAddressFull });
+
+  assert.equal(under.shippingOption.cents, 1850);
+  assert.equal(exact.shippingOption.cents, 0);
+  assert.equal(over.shippingOption.cents, 0);
+
+  // No duplicate discount / drift: total is always exactly subtotal + shipping + tax.
+  assert.equal(under.totalCents, 29999 + 1850 + under.taxCents);
+  assert.equal(exact.totalCents, 30000 + 0 + exact.taxCents);
+  assert.equal(over.totalCents, 30001 + 0 + over.taxCents);
 });
 
 test("an unserviceable Canadian destination never produces a Square total built on a fabricated free rate", async () => {

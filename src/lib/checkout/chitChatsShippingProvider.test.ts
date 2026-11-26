@@ -45,15 +45,43 @@ test("all 10 provinces and 3 territories are geographically eligible for free sh
   }
 });
 
-test("exactly $300.00 does not qualify (over, not at-or-over) -- stays at the real quoted rate", async () => {
+test("$299.99 does not qualify -- stays at the real quoted rate", async () => {
+  const provider = new ChitChatsShippingProvider(okFetcher);
+  const options = await provider.getOptions(caAddressFull, FREE_SHIPPING_THRESHOLD_CENTS - 1, weighedLines);
+  assert.deepEqual(options, [{ id: "cc-standard", label: "Chit Chats Standard", cents: 1850 }]);
+});
+
+test("exactly $300.00 qualifies for free shipping -- the threshold is inclusive (>=), not strictly-greater-than", async () => {
   const provider = new ChitChatsShippingProvider(okFetcher);
   const options = await provider.getOptions(caAddressFull, FREE_SHIPPING_THRESHOLD_CENTS, weighedLines);
-  assert.deepEqual(options, [{ id: "cc-standard", label: "Chit Chats Standard", cents: 1850 }]);
+  assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
 });
 
 test("$300.01 does qualify for free shipping", async () => {
   const provider = new ChitChatsShippingProvider(okFetcher);
   const options = await provider.getOptions(caAddressFull, FREE_SHIPPING_THRESHOLD_CENTS + 1, weighedLines);
+  assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
+});
+
+test("REGRESSION: multiple cart lines whose lineTotalCents sum to exactly $300.00 qualify -- mirrors the checkout routes' own subtotalCents reduce", async () => {
+  // Mirrors /api/checkout/quote and /api/checkout/pay: subtotalCents = lines.reduce((sum, l) => sum + l.lineTotalCents, 0).
+  const cartLines = [{ lineTotalCents: 12000 }, { lineTotalCents: 9500 }, { lineTotalCents: 8500 }];
+  const subtotalCents = cartLines.reduce((sum, l) => sum + l.lineTotalCents, 0);
+  assert.equal(subtotalCents, FREE_SHIPPING_THRESHOLD_CENTS);
+  const provider = new ChitChatsShippingProvider(okFetcher);
+  const options = await provider.getOptions(caAddressFull, subtotalCents, weighedLines);
+  assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
+});
+
+test("REGRESSION: two different variants (colour/size) of the same product whose combined lineTotalCents sum to exactly $300.00 qualify", async () => {
+  const cartLines = [
+    { productId: "shirt", variant: "red-m", lineTotalCents: 15000 },
+    { productId: "shirt", variant: "blue-l", lineTotalCents: 15000 },
+  ];
+  const subtotalCents = cartLines.reduce((sum, l) => sum + l.lineTotalCents, 0);
+  assert.equal(subtotalCents, FREE_SHIPPING_THRESHOLD_CENTS);
+  const provider = new ChitChatsShippingProvider(okFetcher);
+  const options = await provider.getOptions(caAddressFull, subtotalCents, weighedLines);
   assert.deepEqual(options, [{ id: "free", label: "Free Shipping", cents: 0 }]);
 });
 
@@ -77,6 +105,17 @@ test("a destination Chit Chats cannot service does NOT fall back to a fabricated
   const provider = new ChitChatsShippingProvider(unsupportedFetcher);
   await assert.rejects(
     () => provider.getOptions(caAddressFull, FREE_SHIPPING_THRESHOLD_CENTS + 1, weighedLines),
+    /does not support deliveries/,
+  );
+});
+
+test("REGRESSION: a destination Chit Chats cannot service does NOT fall back to a fabricated free rate at the exact new $300.00 boundary", async () => {
+  const unsupportedFetcher: ChitChatsRateFetcher = async () => {
+    throw new ShippingRateUnavailableError("Chit Chats does not support deliveries to this address.");
+  };
+  const provider = new ChitChatsShippingProvider(unsupportedFetcher);
+  await assert.rejects(
+    () => provider.getOptions(caAddressFull, FREE_SHIPPING_THRESHOLD_CENTS, weighedLines),
     /does not support deliveries/,
   );
 });
